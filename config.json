@@ -1,0 +1,21 @@
+{
+  "email_settings": {
+    "sender_email": "your_email@gmail.com",
+    "sender_password": "your_app_password",
+    "recipient_emails": ["recipient@example.com"],
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587
+  },
+  "commodities": {
+    "GC=F": {
+      "name": "Gold"
+    },
+    "CL=F": {
+      "name": "Crude Oil"
+    },
+    "SI=F": {
+      "name": "Silver"
+    }
+  },
+  "check_interval_seconds": 300
+}
