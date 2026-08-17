@@ -1,7 +1,7 @@
 {
   "email_settings": {
     "sender_email": "your_email@gmail.com",
-    "sender_password": "your_app_password",
+    "sender_password": "",
     "recipient_emails": ["recipient@example.com"],
     "smtp_server": "smtp.gmail.com",
     "smtp_port": 587
@@ -10,11 +10,23 @@
     "GC=F": {
       "name": "Gold"
     },
+    "SI=F": {
+      "name": "Silver"
+    },
     "CL=F": {
       "name": "Crude Oil"
     },
-    "SI=F": {
-      "name": "Silver"
+    "NG=F": {
+      "name": "Natural Gas"
+    },
+    "HG=F": {
+      "name": "Copper"
+    },
+    "ALI=F": {
+      "name": "Aluminum"
+    },
+    "ZNC=F": {
+      "name": "Zinc"
     }
   },
   "check_interval_seconds": 300
