@@ -8,25 +8,28 @@
   },
   "commodities": {
     "GC=F": {
-      "name": "Gold"
+      "name": "Gold",
+      "mcx_multiplier": 31.1035
     },
     "SI=F": {
-      "name": "Silver"
+      "name": "Silver",
+      "mcx_multiplier": 31.1035
     },
     "CL=F": {
-      "name": "Crude Oil"
+      "name": "Crude Oil",
+      "mcx_multiplier": 1.0
     },
     "NG=F": {
-      "name": "Natural Gas"
+      "name": "Natural Gas",
+      "mcx_multiplier": 1.0
     },
     "HG=F": {
-      "name": "Copper"
+      "name": "Copper",
+      "mcx_multiplier": 2.20462
     },
     "ALI=F": {
-      "name": "Aluminum"
-    },
-    "ZNC=F": {
-      "name": "Zinc"
+      "name": "Aluminum",
+      "mcx_multiplier": 0.001
     }
   },
   "check_interval_seconds": 300
