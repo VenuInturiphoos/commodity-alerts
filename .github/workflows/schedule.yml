@@ -2,8 +2,8 @@ name: Commodity Price Alerter
 
 on:
   schedule:
-    # Runs every 5 minutes
-    - cron: '*/5 * * * *'
+    # Runs every 5 minutes from 3:00 AM to 6:59 PM UTC (8:30 AM to 12:29 AM IST), Monday through Friday
+    - cron: '*/5 3-18 * * 1-5'
   workflow_dispatch: # Allows manual trigger
 
 jobs:
