@@ -87,13 +87,16 @@ class PriceChecker:
                 print(f"No active MCX futures found in Dhan master for {base_symbol}!")
                 return None
             
-        now = datetime.now()
-        mcx['EXP_DATE'] = pd.to_datetime(mcx['SEM_EXPIRY_DATE'])
-        mcx = mcx[mcx['EXP_DATE'] >= now].sort_values('EXP_DATE')
-        
-        if not mcx.empty:
-            return str(mcx.iloc[0]['SEM_SMST_SECURITY_ID'])
-        return None
+            now = datetime.now()
+            mcx['EXP_DATE'] = pd.to_datetime(mcx['SEM_EXPIRY_DATE'])
+            mcx = mcx[mcx['EXP_DATE'] >= now].sort_values('EXP_DATE')
+            
+            if not mcx.empty:
+                return str(mcx.iloc[0]['SEM_SMST_SECURITY_ID'])
+            return None
+        except Exception as e:
+            print(f"Error fetching MCX near month for {base_symbol}: {e}")
+            return None
 
     def get_dhan_levels(self, security_id, exchange_segment="NSE_EQ", instrument_type="EQUITY"):
         try:
