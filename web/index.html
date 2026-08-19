@@ -66,25 +66,38 @@
                     <p>Auto-synced every 5 minutes from the cloud.</p>
                 </div>
                 
-                <div class="table-container glass-card full-width">
-                    <div class="table-filters">
-                        <button class="filter-btn active" data-filter="all">All Assets</button>
-                        <button class="filter-btn" data-filter="Stock">Nifty 50</button>
-                        <button class="filter-btn" data-filter="Commodity">Commodities</button>
-                    </div>
+                <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                    <h3>Nifty 50 Stocks</h3>
                     <table class="market-table">
                         <thead>
                             <tr>
                                 <th>Asset Name</th>
-                                <th>Type</th>
                                 <th>Current Price (₹)</th>
                                 <th>Support 1</th>
                                 <th>Resistance 1</th>
                                 <th>Last Updated</th>
                             </tr>
                         </thead>
-                        <tbody id="market-data-body">
-                            <tr><td colspan="6" class="loading">Loading live data...</td></tr>
+                        <tbody id="market-data-body-stocks">
+                            <tr><td colspan="5" class="loading">Loading live data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-container glass-card full-width">
+                    <h3>MCX Commodities</h3>
+                    <table class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Current Price (₹)</th>
+                                <th>Support 1</th>
+                                <th>Resistance 1</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="market-data-body-commodities">
+                            <tr><td colspan="5" class="loading">Loading live data...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -97,7 +110,8 @@
                     <p>These assets are currently testing a critical Support or Resistance level.</p>
                 </div>
                 
-                <div class="table-container glass-card full-width">
+                <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                    <h3>Nifty 50 Stocks in Alert Zone</h3>
                     <table class="market-table alert-table">
                         <thead>
                             <tr>
@@ -107,8 +121,25 @@
                                 <th>Action Level</th>
                             </tr>
                         </thead>
-                        <tbody id="alert-data-body">
-                            <tr><td colspan="4" class="loading">Scanning for active alerts...</td></tr>
+                        <tbody id="alert-data-body-stocks">
+                            <tr><td colspan="4" class="loading">Scanning for active stock alerts...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-container glass-card full-width">
+                    <h3>MCX Commodities in Alert Zone</h3>
+                    <table class="market-table alert-table">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Current Price (₹)</th>
+                                <th>Trigger Status</th>
+                                <th>Action Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alert-data-body-commodities">
+                            <tr><td colspan="4" class="loading">Scanning for active commodity alerts...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -168,14 +199,7 @@ window.switchTab = function(btn, targetId) {
 }
 
 function setupFilters() {
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderMarketTable(btn.getAttribute('data-filter'));
-        });
-    });
+    // Deprecated: Filters removed in favor of split tables
 }
 
 function setupSubscribeForm() {
@@ -227,8 +251,7 @@ async function fetchMarketData() {
         marketData = data;
         
         // Render both tables
-        const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
-        renderMarketTable(activeFilter);
+        renderMarketTable();
         renderAlertTable();
         
     } catch (error) {
@@ -237,59 +260,72 @@ async function fetchMarketData() {
     }
 }
 
-function renderMarketTable(filter) {
-    const tbody = document.getElementById('market-data-body');
-    tbody.innerHTML = '';
+function renderMarketTable() {
+    const tbodyStocks = document.getElementById('market-data-body-stocks');
+    const tbodyCommodities = document.getElementById('market-data-body-commodities');
     
-    let filteredData = marketData;
-    if (filter !== 'all') {
-        filteredData = marketData.filter(item => item.asset_type === filter);
-    }
+    tbodyStocks.innerHTML = '';
+    tbodyCommodities.innerHTML = '';
     
-    if (filteredData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="loading">No data available. Waiting for cloud sync...</td></tr>`;
-        return;
-    }
+    const stocks = marketData.filter(item => item.asset_type === 'Stock');
+    const commodities = marketData.filter(item => item.asset_type === 'Commodity');
+    
+    const renderRows = (data, tbody) => {
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="loading">No data available.</td></tr>`;
+            return;
+        }
 
-    filteredData.forEach(item => {
-        const typeClass = item.asset_type === 'Stock' ? 'type-stock' : 'type-commodity';
-        const date = new Date(item.last_updated).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
-            <td><span class="type-badge ${typeClass}">${item.asset_type}</span></td>
-            <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
-            <td style="color:#fb7185">₹${parseFloat(item.s1).toFixed(2)}</td>
-            <td style="color:#4ade80">₹${parseFloat(item.r1).toFixed(2)}</td>
-            <td style="color:var(--text-secondary); font-size: 0.875rem;">${date}</td>
-        `;
-        tbody.appendChild(tr);
-    });
+        data.forEach(item => {
+            const date = new Date(item.last_updated).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
+                <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
+                <td style="color:#fb7185">₹${parseFloat(item.s1).toFixed(2)}</td>
+                <td style="color:#4ade80">₹${parseFloat(item.r1).toFixed(2)}</td>
+                <td style="color:var(--text-secondary); font-size: 0.875rem;">${date}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
+
+    renderRows(stocks, tbodyStocks);
+    renderRows(commodities, tbodyCommodities);
 }
 
 function renderAlertTable() {
-    const tbody = document.getElementById('alert-data-body');
-    tbody.innerHTML = '';
+    const tbodyStocks = document.getElementById('alert-data-body-stocks');
+    const tbodyCommodities = document.getElementById('alert-data-body-commodities');
     
-    // Filter only items that have an alert status
+    tbodyStocks.innerHTML = '';
+    tbodyCommodities.innerHTML = '';
+    
     const alertData = marketData.filter(item => item.alert_status && item.alert_status.trim() !== '');
+    const stockAlerts = alertData.filter(item => item.asset_type === 'Stock');
+    const commodityAlerts = alertData.filter(item => item.asset_type === 'Commodity');
     
-    if (alertData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="loading" style="padding: 4rem !important;">No assets currently in the alert zone. The market is quiet! 💤</td></tr>`;
-        return;
-    }
+    const renderRows = (data, tbody, emptyMessage) => {
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="loading" style="padding: 2rem !important;">${emptyMessage}</td></tr>`;
+            return;
+        }
 
-    alertData.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
-            <td style="font-weight:600; font-size: 1.1rem;">₹${parseFloat(item.current_price).toFixed(2)}</td>
-            <td><span class="alert-tag">${item.alert_status.toUpperCase()}</span></td>
-            <td>Action Required</td>
-        `;
-        tbody.appendChild(tr);
-    });
+        data.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
+                <td style="font-weight:600; font-size: 1.1rem;">₹${parseFloat(item.current_price).toFixed(2)}</td>
+                <td><span class="alert-tag">${item.alert_status.toUpperCase()}</span></td>
+                <td>Action Required</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
+
+    renderRows(stockAlerts, tbodyStocks, "No stocks currently in the alert zone. 💤");
+    renderRows(commodityAlerts, tbodyCommodities, "No commodities currently in the alert zone. 💤");
 }
     </script>
 </body>
