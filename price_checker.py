@@ -151,11 +151,17 @@ class PriceChecker:
 
     def get_dhan_current_price(self, security_id, exchange_segment="NSE_EQ", instrument_type="EQUITY"):
         try:
+            now = datetime.now()
+            from_date = (now - timedelta(days=2)).strftime("%Y-%m-%d")
+            to_date = now.strftime("%Y-%m-%d")
+            
             # Intraday minute data
             data = self.dhan.intraday_minute_data(
                 security_id=security_id,
                 exchange_segment=exchange_segment,
-                instrument_type=instrument_type
+                instrument_type=instrument_type,
+                from_date=from_date,
+                to_date=to_date
             )
             
             if not data or data.get('status') == 'failure' or not data.get('data'):
