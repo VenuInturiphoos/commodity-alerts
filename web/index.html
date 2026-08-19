@@ -124,9 +124,9 @@ console.log("App.js started loading...");
 const SUPABASE_URL = 'https://cohupetijvykzmeliubg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvaHVwZXRpanZ5a3ptZWxpdWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMjg4ODAsImV4cCI6MjEwMjcwNDg4MH0.zA5IwTKp0f-IRQ5dB3a9vXJSD1X2EVzxIDEyzXC27Cw';
 
-let supabase;
+let supabaseClient;
 try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } catch (e) {
     console.warn("Supabase not fully configured yet.");
 }
@@ -194,7 +194,7 @@ function setupSubscribeForm() {
         submitBtn.disabled = true;
         
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('subscribers')
                 .insert([{ email: email }]);
 
@@ -214,10 +214,10 @@ function setupSubscribeForm() {
 }
 
 async function fetchMarketData() {
-    if (!supabase) return;
+    if (!supabaseClient) return;
     
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('market_data')
             .select('*')
             .order('name', { ascending: true });
