@@ -1,4 +1,5 @@
 import yfinance as yf
+import requests
 
 class PriceChecker:
     def __init__(self, config):
@@ -6,6 +7,10 @@ class PriceChecker:
         self.commodities = config.get('commodities', {})
         self.stocks = config.get('stocks', {})
         self.usd_inr_rate = self.get_usd_inr_rate()
+        
+        # Supabase config for pushing market data
+        self.supabase_url = 'https://cohupetijvykzmeliubg.supabase.co/rest/v1/market_data'
+        self.supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvaHVwZXRpanZ5a3ptZWxpdWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMjg4ODAsImV4cCI6MjEwMjcwNDg4MH0.zA5IwTKp0f-IRQ5dB3a9vXJSD1X2EVzxIDEyzXC27Cw'
 
     def get_usd_inr_rate(self):
         try:
@@ -66,9 +71,11 @@ class PriceChecker:
 
     def evaluate_levels(self, name, symbol, levels, current_price):
         alerts = []
+        alert_status = None
+        
         if levels is None or current_price is None:
             print(f"Could not fetch data for {name}. Skipping.")
-            return alerts
+            return alerts, alert_status
             
         print(f"Current Price: ₹{current_price:.2f}")
         print(f"Levels -> R2: ₹{levels['R2']:.2f}, R1: ₹{levels['R1']:.2f}, P: ₹{levels['Pivot']:.2f}, S1: ₹{levels['S1']:.2f}, S2: ₹{levels['S2']:.2f}")
@@ -80,18 +87,39 @@ class PriceChecker:
         for level_name in ['R1', 'R2']:
             level_price = levels[level_name]
             if abs(current_price - level_price) / level_price <= threshold_pct:
-                alerts.append(f"ALERT: {name} ({symbol}) is testing Resistance Level {level_name} at ₹{level_price:.2f}. Current price: ₹{current_price:.2f}.")
+                alert_msg = f"testing Resistance {level_name}"
+                alerts.append(f"ALERT: {name} ({symbol}) is {alert_msg} at ₹{level_price:.2f}. Current price: ₹{current_price:.2f}.")
+                alert_status = alert_msg
                 
         # Check supports
         for level_name in ['S1', 'S2']:
             level_price = levels[level_name]
             if abs(current_price - level_price) / level_price <= threshold_pct:
-                alerts.append(f"ALERT: {name} ({symbol}) is testing Support Level {level_name} at ₹{level_price:.2f}. Current price: ₹{current_price:.2f}.")
+                alert_msg = f"testing Support {level_name}"
+                alerts.append(f"ALERT: {name} ({symbol}) is {alert_msg} at ₹{level_price:.2f}. Current price: ₹{current_price:.2f}.")
+                alert_status = alert_msg
 
-        return alerts
-            
+        return alerts, alert_status
+
+    def sync_to_supabase(self, payload):
+        try:
+            headers = {
+                'apikey': self.supabase_key,
+                'Authorization': f'Bearer {self.supabase_key}',
+                'Content-Type': 'application/json',
+                'Prefer': 'resolution=merge-duplicates'
+            }
+            response = requests.post(self.supabase_url, headers=headers, json=payload, timeout=15)
+            if response.status_code in [200, 201]:
+                print(f"Successfully synced {len(payload)} market data records to Supabase.")
+            else:
+                print(f"Failed to sync to Supabase. Status: {response.status_code}, {response.text}")
+        except Exception as e:
+            print(f"Error syncing to Supabase: {e}")
+
     def check_alerts(self):
         alerts = []
+        market_data_payload = []
         
         # 1. Check Commodities (Needs USD-INR conversion)
         for symbol, data in self.commodities.items():
@@ -103,7 +131,22 @@ class PriceChecker:
             levels = self.get_support_resistance_levels(symbol, conversion)
             current_price = self.get_current_price(symbol, conversion)
             
-            alerts.extend(self.evaluate_levels(name, symbol, levels, current_price))
+            new_alerts, alert_status = self.evaluate_levels(name, symbol, levels, current_price)
+            alerts.extend(new_alerts)
+            
+            if levels and current_price:
+                market_data_payload.append({
+                    "symbol": symbol,
+                    "name": name,
+                    "asset_type": "Commodity",
+                    "current_price": round(current_price, 2),
+                    "r1": round(levels['R1'], 2),
+                    "r2": round(levels['R2'], 2),
+                    "s1": round(levels['S1'], 2),
+                    "s2": round(levels['S2'], 2),
+                    "pivot": round(levels['Pivot'], 2),
+                    "alert_status": alert_status
+                })
             
         # 2. Check Stocks (Natively in INR, conversion = 1.0)
         for symbol, data in self.stocks.items():
@@ -114,6 +157,25 @@ class PriceChecker:
             levels = self.get_support_resistance_levels(symbol, 1.0)
             current_price = self.get_current_price(symbol, 1.0)
             
-            alerts.extend(self.evaluate_levels(name, symbol, levels, current_price))
+            new_alerts, alert_status = self.evaluate_levels(name, symbol, levels, current_price)
+            alerts.extend(new_alerts)
+            
+            if levels and current_price:
+                market_data_payload.append({
+                    "symbol": symbol,
+                    "name": name,
+                    "asset_type": "Stock",
+                    "current_price": round(current_price, 2),
+                    "r1": round(levels['R1'], 2),
+                    "r2": round(levels['R2'], 2),
+                    "s1": round(levels['S1'], 2),
+                    "s2": round(levels['S2'], 2),
+                    "pivot": round(levels['Pivot'], 2),
+                    "alert_status": alert_status
+                })
+
+        # Sync all latest data to Supabase
+        if market_data_payload:
+            self.sync_to_supabase(market_data_payload)
 
         return alerts

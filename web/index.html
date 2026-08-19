@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antigravity Alerts | Smart Market Tracker</title>
+    <title>Antigravity Alerts | Live Dashboard</title>
     <meta name="description" content="Subscribe to get real-time email alerts for MCX commodities and Nifty 50 stocks when they hit critical support and resistance levels.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,43 +23,91 @@
                 <div class="logo-icon"></div>
                 <span>Antigravity Alerts</span>
             </div>
+            <nav class="tabs">
+                <button class="tab-btn active" data-target="subscribe-tab">Subscribe</button>
+                <button class="tab-btn" data-target="dashboard-tab">Live Market</button>
+                <button class="tab-btn" data-target="alerts-tab">🔥 Alert Zone</button>
+            </nav>
         </header>
 
         <main>
-            <div class="hero">
-                <div class="badge">Never miss a breakout 🚀</div>
-                <h1 id="main-title">Trade smarter, not harder.</h1>
-                <p>Get instant email alerts the exact moment your favorite Nifty 50 stocks and MCX commodities touch critical support and resistance levels.</p>
-                
-                <div class="glass-card">
-                    <h2>Subscribe to Alerts</h2>
-                    <form id="subscribe-form">
-                        <div class="input-group">
-                            <input type="email" id="email-input" placeholder="Enter your email address" required>
-                            <button type="submit" id="submit-btn">
-                                <span>Subscribe</span>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                            </button>
-                        </div>
-                    </form>
-                    <div id="status-message" class="hidden"></div>
-                </div>
-                
-                <div class="features">
-                    <div class="feature">
-                        <div class="feature-icon">📈</div>
-                        <span>Nifty 50 Tracking</span>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">🛢️</div>
-                        <span>MCX Commodities</span>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">⚡</div>
-                        <span>5-Minute Checks</span>
+            <!-- Subscribe Tab -->
+            <section id="subscribe-tab" class="tab-content active">
+                <div class="hero">
+                    <div class="badge">Never miss a breakout 🚀</div>
+                    <h1 id="main-title">Trade smarter, not harder.</h1>
+                    <p>Get instant email alerts the exact moment your favorite Nifty 50 stocks and MCX commodities touch critical support and resistance levels.</p>
+                    
+                    <div class="glass-card">
+                        <h2>Subscribe to Alerts</h2>
+                        <form id="subscribe-form">
+                            <div class="input-group">
+                                <input type="email" id="email-input" placeholder="Enter your email address" required>
+                                <button type="submit" id="submit-btn">
+                                    <span>Subscribe</span>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                </button>
+                            </div>
+                        </form>
+                        <div id="status-message" class="hidden"></div>
                     </div>
                 </div>
-            </div>
+            </section>
+
+            <!-- Dashboard Tab -->
+            <section id="dashboard-tab" class="tab-content">
+                <div class="dashboard-header">
+                    <h2>Live Market Prices</h2>
+                    <p>Auto-synced every 5 minutes from the cloud.</p>
+                </div>
+                
+                <div class="table-container glass-card full-width">
+                    <div class="table-filters">
+                        <button class="filter-btn active" data-filter="all">All Assets</button>
+                        <button class="filter-btn" data-filter="Stock">Nifty 50</button>
+                        <button class="filter-btn" data-filter="Commodity">Commodities</button>
+                    </div>
+                    <table class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Type</th>
+                                <th>Current Price (₹)</th>
+                                <th>Support 1</th>
+                                <th>Resistance 1</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="market-data-body">
+                            <tr><td colspan="6" class="loading">Loading live data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Alerts Tab -->
+            <section id="alerts-tab" class="tab-content">
+                <div class="dashboard-header">
+                    <h2>🔥 Assets in the Alert Zone</h2>
+                    <p>These assets are currently testing a critical Support or Resistance level.</p>
+                </div>
+                
+                <div class="table-container glass-card full-width">
+                    <table class="market-table alert-table">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Current Price (₹)</th>
+                                <th>Trigger Status</th>
+                                <th>Action Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alert-data-body">
+                            <tr><td colspan="4" class="loading">Scanning for active alerts...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </main>
     </div>
 
