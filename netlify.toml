@@ -1,0 +1,5 @@
+[build]
+  # We just want to serve the static files in the 'web' directory.
+  # Overriding the Netlify UI 'hugo' command with a dummy command.
+  command = "echo 'No build command needed for this static site'"
+  publish = "web"
