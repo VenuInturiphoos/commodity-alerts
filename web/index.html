@@ -24,9 +24,9 @@
                 <span>Antigravity Alerts</span>
             </div>
             <nav class="tabs">
-                <button class="tab-btn active" data-target="subscribe-tab">Subscribe</button>
-                <button class="tab-btn" data-target="dashboard-tab">Live Market</button>
-                <button class="tab-btn" data-target="alerts-tab">🔥 Alert Zone</button>
+                <button class="tab-btn active" onclick="switchTab(this, 'subscribe-tab')">Subscribe</button>
+                <button class="tab-btn" onclick="switchTab(this, 'dashboard-tab')">Live Market</button>
+                <button class="tab-btn" onclick="switchTab(this, 'alerts-tab')">🔥 Alert Zone</button>
             </nav>
         </header>
 
@@ -113,6 +113,6 @@
 
     <!-- Supabase Client (Loaded locally to bypass all ISP blocks) -->
     <script src="supabase.js"></script>
-    <script src="main_app.js"></script>
+    <script src="main_app.js?v=999"></script>
 </body>
 </html>

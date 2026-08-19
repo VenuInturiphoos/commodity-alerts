@@ -14,40 +14,36 @@ let marketData = [];
 
 function initApp() {
     console.log("Initializing App...");
-    setupTabs();
-    setupSubscribeForm();
-    setupFilters();
-    fetchMarketData();
+    try { setupSubscribeForm(); } catch(e) { console.error("Form setup error:", e); }
+    try { setupFilters(); } catch(e) { console.error("Filter setup error:", e); }
+    try { fetchMarketData(); } catch(e) { console.error("Fetch data error:", e); }
     setInterval(fetchMarketData, 300000); 
 }
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
+    document.addEventListener('DOMContentLoaded', () => {
+        try { initApp(); } catch(e) { console.error("Init Error:", e); }
+    });
 } else {
-    initApp();
+    try { initApp(); } catch(e) { console.error("Init Error:", e); }
 }
 
-function setupTabs() {
+window.switchTab = function(btn, targetId) {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
-
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Remove active class from all
-            tabBtns.forEach(b => b.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
-            
-            // Add active class to clicked
-            btn.classList.add('active');
-            const targetId = btn.getAttribute('data-target');
-            document.getElementById(targetId).classList.add('active');
-            
-            // If switching to dashboard, refresh data
-            if (targetId === 'dashboard-tab' || targetId === 'alerts-tab') {
-                fetchMarketData();
-            }
-        });
-    });
+    
+    // Remove active class from all
+    tabBtns.forEach(b => b.classList.remove('active'));
+    tabContents.forEach(c => c.classList.remove('active'));
+    
+    // Add active class to clicked
+    btn.classList.add('active');
+    document.getElementById(targetId).classList.add('active');
+    
+    // If switching to dashboard, refresh data
+    if (targetId === 'dashboard-tab' || targetId === 'alerts-tab') {
+        fetchMarketData();
+    }
 }
 
 function setupFilters() {
