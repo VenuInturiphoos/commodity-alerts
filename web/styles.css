@@ -35,6 +35,7 @@ body {
     height: 100vh;
     z-index: -1;
     overflow: hidden;
+    pointer-events: none;
 }
 
 .blob {
@@ -42,6 +43,7 @@ body {
     filter: blur(100px);
     opacity: 0.6;
     animation: float 20s infinite alternate ease-in-out;
+    pointer-events: none;
 }
 
 .blob-1 {
