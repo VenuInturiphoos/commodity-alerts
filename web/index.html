@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Alerts | Smart Market Tracker</title>
+    <meta name="description" content="Subscribe to get real-time email alerts for MCX commodities and Nifty 50 stocks when they hit critical support and resistance levels.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background-elements">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <span>Antigravity Alerts</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="hero">
+                <div class="badge">Never miss a breakout 🚀</div>
+                <h1 id="main-title">Trade smarter, not harder.</h1>
+                <p>Get instant email alerts the exact moment your favorite Nifty 50 stocks and MCX commodities touch critical support and resistance levels.</p>
+                
+                <div class="glass-card">
+                    <h2>Subscribe to Alerts</h2>
+                    <form id="subscribe-form">
+                        <div class="input-group">
+                            <input type="email" id="email-input" placeholder="Enter your email address" required>
+                            <button type="submit" id="submit-btn">
+                                <span>Subscribe</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                            </button>
+                        </div>
+                    </form>
+                    <div id="status-message" class="hidden"></div>
+                </div>
+                
+                <div class="features">
+                    <div class="feature">
+                        <div class="feature-icon">📈</div>
+                        <span>Nifty 50 Tracking</span>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">🛢️</div>
+                        <span>MCX Commodities</span>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">⚡</div>
+                        <span>5-Minute Checks</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
