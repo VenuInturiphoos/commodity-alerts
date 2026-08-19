@@ -109,6 +109,9 @@ class PriceChecker:
                 to_date=to_date
             )
             
+            if not data or data.get('status') == 'failure' or not data.get('data'):
+                print(f"Dhan API historical_daily_data failed for {security_id}. Response: {data}")
+                
             if data and data.get('data') and len(data['data']['close']) >= 2:
                 # Get the previous day's data
                 high = data['data']['high'][-2]
@@ -140,6 +143,10 @@ class PriceChecker:
                 exchange_segment=exchange_segment,
                 instrument_type=instrument_type
             )
+            
+            if not data or data.get('status') == 'failure' or not data.get('data'):
+                print(f"Dhan API intraday_minute_data failed for {security_id}. Response: {data}")
+                
             if data and data.get('data') and len(data['data']['close']) > 0:
                 # Return the most recent close price
                 return data['data']['close'][-1]
