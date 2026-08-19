@@ -1,3 +1,4 @@
+console.log("App.js started loading...");
 // Supabase Configuration
 const SUPABASE_URL = 'https://cohupetijvykzmeliubg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvaHVwZXRpanZ5a3ptZWxpdWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMjg4ODAsImV4cCI6MjEwMjcwNDg4MH0.zA5IwTKp0f-IRQ5dB3a9vXJSD1X2EVzxIDEyzXC27Cw';
@@ -11,15 +12,20 @@ try {
 
 let marketData = [];
 
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
+    console.log("Initializing App...");
     setupTabs();
     setupSubscribeForm();
     setupFilters();
     fetchMarketData();
-    
-    // Auto refresh data every 5 minutes while dashboard is open
     setInterval(fetchMarketData, 300000); 
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
 
 function setupTabs() {
     const tabBtns = document.querySelectorAll('.tab-btn');
