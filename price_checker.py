@@ -73,16 +73,19 @@ class PriceChecker:
 
     def get_dhan_mcx_near_month(self, base_symbol):
         if not self.dhan_active or self.dhan_master is None:
+            print(f"Skipping Dhan MCX for {base_symbol}: dhan_active={self.dhan_active}, dhan_master is loaded={self.dhan_master is not None}")
             return None
             
-        mcx = self.dhan_master[
-            (self.dhan_master['SEM_EXM_EXCH_ID'] == 'MCX') & 
-            (self.dhan_master['SEM_INSTRUMENT_NAME'] == 'FUTCOM') &
-            (self.dhan_master['SM_SYMBOL_NAME'] == base_symbol)
-        ].copy()
-        
-        if mcx.empty:
-            return None
+        try:
+            mcx = self.dhan_master[
+                (self.dhan_master['SEM_EXM_EXCH_ID'] == 'MCX') & 
+                (self.dhan_master['SEM_INSTRUMENT_NAME'] == 'FUTCOM') &
+                (self.dhan_master['SM_SYMBOL_NAME'] == base_symbol)
+            ].copy()
+            
+            if mcx.empty:
+                print(f"No active MCX futures found in Dhan master for {base_symbol}!")
+                return None
             
         now = datetime.now()
         mcx['EXP_DATE'] = pd.to_datetime(mcx['SEM_EXPIRY_DATE'])
@@ -111,29 +114,35 @@ class PriceChecker:
             
             if not data or data.get('status') == 'failure' or not data.get('data'):
                 print(f"Dhan API historical_daily_data failed for {security_id}. Response: {data}")
+                return None
                 
-            if data and data.get('data') and len(data['data']['close']) >= 2:
-                # Get the previous day's data
-                high = data['data']['high'][-2]
-                low = data['data']['low'][-2]
-                close = data['data']['close'][-2]
-                
-                p = (high + low + close) / 3
-                r1 = (p * 2) - low
-                r2 = p + (high - low)
-                s1 = (p * 2) - high
-                s2 = p - (high - low)
-                
-                return {
-                    "R2": r2,
-                    "R1": r1,
-                    "Pivot": p,
-                    "S1": s1,
-                    "S2": s2
-                }
+            if data and data.get('data'):
+                if len(data['data']['close']) >= 2:
+                    # Get the previous day's data
+                    high = data['data']['high'][-2]
+                    low = data['data']['low'][-2]
+                    close = data['data']['close'][-2]
+                    
+                    p = (high + low + close) / 3
+                    r1 = (p * 2) - low
+                    r2 = p + (high - low)
+                    s1 = (p * 2) - high
+                    s2 = p - (high - low)
+                    
+                    return {
+                        "Pivot": p,
+                        "R1": r1,
+                        "R2": r2,
+                        "S1": s1,
+                        "S2": s2
+                    }
+                else:
+                    print(f"Dhan API returned successful historical data, but it has less than 2 candles! Length: {len(data['data']['close'])}")
+                    return None
+            return None
         except Exception as e:
             print(f"Error fetching historical data from Dhan for {security_id}: {e}")
-        return None
+            return None
 
     def get_dhan_current_price(self, security_id, exchange_segment="NSE_EQ", instrument_type="EQUITY"):
         try:
@@ -157,12 +166,21 @@ class PriceChecker:
     def get_support_resistance_levels(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None):
         # Handle Commodities via DhanHQ MCX
         if is_commodity:
+            print(f"Attempting DhanHQ for commodity {ticker_symbol}...")
             if self.dhan_active:
                 sec_id = self.get_dhan_mcx_near_month(ticker_symbol)
                 if sec_id:
+                    print(f"Found SecID for {ticker_symbol}: {sec_id}. Fetching levels...")
                     levels = self.get_dhan_levels(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
                     if levels:
+                        print(f"Successfully fetched DhanHQ levels for {ticker_symbol}")
                         return levels
+                    else:
+                        print(f"Failed to fetch DhanHQ levels for {ticker_symbol}. Falling back to yfinance.")
+                else:
+                    print(f"Failed to find near month contract for {ticker_symbol}. Falling back to yfinance.")
+            else:
+                print("DhanHQ is not active. Falling back to yfinance directly.")
             # Fallback to yfinance if Dhan fails or MCX is inactive
             ticker_symbol = yf_symbol
             
