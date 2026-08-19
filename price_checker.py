@@ -68,10 +68,31 @@ class PriceChecker:
         ]
         
         if not instrument.empty:
-            return str(instrument['SEM_SM_SECURITY_ID'].values[0])
+            return str(instrument['SEM_SMST_SECURITY_ID'].values[0])
         return None
 
-    def get_dhan_levels(self, security_id):
+    def get_dhan_mcx_near_month(self, base_symbol):
+        if not self.dhan_active or self.dhan_master is None:
+            return None
+            
+        mcx = self.dhan_master[
+            (self.dhan_master['SEM_EXM_EXCH_ID'] == 'MCX') & 
+            (self.dhan_master['SEM_INSTRUMENT_NAME'] == 'FUTCOM') &
+            (self.dhan_master['SM_SYMBOL_NAME'] == base_symbol)
+        ].copy()
+        
+        if mcx.empty:
+            return None
+            
+        now = datetime.now()
+        mcx['EXP_DATE'] = pd.to_datetime(mcx['SEM_EXPIRY_DATE'])
+        mcx = mcx[mcx['EXP_DATE'] >= now].sort_values('EXP_DATE')
+        
+        if not mcx.empty:
+            return str(mcx.iloc[0]['SEM_SMST_SECURITY_ID'])
+        return None
+
+    def get_dhan_levels(self, security_id, exchange_segment="NSE_EQ", instrument_type="EQUITY"):
         try:
             # Get historical daily data to find yesterday's OHLC
             today = datetime.now()
@@ -81,8 +102,8 @@ class PriceChecker:
             
             data = self.dhan.historical_daily_data(
                 security_id=security_id,
-                exchange_segment="NSE_EQ",
-                instrument_type="EQUITY",
+                exchange_segment=exchange_segment,
+                instrument_type=instrument_type,
                 expiry_code=0,
                 from_date=from_date,
                 to_date=to_date
@@ -111,13 +132,13 @@ class PriceChecker:
             print(f"Error fetching historical data from Dhan for {security_id}: {e}")
         return None
 
-    def get_dhan_current_price(self, security_id):
+    def get_dhan_current_price(self, security_id, exchange_segment="NSE_EQ", instrument_type="EQUITY"):
         try:
             # Intraday minute data
             data = self.dhan.intraday_minute_data(
                 security_id=security_id,
-                exchange_segment="NSE_EQ",
-                instrument_type="EQUITY"
+                exchange_segment=exchange_segment,
+                instrument_type=instrument_type
             )
             if data and data.get('data') and len(data['data']['close']) > 0:
                 # Return the most recent close price
@@ -126,8 +147,18 @@ class PriceChecker:
             print(f"Error fetching live price from Dhan for {security_id}: {e}")
         return None
 
-    def get_support_resistance_levels(self, ticker_symbol, conversion_rate=1.0):
-        # Try DhanHQ first if it's an Indian stock
+    def get_support_resistance_levels(self, ticker_symbol, is_commodity=False):
+        # Handle Commodities via DhanHQ MCX
+        if is_commodity:
+            if self.dhan_active:
+                sec_id = self.get_dhan_mcx_near_month(ticker_symbol)
+                if sec_id:
+                    levels = self.get_dhan_levels(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
+                    if levels:
+                        return levels
+            return None # We completely skip yfinance for commodities now
+            
+        # Handle Stocks via DhanHQ NSE
         if self.dhan_active and '.NS' in ticker_symbol:
             sec_id = self.get_dhan_security_id(ticker_symbol)
             if sec_id:
@@ -135,7 +166,7 @@ class PriceChecker:
                 if levels:
                     return levels
         
-        # Fallback to yfinance
+        # Fallback to yfinance for Stocks
         try:
             ticker = yf.Ticker(ticker_symbol)
             hist = ticker.history(period="5d")
@@ -145,9 +176,9 @@ class PriceChecker:
                 
             prev_day = hist.iloc[-2]
             
-            high = prev_day['High'] * conversion_rate
-            low = prev_day['Low'] * conversion_rate
-            close = prev_day['Close'] * conversion_rate
+            high = prev_day['High']
+            low = prev_day['Low']
+            close = prev_day['Close']
             
             p = (high + low + close) / 3
             r1 = (p * 2) - low
@@ -166,8 +197,18 @@ class PriceChecker:
             print(f"Error calculating levels for {ticker_symbol} via yfinance: {e}")
             return None
 
-    def get_current_price(self, ticker_symbol, conversion_rate=1.0):
-        # Try DhanHQ first
+    def get_current_price(self, ticker_symbol, is_commodity=False):
+        # Handle Commodities via DhanHQ MCX
+        if is_commodity:
+            if self.dhan_active:
+                sec_id = self.get_dhan_mcx_near_month(ticker_symbol)
+                if sec_id:
+                    price = self.get_dhan_current_price(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
+                    if price:
+                        return price
+            return None
+            
+        # Handle Stocks via DhanHQ NSE
         if self.dhan_active and '.NS' in ticker_symbol:
             sec_id = self.get_dhan_security_id(ticker_symbol)
             if sec_id:
@@ -175,13 +216,13 @@ class PriceChecker:
                 if price:
                     return price
         
-        # Fallback to yfinance
+        # Fallback to yfinance for Stocks
         try:
             ticker = yf.Ticker(ticker_symbol)
             hist = ticker.history(period="1d")
             if len(hist) > 0:
                 price = hist['Close'].iloc[-1]
-                return price * conversion_rate
+                return price
             return None
         except Exception as e:
             print(f"Error fetching current price for {ticker_symbol} via yfinance: {e}")
@@ -239,12 +280,10 @@ class PriceChecker:
         # 1. Check Commodities
         for symbol, data in self.commodities.items():
             name = data['name']
-            mcx_multiplier = data.get('mcx_multiplier', 1.0)
-            conversion = self.usd_inr_rate * mcx_multiplier
             
-            print(f"\nChecking Commodity {name} ({symbol}) in INR...")
-            levels = self.get_support_resistance_levels(symbol, conversion)
-            current_price = self.get_current_price(symbol, conversion)
+            print(f"\nChecking Commodity {name} ({symbol}) via MCX API...")
+            levels = self.get_support_resistance_levels(symbol, is_commodity=True)
+            current_price = self.get_current_price(symbol, is_commodity=True)
             
             new_alerts, alert_status = self.evaluate_levels(name, symbol, levels, current_price)
             alerts.extend(new_alerts)
@@ -268,8 +307,8 @@ class PriceChecker:
             name = data['name']
             
             print(f"\nChecking Stock {name} ({symbol})...")
-            levels = self.get_support_resistance_levels(symbol, 1.0)
-            current_price = self.get_current_price(symbol, 1.0)
+            levels = self.get_support_resistance_levels(symbol, is_commodity=False)
+            current_price = self.get_current_price(symbol, is_commodity=False)
             
             new_alerts, alert_status = self.evaluate_levels(name, symbol, levels, current_price)
             alerts.extend(new_alerts)
