@@ -147,7 +147,7 @@ class PriceChecker:
             print(f"Error fetching live price from Dhan for {security_id}: {e}")
         return None
 
-    def get_support_resistance_levels(self, ticker_symbol, is_commodity=False):
+    def get_support_resistance_levels(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None):
         # Handle Commodities via DhanHQ MCX
         if is_commodity:
             if self.dhan_active:
@@ -156,10 +156,11 @@ class PriceChecker:
                     levels = self.get_dhan_levels(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
                     if levels:
                         return levels
-            return None # We completely skip yfinance for commodities now
+            # Fallback to yfinance if Dhan fails or MCX is inactive
+            ticker_symbol = yf_symbol
             
         # Handle Stocks via DhanHQ NSE
-        if self.dhan_active and '.NS' in ticker_symbol:
+        elif self.dhan_active and '.NS' in ticker_symbol:
             sec_id = self.get_dhan_security_id(ticker_symbol)
             if sec_id:
                 levels = self.get_dhan_levels(sec_id)
@@ -176,9 +177,9 @@ class PriceChecker:
                 
             prev_day = hist.iloc[-2]
             
-            high = prev_day['High']
-            low = prev_day['Low']
-            close = prev_day['Close']
+            high = prev_day['High'] * fallback_multiplier
+            low = prev_day['Low'] * fallback_multiplier
+            close = prev_day['Close'] * fallback_multiplier
             
             p = (high + low + close) / 3
             r1 = (p * 2) - low
@@ -197,7 +198,7 @@ class PriceChecker:
             print(f"Error calculating levels for {ticker_symbol} via yfinance: {e}")
             return None
 
-    def get_current_price(self, ticker_symbol, is_commodity=False):
+    def get_current_price(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None):
         # Handle Commodities via DhanHQ MCX
         if is_commodity:
             if self.dhan_active:
@@ -206,10 +207,11 @@ class PriceChecker:
                     price = self.get_dhan_current_price(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
                     if price:
                         return price
-            return None
+            # Fallback to yfinance if Dhan fails or MCX is inactive
+            ticker_symbol = yf_symbol
             
         # Handle Stocks via DhanHQ NSE
-        if self.dhan_active and '.NS' in ticker_symbol:
+        elif self.dhan_active and '.NS' in ticker_symbol:
             sec_id = self.get_dhan_security_id(ticker_symbol)
             if sec_id:
                 price = self.get_dhan_current_price(sec_id)
@@ -222,7 +224,7 @@ class PriceChecker:
             hist = ticker.history(period="1d")
             if len(hist) > 0:
                 price = hist['Close'].iloc[-1]
-                return price
+                return price * fallback_multiplier
             return None
         except Exception as e:
             print(f"Error fetching current price for {ticker_symbol} via yfinance: {e}")
@@ -280,10 +282,13 @@ class PriceChecker:
         # 1. Check Commodities
         for symbol, data in self.commodities.items():
             name = data['name']
+            yf_sym = data.get('yf_symbol')
+            mcx_multiplier = data.get('mcx_multiplier', 1.0)
+            conversion = self.usd_inr_rate * mcx_multiplier
             
-            print(f"\nChecking Commodity {name} ({symbol}) via MCX API...")
-            levels = self.get_support_resistance_levels(symbol, is_commodity=True)
-            current_price = self.get_current_price(symbol, is_commodity=True)
+            print(f"\nChecking Commodity {name} ({symbol}) via MCX API (or yfinance fallback)...")
+            levels = self.get_support_resistance_levels(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
+            current_price = self.get_current_price(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
             
             new_alerts, alert_status = self.evaluate_levels(name, symbol, levels, current_price)
             alerts.extend(new_alerts)
