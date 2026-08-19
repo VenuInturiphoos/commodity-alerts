@@ -3,6 +3,7 @@ import yfinance as yf
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
+from dhanhq import dhanhq, DhanContext
 
 class PriceChecker:
     def __init__(self, config):
@@ -18,15 +19,16 @@ class PriceChecker:
         # Dhan config
         self.dhan_client_id = os.environ.get('DHAN_CLIENT_ID')
         self.dhan_access_token = os.environ.get('DHAN_ACCESS_TOKEN')
-        self.dhan_active = bool(self.dhan_client_id and self.dhan_access_token)
+        self.dhan_active = False
         self.dhan = None
         self.dhan_master = None
         
-        if self.dhan_active:
+        if self.dhan_client_id and self.dhan_access_token:
             try:
-                from dhanhq import dhanhq
-                self.dhan = dhanhq(self.dhan_client_id, self.dhan_access_token)
-                print("DhanHQ API authenticated successfully.")
+                ctx = DhanContext(self.dhan_client_id, self.dhan_access_token)
+                self.dhan = dhanhq(ctx)
+                self.dhan_active = True
+                print("DhanHQ API Initialized Successfully.")
                 self.load_dhan_master()
             except Exception as e:
                 print(f"Failed to initialize DhanHQ: {e}")
