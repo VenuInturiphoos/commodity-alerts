@@ -19,8 +19,10 @@ def main():
         alerts = checker.check_alerts()
         
         for alert in alerts:
-            print(f">>> {alert}")
-            alerter.send_alert(subject="Commodity Price Alert", body=alert)
+            subject = alert['subject']
+            body = alert['body']
+            print(f">>> {subject} | {body.replace(chr(10), ' ')}")
+            alerter.send_alert(subject=subject, body=body)
             
         if not alerts:
             print("No levels triggered.")
