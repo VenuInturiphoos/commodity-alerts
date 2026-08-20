@@ -32,6 +32,7 @@
                 <button class="tab-btn active" onclick="switchTab(this, 'subscribe-tab')">Subscribe</button>
                 <button class="tab-btn" onclick="switchTab(this, 'dashboard-tab')">Live Market</button>
                 <button class="tab-btn" onclick="switchTab(this, 'alerts-tab')">🔥 Alert Zone</button>
+                <button class="tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Admin</button>
             </nav>
         </header>
 
@@ -157,6 +158,29 @@
                     </table>
                 </div>
             </section>
+
+            <!-- Admin Tab -->
+            <section id="admin-tab" class="tab-content">
+                <div class="dashboard-header">
+                    <h2>Subscribed Users</h2>
+                    <p>Manage all emails stored in the Supabase database.</p>
+                </div>
+                
+                <div class="table-container glass-card full-width">
+                    <table class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Email Address</th>
+                                <th>Subscribed At</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-subscribers-body">
+                            <tr><td colspan="3" class="loading">Loading subscribers...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -181,8 +205,8 @@ function initApp() {
     console.log("Initializing App...");
     try { setupSubscribeForm(); } catch(e) { console.error("Form setup error:", e); }
     try { setupUnsubscribeForm(); } catch(e) { console.error("Unsub Form setup error:", e); }
-    try { setupFilters(); } catch(e) { console.error("Filter setup error:", e); }
     try { fetchMarketData(); } catch(e) { console.error("Fetch data error:", e); }
+    try { fetchSubscribers(); } catch(e) { console.error("Fetch subs error:", e); }
     setInterval(fetchMarketData, 300000); 
 }
 
@@ -209,6 +233,8 @@ window.switchTab = function(btn, targetId) {
     // If switching to dashboard, refresh data
     if (targetId === 'dashboard-tab' || targetId === 'alerts-tab') {
         fetchMarketData();
+    } else if (targetId === 'admin-tab') {
+        fetchSubscribers();
     }
 }
 
@@ -399,6 +425,62 @@ function renderAlertTable() {
 
     renderRows(stockAlerts, tbodyStocks, "No stocks currently in the alert zone. 💤");
     renderRows(commodityAlerts, tbodyCommodities, "No commodities currently in the alert zone. 💤");
+}
+
+async function fetchSubscribers() {
+    if (!supabaseClient) return;
+    
+    const tbody = document.getElementById('admin-subscribers-body');
+    if (!tbody) return;
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('subscribers')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" class="loading">No active subscribers found.</td></tr>`;
+            return;
+        }
+
+        data.forEach(sub => {
+            const date = sub.created_at ? new Date(sub.created_at).toLocaleDateString() : 'Unknown';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${sub.email}</strong></td>
+                <td style="color:var(--text-secondary)">${date}</td>
+                <td style="text-align: right;">
+                    <button onclick="adminDeleteSubscriber('${sub.email}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fb7185; padding: 4px 12px; border-radius: 4px; cursor: pointer;">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+    } catch (error) {
+        console.error("Error fetching subscribers:", error);
+        tbody.innerHTML = `<tr><td colspan="3" class="error">Failed to load subscribers. Check console.</td></tr>`;
+    }
+}
+
+window.adminDeleteSubscriber = async function(email) {
+    if (!confirm(`Are you sure you want to delete ${email}?`)) return;
+    
+    try {
+        const { error } = await supabaseClient
+            .from('subscribers')
+            .delete()
+            .eq('email', email);
+
+        if (error) throw error;
+        alert(`${email} deleted successfully.`);
+        fetchSubscribers(); // Refresh the list
+    } catch (error) {
+        alert(`Error deleting subscriber: ${error.message}`);
+    }
 }
     </script>
 </body>
