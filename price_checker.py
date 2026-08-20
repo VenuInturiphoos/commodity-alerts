@@ -12,6 +12,14 @@ class PriceChecker:
         self.stocks = config.get('stocks', {})
         self.usd_inr_rate = self.get_usd_inr_rate()
         
+        # Configure a resilient requests session for yfinance to bypass IP blocks
+        self.yf_session = requests.Session()
+        self.yf_session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5'
+        })
+        
         # Supabase config
         self.supabase_url = 'https://cohupetijvykzmeliubg.supabase.co/rest/v1/market_data'
         self.supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvaHVwZXRpanZ5a3ptZWxpdWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMjg4ODAsImV4cCI6MjEwMjcwNDg4MH0.zA5IwTKp0f-IRQ5dB3a9vXJSD1X2EVzxIDEyzXC27Cw'
@@ -46,7 +54,7 @@ class PriceChecker:
 
     def get_usd_inr_rate(self):
         try:
-            ticker = yf.Ticker('INR=X')
+            ticker = yf.Ticker('INR=X', session=self.yf_session)
             hist = ticker.history(period="1d")
             if len(hist) > 0:
                 rate = hist['Close'].iloc[-1]
@@ -205,7 +213,7 @@ class PriceChecker:
         
         # Fallback to yfinance for Stocks
         try:
-            ticker = yf.Ticker(ticker_symbol)
+            ticker = yf.Ticker(ticker_symbol, session=self.yf_session)
             hist = ticker.history(period="5d")
             
             if len(hist) < 2:
@@ -256,7 +264,7 @@ class PriceChecker:
         
         # Fallback to yfinance for Stocks
         try:
-            ticker = yf.Ticker(ticker_symbol)
+            ticker = yf.Ticker(ticker_symbol, session=self.yf_session)
             hist = ticker.history(period="1d")
             if len(hist) > 0:
                 price = hist['Close'].iloc[-1]
