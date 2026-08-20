@@ -55,6 +55,19 @@
                             </div>
                         </form>
                         <div id="status-message" class="hidden"></div>
+                        
+                        <div style="margin-top: 2.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
+                            <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Unsubscribe from Alerts</h2>
+                            <form id="unsubscribe-form">
+                                <div class="input-group">
+                                    <input type="email" id="unsub-email-input" placeholder="Enter your email to unsubscribe" required>
+                                    <button type="submit" id="unsub-submit-btn" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #fb7185;">
+                                        <span>Unsubscribe</span>
+                                    </button>
+                                </div>
+                            </form>
+                            <div id="unsub-status-message" class="hidden" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -167,6 +180,7 @@ let marketData = [];
 function initApp() {
     console.log("Initializing App...");
     try { setupSubscribeForm(); } catch(e) { console.error("Form setup error:", e); }
+    try { setupUnsubscribeForm(); } catch(e) { console.error("Unsub Form setup error:", e); }
     try { setupFilters(); } catch(e) { console.error("Filter setup error:", e); }
     try { fetchMarketData(); } catch(e) { console.error("Fetch data error:", e); }
     setInterval(fetchMarketData, 300000); 
@@ -230,6 +244,46 @@ function setupSubscribeForm() {
         } catch (error) {
             statusMsg.textContent = error.message || "Something went wrong. Please try again.";
             statusMsg.className = "error";
+        } finally {
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+        }
+    });
+}
+
+function setupUnsubscribeForm() {
+    const form = document.getElementById('unsubscribe-form');
+    if (!form) return;
+    
+    const emailInput = document.getElementById('unsub-email-input');
+    const statusMsg = document.getElementById('unsub-status-message');
+    const submitBtn = document.getElementById('unsub-submit-btn');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        if (!email) return;
+
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span>Processing...</span>';
+        submitBtn.disabled = true;
+        
+        try {
+            const { error } = await supabaseClient
+                .from('subscribers')
+                .delete()
+                .eq('email', email);
+
+            if (error) throw error;
+
+            statusMsg.textContent = "You have been successfully unsubscribed.";
+            statusMsg.className = "success";
+            statusMsg.style.color = "#4ade80";
+            emailInput.value = "";
+        } catch (error) {
+            statusMsg.textContent = error.message || "Failed to unsubscribe. Please try again.";
+            statusMsg.className = "error";
+            statusMsg.style.color = "#fb7185";
         } finally {
             submitBtn.innerHTML = originalBtnText;
             submitBtn.disabled = false;
