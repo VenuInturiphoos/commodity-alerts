@@ -281,16 +281,18 @@ class PriceChecker:
         
         for level_name in ['R1', 'R2']:
             level_price = levels[level_name]
-            if abs(current_price - level_price) / level_price <= threshold_pct:
-                alert_msg = f"testing Resistance {level_name}"
-                alerts.append(f"ALERT: {name} ({symbol}) is {alert_msg} at ₹{level_price:.2f}. Current price: ₹{current_price:.2f}.")
+            # Price must be PAST (greater than) the resistance, but within threshold to avoid spam
+            if 0 < (current_price - level_price) / level_price <= threshold_pct:
+                alert_msg = f"broken past Resistance {level_name}"
+                alerts.append(f"ALERT: {name} ({symbol}) has {alert_msg} at ₹{level_price:.2f}. Current price: ₹{current_price:.2f}.")
                 alert_status = alert_msg
                 
         for level_name in ['S1', 'S2']:
             level_price = levels[level_name]
-            if abs(current_price - level_price) / level_price <= threshold_pct:
-                alert_msg = f"testing Support {level_name}"
-                alerts.append(f"ALERT: {name} ({symbol}) is {alert_msg} at ₹{level_price:.2f}. Current price: ₹{current_price:.2f}.")
+            # Price must be PAST (less than) the support, but within threshold to avoid spam
+            if 0 < (level_price - current_price) / level_price <= threshold_pct:
+                alert_msg = f"broken past Support {level_name}"
+                alerts.append(f"ALERT: {name} ({symbol}) has {alert_msg} at ₹{level_price:.2f}. Current price: ₹{current_price:.2f}.")
                 alert_status = alert_msg
 
         return alerts, alert_status
