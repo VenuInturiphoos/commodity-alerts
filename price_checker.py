@@ -3,7 +3,7 @@ import yfinance as yf
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
-from dhanhq import dhanhq, DhanContext
+# from dhanhq import dhanhq, DhanContext
 
 class PriceChecker:
     def __init__(self, config):
@@ -11,14 +11,6 @@ class PriceChecker:
         self.commodities = config.get('commodities', {})
         self.stocks = config.get('stocks', {})
         self.usd_inr_rate = self.get_usd_inr_rate()
-        
-        # Configure a resilient requests session for yfinance to bypass IP blocks
-        self.yf_session = requests.Session()
-        self.yf_session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5'
-        })
         
         # Supabase config
         self.supabase_url = 'https://cohupetijvykzmeliubg.supabase.co/rest/v1/market_data'
@@ -54,7 +46,7 @@ class PriceChecker:
 
     def get_usd_inr_rate(self):
         try:
-            ticker = yf.Ticker('INR=X', session=self.yf_session)
+            ticker = yf.Ticker('INR=X')
             hist = ticker.history(period="1d")
             if len(hist) > 0:
                 rate = hist['Close'].iloc[-1]
@@ -213,7 +205,7 @@ class PriceChecker:
         
         # Fallback to yfinance for Stocks
         try:
-            ticker = yf.Ticker(ticker_symbol, session=self.yf_session)
+            ticker = yf.Ticker(ticker_symbol)
             hist = ticker.history(period="5d")
             
             if len(hist) < 2:
@@ -264,7 +256,7 @@ class PriceChecker:
         
         # Fallback to yfinance for Stocks
         try:
-            ticker = yf.Ticker(ticker_symbol, session=self.yf_session)
+            ticker = yf.Ticker(ticker_symbol)
             hist = ticker.history(period="1d")
             if len(hist) > 0:
                 price = hist['Close'].iloc[-1]
@@ -348,7 +340,8 @@ class PriceChecker:
                     "s1": round(levels['S1'], 2),
                     "s2": round(levels['S2'], 2),
                     "pivot": round(levels['Pivot'], 2),
-                    "alert_status": alert_status
+                    "alert_status": alert_status,
+                    "last_updated": datetime.utcnow().isoformat()
                 })
             
         # 2. Check Stocks
@@ -373,7 +366,8 @@ class PriceChecker:
                     "s1": round(levels['S1'], 2),
                     "s2": round(levels['S2'], 2),
                     "pivot": round(levels['Pivot'], 2),
-                    "alert_status": alert_status
+                    "alert_status": alert_status,
+                    "last_updated": datetime.utcnow().isoformat()
                 })
 
         if market_data_payload:
