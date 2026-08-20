@@ -266,7 +266,21 @@ class PriceChecker:
             print(f"Error fetching current price for {ticker_symbol} via yfinance: {e}")
             return None
 
-    def evaluate_levels(self, name, symbol, levels, current_price):
+    def fetch_previous_state(self):
+        try:
+            headers = {
+                'apikey': self.supabase_key,
+                'Authorization': f'Bearer {self.supabase_key}'
+            }
+            response = requests.get(f"{self.supabase_url}?select=symbol,alert_status", headers=headers, timeout=15)
+            if response.status_code == 200:
+                data = response.json()
+                return {item['symbol']: item.get('alert_status') for item in data}
+        except Exception as e:
+            print(f"Error fetching previous state: {e}")
+        return {}
+
+    def evaluate_levels(self, name, symbol, levels, current_price, previous_state):
         alerts = []
         alert_status = None
         
@@ -284,7 +298,8 @@ class PriceChecker:
             # Price must be PAST (greater than) the resistance, but within threshold to avoid spam
             if 0 < (current_price - level_price) / level_price <= threshold_pct:
                 alert_msg = f"broken past Resistance {level_name}"
-                alerts.append(f"ALERT: {name} ({symbol}) has {alert_msg} at ₹{level_price:.2f}. Current price: ₹{current_price:.2f}.")
+                if previous_state.get(symbol) != alert_msg:
+                    alerts.append(f"ALERT: {name} ({symbol}) has {alert_msg} at ₹{level_price:.2f}. Current price: ₹{current_price:.2f}.")
                 alert_status = alert_msg
                 
         for level_name in ['S1', 'S2']:
@@ -292,7 +307,8 @@ class PriceChecker:
             # Price must be PAST (less than) the support, but within threshold to avoid spam
             if 0 < (level_price - current_price) / level_price <= threshold_pct:
                 alert_msg = f"broken past Support {level_name}"
-                alerts.append(f"ALERT: {name} ({symbol}) has {alert_msg} at ₹{level_price:.2f}. Current price: ₹{current_price:.2f}.")
+                if previous_state.get(symbol) != alert_msg:
+                    alerts.append(f"ALERT: {name} ({symbol}) has {alert_msg} at ₹{level_price:.2f}. Current price: ₹{current_price:.2f}.")
                 alert_status = alert_msg
 
         return alerts, alert_status
@@ -317,6 +333,9 @@ class PriceChecker:
         alerts = []
         market_data_payload = []
         
+        print("Fetching previous alert states from Supabase...")
+        previous_state = self.fetch_previous_state()
+        
         # 1. Check Commodities
         for symbol, data in self.commodities.items():
             name = data['name']
@@ -328,7 +347,7 @@ class PriceChecker:
             levels = self.get_support_resistance_levels(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
             current_price = self.get_current_price(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
             
-            new_alerts, alert_status = self.evaluate_levels(name, symbol, levels, current_price)
+            new_alerts, alert_status = self.evaluate_levels(name, symbol, levels, current_price, previous_state)
             alerts.extend(new_alerts)
             
             if levels and current_price:
@@ -354,7 +373,7 @@ class PriceChecker:
             levels = self.get_support_resistance_levels(symbol, is_commodity=False)
             current_price = self.get_current_price(symbol, is_commodity=False)
             
-            new_alerts, alert_status = self.evaluate_levels(name, symbol, levels, current_price)
+            new_alerts, alert_status = self.evaluate_levels(name, symbol, levels, current_price, previous_state)
             alerts.extend(new_alerts)
             
             if levels and current_price:
