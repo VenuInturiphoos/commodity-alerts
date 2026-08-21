@@ -113,10 +113,10 @@ class PriceChecker:
 
     def get_dhan_levels(self, security_id, exchange_segment="NSE_EQ", instrument_type="EQUITY"):
         try:
-            # Get historical daily data to find yesterday's OHLC and 1-month high/low
+            # Get historical daily data to find yesterday's OHLC
             today = datetime.now()
-            # Look back 30 days for monthly high/low
-            from_date = (today - timedelta(days=30)).strftime('%Y-%m-%d')
+            # Look back up to 10 days to ensure we get the last trading day
+            from_date = (today - timedelta(days=10)).strftime('%Y-%m-%d')
             to_date = today.strftime('%Y-%m-%d')
             
             data = self.dhan.historical_daily_data(
@@ -134,10 +134,6 @@ class PriceChecker:
                 
             if data and data.get('data'):
                 if len(data['data']['close']) >= 2:
-                    # Calculate Monthly High / Low
-                    monthly_high = max(data['data']['high'])
-                    monthly_low = min(data['data']['low'])
-                    
                     # Get the previous day's data for pivot points
                     high = data['data']['high'][-2]
                     low = data['data']['low'][-2]
@@ -154,9 +150,7 @@ class PriceChecker:
                         "R1": r1,
                         "R2": r2,
                         "S1": s1,
-                        "S2": s2,
-                        "MonthlyHigh": monthly_high,
-                        "MonthlyLow": monthly_low
+                        "S2": s2
                     }
                 else:
                     print(f"Dhan API returned successful historical data, but it has less than 2 candles! Length: {len(data['data']['close'])}")
@@ -192,7 +186,9 @@ class PriceChecker:
         return None
 
     def get_support_resistance_levels(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None):
-        # Handle Commodities via DhanHQ MCX
+        levels = None
+        
+        # 1. Try to get Pivot/R/S from DhanHQ
         if is_commodity:
             print(f"Attempting DhanHQ for commodity {ticker_symbol}...")
             if self.dhan_active:
@@ -200,81 +196,71 @@ class PriceChecker:
                 if sec_id:
                     print(f"Found SecID for {ticker_symbol}: {sec_id}. Fetching levels...")
                     levels = self.get_dhan_levels(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
-                    if levels:
-                        print(f"Successfully fetched DhanHQ levels for {ticker_symbol}")
-                        return levels
-                    else:
-                        print(f"Failed to fetch DhanHQ levels for {ticker_symbol}. Falling back to yfinance.")
-                else:
-                    print(f"Failed to find near month contract for {ticker_symbol}. Falling back to yfinance.")
-            else:
-                print("DhanHQ is not active. Falling back to yfinance directly.")
-            # Fallback to yfinance if Dhan fails or MCX is inactive
-            ticker_symbol = yf_symbol
-            
-        # Handle Stocks via DhanHQ NSE
-        print(f"Attempting DhanHQ for stock {ticker_symbol}...")
-        if self.dhan_active:
-            sec_id = self.get_dhan_security_id(ticker_symbol)
-            if sec_id:
-                print(f"Found SecID for {ticker_symbol}: {sec_id}. Fetching levels...")
-                levels = self.get_dhan_levels(sec_id)
-                if levels:
-                    print(f"Successfully fetched DhanHQ levels for {ticker_symbol}")
-                    return levels
-                else:
-                    print(f"Failed to fetch DhanHQ levels for {ticker_symbol}. Falling back to yfinance.")
-            else:
-                print(f"Failed to find security ID for {ticker_symbol}. Falling back to yfinance.")
         else:
-            print("DhanHQ is not active. Falling back to yfinance directly.")
-            
-        # Fallback to yfinance for Stocks
-        ticker_symbol = yf_symbol
-            
-        # Global yfinance fallback
-        try:
-            print(f"Using yfinance fallback to fetch historical data for {ticker_symbol}...")
-            ticker = yf.Ticker(ticker_symbol)
-            hist = ticker.history(period="1mo")
-        except Exception as e:
-            print(f"Error fetching historical data from yfinance for {ticker_symbol}: {e}")
-            return None
+            print(f"Attempting DhanHQ for stock {ticker_symbol}...")
+            if self.dhan_active and '.NS' in ticker_symbol:
+                sec_id = self.get_dhan_security_id(ticker_symbol)
+                if sec_id:
+                    print(f"Found SecID for {ticker_symbol}: {sec_id}. Fetching levels...")
+                    levels = self.get_dhan_levels(sec_id)
 
-        if len(hist) < 2:
-            print(f"Not enough historical data from yfinance for {ticker_symbol}.")
-            return None
+        # 2. Fetch all-time yfinance data for multi-timeframe extremes and fallback Pivot/R/S
+        ticker_symbol = yf_symbol if yf_symbol else ticker_symbol
+        try:
+            print(f"Fetching yfinance period='max' for extremes for {ticker_symbol}...")
+            ticker = yf.Ticker(ticker_symbol)
+            hist = ticker.history(period="max")
             
-        high = hist['High'].iloc[-2]
-        low = hist['Low'].iloc[-2]
-        close = hist['Close'].iloc[-2]
-        
-        # Calculate monthly high/low
-        monthly_high = hist['High'].max()
-        monthly_low = hist['Low'].min()
-        
-        # Apply standard multiplier (e.g. for INR conversion on global symbols)
-        high *= fallback_multiplier
-        low *= fallback_multiplier
-        close *= fallback_multiplier
-        monthly_high *= fallback_multiplier
-        monthly_low *= fallback_multiplier
-        
-        p = (high + low + close) / 3
-        r1 = (p * 2) - low
-        r2 = p + (high - low)
-        s1 = (p * 2) - high
-        s2 = p - (high - low)
-        
-        return {
-            "Pivot": p,
-            "R1": r1,
-            "R2": r2,
-            "S1": s1,
-            "S2": s2,
-            "MonthlyHigh": monthly_high,
-            "MonthlyLow": monthly_low
-        }
+            if len(hist) < 2:
+                print(f"Not enough historical data from yfinance for {ticker_symbol}.")
+                return levels # Return dhan levels if yfinance fails
+                
+            # If DhanHQ failed, calculate Pivot/R/S from yfinance
+            if not levels:
+                print(f"Using yfinance for Pivot/R/S fallback for {ticker_symbol}...")
+                high = hist['High'].iloc[-2] * fallback_multiplier
+                low = hist['Low'].iloc[-2] * fallback_multiplier
+                close = hist['Close'].iloc[-2] * fallback_multiplier
+                
+                p = (high + low + close) / 3
+                levels = {
+                    "Pivot": p,
+                    "R1": (p * 2) - low,
+                    "R2": p + (high - low),
+                    "S1": (p * 2) - high,
+                    "S2": p - (high - low)
+                }
+                
+            # Now calculate the multi-timeframe extremes
+            now = datetime.now(pytz.timezone('UTC'))
+            if hist.index.tzinfo is None:
+                hist.index = hist.index.tz_localize('UTC')
+            
+            # Slices
+            hist_1m = hist[hist.index >= (now - timedelta(days=30))]
+            hist_2m = hist[hist.index >= (now - timedelta(days=60))]
+            hist_3m = hist[hist.index >= (now - timedelta(days=90))]
+            hist_1y = hist[hist.index >= (now - timedelta(days=365))]
+            
+            levels['MonthlyHigh'] = hist_1m['High'].max() * fallback_multiplier if not hist_1m.empty else None
+            levels['MonthlyLow'] = hist_1m['Low'].min() * fallback_multiplier if not hist_1m.empty else None
+            
+            levels['TwoMonthHigh'] = hist_2m['High'].max() * fallback_multiplier if not hist_2m.empty else None
+            levels['TwoMonthLow'] = hist_2m['Low'].min() * fallback_multiplier if not hist_2m.empty else None
+            
+            levels['ThreeMonthHigh'] = hist_3m['High'].max() * fallback_multiplier if not hist_3m.empty else None
+            levels['ThreeMonthLow'] = hist_3m['Low'].min() * fallback_multiplier if not hist_3m.empty else None
+            
+            levels['OneYearHigh'] = hist_1y['High'].max() * fallback_multiplier if not hist_1y.empty else None
+            levels['OneYearLow'] = hist_1y['Low'].min() * fallback_multiplier if not hist_1y.empty else None
+            
+            levels['AllTimeHigh'] = hist['High'].max() * fallback_multiplier
+            levels['AllTimeLow'] = hist['Low'].min() * fallback_multiplier
+            
+        except Exception as e:
+            print(f"Error fetching historical extremes from yfinance for {ticker_symbol}: {e}")
+            
+        return levels
 
     def get_intrinsic_value(self, yf_symbol):
         try:
@@ -380,31 +366,50 @@ class PriceChecker:
                     last_alert_msg = alert_msg
                 alert_status = alert_msg
 
-        monthly_high = levels.get('MonthlyHigh')
-        monthly_low = levels.get('MonthlyLow')
-        monthly_threshold = 0.005 # 0.5% as requested
+        # Multi-timeframe extremes evaluation (Highest priority first)
+        high_alerts_config = [
+            ('AllTimeHigh', 'All-Time High', 0.01),
+            ('OneYearHigh', '1-Year High', 0.01),
+            ('ThreeMonthHigh', '3-Month High', 0.01),
+            ('TwoMonthHigh', '2-Month High', 0.01),
+            ('MonthlyHigh', '1-Month High', 0.005)
+        ]
         
-        if monthly_high and abs(current_price - monthly_high) / monthly_high <= monthly_threshold:
-            alert_msg = "testing Monthly High"
-            if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
-                alerts.append({
-                    'subject': f"🚀 Market Breakout: {name} {alert_msg}!",
-                    'body': f"{name} ({symbol}) is {alert_msg} of ₹{monthly_high:.2f}.\n\nCurrent price: ₹{current_price:.2f}."
-                })
-                last_alert_date = today_ist
-                last_alert_msg = alert_msg
-            alert_status = alert_msg
-
-        if monthly_low and abs(current_price - monthly_low) / monthly_low <= monthly_threshold:
-            alert_msg = "testing Monthly Low"
-            if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
-                alerts.append({
-                    'subject': f"📉 Market Breakdown: {name} {alert_msg}!",
-                    'body': f"{name} ({symbol}) is {alert_msg} of ₹{monthly_low:.2f}.\n\nCurrent price: ₹{current_price:.2f}."
-                })
-                last_alert_date = today_ist
-                last_alert_msg = alert_msg
-            alert_status = alert_msg
+        for key, name_str, threshold in high_alerts_config:
+            level = levels.get(key)
+            if level and abs(current_price - level) / level <= threshold:
+                alert_msg = f"testing {name_str}"
+                if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
+                    alerts.append({
+                        'subject': f"🚀 Market Breakout: {name} {alert_msg}!",
+                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.\n\nCurrent price: ₹{current_price:.2f}."
+                    })
+                    last_alert_date = today_ist
+                    last_alert_msg = alert_msg
+                alert_status = alert_msg
+                break # Only alert the highest timeframe reached
+                
+        low_alerts_config = [
+            ('AllTimeLow', 'All-Time Low', 0.01),
+            ('OneYearLow', '1-Year Low', 0.01),
+            ('ThreeMonthLow', '3-Month Low', 0.01),
+            ('TwoMonthLow', '2-Month Low', 0.01),
+            ('MonthlyLow', '1-Month Low', 0.005)
+        ]
+        
+        for key, name_str, threshold in low_alerts_config:
+            level = levels.get(key)
+            if level and abs(current_price - level) / level <= threshold:
+                alert_msg = f"testing {name_str}"
+                if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
+                    alerts.append({
+                        'subject': f"📉 Market Breakdown: {name} {alert_msg}!",
+                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.\n\nCurrent price: ₹{current_price:.2f}."
+                    })
+                    last_alert_date = today_ist
+                    last_alert_msg = alert_msg
+                alert_status = alert_msg
+                break # Only alert the highest timeframe reached
 
         return alerts, alert_status, last_alert_date, last_alert_msg
 
