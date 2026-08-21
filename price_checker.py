@@ -336,35 +336,7 @@ class PriceChecker:
         print(f"Current Price: ₹{current_price:.2f}")
         print(f"Levels -> R2: ₹{levels['R2']:.2f}, R1: ₹{levels['R1']:.2f}, P: ₹{levels['Pivot']:.2f}, S1: ₹{levels['S1']:.2f}, S2: ₹{levels['S2']:.2f}")
         
-        threshold_pct = 0.002 
-        
-        for level_name in ['R1', 'R2']:
-            level_price = levels[level_name]
-            # Price must be PAST (greater than) the resistance, but within threshold to avoid spam
-            if 0 < (current_price - level_price) / level_price <= threshold_pct:
-                alert_msg = f"broken past Resistance {level_name}"
-                if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
-                    alerts.append({
-                        'subject': f"🚀 Market Breakout: {name} {alert_msg.replace('broken past ', '')}!",
-                        'body': f"{name} ({symbol}) has {alert_msg} at ₹{level_price:.2f}.\n\nCurrent price: ₹{current_price:.2f}."
-                    })
-                    last_alert_date = today_ist
-                    last_alert_msg = alert_msg
-                alert_status = alert_msg
-                
-        for level_name in ['S1', 'S2']:
-            level_price = levels[level_name]
-            # Price must be PAST (less than) the support, but within threshold to avoid spam
-            if 0 < (level_price - current_price) / level_price <= threshold_pct:
-                alert_msg = f"broken past Support {level_name}"
-                if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
-                    alerts.append({
-                        'subject': f"📉 Market Breakdown: {name} {alert_msg.replace('broken past ', '')}!",
-                        'body': f"{name} ({symbol}) has {alert_msg} at ₹{level_price:.2f}.\n\nCurrent price: ₹{current_price:.2f}."
-                    })
-                    last_alert_date = today_ist
-                    last_alert_msg = alert_msg
-                alert_status = alert_msg
+        # Resistance and Support alerts have been removed per user request.
 
         # Multi-timeframe extremes evaluation (Highest priority first)
         high_alerts_config = [
