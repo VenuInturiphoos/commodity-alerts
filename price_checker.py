@@ -428,7 +428,7 @@ class PriceChecker:
             name = data['name']
             
             print(f"\nChecking Stock {name} ({symbol})...")
-            yf_sym = details.get('yf_symbol', symbol)
+            yf_sym = data.get('yf_symbol', symbol)
             levels = self.get_support_resistance_levels(symbol, is_commodity=False, yf_symbol=yf_sym)
             current_price = self.get_current_price(symbol, is_commodity=False, yf_symbol=yf_sym)
             intrinsic_val = self.get_intrinsic_value(yf_sym)
