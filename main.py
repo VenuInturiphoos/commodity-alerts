@@ -1,5 +1,7 @@
 import json
 import time
+import pytz
+from datetime import datetime
 from alerter import EmailAlerter
 from price_checker import PriceChecker
 
@@ -9,6 +11,14 @@ def load_config():
 
 def main():
     print("Starting Automated Commodity Alert System...")
+    
+    # IST Market Hours Check
+    ist = pytz.timezone('Asia/Kolkata')
+    now_ist = datetime.now(ist)
+    
+    if now_ist.hour < 9 or now_ist.hour >= 23:
+        print(f"Current IST time is {now_ist.strftime('%I:%M %p')}. Outside of market hours (9 AM - 11 PM). Exiting.")
+        return
     
     config = load_config()
     alerter = EmailAlerter(config)
