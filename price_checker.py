@@ -39,8 +39,16 @@ class PriceChecker:
     def load_dhan_master(self):
         try:
             print("Downloading DhanHQ Instrument Master...")
-            # We use the compact version to save memory/time
-            self.dhan_master = pd.read_csv('https://images.dhan.co/api-data/api-scrip-master.csv')
+            # Using usecols drastically reduces memory and parsing time for the 50MB CSV
+            cols_to_use = [
+                'SEM_EXM_EXCH_ID',
+                'SEM_INSTRUMENT_NAME',
+                'SM_SYMBOL_NAME',
+                'SEM_EXPIRY_DATE',
+                'SEM_SMST_SECURITY_ID',
+                'SEM_CUSTOM_SYMBOL'
+            ]
+            self.dhan_master = pd.read_csv('https://images.dhan.co/api-data/api-scrip-master.csv', usecols=cols_to_use, low_memory=False)
             print("DhanHQ Instrument Master loaded.")
         except Exception as e:
             print(f"Error loading Dhan Master CSV: {e}")
