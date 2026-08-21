@@ -5,6 +5,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import pytz
 import json
+import math
 from dhanhq import dhanhq, DhanContext
 
 class PriceChecker:
@@ -206,43 +207,73 @@ class PriceChecker:
             ticker_symbol = yf_symbol
             
         # Handle Stocks via DhanHQ NSE
-        elif self.dhan_active and '.NS' in ticker_symbol:
+        print(f"Attempting DhanHQ for stock {ticker_symbol}...")
+        if self.dhan_active:
             sec_id = self.get_dhan_security_id(ticker_symbol)
             if sec_id:
+                print(f"Found SecID for {ticker_symbol}: {sec_id}. Fetching levels...")
                 levels = self.get_dhan_levels(sec_id)
                 if levels:
+                    print(f"Successfully fetched DhanHQ levels for {ticker_symbol}")
                     return levels
-        
+                else:
+                    print(f"Failed to fetch DhanHQ levels for {ticker_symbol}. Falling back to yfinance.")
+            else:
+                print(f"Failed to find security ID for {ticker_symbol}. Falling back to yfinance.")
+        else:
+            print("DhanHQ is not active. Falling back to yfinance directly.")
+            
         # Fallback to yfinance for Stocks
+        ticker_symbol = yf_symbol
+            
+        # Global yfinance fallback
         try:
+            print(f"Using yfinance fallback to fetch historical data for {ticker_symbol}...")
             ticker = yf.Ticker(ticker_symbol)
-            hist = ticker.history(period="5d")
-            
-            if len(hist) < 2:
-                return None
-                
-            prev_day = hist.iloc[-2]
-            
-            high = prev_day['High'] * fallback_multiplier
-            low = prev_day['Low'] * fallback_multiplier
-            close = prev_day['Close'] * fallback_multiplier
-            
-            p = (high + low + close) / 3
-            r1 = (p * 2) - low
-            r2 = p + (high - low)
-            s1 = (p * 2) - high
-            s2 = p - (high - low)
-            
-            return {
-                "R2": r2,
-                "R1": r1,
-                "Pivot": p,
-                "S1": s1,
-                "S2": s2
-            }
+            hist = ticker.history(period="1mo")
         except Exception as e:
-            print(f"Error calculating levels for {ticker_symbol} via yfinance: {e}")
+            print(f"Error fetching historical data from yfinance for {ticker_symbol}: {e}")
             return None
+
+        if len(hist) < 2:
+            print(f"Not enough historical data from yfinance for {ticker_symbol}.")
+            return None
+            
+        high = hist['High'].iloc[-2]
+        low = hist['Low'].iloc[-2]
+        close = hist['Close'].iloc[-2]
+        
+        # Apply standard multiplier (e.g. for INR conversion on global symbols)
+        high *= fallback_multiplier
+        low *= fallback_multiplier
+        close *= fallback_multiplier
+        
+        p = (high + low + close) / 3
+        r1 = (p * 2) - low
+        r2 = p + (high - low)
+        s1 = (p * 2) - high
+        s2 = p - (high - low)
+        
+        return {
+            "Pivot": p,
+            "R1": r1,
+            "R2": r2,
+            "S1": s1,
+            "S2": s2
+        }
+
+    def get_intrinsic_value(self, yf_symbol):
+        try:
+            ticker = yf.Ticker(yf_symbol)
+            info = ticker.info
+            eps = info.get('trailingEps')
+            bv = info.get('bookValue')
+            if eps and bv and eps > 0 and bv > 0:
+                graham_number = math.sqrt(22.5 * eps * bv)
+                return round(graham_number, 2)
+        except Exception as e:
+            print(f"Error calculating intrinsic value for {yf_symbol}: {e}")
+        return None
 
     def get_current_price(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None):
         # Handle Commodities via DhanHQ MCX
@@ -388,6 +419,7 @@ class PriceChecker:
                     "alert_status": alert_status,
                     "last_alert_date": last_alert_date,
                     "last_alert_msg": last_alert_msg,
+                    "intrinsic_value": None,
                     "last_updated": datetime.utcnow().isoformat()
                 })
             
@@ -396,8 +428,10 @@ class PriceChecker:
             name = data['name']
             
             print(f"\nChecking Stock {name} ({symbol})...")
-            levels = self.get_support_resistance_levels(symbol, is_commodity=False)
-            current_price = self.get_current_price(symbol, is_commodity=False)
+            yf_sym = details.get('yf_symbol', symbol)
+            levels = self.get_support_resistance_levels(symbol, is_commodity=False, yf_symbol=yf_sym)
+            current_price = self.get_current_price(symbol, is_commodity=False, yf_symbol=yf_sym)
+            intrinsic_val = self.get_intrinsic_value(yf_sym)
             
             new_alerts, alert_status, last_alert_date, last_alert_msg = self.evaluate_levels(name, symbol, levels, current_price, previous_state)
             alerts.extend(new_alerts)
@@ -416,6 +450,7 @@ class PriceChecker:
                     "alert_status": alert_status,
                     "last_alert_date": last_alert_date,
                     "last_alert_msg": last_alert_msg,
+                    "intrinsic_value": intrinsic_val,
                     "last_updated": datetime.utcnow().isoformat()
                 })
 
