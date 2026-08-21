@@ -412,8 +412,27 @@ class PriceChecker:
         for symbol, data in self.commodities.items():
             name = data['name']
             yf_sym = data.get('yf_symbol')
-            mcx_multiplier = data.get('mcx_multiplier', 1.0)
-            conversion = self.usd_inr_rate * mcx_multiplier
+            
+            # DYNAMIC UNIT CONVERSION (Global USD to MCX INR)
+            # Gold: $ per Troy Oz -> ₹ per 10 grams (1 Troy Oz = 31.1035 grams)
+            if symbol == "GOLD":
+                conversion = self.usd_inr_rate * (10 / 31.1035)
+            # Silver: $ per Troy Oz -> ₹ per 1 kg (1000 grams)
+            elif symbol == "SILVER":
+                conversion = self.usd_inr_rate * (1000 / 31.1035)
+            # Copper: $ per lb -> ₹ per 1 kg (1 kg = 2.20462 lbs)
+            elif symbol == "COPPER":
+                conversion = self.usd_inr_rate * 2.20462
+            # Aluminum: $ per metric ton -> ₹ per 1 kg (1 MT = 1000 kg)
+            elif symbol == "ALUMINIUM":
+                conversion = self.usd_inr_rate / 1000
+            # Crude Oil (per barrel) & Natural Gas (per mmBtu) are 1:1 units
+            else:
+                conversion = self.usd_inr_rate
+                
+            # Add an approximate 12% premium for Indian Gold/Silver Customs Duty & GST
+            if symbol in ["GOLD", "SILVER"]:
+                conversion *= 1.12
             
             print(f"\nChecking Commodity {name} ({symbol}) via MCX API (or yfinance fallback)...")
             levels = self.get_support_resistance_levels(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
