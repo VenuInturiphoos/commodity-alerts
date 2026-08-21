@@ -113,10 +113,10 @@ class PriceChecker:
 
     def get_dhan_levels(self, security_id, exchange_segment="NSE_EQ", instrument_type="EQUITY"):
         try:
-            # Get historical daily data to find yesterday's OHLC
+            # Get historical daily data to find yesterday's OHLC and 1-month high/low
             today = datetime.now()
-            # Look back up to 10 days to ensure we get the last trading day
-            from_date = (today - timedelta(days=10)).strftime('%Y-%m-%d')
+            # Look back 30 days for monthly high/low
+            from_date = (today - timedelta(days=30)).strftime('%Y-%m-%d')
             to_date = today.strftime('%Y-%m-%d')
             
             data = self.dhan.historical_daily_data(
@@ -134,7 +134,11 @@ class PriceChecker:
                 
             if data and data.get('data'):
                 if len(data['data']['close']) >= 2:
-                    # Get the previous day's data
+                    # Calculate Monthly High / Low
+                    monthly_high = max(data['data']['high'])
+                    monthly_low = min(data['data']['low'])
+                    
+                    # Get the previous day's data for pivot points
                     high = data['data']['high'][-2]
                     low = data['data']['low'][-2]
                     close = data['data']['close'][-2]
@@ -150,7 +154,9 @@ class PriceChecker:
                         "R1": r1,
                         "R2": r2,
                         "S1": s1,
-                        "S2": s2
+                        "S2": s2,
+                        "MonthlyHigh": monthly_high,
+                        "MonthlyLow": monthly_low
                     }
                 else:
                     print(f"Dhan API returned successful historical data, but it has less than 2 candles! Length: {len(data['data']['close'])}")
@@ -243,10 +249,16 @@ class PriceChecker:
         low = hist['Low'].iloc[-2]
         close = hist['Close'].iloc[-2]
         
+        # Calculate monthly high/low
+        monthly_high = hist['High'].max()
+        monthly_low = hist['Low'].min()
+        
         # Apply standard multiplier (e.g. for INR conversion on global symbols)
         high *= fallback_multiplier
         low *= fallback_multiplier
         close *= fallback_multiplier
+        monthly_high *= fallback_multiplier
+        monthly_low *= fallback_multiplier
         
         p = (high + low + close) / 3
         r1 = (p * 2) - low
@@ -259,7 +271,9 @@ class PriceChecker:
             "R1": r1,
             "R2": r2,
             "S1": s1,
-            "S2": s2
+            "S2": s2,
+            "MonthlyHigh": monthly_high,
+            "MonthlyLow": monthly_low
         }
 
     def get_intrinsic_value(self, yf_symbol):
@@ -365,6 +379,32 @@ class PriceChecker:
                     last_alert_date = today_ist
                     last_alert_msg = alert_msg
                 alert_status = alert_msg
+
+        monthly_high = levels.get('MonthlyHigh')
+        monthly_low = levels.get('MonthlyLow')
+        monthly_threshold = 0.005 # 0.5% as requested
+        
+        if monthly_high and abs(current_price - monthly_high) / monthly_high <= monthly_threshold:
+            alert_msg = "testing Monthly High"
+            if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
+                alerts.append({
+                    'subject': f"🚀 Market Breakout: {name} {alert_msg}!",
+                    'body': f"{name} ({symbol}) is {alert_msg} of ₹{monthly_high:.2f}.\n\nCurrent price: ₹{current_price:.2f}."
+                })
+                last_alert_date = today_ist
+                last_alert_msg = alert_msg
+            alert_status = alert_msg
+
+        if monthly_low and abs(current_price - monthly_low) / monthly_low <= monthly_threshold:
+            alert_msg = "testing Monthly Low"
+            if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
+                alerts.append({
+                    'subject': f"📉 Market Breakdown: {name} {alert_msg}!",
+                    'body': f"{name} ({symbol}) is {alert_msg} of ₹{monthly_low:.2f}.\n\nCurrent price: ₹{current_price:.2f}."
+                })
+                last_alert_date = today_ist
+                last_alert_msg = alert_msg
+            alert_status = alert_msg
 
         return alerts, alert_status, last_alert_date, last_alert_msg
 
