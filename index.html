@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Alerts | Live Dashboard</title>
+    <meta name="description" content="Subscribe to get real-time email alerts for MCX commodities and Nifty 50 stocks when they hit critical support and resistance levels.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=4">
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            alert("Error: " + msg + "\nLine: " + line);
+        };
+    </script>
+</head>
+<body>
+    <div class="background-elements">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <span>Antigravity Alerts</span>
+            </div>
+            <nav class="tabs">
+                <button class="tab-btn active" onclick="switchTab(this, 'subscribe-tab')">Subscribe</button>
+                <button class="tab-btn" onclick="switchTab(this, 'dashboard-tab')">Live Market</button>
+                <button class="tab-btn" onclick="switchTab(this, 'alerts-tab')">🔥 Alert Zone</button>
+                <button class="tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Admin</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Subscribe Tab -->
+            <section id="subscribe-tab" class="tab-content active">
+                <div class="hero">
+                    <div class="badge">Never miss a breakout 🚀</div>
+                    <h1 id="main-title">Trade smarter, not harder.</h1>
+                    <p>Get instant email alerts the exact moment your favorite Nifty 50 stocks and MCX commodities touch critical support and resistance levels.</p>
+                    
+                    <div class="glass-card">
+                        <h2>Subscribe to Alerts</h2>
+                        <form id="subscribe-form">
+                            <div class="input-group">
+                                <input type="email" id="email-input" placeholder="Enter your email address" required>
+                                <button type="submit" id="submit-btn">
+                                    <span>Subscribe</span>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                </button>
+                            </div>
+                        </form>
+                        <div id="status-message" class="hidden"></div>
+                        
+                        <div style="margin-top: 2.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
+                            <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Unsubscribe from Alerts</h2>
+                            <form id="unsubscribe-form">
+                                <div class="input-group">
+                                    <input type="email" id="unsub-email-input" placeholder="Enter your email to unsubscribe" required>
+                                    <button type="submit" id="unsub-submit-btn" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #fb7185;">
+                                        <span>Unsubscribe</span>
+                                    </button>
+                                </div>
+                            </form>
+                            <div id="unsub-status-message" class="hidden" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Tab -->
+            <section id="dashboard-tab" class="tab-content">
+                <div class="dashboard-header">
+                    <h2>Live Market Prices</h2>
+                    <p>Auto-synced every 5 minutes from the cloud.</p>
+                </div>
+                
+                <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                    <h3>Nifty 50 Stocks</h3>
+                    <table class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Current Price (₹)</th>
+                                <th>Intrinsic Value (₹)</th>
+                                <th>Support 1</th>
+                                <th>Resistance 1</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="market-data-body-stocks">
+                            <tr><td colspan="6" class="loading">Loading live data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-container glass-card full-width">
+                    <h3>MCX Commodities</h3>
+                    <table class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Current Price (₹)</th>
+                                <th>Intrinsic Value (₹)</th>
+                                <th>Support 1</th>
+                                <th>Resistance 1</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="market-data-body-commodities">
+                            <tr><td colspan="6" class="loading">Loading live data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Alerts Tab -->
+            <section id="alerts-tab" class="tab-content">
+                <div class="dashboard-header">
+                    <h2>🔥 Assets in the Alert Zone</h2>
+                    <p>These assets are currently testing a critical Support or Resistance level.</p>
+                </div>
+                
+                <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                    <h3>Nifty 50 Stocks in Alert Zone</h3>
+                    <table class="market-table alert-table">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Current Price (₹)</th>
+                                <th>Trigger Status</th>
+                                <th>Action Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alert-data-body-stocks">
+                            <tr><td colspan="4" class="loading">Scanning for active stock alerts...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-container glass-card full-width">
+                    <h3>MCX Commodities in Alert Zone</h3>
+                    <table class="market-table alert-table">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Current Price (₹)</th>
+                                <th>Trigger Status</th>
+                                <th>Action Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alert-data-body-commodities">
+                            <tr><td colspan="4" class="loading">Scanning for active commodity alerts...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Admin Tab -->
+            <section id="admin-tab" class="tab-content">
+                <div class="dashboard-header">
+                    <h2>Admin Dashboard</h2>
+                    <p>Manage subscribers and access restricted settings.</p>
+                </div>
+                
+                <!-- Auth Section (Visible when logged out) -->
+                <div id="auth-section" class="glass-card" style="max-width: 400px; margin: 0 auto; padding: 2.5rem;">
+                    <div id="auth-forms-container">
+                        <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; text-align: center;">Admin Login</h2>
+                        
+                        <form id="auth-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <input type="email" id="auth-email" placeholder="Email address" required style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; font-size: 1rem;">
+                            <input type="password" id="auth-password" placeholder="Password (min 6 chars)" required minlength="6" style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; font-size: 1rem;">
+                            
+                            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                <button type="submit" id="login-btn" style="flex: 1; padding: 12px; border-radius: 8px; background: var(--accent); color: white; border: none; cursor: pointer; font-weight: 600; font-size: 1rem;">Login</button>
+                                <button type="button" id="register-btn" style="flex: 1; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; font-weight: 600; font-size: 1rem;">Register</button>
+                            </div>
+                        </form>
+                        <div id="auth-status-message" class="hidden" style="margin-top: 1rem; text-align: center; font-size: 0.9rem;"></div>
+                    </div>
+                </div>
+
+                <!-- Admin Content (Visible when logged in) -->
+                <div id="admin-content" class="table-container glass-card full-width" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="margin: 0;">Subscribed Users</h3>
+                        <button id="logout-btn" style="padding: 8px 16px; border-radius: 6px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fb7185; cursor: pointer; font-weight: 600;">Logout</button>
+                    </div>
+                    <table class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Email Address</th>
+                                <th>Subscribed At</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-subscribers-body">
+                            <tr><td colspan="3" class="loading">Loading subscribers...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Supabase Client (Loaded locally to bypass all ISP blocks) -->
+    <script src="supabase.js"></script>
+    <script>
+console.log("App.js started loading...");
+// Supabase Configuration
+const SUPABASE_URL = 'https://cohupetijvykzmeliubg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvaHVwZXRpanZ5a3ptZWxpdWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMjg4ODAsImV4cCI6MjEwMjcwNDg4MH0.zA5IwTKp0f-IRQ5dB3a9vXJSD1X2EVzxIDEyzXC27Cw';
+
+let supabaseClient;
+try {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (e) {
+    console.warn("Supabase not fully configured yet.");
+}
+
+let marketData = [];
+
+function initApp() {
+    console.log("Initializing App...");
+    try { setupSubscribeForm(); } catch(e) { console.error("Form setup error:", e); }
+    try { setupUnsubscribeForm(); } catch(e) { console.error("Unsub Form setup error:", e); }
+    try { fetchMarketData(); } catch(e) { console.error("Fetch data error:", e); }
+    try { setupAuth(); } catch(e) { console.error("Auth setup error:", e); }
+    setInterval(fetchMarketData, 300000); 
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        try { initApp(); } catch(e) { console.error("Init Error:", e); }
+    });
+} else {
+    try { initApp(); } catch(e) { console.error("Init Error:", e); }
+}
+
+window.switchTab = function(btn, targetId) {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    // Remove active class from all
+    tabBtns.forEach(b => b.classList.remove('active'));
+    tabContents.forEach(c => c.classList.remove('active'));
+    
+    // Add active class to clicked
+    btn.classList.add('active');
+    document.getElementById(targetId).classList.add('active');
+    
+    // If switching to dashboard, refresh data
+    if (targetId === 'dashboard-tab' || targetId === 'alerts-tab') {
+        fetchMarketData();
+    } else if (targetId === 'admin-tab') {
+        fetchSubscribers();
+    }
+}
+
+function setupFilters() {
+    // Deprecated: Filters removed in favor of split tables
+}
+
+function setupSubscribeForm() {
+    const form = document.getElementById('subscribe-form');
+    const emailInput = document.getElementById('email-input');
+    const statusMsg = document.getElementById('status-message');
+    const submitBtn = document.getElementById('submit-btn');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        if (!email) return;
+
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span>Submitting...</span>';
+        submitBtn.disabled = true;
+        
+        try {
+            const { data, error } = await supabaseClient
+                .from('subscribers')
+                .insert([{ email: email }]);
+
+            if (error) throw error;
+
+            statusMsg.textContent = "Success! You are now subscribed to alerts.";
+            statusMsg.className = "success";
+            emailInput.value = "";
+        } catch (error) {
+            statusMsg.textContent = error.message || "Something went wrong. Please try again.";
+            statusMsg.className = "error";
+        } finally {
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+        }
+    });
+}
+
+function setupUnsubscribeForm() {
+    const form = document.getElementById('unsubscribe-form');
+    if (!form) return;
+    
+    const emailInput = document.getElementById('unsub-email-input');
+    const statusMsg = document.getElementById('unsub-status-message');
+    const submitBtn = document.getElementById('unsub-submit-btn');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        if (!email) return;
+
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span>Processing...</span>';
+        submitBtn.disabled = true;
+        
+        try {
+            const { error } = await supabaseClient
+                .from('subscribers')
+                .delete()
+                .eq('email', email);
+
+            if (error) throw error;
+
+            statusMsg.textContent = "You have been successfully unsubscribed.";
+            statusMsg.className = "success";
+            statusMsg.style.color = "#4ade80";
+            emailInput.value = "";
+        } catch (error) {
+            statusMsg.textContent = error.message || "Failed to unsubscribe. Please try again.";
+            statusMsg.className = "error";
+            statusMsg.style.color = "#fb7185";
+        } finally {
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+        }
+    });
+}
+
+function setupAuth() {
+    // Check current session
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+        updateAdminUI(session);
+    });
+
+    // Listen for auth changes
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        updateAdminUI(session);
+        if (session && document.getElementById('admin-tab').classList.contains('active')) {
+            fetchSubscribers();
+        }
+    });
+
+    const authForm = document.getElementById('auth-form');
+    const loginBtn = document.getElementById('login-btn');
+    const registerBtn = document.getElementById('register-btn');
+    const emailInput = document.getElementById('auth-email');
+    const passwordInput = document.getElementById('auth-password');
+    const statusMsg = document.getElementById('auth-status-message');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    if (!authForm) return;
+
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        if (!email || !password) return;
+
+        loginBtn.innerHTML = 'Logging in...';
+        loginBtn.disabled = true;
+
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
+
+        loginBtn.innerHTML = 'Login';
+        loginBtn.disabled = false;
+
+        if (error) {
+            statusMsg.textContent = error.message;
+            statusMsg.className = "error";
+            statusMsg.style.color = "#fb7185";
+            statusMsg.classList.remove('hidden');
+        }
+    });
+
+    registerBtn.addEventListener('click', async () => {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        if (!email || !password) {
+            statusMsg.textContent = "Please enter email and password to register.";
+            statusMsg.className = "error";
+            statusMsg.style.color = "#fb7185";
+            statusMsg.classList.remove('hidden');
+            return;
+        }
+
+        registerBtn.innerHTML = 'Registering...';
+        registerBtn.disabled = true;
+
+        const { data, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+        });
+
+        registerBtn.innerHTML = 'Register';
+        registerBtn.disabled = false;
+
+        if (error) {
+            statusMsg.textContent = error.message;
+            statusMsg.className = "error";
+            statusMsg.style.color = "#fb7185";
+            statusMsg.classList.remove('hidden');
+        } else {
+            statusMsg.textContent = "Registration successful! You may need to confirm your email in your inbox.";
+            statusMsg.className = "success";
+            statusMsg.style.color = "#4ade80";
+            statusMsg.classList.remove('hidden');
+        }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+        await supabaseClient.auth.signOut();
+    });
+}
+
+function updateAdminUI(session) {
+    const authSection = document.getElementById('auth-section');
+    const adminContent = document.getElementById('admin-content');
+    const statusMsg = document.getElementById('auth-status-message');
+    
+    if (session) {
+        authSection.style.display = 'none';
+        adminContent.style.display = 'block';
+        statusMsg.classList.add('hidden');
+    } else {
+        authSection.style.display = 'block';
+        adminContent.style.display = 'none';
+    }
+}
+
+async function fetchMarketData() {
+    if (!supabaseClient) return;
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('market_data')
+            .select('*')
+            .order('name', { ascending: true });
+
+        if (error) throw error;
+        
+        marketData = data;
+        
+        // Render both tables
+        renderMarketTable();
+        renderAlertTable();
+        
+    } catch (error) {
+        console.error("Error fetching market data:", error);
+        document.getElementById('market-data-body').innerHTML = `<tr><td colspan="6" class="error">Failed to load live data. Check console.</td></tr>`;
+    }
+}
+
+function renderMarketTable() {
+    const tbodyStocks = document.getElementById('market-data-body-stocks');
+    const tbodyCommodities = document.getElementById('market-data-body-commodities');
+    
+    tbodyStocks.innerHTML = '';
+    tbodyCommodities.innerHTML = '';
+    
+    const stocks = marketData.filter(item => item.asset_type === 'Stock');
+    const commodities = marketData.filter(item => item.asset_type === 'Commodity');
+    
+    const renderRows = (data, tbody) => {
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="loading">No data available.</td></tr>`;
+            return;
+        }
+
+        data.forEach(item => {
+            const date = new Date(item.last_updated).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            let intrinsicHtml = '<span style="color:var(--text-secondary)">N/A</span>';
+            if (item.intrinsic_value) {
+                const isUndervalued = parseFloat(item.current_price) < parseFloat(item.intrinsic_value);
+                const color = isUndervalued ? '#4ade80' : 'var(--text-primary)';
+                intrinsicHtml = `<span style="color:${color}; font-weight: ${isUndervalued ? '600' : 'normal'}">₹${parseFloat(item.intrinsic_value).toFixed(2)}</span>`;
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
+                <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
+                <td>${intrinsicHtml}</td>
+                <td style="color:#fb7185">₹${parseFloat(item.s1).toFixed(2)}</td>
+                <td style="color:#4ade80">₹${parseFloat(item.r1).toFixed(2)}</td>
+                <td style="color:var(--text-secondary); font-size: 0.875rem;">${date}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
+
+    renderRows(stocks, tbodyStocks);
+    renderRows(commodities, tbodyCommodities);
+}
+
+function renderAlertTable() {
+    const tbodyStocks = document.getElementById('alert-data-body-stocks');
+    const tbodyCommodities = document.getElementById('alert-data-body-commodities');
+    
+    tbodyStocks.innerHTML = '';
+    tbodyCommodities.innerHTML = '';
+    
+    const alertData = marketData.filter(item => item.alert_status && item.alert_status.trim() !== '');
+    const stockAlerts = alertData.filter(item => item.asset_type === 'Stock');
+    const commodityAlerts = alertData.filter(item => item.asset_type === 'Commodity');
+    
+    const renderRows = (data, tbody, emptyMessage) => {
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="loading" style="padding: 2rem !important;">${emptyMessage}</td></tr>`;
+            return;
+        }
+
+        data.forEach(item => {
+            const statusLower = item.alert_status.toLowerCase();
+            let actionLevelHtml = "Action Required";
+            
+            if (statusLower.includes("support") || statusLower.includes("s1") || statusLower.includes("s2")) {
+                actionLevelHtml = `<div style="display:flex; flex-direction:column; gap:4px; font-size:0.9rem;">
+                    <span style="color:#fb7185">S1: ₹${parseFloat(item.s1).toFixed(2)}</span>
+                    <span style="color:#fb7185">S2: ₹${parseFloat(item.s2).toFixed(2)}</span>
+                </div>`;
+            } else if (statusLower.includes("resistance") || statusLower.includes("r1") || statusLower.includes("r2")) {
+                actionLevelHtml = `<div style="display:flex; flex-direction:column; gap:4px; font-size:0.9rem;">
+                    <span style="color:#4ade80">R1: ₹${parseFloat(item.r1).toFixed(2)}</span>
+                    <span style="color:#4ade80">R2: ₹${parseFloat(item.r2).toFixed(2)}</span>
+                </div>`;
+            } else if (statusLower.includes("pivot")) {
+                actionLevelHtml = `<div style="display:flex; flex-direction:column; gap:4px; font-size:0.9rem;">
+                    <span style="color:var(--text-secondary)">Pivot: ₹${parseFloat(item.pivot).toFixed(2)}</span>
+                </div>`;
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
+                <td style="font-weight:600; font-size: 1.1rem;">₹${parseFloat(item.current_price).toFixed(2)}</td>
+                <td><span class="alert-tag">${item.alert_status.toUpperCase()}</span></td>
+                <td>${actionLevelHtml}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
+
+    renderRows(stockAlerts, tbodyStocks, "No stocks currently in the alert zone. 💤");
+    renderRows(commodityAlerts, tbodyCommodities, "No commodities currently in the alert zone. 💤");
+}
+
+async function fetchSubscribers() {
+    if (!supabaseClient) return;
+    
+    const tbody = document.getElementById('admin-subscribers-body');
+    if (!tbody) return;
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('subscribers')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" class="loading">No active subscribers found.</td></tr>`;
+            return;
+        }
+
+        data.forEach(sub => {
+            const date = sub.created_at ? new Date(sub.created_at).toLocaleDateString() : 'Unknown';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${sub.email}</strong></td>
+                <td style="color:var(--text-secondary)">${date}</td>
+                <td style="text-align: right;">
+                    <button onclick="adminDeleteSubscriber('${sub.email}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fb7185; padding: 4px 12px; border-radius: 4px; cursor: pointer;">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+    } catch (error) {
+        console.error("Error fetching subscribers:", error);
+        tbody.innerHTML = `<tr><td colspan="3" class="error">Failed to load subscribers. Check console.</td></tr>`;
+    }
+}
+
+window.adminDeleteSubscriber = async function(email) {
+    if (!confirm(`Are you sure you want to delete ${email}?`)) return;
+    
+    try {
+        const { error } = await supabaseClient
+            .from('subscribers')
+            .delete()
+            .eq('email', email);
+
+        if (error) throw error;
+        alert(`${email} deleted successfully.`);
+        fetchSubscribers(); // Refresh the list
+    } catch (error) {
+        alert(`Error deleting subscriber: ${error.message}`);
+    }
+}
+    </script>
+</body>
+</html>
