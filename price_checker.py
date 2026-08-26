@@ -162,28 +162,25 @@ class PriceChecker:
 
     def get_dhan_current_price(self, security_id, exchange_segment="NSE_EQ", instrument_type="EQUITY"):
         try:
-            now = datetime.now()
-            from_date = (now - timedelta(days=2)).strftime("%Y-%m-%d")
-            to_date = now.strftime("%Y-%m-%d")
-            
-            # Intraday minute data
-            data = self.dhan.intraday_minute_data(
-                security_id=security_id,
-                exchange_segment=exchange_segment,
-                instrument_type=instrument_type,
-                from_date=from_date,
-                to_date=to_date
-            )
+            securities = {exchange_segment: [str(security_id)]}
+            data = self.dhan.ticker_data(securities)
             
             if not data or data.get('status') == 'failure' or not data.get('data'):
-                print(f"Dhan API intraday_minute_data failed for {security_id}. Response: {data}")
+                print(f"Dhan API ticker_data failed for {security_id}. Response: {data}")
+                return None
                 
-            if data and data.get('data') and len(data['data']['close']) > 0:
-                # Return the most recent close price
-                return data['data']['close'][-1]
+            seg_data = data['data'].get(exchange_segment, {})
+            # The security ID might be string or int in the response dictionary
+            sec_data = seg_data.get(str(security_id)) or seg_data.get(int(security_id))
+            
+            if sec_data and 'last_price' in sec_data:
+                return sec_data['last_price']
+                
+            print(f"Dhan API ticker_data missing last_price for {security_id}. Response: {data}")
+            return None
         except Exception as e:
             print(f"Error fetching live price from Dhan for {security_id}: {e}")
-        return None
+            return None
 
     def get_support_resistance_levels(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None):
         levels = None
