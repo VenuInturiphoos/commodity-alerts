@@ -52,7 +52,7 @@ class EmailAlerter:
             msg['To'] = recipient
             msg['Subject'] = subject
 
-            personalized_body = f"{body}\n\n---\nTo unsubscribe from these market alerts, click here:\nhttps://dancing-semolina-31f889.netlify.app/unsubscribe.html?email={recipient}"
+            personalized_body = f"{body}\n\n---\nTo unsubscribe from these market alerts, click here:\nhttps://VenuInturiphoos.github.io/commodity-alerts/unsubscribe.html?email={recipient}"
             msg.attach(MIMEText(personalized_body, 'plain'))
 
             try:
