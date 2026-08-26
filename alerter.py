@@ -52,7 +52,8 @@ class EmailAlerter:
             msg['To'] = recipient
             msg['Subject'] = subject
 
-            msg.attach(MIMEText(body, 'plain'))
+            personalized_body = f"{body}\n\n---\nTo unsubscribe from these market alerts, click here:\nhttps://dancing-semolina-31f889.netlify.app/unsubscribe.html?email={recipient}"
+            msg.attach(MIMEText(personalized_body, 'plain'))
 
             try:
                 server = smtplib.SMTP(smtp_server, smtp_port)
