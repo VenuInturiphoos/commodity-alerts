@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Alerts | Unsubscribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=4">
+    <script src="supabase.js"></script>
+    <style>
+        .unsub-container {
+            max-width: 500px;
+            margin: 100px auto;
+            text-align: center;
+        }
+        .unsub-card {
+            padding: 3rem 2rem;
+            border-top: 4px solid #ef4444;
+        }
+        #confirm-btn {
+            background: rgba(239, 68, 68, 0.1); 
+            border-color: rgba(239, 68, 68, 0.3); 
+            color: #fb7185;
+            width: 100%;
+            margin-top: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        #confirm-btn:hover {
+            background: rgba(239, 68, 68, 0.2); 
+            transform: translateY(-2px);
+        }
+        .email-highlight {
+            color: #fff;
+            font-weight: 600;
+            background: rgba(255,255,255,0.1);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-elements">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2" style="background: radial-gradient(circle at center, rgba(239,68,68,0.3) 0%, transparent 70%);"></div>
+        <div class="blob blob-3"></div>
+    </div>
+    
+    <div class="container unsub-container">
+        <header style="justify-content: center; margin-bottom: 2rem;">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <span>Antigravity Alerts</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="glass-card unsub-card" id="unsub-card">
+                <h2>Confirm Unsubscription</h2>
+                <p style="margin-top: 1rem;">Are you sure you want to stop receiving market alerts for the following email?</p>
+                <div class="email-highlight" id="email-display">Loading...</div>
+                
+                <button id="confirm-btn" onclick="processUnsubscribe()">
+                    <span>Yes, Unsubscribe Me</span>
+                </button>
+                <div id="status-message" class="hidden" style="margin-top: 1.5rem;"></div>
+                
+                <a href="index.html" style="display: block; margin-top: 2rem; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem;">
+                    ← Go back to dashboard
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://cohupetijvykzmeliubg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvaHVwZXRpanZ5a3ptZWxpdWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMjg4ODAsImV4cCI6MjEwMjcwNDg4MH0.zA5IwTKp0f-IRQ5dB3a9vXJSD1X2EVzxIDEyzXC27Cw';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let targetEmail = "";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            targetEmail = urlParams.get('email');
+            
+            const emailDisplay = document.getElementById('email-display');
+            if (targetEmail) {
+                emailDisplay.textContent = targetEmail;
+            } else {
+                emailDisplay.textContent = "No email specified in URL";
+                document.getElementById('confirm-btn').disabled = true;
+                document.getElementById('confirm-btn').style.opacity = '0.5';
+            }
+        });
+
+        async function processUnsubscribe() {
+            if (!targetEmail) return;
+            
+            const btn = document.getElementById('confirm-btn');
+            const statusMsg = document.getElementById('status-message');
+            
+            btn.innerHTML = '<span>Processing...</span>';
+            btn.disabled = true;
+            statusMsg.classList.add('hidden');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('subscribers')
+                    .delete()
+                    .eq('email', targetEmail);
+
+                if (error) throw error;
+
+                statusMsg.innerHTML = "✅ You have been successfully unsubscribed. You will no longer receive alerts.<br><br><a href='index.html' style='color:#38bdf8'>Subscribe again</a> if you change your mind.";
+                statusMsg.className = "success";
+                statusMsg.classList.remove('hidden');
+                btn.style.display = 'none';
+                
+            } catch (error) {
+                console.error("Unsubscribe error:", error);
+                statusMsg.textContent = error.message || "Failed to unsubscribe. Please try again or contact the administrator.";
+                statusMsg.className = "error";
+                statusMsg.classList.remove('hidden');
+                
+                btn.innerHTML = '<span>Yes, Unsubscribe Me</span>';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
