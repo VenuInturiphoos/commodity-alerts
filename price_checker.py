@@ -351,13 +351,17 @@ class PriceChecker:
             level = levels.get(key)
             if level and abs(current_price - level) / level <= threshold:
                 alert_msg = f"testing {name_str}"
-                if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
+                
+                # If we already sent ANY alert for this symbol today, don't send another one.
+                # This prevents "flapping" spam if the price bounces between two threshold levels.
+                if last_alert_date != today_ist:
                     alerts.append({
                         'subject': f"🚀 Market Breakout: {name} {alert_msg}!",
                         'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.\n\nCurrent price: ₹{current_price:.2f}."
                     })
                     last_alert_date = today_ist
                     last_alert_msg = alert_msg
+                
                 alert_status = alert_msg
                 break # Only alert the highest timeframe reached
                 
@@ -373,13 +377,15 @@ class PriceChecker:
             level = levels.get(key)
             if level and abs(current_price - level) / level <= threshold:
                 alert_msg = f"testing {name_str}"
-                if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
+                
+                if last_alert_date != today_ist:
                     alerts.append({
                         'subject': f"📉 Market Breakdown: {name} {alert_msg}!",
                         'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.\n\nCurrent price: ₹{current_price:.2f}."
                     })
                     last_alert_date = today_ist
                     last_alert_msg = alert_msg
+                
                 alert_status = alert_msg
                 break # Only alert the highest timeframe reached
 
