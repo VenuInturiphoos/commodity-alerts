@@ -8,6 +8,10 @@ on:
   repository_dispatch:
     types: [trigger-cron] # Allows triggering via external webhook
 
+concurrency:
+  group: alerter-cron
+  cancel-in-progress: false
+
 jobs:
   check-prices:
     runs-on: ubuntu-latest

@@ -314,9 +314,12 @@ class PriceChecker:
             if response.status_code == 200:
                 data = response.json()
                 return {item['symbol']: item for item in data}
+            else:
+                print(f"Failed to fetch previous state. Status: {response.status_code} {response.text}")
+                return None
         except Exception as e:
             print(f"Error fetching previous state: {e}")
-        return {}
+            return None
 
     def evaluate_levels(self, name, symbol, levels, current_price, previous_state):
         alerts = []
@@ -400,10 +403,14 @@ class PriceChecker:
 
     def check_alerts(self):
         alerts = []
-        market_data_payload = []
         
-        print("Fetching previous alert states from Supabase...")
+        # Pull previous alert state from Supabase to prevent duplicate emails
         previous_state = self.fetch_previous_state()
+        if previous_state is None:
+            print("Failed to fetch previous state from Supabase. Aborting this run to prevent spamming duplicate alerts.")
+            return alerts
+            
+        market_data_payload = []
         
         # 1. Check Commodities
         for symbol, data in self.commodities.items():
