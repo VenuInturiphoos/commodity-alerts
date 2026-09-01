@@ -495,9 +495,24 @@ function renderMarketTable() {
                 intrinsicHtml = `<span style="color:${color}; font-weight: ${isUndervalued ? '600' : 'normal'}">₹${parseFloat(item.intrinsic_value).toFixed(2)}</span>`;
             }
 
+            // Map symbols to Yahoo Finance URLs
+            const yfSymbolMap = {
+                "GOLD": "GC=F",
+                "SILVER": "SI=F",
+                "CRUDEOIL": "CL=F",
+                "NATURALGAS": "NG=F",
+                "COPPER": "HG=F",
+                "ALUMINIUM": "ALI=F"
+            };
+            
+            let yfLink = `https://finance.yahoo.com/quote/${item.symbol}`;
+            if (item.asset_type === 'Commodity' && yfSymbolMap[item.symbol]) {
+                yfLink = `https://finance.yahoo.com/quote/${yfSymbolMap[item.symbol]}`;
+            }
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
+                <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
                 <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
                 <td>${intrinsicHtml}</td>
                 <td style="color:#fb7185">₹${parseFloat(item.s1).toFixed(2)}</td>
@@ -549,9 +564,24 @@ function renderAlertTable() {
                 </div>`;
             }
 
+            // Map symbols to Yahoo Finance URLs
+            const yfSymbolMap = {
+                "GOLD": "GC=F",
+                "SILVER": "SI=F",
+                "CRUDEOIL": "CL=F",
+                "NATURALGAS": "NG=F",
+                "COPPER": "HG=F",
+                "ALUMINIUM": "ALI=F"
+            };
+            
+            let yfLink = `https://finance.yahoo.com/quote/${item.symbol}`;
+            if (item.asset_type === 'Commodity' && yfSymbolMap[item.symbol]) {
+                yfLink = `https://finance.yahoo.com/quote/${yfSymbolMap[item.symbol]}`;
+            }
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
+                <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
                 <td style="font-weight:600; font-size: 1.1rem;">₹${parseFloat(item.current_price).toFixed(2)}</td>
                 <td><span class="alert-tag">${item.alert_status.toUpperCase()}</span></td>
                 <td>${actionLevelHtml}</td>

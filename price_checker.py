@@ -402,6 +402,16 @@ class PriceChecker:
             ('TwoMonthHigh', '2-Month High', 0.01),
             ('MonthlyHigh', '1-Month High', 0.005)
         ]
+        yf_symbol_map = {
+            "GOLD": "GC=F",
+            "SILVER": "SI=F",
+            "CRUDEOIL": "CL=F",
+            "NATURALGAS": "NG=F",
+            "COPPER": "HG=F",
+            "ALUMINIUM": "ALI=F"
+        }
+        yf_sym = yf_symbol_map.get(symbol, symbol)
+        chart_url = f"https://finance.yahoo.com/quote/{yf_sym}"
         
         for key, name_str, threshold in high_alerts_config:
             level = levels.get(key)
@@ -413,7 +423,7 @@ class PriceChecker:
                 if last_alert_date != today_ist:
                     alerts.append({
                         'subject': f"🚀 Market Breakout: {name} {alert_msg}!",
-                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.\n\nCurrent price: ₹{current_price:.2f}."
+                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
                     })
                     last_alert_date = today_ist
                     last_alert_msg = alert_msg
@@ -441,7 +451,7 @@ class PriceChecker:
                 if last_alert_date != today_ist:
                     alerts.append({
                         'subject': f"📉 Market Breakdown: {name} {alert_msg}!",
-                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.\n\nCurrent price: ₹{current_price:.2f}."
+                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
                     })
                     last_alert_date = today_ist
                     last_alert_msg = alert_msg
