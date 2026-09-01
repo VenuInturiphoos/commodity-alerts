@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 import pytz
 import json
 import math
+import numpy as np
+from scipy.signal import argrelextrema
 from dhanhq import dhanhq, DhanContext
 
 class PriceChecker:
@@ -182,7 +184,58 @@ class PriceChecker:
             print(f"Error fetching live price from Dhan for {security_id}: {e}")
             return None
 
-    def get_support_resistance_levels(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None):
+
+    def get_algorithmic_levels(self, yf_symbol, current_price):
+        try:
+            ticker = yf.Ticker(yf_symbol)
+            df = ticker.history(period="6mo")
+            if df.empty:
+                return None
+                
+            order = 5
+            local_min_idx = argrelextrema(df['Low'].values, np.less, order=order)[0]
+            local_max_idx = argrelextrema(df['High'].values, np.greater, order=order)[0]
+            
+            support_prices = df['Low'].iloc[local_min_idx].values
+            resistance_prices = df['High'].iloc[local_max_idx].values
+            
+            def cluster_prices(prices, threshold=0.01):
+                clusters = []
+                for p in sorted(prices):
+                    added = False
+                    for cluster in clusters:
+                        avg = np.mean(cluster)
+                        if abs(p - avg) / avg <= threshold:
+                            cluster.append(p)
+                            added = True
+                            break
+                    if not added:
+                        clusters.append([p])
+                results = []
+                for c in clusters:
+                    results.append({"price": np.mean(c), "strength": len(c)})
+                return results
+                
+            supports = cluster_prices(support_prices)
+            resistances = cluster_prices(resistance_prices)
+            
+            valid_supports = [s for s in supports if s['price'] < current_price]
+            valid_resistances = [r for r in resistances if r['price'] > current_price]
+            
+            valid_supports = sorted(valid_supports, key=lambda x: x['price'], reverse=True)
+            valid_resistances = sorted(valid_resistances, key=lambda x: x['price'])
+            
+            return {
+                "Strong_S1": valid_supports[0]['price'] if len(valid_supports) > 0 else None,
+                "Strong_S2": valid_supports[1]['price'] if len(valid_supports) > 1 else None,
+                "Strong_R1": valid_resistances[0]['price'] if len(valid_resistances) > 0 else None,
+                "Strong_R2": valid_resistances[1]['price'] if len(valid_resistances) > 1 else None,
+            }
+        except Exception as e:
+            print(f"Error calculating algorithmic levels for {yf_symbol}: {e}")
+            return None
+
+    def get_support_resistance_levels(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None, current_price=None):
         levels = None
         
         # 1. Try to get Pivot/R/S from DhanHQ
@@ -339,7 +392,10 @@ class PriceChecker:
         # Resistance and Support alerts have been removed per user request.
 
         # Multi-timeframe extremes evaluation (Highest priority first)
+
         high_alerts_config = [
+            ('Strong_R2', 'Strong Algorithmic Resistance (R2)', 0.01),
+            ('Strong_R1', 'Strong Algorithmic Resistance (R1)', 0.005),
             ('AllTimeHigh', 'All-Time High', 0.01),
             ('OneYearHigh', '1-Year High', 0.01),
             ('ThreeMonthHigh', '3-Month High', 0.01),
@@ -365,8 +421,12 @@ class PriceChecker:
                 alert_status = alert_msg
                 break # Only alert the highest timeframe reached
                 
+
         low_alerts_config = [
+            ('Strong_S2', 'Strong Algorithmic Support (S2)', 0.01),
+            ('Strong_S1', 'Strong Algorithmic Support (S1)', 0.005),
             ('AllTimeLow', 'All-Time Low', 0.01),
+
             ('OneYearLow', '1-Year Low', 0.01),
             ('ThreeMonthLow', '3-Month Low', 0.01),
             ('TwoMonthLow', '2-Month Low', 0.01),
@@ -445,8 +505,8 @@ class PriceChecker:
                 conversion *= 1.12
             
             print(f"\nChecking Commodity {name} ({symbol}) via MCX API (or yfinance fallback)...")
-            levels = self.get_support_resistance_levels(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
             current_price = self.get_current_price(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
+            levels = self.get_support_resistance_levels(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym, current_price=current_price)
             
             new_alerts, alert_status, last_alert_date, last_alert_msg = self.evaluate_levels(name, symbol, levels, current_price, previous_state)
             alerts.extend(new_alerts)
@@ -475,8 +535,8 @@ class PriceChecker:
             
             print(f"\nChecking Stock {name} ({symbol})...")
             yf_sym = data.get('yf_symbol', symbol)
-            levels = self.get_support_resistance_levels(symbol, is_commodity=False, yf_symbol=yf_sym)
-            current_price = self.get_current_price(symbol, is_commodity=False, yf_symbol=yf_sym)
+            current_price = self.get_current_price(symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=yf_sym)
+            levels = self.get_support_resistance_levels(symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=yf_sym, current_price=current_price)
             intrinsic_val = self.get_intrinsic_value(yf_sym)
             
             new_alerts, alert_status, last_alert_date, last_alert_msg = self.evaluate_levels(name, symbol, levels, current_price, previous_state)
