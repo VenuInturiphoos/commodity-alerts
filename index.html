@@ -32,7 +32,7 @@
                 <button class="tab-btn active" onclick="switchTab(this, 'subscribe-tab')">Subscribe</button>
                 <button class="tab-btn" onclick="switchTab(this, 'dashboard-tab')">Live Market</button>
                 <button class="tab-btn" onclick="switchTab(this, 'alerts-tab')">🔥 Alert Zone</button>
-                <button class="tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Admin</button>
+                <button class="tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Account / Trade</button>
             </nav>
         </header>
 
@@ -161,17 +161,17 @@
                 </div>
             </section>
 
-            <!-- Admin Tab -->
+            <!-- Account / Trade Tab -->
             <section id="admin-tab" class="tab-content">
                 <div class="dashboard-header">
-                    <h2>Admin Dashboard</h2>
-                    <p>Manage subscribers and access restricted settings.</p>
+                    <h2>Account & Paper Trading</h2>
+                    <p>Practice trading Indian stocks and commodities with a ₹1,000,000 virtual balance.</p>
                 </div>
                 
                 <!-- Auth Section (Visible when logged out) -->
                 <div id="auth-section" class="glass-card" style="max-width: 400px; margin: 0 auto; padding: 2.5rem;">
                     <div id="auth-forms-container">
-                        <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; text-align: center;">Admin Login</h2>
+                        <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; text-align: center;">Login / Register</h2>
                         
                         <form id="auth-form" style="display: flex; flex-direction: column; gap: 1rem;">
                             <input type="email" id="auth-email" placeholder="Email address" required style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; font-size: 1rem;">
@@ -186,27 +186,104 @@
                     </div>
                 </div>
 
-                <!-- Admin Content (Visible when logged in) -->
-                <div id="admin-content" class="table-container glass-card full-width" style="display: none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h3 style="margin: 0;">Subscribed Users</h3>
-                        <button id="logout-btn" style="padding: 8px 16px; border-radius: 6px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fb7185; cursor: pointer; font-weight: 600;">Logout</button>
+                <!-- Account Content (Visible when logged in) -->
+                <div id="admin-content" style="display: none; width: 100%;">
+                    
+                    <!-- Paper Trading Dashboard -->
+                    <div class="glass-card full-width" style="margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                            <div>
+                                <h3 style="margin: 0; color: var(--text-secondary); font-size: 1rem;">Virtual Balance</h3>
+                                <h1 id="virtual-balance" style="margin: 0.5rem 0 0 0; font-size: 2.5rem; color: #4ade80;">₹...</h1>
+                            </div>
+                            <button id="logout-btn" style="padding: 8px 16px; border-radius: 6px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fb7185; cursor: pointer; font-weight: 600;">Logout</button>
+                        </div>
                     </div>
-                    <table class="market-table">
-                        <thead>
-                            <tr>
-                                <th>Email Address</th>
-                                <th>Subscribed At</th>
-                                <th style="text-align: right;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-subscribers-body">
-                            <tr><td colspan="3" class="loading">Loading subscribers...</td></tr>
-                        </tbody>
-                    </table>
+
+                    <!-- Portfolio Holdings -->
+                    <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                        <h3>Your Portfolio</h3>
+                        <table class="market-table">
+                            <thead>
+                                <tr>
+                                    <th>Asset</th>
+                                    <th>Shares</th>
+                                    <th>Avg Price</th>
+                                    <th>Current Price</th>
+                                    <th>Total Value</th>
+                                    <th>P&L</th>
+                                </tr>
+                            </thead>
+                            <tbody id="portfolio-body">
+                                <tr><td colspan="6" class="loading">Loading portfolio...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Trading Terminal -->
+                    <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                        <h3>Trade Assets</h3>
+                        <table class="market-table">
+                            <thead>
+                                <tr>
+                                    <th>Asset</th>
+                                    <th>Type</th>
+                                    <th>Live Price</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trade-market-body">
+                                <tr><td colspan="4" class="loading">Loading market data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Admin Only Section -->
+                    <div id="admin-subscribers-section" class="table-container glass-card full-width" style="display: none;">
+                        <h3>Subscribed Users (Admin Only)</h3>
+                        <table class="market-table">
+                            <thead>
+                                <tr>
+                                    <th>Email Address</th>
+                                    <th>Subscribed At</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-subscribers-body">
+                                <tr><td colspan="3" class="loading">Loading subscribers...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Trade Modal -->
+    <div id="trade-modal" class="modal hidden">
+        <div class="modal-content glass-card">
+            <h2 id="trade-modal-title" style="margin-bottom: 0.5rem;">Trade Asset</h2>
+            <p id="trade-modal-price" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem; color: var(--text-primary);">₹0.00</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <label>
+                    <span style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Quantity</span>
+                    <input type="number" id="trade-qty" value="1" min="1" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; font-size: 1.2rem;">
+                </label>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.9rem;">
+                    <span style="color: var(--text-secondary);">Total Order Value:</span>
+                    <strong id="trade-total-value">₹0.00</strong>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button id="trade-buy-btn" class="trade-btn buy-btn">BUY</button>
+                    <button id="trade-sell-btn" class="trade-btn sell-btn">SELL</button>
+                </div>
+                <button id="trade-cancel-btn" style="margin-top: 0.5rem; padding: 12px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text-secondary); border-radius: 8px; cursor: pointer;">Cancel</button>
+                <div id="trade-status-msg" style="margin-top: 0.5rem; text-align: center; font-size: 0.9rem;"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Supabase Client (Loaded locally to bypass all ISP blocks) -->
@@ -440,9 +517,15 @@ function updateAdminUI(session) {
         authSection.style.display = 'none';
         adminContent.style.display = 'block';
         statusMsg.classList.add('hidden');
+        
+        // Load the paper trading account data
+        fetchPaperTradingData(session.user);
     } else {
         authSection.style.display = 'block';
         adminContent.style.display = 'none';
+        currentUser = null;
+        userBalance = 0;
+        userPortfolio = {};
     }
 }
 
@@ -649,6 +732,237 @@ window.adminDeleteSubscriber = async function(email) {
         alert(`Error deleting subscriber: ${error.message}`);
     }
 }
+
+// ==========================================
+// PAPER TRADING LOGIC
+// ==========================================
+
+let currentUser = null;
+let userBalance = 0;
+let userPortfolio = {};
+let activeTradeAsset = null;
+
+async function fetchPaperTradingData(user) {
+    currentUser = user;
+    
+    // 1. Fetch Profile (Balance)
+    const { data: profileData, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('balance')
+        .eq('id', user.id)
+        .single();
+        
+    if (profileError) {
+        console.error("Error fetching profile:", profileError);
+    } else if (profileData) {
+        userBalance = profileData.balance;
+        document.getElementById('virtual-balance').textContent = `₹${parseFloat(userBalance).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+
+    // 2. Fetch Transactions to calculate portfolio
+    const { data: txData, error: txError } = await supabaseClient
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('timestamp', { ascending: true });
+        
+    if (txError) {
+        console.error("Error fetching transactions:", txError);
+    } else if (txData) {
+        userPortfolio = {};
+        
+        txData.forEach(tx => {
+            if (!userPortfolio[tx.symbol]) {
+                userPortfolio[tx.symbol] = { shares: 0, totalCost: 0 };
+            }
+            if (tx.transaction_type === 'BUY') {
+                userPortfolio[tx.symbol].shares += tx.quantity;
+                userPortfolio[tx.symbol].totalCost += (tx.quantity * tx.price);
+            } else if (tx.transaction_type === 'SELL') {
+                // Approximate avg cost reduction
+                const avgCost = userPortfolio[tx.symbol].shares > 0 ? userPortfolio[tx.symbol].totalCost / userPortfolio[tx.symbol].shares : 0;
+                userPortfolio[tx.symbol].shares -= tx.quantity;
+                userPortfolio[tx.symbol].totalCost -= (tx.quantity * avgCost);
+            }
+        });
+        
+        renderPortfolio();
+        renderTradeMarket();
+    }
+    
+    // Only show admin subscribers if the user is the admin
+    if (user.email === 'venu.photos1@gmail.com') {
+        document.getElementById('admin-subscribers-section').style.display = 'block';
+    } else {
+        document.getElementById('admin-subscribers-section').style.display = 'none';
+    }
+}
+
+function renderPortfolio() {
+    const tbody = document.getElementById('portfolio-body');
+    tbody.innerHTML = '';
+    
+    let hasHoldings = false;
+    
+    for (const [symbol, data] of Object.entries(userPortfolio)) {
+        if (data.shares <= 0) continue;
+        hasHoldings = true;
+        
+        const marketItem = marketData.find(item => item.symbol === symbol);
+        const currentPrice = marketItem ? parseFloat(marketItem.current_price) : 0;
+        const avgPrice = data.totalCost / data.shares;
+        const totalValue = data.shares * currentPrice;
+        
+        const pl = totalValue - data.totalCost;
+        const plPercent = data.totalCost > 0 ? (pl / data.totalCost) * 100 : 0;
+        
+        const isProfit = pl >= 0;
+        const color = isProfit ? '#4ade80' : '#fb7185';
+        const sign = isProfit ? '+' : '';
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${marketItem ? marketItem.name : symbol}</strong> <small style="color:var(--text-secondary)">(${symbol})</small></td>
+            <td>${data.shares}</td>
+            <td>₹${avgPrice.toFixed(2)}</td>
+            <td>₹${currentPrice.toFixed(2)}</td>
+            <td style="font-weight: bold;">₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            <td style="color: ${color}; font-weight: bold;">${sign}₹${pl.toFixed(2)} <br><small>(${sign}${plPercent.toFixed(2)}%)</small></td>
+        `;
+        tbody.appendChild(tr);
+    }
+    
+    if (!hasHoldings) {
+        tbody.innerHTML = `<tr><td colspan="6" class="loading" style="padding: 2rem !important;">No active holdings in your portfolio.</td></tr>`;
+    }
+}
+
+function renderTradeMarket() {
+    const tbody = document.getElementById('trade-market-body');
+    tbody.innerHTML = '';
+    
+    if (marketData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="loading">No market data available to trade.</td></tr>`;
+        return;
+    }
+    
+    // Only allow trading stocks for now, per user request, but we can list commodities too.
+    const tradableAssets = marketData.filter(item => item.asset_type === 'Stock');
+    
+    tradableAssets.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
+            <td><span class="type-badge type-stock">STOCK</span></td>
+            <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
+            <td style="text-align: right;">
+                <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${item.current_price})">Trade</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openTradeModal(symbol, name, price) {
+    activeTradeAsset = { symbol, name, price: parseFloat(price) };
+    
+    document.getElementById('trade-modal-title').textContent = `Trade ${name}`;
+    document.getElementById('trade-modal-price').textContent = `₹${activeTradeAsset.price.toFixed(2)}`;
+    document.getElementById('trade-qty').value = 1;
+    document.getElementById('trade-total-value').textContent = `₹${activeTradeAsset.price.toFixed(2)}`;
+    document.getElementById('trade-status-msg').textContent = '';
+    
+    document.getElementById('trade-modal').classList.remove('hidden');
+}
+
+// Modal Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+    const qtyInput = document.getElementById('trade-qty');
+    if (qtyInput) {
+        qtyInput.addEventListener('input', (e) => {
+            if (!activeTradeAsset) return;
+            const qty = parseInt(e.target.value) || 0;
+            const total = qty * activeTradeAsset.price;
+            document.getElementById('trade-total-value').textContent = `₹${total.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        });
+    }
+
+    document.getElementById('trade-cancel-btn')?.addEventListener('click', () => {
+        document.getElementById('trade-modal').classList.add('hidden');
+    });
+
+    const handleTrade = async (type) => {
+        if (!currentUser || !activeTradeAsset) return;
+        const qty = parseInt(document.getElementById('trade-qty').value);
+        if (isNaN(qty) || qty <= 0) return;
+        
+        const totalValue = qty * activeTradeAsset.price;
+        const statusMsg = document.getElementById('trade-status-msg');
+        const buyBtn = document.getElementById('trade-buy-btn');
+        const sellBtn = document.getElementById('trade-sell-btn');
+        
+        if (type === 'BUY' && totalValue > userBalance) {
+            statusMsg.textContent = "Insufficient virtual balance.";
+            statusMsg.style.color = "#fb7185";
+            return;
+        }
+        
+        if (type === 'SELL') {
+            const holding = userPortfolio[activeTradeAsset.symbol] ? userPortfolio[activeTradeAsset.symbol].shares : 0;
+            if (qty > holding) {
+                statusMsg.textContent = `You only have ${holding} shares to sell.`;
+                statusMsg.style.color = "#fb7185";
+                return;
+            }
+        }
+        
+        buyBtn.disabled = true;
+        sellBtn.disabled = true;
+        statusMsg.textContent = "Processing order...";
+        statusMsg.style.color = "var(--text-secondary)";
+        
+        try {
+            // 1. Insert Transaction
+            const { error: txError } = await supabaseClient.from('transactions').insert([{
+                user_id: currentUser.id,
+                symbol: activeTradeAsset.symbol,
+                transaction_type: type,
+                quantity: qty,
+                price: activeTradeAsset.price
+            }]);
+            
+            if (txError) throw txError;
+            
+            // 2. Update Profile Balance
+            const newBalance = type === 'BUY' ? (userBalance - totalValue) : (userBalance + totalValue);
+            const { error: profileError } = await supabaseClient.from('profiles')
+                .update({ balance: newBalance })
+                .eq('id', currentUser.id);
+                
+            if (profileError) throw profileError;
+            
+            statusMsg.textContent = `Successfully ${type === 'BUY' ? 'bought' : 'sold'} ${qty} shares!`;
+            statusMsg.style.color = "#4ade80";
+            
+            // Refresh data
+            setTimeout(() => {
+                document.getElementById('trade-modal').classList.add('hidden');
+                fetchPaperTradingData(currentUser);
+            }, 1000);
+            
+        } catch (error) {
+            statusMsg.textContent = `Error: ${error.message}`;
+            statusMsg.style.color = "#fb7185";
+        } finally {
+            buyBtn.disabled = false;
+            sellBtn.disabled = false;
+        }
+    };
+
+    document.getElementById('trade-buy-btn')?.addEventListener('click', () => handleTrade('BUY'));
+    document.getElementById('trade-sell-btn')?.addEventListener('click', () => handleTrade('SELL'));
+});
+
     </script>
 </body>
 </html>
