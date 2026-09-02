@@ -238,9 +238,9 @@
                         </table>
                     </div>
 
-                    <!-- Admin Only Section -->
+                    <!-- Alert Subscriptions Section -->
                     <div id="admin-subscribers-section" class="table-container glass-card full-width" style="display: none;">
-                        <h3>Subscribed Users (Admin Only)</h3>
+                        <h3>Manage Alert Subscriptions</h3>
                         <table class="market-table">
                             <thead>
                                 <tr>
@@ -790,12 +790,8 @@ async function fetchPaperTradingData(user) {
         renderTradeMarket();
     }
     
-    // Only show admin subscribers if the user is the admin
-    if (user.email === 'venu.photos1@gmail.com') {
-        document.getElementById('admin-subscribers-section').style.display = 'block';
-    } else {
-        document.getElementById('admin-subscribers-section').style.display = 'none';
-    }
+    // Show the subscriber section
+    document.getElementById('admin-subscribers-section').style.display = 'block';
 }
 
 function renderPortfolio() {
