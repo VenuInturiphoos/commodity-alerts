@@ -780,8 +780,19 @@ async function fetchPaperTradingData(user) {
         
     if (profileError) {
         console.error("Error fetching profile:", profileError);
+        // If the profile doesn't exist, create it (handles users who registered before the trigger was created)
+        if (profileError.code === 'PGRST116') {
+            console.log("Profile not found, attempting to create one...");
+            const { error: insertError } = await supabaseClient.from('profiles').insert([{ id: user.id, balance: 1000000 }]);
+            if (!insertError) {
+                userBalance = 1000000;
+                document.getElementById('virtual-balance').textContent = `₹${parseFloat(userBalance).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            } else {
+                console.error("Failed to create profile:", insertError);
+            }
+        }
     } else if (profileData) {
-        userBalance = profileData.balance;
+        userBalance = Number(profileData.balance) || 0;
         document.getElementById('virtual-balance').textContent = `₹${parseFloat(userBalance).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
