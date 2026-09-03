@@ -12,9 +12,9 @@ from dhanhq import dhanhq, DhanContext
 
 class PriceChecker:
     def __init__(self, config):
-        self.config = config
         self.commodities = config.get('commodities', {})
         self.stocks = config.get('stocks', {})
+        self.derivatives = config.get('derivatives', {})
         self.usd_inr_rate = self.get_usd_inr_rate()
         
         # Supabase config
@@ -49,7 +49,10 @@ class PriceChecker:
                 'SM_SYMBOL_NAME',
                 'SEM_EXPIRY_DATE',
                 'SEM_SMST_SECURITY_ID',
-                'SEM_CUSTOM_SYMBOL'
+                'SEM_CUSTOM_SYMBOL',
+                'SEM_STRIKE_PRICE',
+                'SEM_OPTION_TYPE',
+                'SEM_TRADING_SYMBOL'
             ]
             self.dhan_master = pd.read_csv('https://images.dhan.co/api-data/api-scrip-master.csv', usecols=cols_to_use, low_memory=False)
             print("DhanHQ Instrument Master loaded.")
@@ -112,6 +115,58 @@ class PriceChecker:
         except Exception as e:
             print(f"Error fetching MCX near month for {base_symbol}: {e}")
             return None
+
+    def get_dhan_derivatives(self, base_symbol, spot_price):
+        if not self.dhan_active or self.dhan_master is None:
+            return []
+            
+        derivatives_to_track = []
+        now = datetime.now()
+        
+        # Helper to get active contracts for a base symbol and instrument type
+        def get_active_contracts(instrument_name):
+            df = self.dhan_master[
+                (self.dhan_master['SEM_EXM_EXCH_ID'] == 'NSE') & 
+                (self.dhan_master['SEM_INSTRUMENT_NAME'] == instrument_name) &
+                (self.dhan_master['SEM_TRADING_SYMBOL'].str.startswith(f"{base_symbol}-", na=False))
+            ].copy()
+            if not df.empty:
+                df['EXP_DATE'] = pd.to_datetime(df['SEM_EXPIRY_DATE'])
+                df = df[df['EXP_DATE'] >= now].sort_values('EXP_DATE')
+            return df
+
+        # 1. Near-Month Future
+        futures = get_active_contracts('FUTIDX')
+        if not futures.empty:
+            near_fut = futures.iloc[0]
+            derivatives_to_track.append({
+                'symbol': near_fut['SEM_TRADING_SYMBOL'],
+                'security_id': str(near_fut['SEM_SMST_SECURITY_ID']),
+                'type': 'Future',
+                'exchange_segment': 'NSE_FNO',
+                'instrument_type': 'FUTIDX'
+            })
+            
+        # 2. Near-Month ATM Options (CE & PE)
+        options = get_active_contracts('OPTIDX')
+        if not options.empty and spot_price:
+            nearest_expiry = options.iloc[0]['EXP_DATE']
+            near_options = options[options['EXP_DATE'] == nearest_expiry].copy()
+            
+            near_options['STRIKE_DIFF'] = abs(near_options['SEM_STRIKE_PRICE'] - spot_price)
+            atm_strike = near_options.loc[near_options['STRIKE_DIFF'].idxmin()]['SEM_STRIKE_PRICE']
+            
+            atm_options = near_options[near_options['SEM_STRIKE_PRICE'] == atm_strike]
+            for _, opt in atm_options.iterrows():
+                derivatives_to_track.append({
+                    'symbol': opt['SEM_TRADING_SYMBOL'],
+                    'security_id': str(opt['SEM_SMST_SECURITY_ID']),
+                    'type': f"Option {opt['SEM_OPTION_TYPE']}",
+                    'exchange_segment': 'NSE_FNO',
+                    'instrument_type': 'OPTIDX'
+                })
+                
+        return derivatives_to_track
 
     def get_dhan_levels(self, security_id, exchange_segment="NSE_EQ", instrument_type="EQUITY"):
         try:
@@ -569,6 +624,41 @@ class PriceChecker:
                     "intrinsic_value": intrinsic_val,
                     "last_updated": datetime.utcnow().isoformat()
                 })
+
+        # 3. Check Derivatives (Futures & Options)
+        if self.dhan_active and hasattr(self, 'derivatives'):
+            for base_symbol, config_data in self.derivatives.items():
+                print(f"\nChecking Derivatives for {base_symbol}...")
+                # Get spot price for ATM option calculation
+                yf_spot_sym = '^NSEI' if base_symbol == 'NIFTY' else '^NSEBANK' if base_symbol == 'BANKNIFTY' else None
+                spot_price = None
+                if yf_spot_sym:
+                    try:
+                        ticker = yf.Ticker(yf_spot_sym)
+                        hist = ticker.history(period="1d")
+                        if not hist.empty:
+                            spot_price = hist['Close'].iloc[-1]
+                    except Exception as e:
+                        print(f"Error fetching spot price for {base_symbol}: {e}")
+                
+                derivs = self.get_dhan_derivatives(base_symbol, spot_price)
+                for deriv in derivs:
+                    symbol = deriv['symbol']
+                    print(f"Fetching price for {symbol}...")
+                    current_price = self.get_dhan_current_price(deriv['security_id'], exchange_segment=deriv['exchange_segment'], instrument_type=deriv['instrument_type'])
+                    if current_price:
+                        market_data_payload.append({
+                            "symbol": symbol,
+                            "name": symbol,
+                            "asset_type": deriv['type'],
+                            "current_price": round(current_price, 2),
+                            "r1": None, "r2": None, "s1": None, "s2": None, "pivot": None,
+                            "alert_status": None,
+                            "last_alert_date": None,
+                            "last_alert_msg": None,
+                            "intrinsic_value": None,
+                            "last_updated": datetime.utcnow().isoformat()
+                        })
 
         if market_data_payload:
             self.sync_to_supabase(market_data_payload)

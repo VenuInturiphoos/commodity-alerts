@@ -40,6 +40,18 @@
       "mcx_multiplier": 0.001074
     }
   },
+  "derivatives": {
+    "NIFTY": {
+      "name": "NIFTY 50",
+      "track_futures": true,
+      "track_atm_options": true
+    },
+    "BANKNIFTY": {
+      "name": "BANK NIFTY",
+      "track_futures": true,
+      "track_atm_options": true
+    }
+  },
   "check_interval_seconds": 300,
   "stocks": {
     "ADANIENT.NS": {
