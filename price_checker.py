@@ -549,25 +549,22 @@ class PriceChecker:
             yf_sym = data.get('yf_symbol')
             
             # DYNAMIC UNIT CONVERSION (Global USD to MCX INR)
-            # Gold: $ per Troy Oz -> ₹ per 10 grams (1 Troy Oz = 31.1035 grams)
-            if symbol == "GOLD":
-                conversion = self.usd_inr_rate * (10 / 31.1035)
-            # Silver: $ per Troy Oz -> ₹ per 1 kg (1000 grams)
-            elif symbol == "SILVER":
-                conversion = self.usd_inr_rate * (1000 / 31.1035)
-            # Copper: $ per lb -> ₹ per 1 kg (1 kg = 2.20462 lbs)
-            elif symbol == "COPPER":
-                conversion = self.usd_inr_rate * 2.20462
-            # Aluminum: $ per metric ton -> ₹ per 1 kg (1 MT = 1000 kg)
-            elif symbol == "ALUMINIUM":
-                conversion = self.usd_inr_rate / 1000
-            # Crude Oil (per barrel) & Natural Gas (per mmBtu) are 1:1 units
+            mcx_multiplier = data.get('mcx_multiplier')
+            
+            if mcx_multiplier is not None:
+                conversion = self.usd_inr_rate * mcx_multiplier
             else:
-                conversion = self.usd_inr_rate
-                
-            # Add an approximate 12% premium for Indian Gold/Silver Customs Duty & GST
-            if symbol in ["GOLD", "SILVER"]:
-                conversion *= 1.12
+                # Fallback logic if multiplier isn't defined in config
+                if symbol == "GOLD":
+                    conversion = self.usd_inr_rate * (10 / 31.1035) * 1.12
+                elif symbol == "SILVER":
+                    conversion = self.usd_inr_rate * (1000 / 31.1035) * 1.12
+                elif symbol == "COPPER":
+                    conversion = self.usd_inr_rate * 2.20462
+                elif symbol == "ALUMINIUM":
+                    conversion = self.usd_inr_rate / 1000
+                else:
+                    conversion = self.usd_inr_rate
             
             print(f"\nChecking Commodity {name} ({symbol}) via MCX API (or yfinance fallback)...")
             current_price = self.get_current_price(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
