@@ -389,15 +389,8 @@ class PriceChecker:
         return None
 
     def get_current_price(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None):
-        # Handle Commodities via DhanHQ MCX
+        # We now use yfinance for the base spot price so spot and futures are separated
         if is_commodity:
-            if self.dhan_active:
-                sec_id = self.get_dhan_mcx_near_month(ticker_symbol)
-                if sec_id:
-                    price = self.get_dhan_current_price(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
-                    if price:
-                        return price
-            # Fallback to yfinance if Dhan fails or MCX is inactive
             ticker_symbol = yf_symbol
             
         # Handle Stocks via DhanHQ NSE
@@ -624,6 +617,26 @@ class PriceChecker:
                     "intrinsic_value": None,
                     "last_updated": datetime.utcnow().isoformat()
                 })
+                
+                # Fetch and add Commodity Future explicitly
+                if self.dhan_active:
+                    sec_id = self.get_dhan_mcx_near_month(symbol)
+                    if sec_id:
+                        fut_price = self.get_dhan_current_price(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
+                        if fut_price:
+                            market_data_payload.append({
+                                "symbol": f"{symbol}-FUT",
+                                "name": f"{name} Future",
+                                "asset_type": "Commodity Future",
+                                "current_price": round(fut_price, 2),
+                                "r1": None, "r2": None, "s1": None, "s2": None, "pivot": None,
+                                "alert_status": None,
+                                "last_alert_date": None,
+                                "last_alert_msg": None,
+                                "signal": None,
+                                "intrinsic_value": None,
+                                "last_updated": datetime.utcnow().isoformat()
+                            })
             
         # 2. Check Stocks
         for symbol, data in self.stocks.items():
