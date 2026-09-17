@@ -255,8 +255,26 @@
                         </div>
                     </div>
 
-
-
+                    <!-- Pending Orders -->
+                    <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--text-secondary); font-size: 1.1rem;"><i class="fa-solid fa-clock" style="color:#a855f7; margin-right:8px;"></i> Pending Limit Orders</h3>
+                        <table class="market-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Asset</th>
+                                    <th>Type</th>
+                                    <th>Quantity</th>
+                                    <th>Limit Price</th>
+                                    <th>Total Value</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pending-orders-body">
+                                <tr><td colspan="7" class="loading">Loading pending orders...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <!-- Trading Terminal -->
                     <div style="margin-bottom: 2rem;">
                         <h2 style="margin-bottom: 1rem;">Trade Assets</h2>
@@ -376,6 +394,17 @@
             <p id="trade-modal-price" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem; color: var(--text-primary);">₹0.00</p>
             
             <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <label>
+                    <span style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Order Type</span>
+                    <select id="trade-order-type" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; font-size: 1.1rem;">
+                        <option value="MARKET">Market Order</option>
+                        <option value="LIMIT">Limit Order</option>
+                    </select>
+                </label>
+                <label id="trade-limit-price-container" class="hidden">
+                    <span style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Target Limit Price</span>
+                    <input type="number" id="trade-limit-price" step="0.05" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; font-size: 1.2rem;">
+                </label>
                 <label>
                     <span style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Quantity</span>
                     <input type="number" id="trade-qty" value="1" min="1" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; font-size: 1.2rem;">
@@ -885,6 +914,7 @@ let currentUser = null;
 let userBalance = 0;
 let userPortfolio = {};
 let activeTradeAsset = null;
+let pendingOrders = [];
 
 async function fetchPaperTradingData(user) {
     currentUser = user;
@@ -970,7 +1000,21 @@ async function fetchPaperTradingData(user) {
             }
         });
         
+        // 3. Fetch Pending Orders
+        const { data: poData, error: poError } = await supabaseClient
+            .from('pending_orders')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+            
+        if (poError) {
+            console.error("Error fetching pending orders:", poError);
+        } else if (poData) {
+            pendingOrders = poData;
+        }
+        
         renderOrderHistory(txData);
+        renderPendingOrders(pendingOrders);
         renderPortfolio();
         renderTradeMarket();
     }
@@ -1059,6 +1103,57 @@ function renderPortfolio() {
     const plSign = totalPl >= 0 ? '+' : '';
     document.getElementById('virtual-total-pl').textContent = `${plSign}₹${Math.abs(totalPl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     document.getElementById('virtual-total-pl').style.color = plColor;
+}
+
+window.cancelPendingOrder = async function(orderId) {
+    if (!confirm("Are you sure you want to cancel this limit order?")) return;
+    try {
+        const { error } = await supabaseClient.from('pending_orders').update({ status: 'CANCELLED' }).eq('id', orderId);
+        if (error) throw error;
+        alert("Limit order cancelled successfully.");
+        fetchPaperTradingData(currentUser);
+    } catch (err) {
+        alert("Error cancelling order: " + err.message);
+    }
+}
+
+function renderPendingOrders(orders) {
+    const tbody = document.getElementById('pending-orders-body');
+    tbody.innerHTML = '';
+    
+    const activeOrders = orders.filter(o => o.status === 'PENDING');
+
+    if (!activeOrders || activeOrders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No pending limit orders.</td></tr>`;
+        return;
+    }
+
+    activeOrders.forEach(tx => {
+        const date = new Date(tx.created_at).toLocaleString('en-IN', { 
+            year: 'numeric', month: 'short', day: 'numeric', 
+            hour: '2-digit', minute:'2-digit', second:'2-digit' 
+        });
+        
+        const marketItem = marketData.find(item => item.symbol === tx.symbol);
+        const name = marketItem ? marketItem.name : tx.symbol;
+        
+        const totalValue = tx.quantity * tx.limit_price;
+        const color = tx.transaction_type === 'BUY' ? '#4ade80' : '#fb7185';
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="color:var(--text-secondary); font-size: 0.9rem;">${date}</td>
+            <td><strong>${name}</strong> <small style="color:var(--text-secondary)">(${tx.symbol})</small></td>
+            <td style="color: ${color}; font-weight: bold;">${tx.transaction_type}</td>
+            <td>${tx.quantity.toLocaleString('en-IN')}</td>
+            <td style="font-weight:600">₹${parseFloat(tx.limit_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td style="font-weight:600; color:var(--text-secondary)">₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td style="text-align: right;">
+                <button onclick="cancelPendingOrder('${tx.id}')" class="trade-btn sell-btn btn-small" style="background: rgba(239, 68, 68, 0.1) !important; color: #fb7185 !important; border-color: rgba(239, 68, 68, 0.3) !important;">Cancel</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 function renderOrderHistory(txData) {
@@ -1269,7 +1364,7 @@ window.resetPaperTradingAccount = async function() {
     }
 }
 
-window.executeTrade = async function(symbol, type, qty, price) {
+window.executeTrade = async function(symbol, type, qty, price, orderType = 'MARKET') {
     if (!currentUser) throw new Error("Not logged in");
     const totalValue = qty * price;
     
@@ -1291,8 +1386,16 @@ window.executeTrade = async function(symbol, type, qty, price) {
             totalInvested += costBasis;
             totalPl += pl;
         }
+        
+        let pendingMarginLocked = 0;
+        for (const po of pendingOrders) {
+            if (po.status === 'PENDING') {
+                pendingMarginLocked += (po.quantity * po.limit_price) * 0.15;
+            }
+        }
+        
         const netWorth = userBalance + totalInvested + totalPl;
-        const usedMargin = totalInvested * 0.15; // 15% margin
+        const usedMargin = (totalInvested * 0.15) + pendingMarginLocked;
         const availableMargin = netWorth - usedMargin;
         
         const marginRequiredForTrade = totalValue * 0.15;
@@ -1301,7 +1404,20 @@ window.executeTrade = async function(symbol, type, qty, price) {
         }
     }
     
-    // 1. Insert Transaction
+    if (orderType === 'LIMIT') {
+        const { error: limitError } = await supabaseClient.from('pending_orders').insert([{
+            user_id: currentUser.id,
+            symbol: symbol,
+            transaction_type: type,
+            quantity: qty,
+            limit_price: price,
+            status: 'PENDING'
+        }]);
+        if (limitError) throw limitError;
+        return true;
+    }
+    
+    // 1. Insert Transaction (Market Order)
     const { error: txError } = await supabaseClient.from('transactions').insert([{
         user_id: currentUser.id,
         symbol: symbol,
@@ -1312,7 +1428,7 @@ window.executeTrade = async function(symbol, type, qty, price) {
     
     if (txError) throw txError;
     
-    // 2. Update Profile Balance
+    // 2. Update Profile Balance (Market Order)
     const newBalance = type === 'BUY' ? (userBalance - totalValue) : (userBalance + totalValue);
     const { error: profileError } = await supabaseClient.from('profiles')
         .update({ balance: newBalance })
@@ -1339,14 +1455,33 @@ window.exitPosition = async function(symbol, name, currentPrice, currentShares, 
 // Modal Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     const qtyInput = document.getElementById('trade-qty');
+    const orderTypeSelect = document.getElementById('trade-order-type');
+    const limitPriceInput = document.getElementById('trade-limit-price');
+    const limitPriceContainer = document.getElementById('trade-limit-price-container');
+
+    if (orderTypeSelect) {
+        orderTypeSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'LIMIT') {
+                limitPriceContainer.classList.remove('hidden');
+                if (activeTradeAsset) limitPriceInput.value = activeTradeAsset.price;
+            } else {
+                limitPriceContainer.classList.add('hidden');
+            }
+        });
+    }
+
     if (qtyInput) {
-        qtyInput.addEventListener('input', (e) => {
+        const updateTradeValue = () => {
             if (!activeTradeAsset) return;
-            const qty = parseInt(e.target.value) || 0;
-            const total = qty * activeTradeAsset.price;
+            const qty = parseInt(qtyInput.value) || 0;
+            const price = orderTypeSelect.value === 'LIMIT' ? (parseFloat(limitPriceInput.value) || activeTradeAsset.price) : activeTradeAsset.price;
+            const total = qty * price;
             document.getElementById('trade-total-value').textContent = `₹${total.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
             document.getElementById('trade-margin-value').textContent = `₹${(total * 0.15).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-        });
+        };
+        qtyInput.addEventListener('input', updateTradeValue);
+        limitPriceInput.addEventListener('input', updateTradeValue);
+        orderTypeSelect.addEventListener('change', updateTradeValue);
     }
 
     document.getElementById('trade-cancel-btn')?.addEventListener('click', () => {
@@ -1364,21 +1499,35 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const totalValue = qty * activeTradeAsset.price;
+        const orderType = document.getElementById('trade-order-type').value;
+        const limitPrice = parseFloat(document.getElementById('trade-limit-price').value);
+        const executionPrice = orderType === 'LIMIT' ? limitPrice : activeTradeAsset.price;
+        
         const statusMsg = document.getElementById('trade-status-msg');
         const buyBtn = document.getElementById('trade-buy-btn');
         const sellBtn = document.getElementById('trade-sell-btn');
-        
 
+        if (orderType === 'LIMIT' && (isNaN(limitPrice) || limitPrice <= 0)) {
+            statusMsg.textContent = "Please enter a valid limit price.";
+            statusMsg.style.color = 'var(--accent-red)';
+            return;
+        }
+
+        const totalValue = qty * executionPrice;
+        
         buyBtn.disabled = true;
         sellBtn.disabled = true;
         statusMsg.textContent = "Processing order...";
         statusMsg.style.color = "var(--text-secondary)";
         
         try {
-            await window.executeTrade(activeTradeAsset.symbol, type, qty, activeTradeAsset.price);
+            await window.executeTrade(activeTradeAsset.symbol, type, qty, executionPrice, orderType);
             
-            statusMsg.textContent = `Successfully ${type === 'BUY' ? 'bought' : 'sold'} ${qty} shares!`;
+            if (orderType === 'LIMIT') {
+                statusMsg.textContent = `Limit order placed to ${type === 'BUY' ? 'buy' : 'sell'} ${qty} shares!`;
+            } else {
+                statusMsg.textContent = `Successfully ${type === 'BUY' ? 'bought' : 'sold'} ${qty} shares!`;
+            }
             statusMsg.style.color = "#4ade80";
             
             // Refresh data
