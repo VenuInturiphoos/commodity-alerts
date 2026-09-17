@@ -1106,8 +1106,8 @@ function renderTradeMarket() {
         const tr = document.createElement('tr');
         let badgeClass = 'type-stock';
         if (item.asset_type === 'Commodity') badgeClass = 'type-commodity';
-        else if (item.asset_type.startsWith('Future')) badgeClass = 'type-future';
-        else if (item.asset_type.startsWith('Option')) badgeClass = 'type-option';
+        else if (item.asset_type.includes('Future')) badgeClass = 'type-future';
+        else if (item.asset_type.includes('Option')) badgeClass = 'type-option';
         
         tr.innerHTML = `
             <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
