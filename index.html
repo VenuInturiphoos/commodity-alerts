@@ -382,8 +382,12 @@
                 </label>
                 
                 <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.9rem;">
-                    <span style="color: var(--text-secondary);">Total Order Value:</span>
+                    <span style="color: var(--text-secondary);">Total Exposure Value:</span>
                     <strong id="trade-total-value">₹0.00</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 1rem;">
+                    <span style="color: var(--text-secondary);">Margin Required (15%):</span>
+                    <strong id="trade-margin-value" style="color: #a855f7;">₹0.00</strong>
                 </div>
 
                 <div style="display: flex; gap: 1rem; margin-top: 1rem;">
@@ -1217,7 +1221,9 @@ function openTradeModal(symbol, name, price) {
     qtyInput.step = lotSize;
     qtyInput.min = lotSize;
     
-    document.getElementById('trade-total-value').textContent = `₹${(activeTradeAsset.price * lotSize).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    const totalValue = activeTradeAsset.price * lotSize;
+    document.getElementById('trade-total-value').textContent = `₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    document.getElementById('trade-margin-value').textContent = `₹${(totalValue * 0.15).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
     document.getElementById('trade-status-msg').textContent = '';
     
     document.getElementById('trade-modal').classList.remove('hidden');
@@ -1339,6 +1345,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const qty = parseInt(e.target.value) || 0;
             const total = qty * activeTradeAsset.price;
             document.getElementById('trade-total-value').textContent = `₹${total.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            document.getElementById('trade-margin-value').textContent = `₹${(total * 0.15).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
         });
     }
 
@@ -1362,12 +1369,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const buyBtn = document.getElementById('trade-buy-btn');
         const sellBtn = document.getElementById('trade-sell-btn');
         
-        if (type === 'BUY' && totalValue > userBalance) {
-            statusMsg.textContent = "Insufficient virtual balance.";
-            statusMsg.style.color = "#fb7185";
-            return;
-        }
-        
+
         buyBtn.disabled = true;
         sellBtn.disabled = true;
         statusMsg.textContent = "Processing order...";
