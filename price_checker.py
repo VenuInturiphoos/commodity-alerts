@@ -8,7 +8,10 @@ import json
 import math
 import numpy as np
 from scipy.signal import argrelextrema
-from dhanhq import dhanhq, DhanContext
+from SmartApi import SmartConnect
+import pyotp
+import urllib.request
+import json as json_lib
 
 class PriceChecker:
     def __init__(self, config):
@@ -21,293 +24,224 @@ class PriceChecker:
         self.supabase_url = 'https://cohupetijvykzmeliubg.supabase.co/rest/v1/market_data'
         self.supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvaHVwZXRpanZ5a3ptZWxpdWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMjg4ODAsImV4cCI6MjEwMjcwNDg4MH0.zA5IwTKp0f-IRQ5dB3a9vXJSD1X2EVzxIDEyzXC27Cw'
 
-        # Dhan config
-        self.dhan_client_id = os.environ.get('DHAN_CLIENT_ID')
-        self.dhan_access_token = os.environ.get('DHAN_ACCESS_TOKEN')
-        self.dhan_active = False
-        self.dhan = None
-        self.dhan_master = None
+        # AngelOne config
+        self.angel_api_key = os.environ.get('ANGEL_API_KEY')
+        self.angel_client_id = os.environ.get('ANGEL_CLIENT_ID')
+        self.angel_password = os.environ.get('ANGEL_PASSWORD')
+        self.angel_totp_secret = os.environ.get('ANGEL_TOTP_SECRET')
+        self.angel_active = False
+        self.angel = None
+        self.angel_master = None
         
-        if self.dhan_client_id and self.dhan_access_token:
+        if self.angel_api_key and self.angel_client_id and self.angel_password and self.angel_totp_secret:
             try:
-                ctx = DhanContext(self.dhan_client_id, self.dhan_access_token)
-                self.dhan = dhanhq(ctx)
-                self.dhan_active = True
-                print("DhanHQ API Initialized Successfully.")
-                self.load_dhan_master()
+                self.angel = SmartConnect(api_key=self.angel_api_key)
+                totp = pyotp.TOTP(self.angel_totp_secret).now()
+                data = self.angel.generateSession(self.angel_client_id, self.angel_password, totp)
+                if data['status']:
+                    self.angel_active = True
+                    print("AngelOne API Initialized Successfully.")
+                    self.load_angel_master()
+                else:
+                    print(f"Failed to initialize AngelOne: {data['message']}")
+                    self.angel_active = False
             except Exception as e:
-                print(f"Failed to initialize DhanHQ: {e}")
-                self.dhan_active = False
+                print(f"Failed to initialize AngelOne Exception: {e}")
+                self.angel_active = False
 
-    def load_dhan_master(self):
+    def load_angel_master(self):
         try:
-            print("Downloading DhanHQ Instrument Master...")
-            # Using usecols drastically reduces memory and parsing time for the 50MB CSV
-            cols_to_use = [
-                'SEM_EXM_EXCH_ID',
-                'SEM_INSTRUMENT_NAME',
-                'SM_SYMBOL_NAME',
-                'SEM_EXPIRY_DATE',
-                'SEM_SMST_SECURITY_ID',
-                'SEM_CUSTOM_SYMBOL',
-                'SEM_STRIKE_PRICE',
-                'SEM_OPTION_TYPE',
-                'SEM_TRADING_SYMBOL'
-            ]
-            self.dhan_master = pd.read_csv('https://images.dhan.co/api-data/api-scrip-master.csv', usecols=cols_to_use, low_memory=False)
-            print("DhanHQ Instrument Master loaded.")
+            print("Downloading AngelOne Instrument Master...")
+            # We fetch the JSON from AngelOne
+            url = "https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json"
+            response = urllib.request.urlopen(url)
+            data = json_lib.loads(response.read())
+            self.angel_master = pd.DataFrame(data)
+            # Optimize memory and lookups
+            self.angel_master['expiry'] = pd.to_datetime(self.angel_master['expiry'], format="%d%b%Y", errors='coerce')
+            print("AngelOne Instrument Master loaded.")
         except Exception as e:
-            print(f"Error loading Dhan Master CSV: {e}")
-            self.dhan_active = False
+            print(f"Error loading AngelOne Master JSON: {e}")
+            self.angel_active = False
 
-    def get_usd_inr_rate(self):
-        try:
-            ticker = yf.Ticker('INR=X')
-            hist = ticker.history(period="1d")
-            if len(hist) > 0:
-                rate = hist['Close'].iloc[-1]
-                print(f"Current USD/INR Exchange Rate: ₹{rate:.2f}")
-                return rate
-        except Exception as e:
-            print(f"Error fetching USD/INR rate: {e}")
-        print("Using fallback USD/INR exchange rate of 83.50")
-        return 83.50
-
-    def get_dhan_security_id(self, symbol, exchange="NSE"):
-        if not self.dhan_active or self.dhan_master is None:
+    def get_angel_token(self, symbol, exchange="NSE"):
+        if not self.angel_active or self.angel_master is None:
             return None
-            
+        
         clean_symbol = symbol.replace('.NS', '').replace('.BO', '')
         
-        # Try to find the exact symbol in the master CSV
-        instrument = self.dhan_master[
-            (self.dhan_master['SEM_EXM_EXCH_ID'] == exchange) & 
-            (self.dhan_master['SEM_CUSTOM_SYMBOL'] == clean_symbol)
+        instrument = self.angel_master[
+            (self.angel_master['exch_seg'] == exchange) & 
+            ((self.angel_master['symbol'] == clean_symbol + '-EQ') | (self.angel_master['symbol'] == clean_symbol))
         ]
         
         if not instrument.empty:
-            return str(instrument['SEM_SMST_SECURITY_ID'].values[0])
+            return str(instrument['token'].values[0])
         return None
 
-    def get_dhan_mcx_near_month(self, base_symbol):
-        if not self.dhan_active or self.dhan_master is None:
-            print(f"Skipping Dhan MCX for {base_symbol}: dhan_active={self.dhan_active}, dhan_master is loaded={self.dhan_master is not None}")
+    def get_angel_mcx_near_month(self, base_symbol):
+        if not self.angel_active or self.angel_master is None:
+            print(f"Skipping Angel MCX for {base_symbol}: active={self.angel_active}")
             return None
             
         try:
-            mcx = self.dhan_master[
-                (self.dhan_master['SEM_EXM_EXCH_ID'] == 'MCX') & 
-                (self.dhan_master['SEM_INSTRUMENT_NAME'] == 'FUTCOM') &
-                (self.dhan_master['SM_SYMBOL_NAME'] == base_symbol)
+            mcx = self.angel_master[
+                (self.angel_master['exch_seg'] == 'MCX') & 
+                (self.angel_master['name'] == base_symbol) &
+                (self.angel_master['instrumenttype'].isin(['FUTCOM', 'FUTENR', 'FUTBULL', 'FUTIDX', 'FUTMCX']))
             ].copy()
             
             if mcx.empty:
-                print(f"No active MCX futures found in Dhan master for {base_symbol}!")
+                print(f"No active MCX futures found in Angel master for {base_symbol}!")
                 return None
             
             now = datetime.now()
-            mcx['EXP_DATE'] = pd.to_datetime(mcx['SEM_EXPIRY_DATE'])
-            mcx = mcx[mcx['EXP_DATE'] >= now].sort_values('EXP_DATE')
+            mcx = mcx[mcx['expiry'] >= now].sort_values('expiry')
             
             if not mcx.empty:
-                return str(mcx.iloc[0]['SEM_SMST_SECURITY_ID'])
+                return str(mcx.iloc[0]['token'])
             return None
         except Exception as e:
             print(f"Error fetching MCX near month for {base_symbol}: {e}")
             return None
 
-    def get_dhan_derivatives(self, base_symbol, spot_price):
-        if not self.dhan_active or self.dhan_master is None:
+    def get_angel_derivatives(self, base_symbol, spot_price):
+        if not self.angel_active or self.angel_master is None:
             return []
             
         derivatives_to_track = []
         now = datetime.now()
         
-        # Helper to get active contracts for a base symbol and instrument type
-        def get_active_contracts(instrument_name):
-            df = self.dhan_master[
-                (self.dhan_master['SEM_EXM_EXCH_ID'] == 'NSE') & 
-                (self.dhan_master['SEM_INSTRUMENT_NAME'] == instrument_name) &
-                (self.dhan_master['SEM_TRADING_SYMBOL'].str.startswith(f"{base_symbol}-", na=False))
-            ].copy()
-            if not df.empty:
-                df['EXP_DATE'] = pd.to_datetime(df['SEM_EXPIRY_DATE'])
-                df = df[df['EXP_DATE'] >= now].sort_values('EXP_DATE')
-            return df
-
         # 1. Near-Month Future
-        futures = get_active_contracts('FUTIDX')
+        futures = self.angel_master[
+            (self.angel_master['exch_seg'] == 'NFO') & 
+            (self.angel_master['name'] == base_symbol) &
+            (self.angel_master['instrumenttype'].isin(['FUTIDX', 'FUTSTK']))
+        ].copy()
+        
         if not futures.empty:
-            near_fut = futures.iloc[0]
-            derivatives_to_track.append({
-                'symbol': near_fut['SEM_TRADING_SYMBOL'],
-                'security_id': str(near_fut['SEM_SMST_SECURITY_ID']),
-                'type': 'Future',
-                'exchange_segment': 'NSE_FNO',
-                'instrument_type': 'FUTIDX'
-            })
+            futures = futures[futures['expiry'] >= now].sort_values('expiry')
+            if not futures.empty:
+                near_fut = futures.iloc[0]
+                derivatives_to_track.append({
+                    'symbol': near_fut['symbol'],
+                    'security_id': str(near_fut['token']),
+                    'type': 'Future',
+                    'exchange_segment': 'NFO',
+                    'instrument_type': 'FUTIDX'
+                })
             
         # 2. Near-Month ATM Options (CE & PE)
-        options = get_active_contracts('OPTIDX')
+        options = self.angel_master[
+            (self.angel_master['exch_seg'] == 'NFO') & 
+            (self.angel_master['name'] == base_symbol) &
+            (self.angel_master['instrumenttype'].isin(['OPTIDX', 'OPTSTK']))
+        ].copy()
+        
         if not options.empty and spot_price:
-            nearest_expiry = options.iloc[0]['EXP_DATE']
-            near_options = options[options['EXP_DATE'] == nearest_expiry].copy()
-            
-            near_options['STRIKE_DIFF'] = abs(near_options['SEM_STRIKE_PRICE'] - spot_price)
-            atm_strike = near_options.loc[near_options['STRIKE_DIFF'].idxmin()]['SEM_STRIKE_PRICE']
-            
-            atm_options = near_options[near_options['SEM_STRIKE_PRICE'] == atm_strike]
-            for _, opt in atm_options.iterrows():
-                derivatives_to_track.append({
-                    'symbol': opt['SEM_TRADING_SYMBOL'],
-                    'security_id': str(opt['SEM_SMST_SECURITY_ID']),
-                    'type': f"Option {opt['SEM_OPTION_TYPE']}",
-                    'exchange_segment': 'NSE_FNO',
-                    'instrument_type': 'OPTIDX'
-                })
+            options = options[options['expiry'] >= now].sort_values('expiry')
+            if not options.empty:
+                nearest_expiry = options.iloc[0]['expiry']
+                near_options = options[options['expiry'] == nearest_expiry].copy()
                 
+                near_options['strike_val'] = pd.to_numeric(near_options['strike'], errors='coerce') / 100
+                near_options['STRIKE_DIFF'] = abs(near_options['strike_val'] - spot_price)
+                
+                atm_strike = near_options.loc[near_options['STRIKE_DIFF'].idxmin()]['strike_val']
+                
+                atm_options = near_options[near_options['strike_val'] == atm_strike]
+                for _, opt in atm_options.iterrows():
+                    opt_type = 'CE' if opt['symbol'].endswith('CE') else 'PE'
+                    derivatives_to_track.append({
+                        'symbol': opt['symbol'],
+                        'security_id': str(opt['token']),
+                        'type': f'Option ({opt_type})',
+                        'exchange_segment': 'NFO',
+                        'instrument_type': 'OPTIDX',
+                        'strike': float(atm_strike)
+                    })
+                    
         return derivatives_to_track
 
-    def get_dhan_levels(self, security_id, exchange_segment="NSE_EQ", instrument_type="EQUITY"):
+    def get_angel_levels(self, token, exchange_segment="NSE"):
         try:
-            # Get historical daily data to find yesterday's OHLC
-            today = datetime.now()
-            # Look back up to 10 days to ensure we get the last trading day
-            from_date = (today - timedelta(days=10)).strftime('%Y-%m-%d')
-            to_date = today.strftime('%Y-%m-%d')
+            # For levels we need historic data for the previous day
+            now = datetime.now()
+            past = now - timedelta(days=5)
             
-            data = self.dhan.historical_daily_data(
-                security_id=security_id,
-                exchange_segment=exchange_segment,
-                instrument_type=instrument_type,
-                expiry_code=0,
-                from_date=from_date,
-                to_date=to_date
-            )
+            historicParam = {
+                "exchange": exchange_segment,
+                "symboltoken": str(token),
+                "interval": "ONE_DAY",
+                "fromdate": past.strftime("%Y-%m-%d %H:%M"),
+                "todate": now.strftime("%Y-%m-%d %H:%M")
+            }
             
-            if not data or data.get('status') == 'failure' or not data.get('data'):
-                print(f"Dhan API historical_daily_data failed for {security_id}. Response: {data}")
-                return None
-                
-            if data and data.get('data'):
-                if len(data['data']['close']) >= 2:
-                    # Get the previous day's data for pivot points
-                    high = data['data']['high'][-2]
-                    low = data['data']['low'][-2]
-                    close = data['data']['close'][-2]
+            data = self.angel.getCandleData(historicParam)
+            
+            if data and data.get('status') and data.get('data'):
+                candles = data['data']
+                if len(candles) >= 1:
+                    last_candle = candles[-1]
+                    if len(candles) >= 2 and now.hour < 9 or (now.hour == 9 and now.minute < 15):
+                        last_candle = candles[-2]
+                        
+                    high = last_candle[2]
+                    low = last_candle[3]
+                    close = last_candle[4]
                     
-                    p = (high + low + close) / 3
-                    r1 = (p * 2) - low
-                    r2 = p + (high - low)
-                    s1 = (p * 2) - high
-                    s2 = p - (high - low)
+                    pivot = (high + low + close) / 3
+                    r1 = (2 * pivot) - low
+                    s1 = (2 * pivot) - high
+                    r2 = pivot + (high - low)
+                    s2 = pivot - (high - low)
                     
                     return {
-                        "Pivot": p,
-                        "R1": r1,
-                        "R2": r2,
-                        "S1": s1,
-                        "S2": s2
+                        'R2': round(r2, 2),
+                        'R1': round(r1, 2),
+                        'Pivot': round(pivot, 2),
+                        'S1': round(s1, 2),
+                        'S2': round(s2, 2)
                     }
-                else:
-                    print(f"Dhan API returned successful historical data, but it has less than 2 candles! Length: {len(data['data']['close'])}")
-                    return None
             return None
         except Exception as e:
-            print(f"Error fetching historical data from Dhan for {security_id}: {e}")
+            print(f"Error fetching historical data from AngelOne for {token}: {e}")
             return None
 
-    def get_dhan_current_price(self, security_id, exchange_segment="NSE_EQ", instrument_type="EQUITY"):
+    def get_angel_current_price(self, token, exchange_segment="NSE"):
         try:
-            securities = {exchange_segment: [str(security_id)]}
-            data = self.dhan.ticker_data(securities)
-            
-            if not data or data.get('status') == 'failure' or not data.get('data'):
-                print(f"Dhan API ticker_data failed for {security_id}. Response: {data}")
-                return None
-                
-            seg_data = data['data'].get(exchange_segment, {})
-            # The security ID might be string or int in the response dictionary
-            sec_data = seg_data.get(str(security_id)) or seg_data.get(int(security_id))
-            
-            if sec_data and 'last_price' in sec_data:
-                return sec_data['last_price']
-                
-            print(f"Dhan API ticker_data missing last_price for {security_id}. Response: {data}")
+            symbol = "DUMMY"
+            if self.angel_master is not None:
+                instrument = self.angel_master[self.angel_master['token'] == str(token)]
+                if not instrument.empty:
+                    symbol = instrument['symbol'].values[0]
+                    
+            data = self.angel.ltpData(exchange_segment, symbol, str(token))
+            if data and data.get('status') and data.get('data'):
+                return data['data']['ltp']
             return None
         except Exception as e:
-            print(f"Error fetching live price from Dhan for {security_id}: {e}")
-            return None
-
-
-    def get_algorithmic_levels(self, yf_symbol, current_price):
-        try:
-            ticker = yf.Ticker(yf_symbol)
-            df = ticker.history(period="6mo")
-            if df.empty:
-                return None
-                
-            order = 5
-            local_min_idx = argrelextrema(df['Low'].values, np.less, order=order)[0]
-            local_max_idx = argrelextrema(df['High'].values, np.greater, order=order)[0]
-            
-            support_prices = df['Low'].iloc[local_min_idx].values
-            resistance_prices = df['High'].iloc[local_max_idx].values
-            
-            def cluster_prices(prices, threshold=0.01):
-                clusters = []
-                for p in sorted(prices):
-                    added = False
-                    for cluster in clusters:
-                        avg = np.mean(cluster)
-                        if abs(p - avg) / avg <= threshold:
-                            cluster.append(p)
-                            added = True
-                            break
-                    if not added:
-                        clusters.append([p])
-                results = []
-                for c in clusters:
-                    results.append({"price": np.mean(c), "strength": len(c)})
-                return results
-                
-            supports = cluster_prices(support_prices)
-            resistances = cluster_prices(resistance_prices)
-            
-            valid_supports = [s for s in supports if s['price'] < current_price]
-            valid_resistances = [r for r in resistances if r['price'] > current_price]
-            
-            valid_supports = sorted(valid_supports, key=lambda x: x['price'], reverse=True)
-            valid_resistances = sorted(valid_resistances, key=lambda x: x['price'])
-            
-            return {
-                "Strong_S1": valid_supports[0]['price'] if len(valid_supports) > 0 else None,
-                "Strong_S2": valid_supports[1]['price'] if len(valid_supports) > 1 else None,
-                "Strong_R1": valid_resistances[0]['price'] if len(valid_resistances) > 0 else None,
-                "Strong_R2": valid_resistances[1]['price'] if len(valid_resistances) > 1 else None,
-            }
-        except Exception as e:
-            print(f"Error calculating algorithmic levels for {yf_symbol}: {e}")
+            print(f"Error fetching live price from AngelOne for {token}: {e}")
             return None
 
     def get_support_resistance_levels(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None, current_price=None):
         levels = None
         
-        # 1. Try to get Pivot/R/S from DhanHQ
+        # 1. Try to get Pivot/R/S from AngelOne
         if is_commodity:
-            print(f"Attempting DhanHQ for commodity {ticker_symbol}...")
-            if self.dhan_active:
-                sec_id = self.get_dhan_mcx_near_month(ticker_symbol)
+            print(f"Attempting AngelOne for commodity {ticker_symbol}...")
+            if self.angel_active:
+                sec_id = self.get_angel_mcx_near_month(ticker_symbol)
                 if sec_id:
                     print(f"Found SecID for {ticker_symbol}: {sec_id}. Fetching levels...")
-                    levels = self.get_dhan_levels(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
+                    levels = self.get_angel_levels(sec_id, exchange_segment="MCX", )
         else:
-            print(f"Attempting DhanHQ for stock {ticker_symbol}...")
-            if self.dhan_active and '.NS' in ticker_symbol:
-                sec_id = self.get_dhan_security_id(ticker_symbol)
+            print(f"Attempting AngelOne for stock {ticker_symbol}...")
+            if self.angel_active and '.NS' in ticker_symbol:
+                sec_id = self.get_angel_token(ticker_symbol)
                 if sec_id:
                     print(f"Found SecID for {ticker_symbol}: {sec_id}. Fetching levels...")
-                    levels = self.get_dhan_levels(sec_id)
+                    levels = self.get_angel_levels(sec_id)
 
         # 2. Fetch all-time yfinance data for multi-timeframe extremes and fallback Pivot/R/S
         ticker_symbol = yf_symbol if yf_symbol else ticker_symbol
@@ -320,7 +254,7 @@ class PriceChecker:
                 print(f"Not enough historical data from yfinance for {ticker_symbol}.")
                 return levels # Return dhan levels if yfinance fails
                 
-            # If DhanHQ failed, calculate Pivot/R/S from yfinance
+            # If AngelOne failed, calculate Pivot/R/S from yfinance
             if not levels:
                 print(f"Using yfinance for Pivot/R/S fallback for {ticker_symbol}...")
                 high = hist['High'].iloc[-2] * fallback_multiplier
@@ -393,11 +327,11 @@ class PriceChecker:
         if is_commodity:
             ticker_symbol = yf_symbol
             
-        # Handle Stocks via DhanHQ NSE
-        elif self.dhan_active and '.NS' in ticker_symbol:
-            sec_id = self.get_dhan_security_id(ticker_symbol)
+        # Handle Stocks via AngelOne NSE
+        elif self.angel_active and '.NS' in ticker_symbol:
+            sec_id = self.get_angel_token(ticker_symbol)
             if sec_id:
-                price = self.get_dhan_current_price(sec_id)
+                price = self.get_angel_current_price(sec_id)
                 if price:
                     return price
         
@@ -603,10 +537,10 @@ class PriceChecker:
             
             # Fetch Commodity Future explicitly early
             fut_price = None
-            if self.dhan_active:
-                sec_id = self.get_dhan_mcx_near_month(symbol)
+            if self.angel_active:
+                sec_id = self.get_angel_mcx_near_month(symbol)
                 if sec_id:
-                    fut_price = self.get_dhan_current_price(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
+                    fut_price = self.get_angel_current_price(sec_id, exchange_segment="MCX", )
                     
             # Fallback for spot price if yfinance fails
             if current_price is None and fut_price is not None:
@@ -636,7 +570,7 @@ class PriceChecker:
                     "last_updated": datetime.utcnow().isoformat()
                 })
                         
-                # Fallback to internet (yf converted price) if Dhan is down
+                # Fallback to internet (yf converted price) if AngelOne is down
                 if not fut_price:
                     fut_price = current_price
                     
@@ -718,12 +652,12 @@ class PriceChecker:
                     except Exception as e:
                         print(f"Error fetching spot price for {base_symbol}: {e}")
                 
-                if self.dhan_active:
-                    derivs = self.get_dhan_derivatives(base_symbol, spot_price)
+                if self.angel_active:
+                    derivs = self.get_angel_derivatives(base_symbol, spot_price)
                     for deriv in derivs:
                         symbol = deriv['symbol']
                         print(f"Fetching price for {symbol}...")
-                        current_price = self.get_dhan_current_price(deriv['security_id'], exchange_segment=deriv['exchange_segment'], instrument_type=deriv['instrument_type'])
+                        current_price = self.get_angel_current_price(deriv['security_id'], exchange_segment=deriv['exchange_segment'], )
                         if current_price:
                             market_data_payload.append({
                                 "symbol": symbol,
