@@ -723,6 +723,7 @@ class PriceChecker:
                                 "alert_status": None,
                                 "last_alert_date": None,
                                 "last_alert_msg": None,
+                                "signal": None,
                                 "intrinsic_value": None,
                                 "last_updated": datetime.utcnow().isoformat()
                             })
@@ -738,11 +739,84 @@ class PriceChecker:
                             "alert_status": None,
                             "last_alert_date": None,
                             "last_alert_msg": None,
+                            "signal": None,
                             "intrinsic_value": None,
                             "last_updated": datetime.utcnow().isoformat()
                         })
 
         if market_data_payload:
             self.sync_to_supabase(market_data_payload)
+            self.process_limit_orders(market_data_payload)
 
         return alerts
+        
+    def process_limit_orders(self, market_data_payload):
+        print("Checking pending limit orders...")
+        try:
+            # 1. Fetch pending orders
+            url = 'https://cohupetijvykzmeliubg.supabase.co/rest/v1/pending_orders?status=eq.PENDING&select=*'
+            headers = {
+                'apikey': self.supabase_key,
+                'Authorization': f'Bearer {self.supabase_key}',
+                'Content-Type': 'application/json'
+            }
+            resp = requests.get(url, headers=headers)
+            if resp.status_code != 200:
+                print(f"Failed to fetch pending orders: {resp.text}")
+                return
+                
+            orders = resp.json()
+            if not orders:
+                print("No pending limit orders found.")
+                return
+                
+            # Create a lookup dictionary for fast price checking
+            prices = {item['symbol']: item['current_price'] for item in market_data_payload}
+            
+            for order in orders:
+                symbol = order['symbol']
+                limit_price = float(order['limit_price'])
+                qty = order['quantity']
+                user_id = order['user_id']
+                tx_type = order['transaction_type']
+                
+                if symbol not in prices:
+                    continue
+                    
+                current_price = prices[symbol]
+                
+                should_execute = False
+                if tx_type == 'BUY' and current_price <= limit_price:
+                    should_execute = True
+                elif tx_type == 'SELL' and current_price >= limit_price:
+                    should_execute = True
+                    
+                if should_execute:
+                    print(f"Executing LIMIT {tx_type} for {symbol} at {limit_price} (Current: {current_price})")
+                    
+                    # 1. Update order status to EXECUTED
+                    requests.patch(f"https://cohupetijvykzmeliubg.supabase.co/rest/v1/pending_orders?id=eq.{order['id']}", 
+                                   headers=headers, json={"status": "EXECUTED"})
+                    
+                    # 2. Insert into transactions
+                    tx_payload = {
+                        "user_id": user_id,
+                        "symbol": symbol,
+                        "transaction_type": tx_type,
+                        "quantity": qty,
+                        "price": limit_price
+                    }
+                    requests.post("https://cohupetijvykzmeliubg.supabase.co/rest/v1/transactions", 
+                                  headers=headers, json=tx_payload)
+                                  
+                    # 3. Update profile balance
+                    prof_resp = requests.get(f"https://cohupetijvykzmeliubg.supabase.co/rest/v1/profiles?id=eq.{user_id}&select=balance", headers=headers)
+                    if prof_resp.status_code == 200 and prof_resp.json():
+                        current_bal = float(prof_resp.json()[0]['balance'])
+                        total_val = qty * limit_price
+                        new_bal = current_bal - total_val if tx_type == 'BUY' else current_bal + total_val
+                        requests.patch(f"https://cohupetijvykzmeliubg.supabase.co/rest/v1/profiles?id=eq.{user_id}", 
+                                       headers=headers, json={"balance": new_bal})
+                                       
+        except Exception as e:
+            print(f"Error processing limit orders: {e}")
