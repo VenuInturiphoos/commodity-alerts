@@ -193,12 +193,12 @@
                         
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                             <div>
-                                <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Available Cash</h4>
-                                <p id="virtual-balance" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                                <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Available Margin</h4>
+                                <p id="virtual-available-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
                             </div>
                             <div>
-                                <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Total Invested</h4>
-                                <p id="virtual-invested" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                                <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Used Margin (15%)</h4>
+                                <p id="virtual-used-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
                             </div>
                             <div>
                                 <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Current Portfolio Value</h4>
@@ -1041,10 +1041,14 @@ function renderPortfolio() {
         tbodyCommodities.innerHTML = `<tr><td colspan="6" class="loading" style="padding: 2rem !important;">No active commodity holdings.</td></tr>`;
     }
 
-    // Update Summary Dashboard
+    // Update Summary Dashboard (Margin Logic)
     const netWorth = userBalance + totalInvested + totalPl;
+    const usedMargin = totalInvested * 0.15; // 15% margin requirement for F&O
+    const availableMargin = netWorth - usedMargin;
+
     document.getElementById('virtual-net-worth').textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('virtual-invested').textContent = `₹${totalInvested.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('virtual-available-margin').textContent = `₹${availableMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('virtual-used-margin').textContent = `₹${usedMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     document.getElementById('virtual-portfolio-value').textContent = `₹${currentPortfolioValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     
     const plColor = totalPl >= 0 ? '#4ade80' : '#fb7185';
@@ -1263,8 +1267,32 @@ window.executeTrade = async function(symbol, type, qty, price) {
     if (!currentUser) throw new Error("Not logged in");
     const totalValue = qty * price;
     
-    if (type === 'BUY' && totalValue > userBalance) {
-        throw new Error("Insufficient virtual balance.");
+    // Margin check
+    const currentShares = userPortfolio[symbol]?.shares || 0;
+    const isOpening = type === 'BUY' ? (currentShares >= 0) : (currentShares <= 0);
+    
+    if (isOpening) {
+        // Calculate current available margin
+        let totalInvested = 0;
+        let totalPl = 0;
+        for (const [sym, data] of Object.entries(userPortfolio)) {
+            if (data.shares === 0) continue;
+            const mItem = marketData.find(item => item.symbol === sym);
+            const currPrice = mItem ? parseFloat(mItem.current_price) : 0;
+            const costBasis = Math.abs(data.shares) * data.avgPrice;
+            const currentValue = Math.abs(data.shares) * currPrice;
+            const pl = data.shares > 0 ? (currentValue - costBasis) : (costBasis - currentValue);
+            totalInvested += costBasis;
+            totalPl += pl;
+        }
+        const netWorth = userBalance + totalInvested + totalPl;
+        const usedMargin = totalInvested * 0.15; // 15% margin
+        const availableMargin = netWorth - usedMargin;
+        
+        const marginRequiredForTrade = totalValue * 0.15;
+        if (marginRequiredForTrade > availableMargin) {
+            throw new Error(`Insufficient Available Margin. Required: ₹${marginRequiredForTrade.toLocaleString('en-IN', {maximumFractionDigits:0})}, Available: ₹${availableMargin.toLocaleString('en-IN', {maximumFractionDigits:0})}`);
+        }
     }
     
     // 1. Insert Transaction
