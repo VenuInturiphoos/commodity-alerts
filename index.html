@@ -1020,7 +1020,7 @@ function renderPortfolio() {
             <td style="color: ${color}; font-weight: bold;">${sign}₹${pl.toFixed(2)} <br><small>(${sign}${plPercent.toFixed(2)}%)</small></td>
         `;
 
-        if (marketItem && marketItem.asset_type === 'Commodity') {
+        if (marketItem && marketItem.asset_type.includes('Commodity')) {
             tbodyCommodities.appendChild(tr);
             hasCommodityHoldings = true;
         } else {
@@ -1113,7 +1113,7 @@ function renderTradeMarket() {
             </td>
         `;
 
-        if (item.asset_type === 'Commodity') {
+        if (item.asset_type.includes('Commodity')) {
             tbodyCommodities.appendChild(tr);
         } else {
             tbodyStocks.appendChild(tr);
