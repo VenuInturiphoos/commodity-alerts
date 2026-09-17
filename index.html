@@ -225,6 +225,7 @@
                                         <th>Current Price</th>
                                         <th>Total Value</th>
                                         <th>P&L</th>
+                                        <th style="text-align: right;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="portfolio-stocks-body">
@@ -244,6 +245,7 @@
                                         <th>Current Price</th>
                                         <th>Total Value</th>
                                         <th>P&L</th>
+                                        <th style="text-align: right;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="portfolio-commodities-body">
@@ -1018,6 +1020,9 @@ function renderPortfolio() {
             <td>₹${currentPrice.toFixed(2)}</td>
             <td style="font-weight: bold;">₹${currentValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
             <td style="color: ${color}; font-weight: bold;">${sign}₹${pl.toFixed(2)} <br><small>(${sign}${plPercent.toFixed(2)}%)</small></td>
+            <td style="text-align: right;">
+                <button class="trade-btn sell-btn btn-small" onclick="exitPosition('${symbol}', '${marketItem ? marketItem.name : symbol}', ${currentPrice}, ${absShares}, ${isLong})">Exit</button>
+            </td>
         `;
 
         if (marketItem && marketItem.asset_type.includes('Commodity')) {
@@ -1180,6 +1185,49 @@ window.resetPaperTradingAccount = async function() {
     }
 }
 
+window.executeTrade = async function(symbol, type, qty, price) {
+    if (!currentUser) throw new Error("Not logged in");
+    const totalValue = qty * price;
+    
+    if (type === 'BUY' && totalValue > userBalance) {
+        throw new Error("Insufficient virtual balance.");
+    }
+    
+    // 1. Insert Transaction
+    const { error: txError } = await supabaseClient.from('transactions').insert([{
+        user_id: currentUser.id,
+        symbol: symbol,
+        transaction_type: type,
+        quantity: qty,
+        price: price
+    }]);
+    
+    if (txError) throw txError;
+    
+    // 2. Update Profile Balance
+    const newBalance = type === 'BUY' ? (userBalance - totalValue) : (userBalance + totalValue);
+    const { error: profileError } = await supabaseClient.from('profiles')
+        .update({ balance: newBalance })
+        .eq('id', currentUser.id);
+        
+    if (profileError) throw profileError;
+    return true;
+}
+
+window.exitPosition = async function(symbol, name, currentPrice, currentShares, isLong) {
+    const actionType = isLong ? 'SELL' : 'BUY';
+    const actionText = isLong ? 'Sell' : 'Buy to Cover';
+    if (!confirm(`Are you sure you want to close your position in ${name}? This will execute a ${actionText} order for ${currentShares} shares at ₹${currentPrice.toFixed(2)}.`)) return;
+    
+    try {
+        await window.executeTrade(symbol, actionType, currentShares, currentPrice);
+        alert(`Successfully closed position in ${name}!`);
+        fetchPaperTradingData(currentUser);
+    } catch (err) {
+        alert(`Error closing position: ${err.message}`);
+    }
+}
+
 // Modal Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     const qtyInput = document.getElementById('trade-qty');
@@ -1218,24 +1266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statusMsg.style.color = "var(--text-secondary)";
         
         try {
-            // 1. Insert Transaction
-            const { error: txError } = await supabaseClient.from('transactions').insert([{
-                user_id: currentUser.id,
-                symbol: activeTradeAsset.symbol,
-                transaction_type: type,
-                quantity: qty,
-                price: activeTradeAsset.price
-            }]);
-            
-            if (txError) throw txError;
-            
-            // 2. Update Profile Balance
-            const newBalance = type === 'BUY' ? (userBalance - totalValue) : (userBalance + totalValue);
-            const { error: profileError } = await supabaseClient.from('profiles')
-                .update({ balance: newBalance })
-                .eq('id', currentUser.id);
-                
-            if (profileError) throw profileError;
+            await window.executeTrade(activeTradeAsset.symbol, type, qty, activeTradeAsset.price);
             
             statusMsg.textContent = `Successfully ${type === 'BUY' ? 'bought' : 'sold'} ${qty} shares!`;
             statusMsg.style.color = "#4ade80";
