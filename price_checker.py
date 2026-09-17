@@ -675,6 +675,21 @@ class PriceChecker:
                     "intrinsic_value": intrinsic_val,
                     "last_updated": datetime.utcnow().isoformat()
                 })
+                
+                # Append Stock Future internet fallback
+                market_data_payload.append({
+                    "symbol": f"{symbol}-FUT",
+                    "name": f"{name} Future",
+                    "asset_type": "Stock Future",
+                    "current_price": round(current_price, 2),
+                    "r1": None, "r2": None, "s1": None, "s2": None, "pivot": None,
+                    "alert_status": None,
+                    "last_alert_date": None,
+                    "last_alert_msg": None,
+                    "signal": None,
+                    "intrinsic_value": None,
+                    "last_updated": datetime.utcnow().isoformat()
+                })
 
         # 3. Check Derivatives (Futures & Options)
         if hasattr(self, 'derivatives'):
