@@ -754,7 +754,7 @@ class PriceChecker:
         print("Checking pending limit orders...")
         try:
             # 1. Fetch pending orders
-            url = 'https://cohupetijvykzmeliubg.supabase.co/rest/v1/pending_orders?status=eq.PENDING&select=*'
+            url = 'https://cohupetijvykzmeliubg.supabase.co/rest/v1/pending_orders?status=in.(PENDING,PENDING_STOP)&select=*'
             headers = {
                 'apikey': self.supabase_key,
                 'Authorization': f'Bearer {self.supabase_key}',
@@ -767,7 +767,7 @@ class PriceChecker:
                 
             orders = resp.json()
             if not orders:
-                print("No pending limit orders found.")
+                print("No pending orders found.")
                 return
                 
             # Create a lookup dictionary for fast price checking
@@ -779,6 +779,7 @@ class PriceChecker:
                 qty = order['quantity']
                 user_id = order['user_id']
                 tx_type = order['transaction_type']
+                status = order['status']
                 
                 if symbol not in prices:
                     continue
@@ -786,13 +787,20 @@ class PriceChecker:
                 current_price = prices[symbol]
                 
                 should_execute = False
-                if tx_type == 'BUY' and current_price <= limit_price:
-                    should_execute = True
-                elif tx_type == 'SELL' and current_price >= limit_price:
-                    should_execute = True
+                
+                if status == 'PENDING': # Target Limit
+                    if tx_type == 'BUY' and current_price <= limit_price:
+                        should_execute = True
+                    elif tx_type == 'SELL' and current_price >= limit_price:
+                        should_execute = True
+                elif status == 'PENDING_STOP': # Stop Loss
+                    if tx_type == 'BUY' and current_price >= limit_price:
+                        should_execute = True
+                    elif tx_type == 'SELL' and current_price <= limit_price:
+                        should_execute = True
                     
                 if should_execute:
-                    print(f"Executing LIMIT {tx_type} for {symbol} at {limit_price} (Current: {current_price})")
+                    print(f"Executing {status} {tx_type} for {symbol} at {limit_price} (Current: {current_price})")
                     
                     # 1. Update order status to EXECUTED
                     requests.patch(f"https://cohupetijvykzmeliubg.supabase.co/rest/v1/pending_orders?id=eq.{order['id']}", 

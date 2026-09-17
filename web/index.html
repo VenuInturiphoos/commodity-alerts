@@ -428,6 +428,39 @@
             </div>
         </div>
     </div>
+    
+    <!-- Exit Position Modal -->
+    <div id="exit-modal" class="modal hidden">
+        <div class="modal-content glass-card">
+            <h2 id="exit-modal-title" style="margin-bottom: 0.5rem;">Close Position</h2>
+            <p id="exit-modal-price" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem; color: var(--text-primary);">₹0.00</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <label>
+                    <span style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Exit Order Type</span>
+                    <select id="exit-order-type" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; font-size: 1.1rem;">
+                        <option value="MARKET">Market Exit (Instant)</option>
+                        <option value="LIMIT">Target Limit (Take Profit)</option>
+                        <option value="STOP">Stop Loss</option>
+                    </select>
+                </label>
+                <label id="exit-limit-price-container" class="hidden">
+                    <span id="exit-price-label" style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Target Exit Price</span>
+                    <input type="number" id="exit-limit-price" step="0.05" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; font-size: 1.2rem;">
+                </label>
+                <label>
+                    <span style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Quantity to Close</span>
+                    <input type="number" id="exit-qty" value="1" min="1" readonly style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: #888; font-size: 1.2rem; cursor: not-allowed;">
+                </label>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button id="exit-confirm-btn" class="trade-btn sell-btn">Confirm Exit</button>
+                </div>
+                <button id="exit-cancel-btn" style="margin-top: 0.5rem; padding: 12px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text-secondary); border-radius: 8px; cursor: pointer;">Cancel</button>
+                <div id="exit-status-msg" style="margin-top: 0.5rem; text-align: center; font-size: 0.9rem;"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- Supabase Client (Loaded locally to bypass all ISP blocks) -->
     <script src="supabase.js"></script>
@@ -1090,8 +1123,21 @@ function renderPortfolio() {
     }
 
     // Update Summary Dashboard (Margin Logic)
+    let pendingMarginLocked = 0;
+    if (typeof pendingOrders !== 'undefined') {
+        for (const po of pendingOrders) {
+            if (po.status === 'PENDING' || po.status === 'PENDING_STOP') {
+                const curShares = userPortfolio[po.symbol]?.shares || 0;
+                const isOpeningPO = po.transaction_type === 'BUY' ? (curShares >= 0) : (curShares <= 0);
+                if (isOpeningPO) {
+                    pendingMarginLocked += (po.quantity * po.limit_price) * 0.15;
+                }
+            }
+        }
+    }
+
     const netWorth = userBalance + totalInvested + totalPl;
-    const usedMargin = totalInvested * 0.15; // 15% margin requirement for F&O
+    const usedMargin = (totalInvested * 0.15) + pendingMarginLocked; // 15% margin requirement for F&O + pending orders
     const availableMargin = netWorth - usedMargin;
 
     document.getElementById('virtual-net-worth').textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -1121,10 +1167,10 @@ function renderPendingOrders(orders) {
     const tbody = document.getElementById('pending-orders-body');
     tbody.innerHTML = '';
     
-    const activeOrders = orders.filter(o => o.status === 'PENDING');
+    const activeOrders = orders.filter(o => o.status === 'PENDING' || o.status === 'PENDING_STOP');
 
     if (!activeOrders || activeOrders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No pending limit orders.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No pending limit or stop orders.</td></tr>`;
         return;
     }
 
@@ -1140,11 +1186,13 @@ function renderPendingOrders(orders) {
         const totalValue = tx.quantity * tx.limit_price;
         const color = tx.transaction_type === 'BUY' ? '#4ade80' : '#fb7185';
         
+        const orderTypeLabel = tx.status === 'PENDING_STOP' ? `Stop Loss (${tx.transaction_type})` : `Limit (${tx.transaction_type})`;
+        
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td style="color:var(--text-secondary); font-size: 0.9rem;">${date}</td>
             <td><strong>${name}</strong> <small style="color:var(--text-secondary)">(${tx.symbol})</small></td>
-            <td style="color: ${color}; font-weight: bold;">${tx.transaction_type}</td>
+            <td style="color: ${color}; font-weight: bold;">${orderTypeLabel}</td>
             <td>${tx.quantity.toLocaleString('en-IN')}</td>
             <td style="font-weight:600">₹${parseFloat(tx.limit_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
             <td style="font-weight:600; color:var(--text-secondary)">₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
@@ -1389,8 +1437,12 @@ window.executeTrade = async function(symbol, type, qty, price, orderType = 'MARK
         
         let pendingMarginLocked = 0;
         for (const po of pendingOrders) {
-            if (po.status === 'PENDING') {
-                pendingMarginLocked += (po.quantity * po.limit_price) * 0.15;
+            if (po.status === 'PENDING' || po.status === 'PENDING_STOP') {
+                const curShares = userPortfolio[po.symbol]?.shares || 0;
+                const isOpeningPO = po.transaction_type === 'BUY' ? (curShares >= 0) : (curShares <= 0);
+                if (isOpeningPO) {
+                    pendingMarginLocked += (po.quantity * po.limit_price) * 0.15;
+                }
             }
         }
         
@@ -1404,14 +1456,14 @@ window.executeTrade = async function(symbol, type, qty, price, orderType = 'MARK
         }
     }
     
-    if (orderType === 'LIMIT') {
+    if (orderType === 'LIMIT' || orderType === 'STOP') {
         const { error: limitError } = await supabaseClient.from('pending_orders').insert([{
             user_id: currentUser.id,
             symbol: symbol,
             transaction_type: type,
             quantity: qty,
             limit_price: price,
-            status: 'PENDING'
+            status: orderType === 'STOP' ? 'PENDING_STOP' : 'PENDING'
         }]);
         if (limitError) throw limitError;
         return true;
@@ -1438,19 +1490,81 @@ window.executeTrade = async function(symbol, type, qty, price, orderType = 'MARK
     return true;
 }
 
-window.exitPosition = async function(symbol, name, currentPrice, currentShares, isLong) {
-    const actionType = isLong ? 'SELL' : 'BUY';
-    const actionText = isLong ? 'Sell' : 'Buy to Cover';
-    if (!confirm(`Are you sure you want to close your position in ${name}? This will execute a ${actionText} order for ${currentShares} shares at ₹${currentPrice.toFixed(2)}.`)) return;
+let activeExitAsset = null;
+
+window.exitPosition = function(symbol, name, currentPrice, currentShares, isLong) {
+    activeExitAsset = { symbol, name, currentPrice, currentShares, isLong };
     
-    try {
-        await window.executeTrade(symbol, actionType, currentShares, currentPrice);
-        alert(`Successfully closed position in ${name}!`);
-        fetchPaperTradingData(currentUser);
-    } catch (err) {
-        alert(`Error closing position: ${err.message}`);
-    }
+    document.getElementById('exit-modal-title').textContent = `Close ${isLong ? 'Long' : 'Short'} Position in ${name}`;
+    document.getElementById('exit-modal-price').textContent = `Current Price: ₹${currentPrice.toFixed(2)}`;
+    
+    document.getElementById('exit-qty').value = Math.abs(currentShares);
+    document.getElementById('exit-order-type').value = 'MARKET';
+    document.getElementById('exit-limit-price-container').classList.add('hidden');
+    document.getElementById('exit-limit-price').value = currentPrice;
+    
+    document.getElementById('exit-status-msg').textContent = "";
+    document.getElementById('exit-confirm-btn').disabled = false;
+    
+    document.getElementById('exit-modal').classList.remove('hidden');
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const exitOrderType = document.getElementById('exit-order-type');
+    const exitLimitContainer = document.getElementById('exit-limit-price-container');
+    const exitPriceLabel = document.getElementById('exit-price-label');
+
+    if (exitOrderType) {
+        exitOrderType.addEventListener('change', (e) => {
+            if (e.target.value === 'MARKET') {
+                exitLimitContainer.classList.add('hidden');
+            } else {
+                exitLimitContainer.classList.remove('hidden');
+                exitPriceLabel.textContent = e.target.value === 'LIMIT' ? 'Target Exit Price' : 'Stop Loss Price';
+            }
+        });
+    }
+
+    document.getElementById('exit-cancel-btn')?.addEventListener('click', () => {
+        document.getElementById('exit-modal').classList.add('hidden');
+    });
+
+    document.getElementById('exit-confirm-btn')?.addEventListener('click', async () => {
+        if (!activeExitAsset) return;
+        
+        const type = exitOrderType.value;
+        const inputPrice = parseFloat(document.getElementById('exit-limit-price').value);
+        const actionType = activeExitAsset.isLong ? 'SELL' : 'BUY';
+        
+        const execPrice = type === 'MARKET' ? activeExitAsset.currentPrice : inputPrice;
+        
+        if (type !== 'MARKET' && (isNaN(execPrice) || execPrice <= 0)) {
+            document.getElementById('exit-status-msg').textContent = "Please enter a valid price.";
+            document.getElementById('exit-status-msg').style.color = 'var(--accent-red)';
+            return;
+        }
+        
+        document.getElementById('exit-confirm-btn').disabled = true;
+        document.getElementById('exit-status-msg').textContent = "Processing...";
+        document.getElementById('exit-status-msg').style.color = "var(--text-secondary)";
+        
+        try {
+            await window.executeTrade(activeExitAsset.symbol, actionType, activeExitAsset.currentShares, execPrice, type);
+            
+            document.getElementById('exit-status-msg').textContent = type === 'MARKET' ? "Position closed!" : "Order placed!";
+            document.getElementById('exit-status-msg').style.color = "#4ade80";
+            
+            setTimeout(() => {
+                document.getElementById('exit-modal').classList.add('hidden');
+                fetchPaperTradingData(currentUser);
+            }, 1000);
+        } catch (err) {
+            document.getElementById('exit-status-msg').textContent = `Error: ${err.message}`;
+            document.getElementById('exit-status-msg').style.color = "#fb7185";
+            document.getElementById('exit-confirm-btn').disabled = false;
+        }
+    });
+});
 
 // Modal Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
