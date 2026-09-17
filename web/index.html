@@ -898,14 +898,12 @@ async function fetchPaperTradingData(user) {
             const { error: insertError } = await supabaseClient.from('profiles').insert([{ id: user.id, balance: 1000000 }]);
             if (!insertError) {
                 userBalance = 1000000;
-                document.getElementById('virtual-balance').textContent = `₹${parseFloat(userBalance).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             } else {
                 console.error("Failed to create profile:", insertError);
             }
         }
     } else if (profileData) {
         userBalance = Number(profileData.balance) || 0;
-        document.getElementById('virtual-balance').textContent = `₹${parseFloat(userBalance).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
     // 2. Fetch Transactions to calculate portfolio
