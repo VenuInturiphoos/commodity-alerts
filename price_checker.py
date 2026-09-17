@@ -600,6 +600,18 @@ class PriceChecker:
             
             print(f"\nChecking Commodity {name} ({symbol}) via MCX API (or yfinance fallback)...")
             current_price = self.get_current_price(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
+            
+            # Fetch Commodity Future explicitly early
+            fut_price = None
+            if self.dhan_active:
+                sec_id = self.get_dhan_mcx_near_month(symbol)
+                if sec_id:
+                    fut_price = self.get_dhan_current_price(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
+                    
+            # Fallback for spot price if yfinance fails
+            if current_price is None and fut_price is not None:
+                current_price = fut_price
+            
             levels = self.get_support_resistance_levels(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym, current_price=current_price)
             
             new_alerts, alert_status, last_alert_date, last_alert_msg, current_signal = self.evaluate_levels(name, symbol, levels, current_price, previous_state)
@@ -623,13 +635,6 @@ class PriceChecker:
                     "intrinsic_value": None,
                     "last_updated": datetime.utcnow().isoformat()
                 })
-                
-                # Fetch and add Commodity Future explicitly
-                fut_price = None
-                if self.dhan_active:
-                    sec_id = self.get_dhan_mcx_near_month(symbol)
-                    if sec_id:
-                        fut_price = self.get_dhan_current_price(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
                         
                 # Fallback to internet (yf converted price) if Dhan is down
                 if not fut_price:
