@@ -1103,6 +1103,8 @@ function renderTradeMarket() {
     }
     
     marketData.forEach(item => {
+        if (item.asset_type === 'Commodity') return;
+        
         const tr = document.createElement('tr');
         let badgeClass = 'type-stock';
         if (item.asset_type === 'Commodity') badgeClass = 'type-commodity';
@@ -1133,13 +1135,35 @@ function renderTradeMarket() {
     }
 }
 
+const LOT_SIZES = {
+    'GOLD': 1,
+    'SILVER': 30,
+    'CRUDEOIL': 100,
+    'NATURALGAS': 1250,
+    'COPPER': 2500,
+    'ALUMINIUM': 5000,
+    'NIFTY': 25,
+    'BANKNIFTY': 15
+};
+
+function getLotSize(symbol) {
+    const base = symbol.replace('-FUT', '');
+    return LOT_SIZES[base] || 1;
+}
+
 function openTradeModal(symbol, name, price) {
-    activeTradeAsset = { symbol, name, price: parseFloat(price) };
+    const lotSize = getLotSize(symbol);
+    activeTradeAsset = { symbol, name, price: parseFloat(price), lotSize };
     
-    document.getElementById('trade-modal-title').textContent = `Trade ${name}`;
+    document.getElementById('trade-modal-title').textContent = `Trade ${name} (Lot Size: ${lotSize})`;
     document.getElementById('trade-modal-price').textContent = `₹${activeTradeAsset.price.toFixed(2)}`;
-    document.getElementById('trade-qty').value = 1;
-    document.getElementById('trade-total-value').textContent = `₹${activeTradeAsset.price.toFixed(2)}`;
+    
+    const qtyInput = document.getElementById('trade-qty');
+    qtyInput.value = lotSize;
+    qtyInput.step = lotSize;
+    qtyInput.min = lotSize;
+    
+    document.getElementById('trade-total-value').textContent = `₹${(activeTradeAsset.price * lotSize).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
     document.getElementById('trade-status-msg').textContent = '';
     
     document.getElementById('trade-modal').classList.remove('hidden');
@@ -1249,6 +1273,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const qty = parseInt(document.getElementById('trade-qty').value);
         if (isNaN(qty) || qty <= 0) return;
         
+        if (qty % activeTradeAsset.lotSize !== 0) {
+            document.getElementById('trade-status-msg').textContent = `Quantity must be a multiple of lot size (${activeTradeAsset.lotSize}).`;
+            document.getElementById('trade-status-msg').style.color = 'var(--accent-red)';
+            return;
+        }
+
         const totalValue = qty * activeTradeAsset.price;
         const statusMsg = document.getElementById('trade-status-msg');
         const buyBtn = document.getElementById('trade-buy-btn');
