@@ -446,19 +446,25 @@ class PriceChecker:
         print(f"Current Price: ₹{current_price:.2f}")
         print(f"Levels -> R2: ₹{levels.get('R2', 0):.2f}, R1: ₹{levels.get('R1', 0):.2f}, P: ₹{levels.get('Pivot', 0):.2f}, S1: ₹{levels.get('S1', 0):.2f}, S2: ₹{levels.get('S2', 0):.2f}")
         
-        # Check Trend Signals (EMA 50 vs EMA 200)
+        # Check Trend Signals (EMA 50 vs EMA 200 vs Current Price)
         current_signal = "NEUTRAL"
         ema_50 = levels.get('EMA_50')
         ema_200 = levels.get('EMA_200')
         
         if ema_50 and ema_200:
             if ema_50 > ema_200:
-                current_signal = "STRONG BUY"
+                if current_price > ema_50:
+                    current_signal = "STRONG BUY"
+                else:
+                    current_signal = "BUY (PULLBACK)"
             elif ema_50 < ema_200:
-                current_signal = "STRONG SELL"
+                if current_price < ema_50:
+                    current_signal = "STRONG SELL"
+                else:
+                    current_signal = "SELL (RALLY)"
                 
         # Only send an email alert if the signal changes to a STRONG BUY/SELL
-        if current_signal != previous_signal and current_signal != "NEUTRAL":
+        if current_signal != previous_signal and current_signal in ["STRONG BUY", "STRONG SELL"]:
             yf_symbol_map = {
                 "GOLD": "GC=F", "SILVER": "SI=F", "CRUDEOIL": "CL=F", 
                 "NATURALGAS": "NG=F", "COPPER": "HG=F", "ALUMINIUM": "ALI=F"

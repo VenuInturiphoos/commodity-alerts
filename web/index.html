@@ -783,9 +783,13 @@ function renderMarketTable() {
 
             let signalBadge = '';
             if (item.signal === 'STRONG BUY') {
-                signalBadge = `<span style="background-color: rgba(74, 222, 128, 0.2); color: #4ade80; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(74, 222, 128, 0.3);">🟢 BUY</span>`;
+                signalBadge = `<span style="background-color: rgba(74, 222, 128, 0.2); color: #4ade80; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(74, 222, 128, 0.3);">🟢 STRONG BUY</span>`;
+            } else if (item.signal === 'BUY (PULLBACK)') {
+                signalBadge = `<span style="background-color: rgba(74, 222, 128, 0.1); color: #4ade80; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(74, 222, 128, 0.2);">BUY (PULLBACK)</span>`;
             } else if (item.signal === 'STRONG SELL') {
-                signalBadge = `<span style="background-color: rgba(251, 113, 133, 0.2); color: #fb7185; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(251, 113, 133, 0.3);">🔴 SELL</span>`;
+                signalBadge = `<span style="background-color: rgba(251, 113, 133, 0.2); color: #fb7185; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(251, 113, 133, 0.3);">🔴 STRONG SELL</span>`;
+            } else if (item.signal === 'SELL (RALLY)') {
+                signalBadge = `<span style="background-color: rgba(251, 113, 133, 0.1); color: #fb7185; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(251, 113, 133, 0.2);">SELL (RALLY)</span>`;
             }
 
             const tr = document.createElement('tr');
@@ -863,9 +867,13 @@ function renderAlertTable() {
 
             let signalBadge = '';
             if (item.signal === 'STRONG BUY') {
-                signalBadge = `<span style="background-color: rgba(74, 222, 128, 0.2); color: #4ade80; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(74, 222, 128, 0.3);">🟢 BUY</span>`;
+                signalBadge = `<span style="background-color: rgba(74, 222, 128, 0.2); color: #4ade80; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(74, 222, 128, 0.3);">🟢 STRONG BUY</span>`;
+            } else if (item.signal === 'BUY (PULLBACK)') {
+                signalBadge = `<span style="background-color: rgba(74, 222, 128, 0.1); color: #4ade80; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(74, 222, 128, 0.2);">BUY (PULLBACK)</span>`;
             } else if (item.signal === 'STRONG SELL') {
-                signalBadge = `<span style="background-color: rgba(251, 113, 133, 0.2); color: #fb7185; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(251, 113, 133, 0.3);">🔴 SELL</span>`;
+                signalBadge = `<span style="background-color: rgba(251, 113, 133, 0.2); color: #fb7185; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(251, 113, 133, 0.3);">🔴 STRONG SELL</span>`;
+            } else if (item.signal === 'SELL (RALLY)') {
+                signalBadge = `<span style="background-color: rgba(251, 113, 133, 0.1); color: #fb7185; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(251, 113, 133, 0.2);">SELL (RALLY)</span>`;
             }
 
             const tr = document.createElement('tr');
