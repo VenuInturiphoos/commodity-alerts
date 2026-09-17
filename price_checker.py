@@ -362,6 +362,14 @@ class PriceChecker:
             levels['AllTimeHigh'] = hist['High'].max() * fallback_multiplier
             levels['AllTimeLow'] = hist['Low'].min() * fallback_multiplier
             
+            # Calculate EMAs for Trend Signals
+            if len(hist) >= 200:
+                levels['EMA_50'] = hist['Close'].ewm(span=50, adjust=False).mean().iloc[-1] * fallback_multiplier
+                levels['EMA_200'] = hist['Close'].ewm(span=200, adjust=False).mean().iloc[-1] * fallback_multiplier
+            else:
+                levels['EMA_50'] = None
+                levels['EMA_200'] = None
+            
         except Exception as e:
             print(f"Error fetching historical extremes from yfinance for {ticker_symbol}: {e}")
             
@@ -418,7 +426,7 @@ class PriceChecker:
                 'apikey': self.supabase_key,
                 'Authorization': f'Bearer {self.supabase_key}'
             }
-            response = requests.get(f"{self.supabase_url}?select=symbol,alert_status,last_alert_date,last_alert_msg", headers=headers, timeout=15)
+            response = requests.get(f"{self.supabase_url}?select=symbol,alert_status,last_alert_date,last_alert_msg,signal", headers=headers, timeout=15)
             if response.status_code == 200:
                 data = response.json()
                 return {item['symbol']: item for item in data}
@@ -436,14 +444,39 @@ class PriceChecker:
         today_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%Y-%m-%d')
         last_alert_date = previous_state.get(symbol, {}).get('last_alert_date')
         last_alert_msg = previous_state.get(symbol, {}).get('last_alert_msg')
+        previous_signal = previous_state.get(symbol, {}).get('signal', 'NEUTRAL')
         
         if levels is None or current_price is None:
             print(f"Could not fetch data for {name}. Skipping.")
-            return alerts, alert_status, last_alert_date, last_alert_msg
+            return alerts, alert_status, last_alert_date, last_alert_msg, previous_signal
             
         print(f"Current Price: ₹{current_price:.2f}")
-        print(f"Levels -> R2: ₹{levels['R2']:.2f}, R1: ₹{levels['R1']:.2f}, P: ₹{levels['Pivot']:.2f}, S1: ₹{levels['S1']:.2f}, S2: ₹{levels['S2']:.2f}")
+        print(f"Levels -> R2: ₹{levels.get('R2', 0):.2f}, R1: ₹{levels.get('R1', 0):.2f}, P: ₹{levels.get('Pivot', 0):.2f}, S1: ₹{levels.get('S1', 0):.2f}, S2: ₹{levels.get('S2', 0):.2f}")
         
+        # Check Trend Signals (EMA 50 vs EMA 200)
+        current_signal = "NEUTRAL"
+        ema_50 = levels.get('EMA_50')
+        ema_200 = levels.get('EMA_200')
+        
+        if ema_50 and ema_200:
+            if ema_50 > ema_200:
+                current_signal = "STRONG BUY"
+            elif ema_50 < ema_200:
+                current_signal = "STRONG SELL"
+                
+        # Only send an email alert if the signal changes to a STRONG BUY/SELL
+        if current_signal != previous_signal and current_signal != "NEUTRAL":
+            yf_symbol_map = {
+                "GOLD": "GC=F", "SILVER": "SI=F", "CRUDEOIL": "CL=F", 
+                "NATURALGAS": "NG=F", "COPPER": "HG=F", "ALUMINIUM": "ALI=F"
+            }
+            yf_sym = yf_symbol_map.get(symbol, symbol)
+            chart_url = f"https://finance.yahoo.com/quote/{yf_sym}"
+            alerts.append({
+                'subject': f"🔔 Trading Signal: {name} is now a {current_signal}!",
+                'body': f"{name} ({symbol}) has crossed its Moving Averages and generated a {current_signal} signal.\n\nEMA 50: ₹{ema_50:.2f}\nEMA 200: ₹{ema_200:.2f}\nCurrent Price: ₹{current_price:.2f}\n\nView Chart: {chart_url}"
+            })
+            
         # Resistance and Support alerts have been removed per user request.
 
         # Multi-timeframe extremes evaluation (Highest priority first)
@@ -470,7 +503,7 @@ class PriceChecker:
         
         for key, name_str, threshold in high_alerts_config:
             level = levels.get(key)
-            if level and abs(current_price - level) / level <= threshold:
+            if level and abs(level) > 0 and abs(current_price - level) / abs(level) <= threshold:
                 alert_msg = f"testing {name_str}"
                 
                 # If we already sent ANY alert for this symbol today, don't send another one.
@@ -500,7 +533,7 @@ class PriceChecker:
         
         for key, name_str, threshold in low_alerts_config:
             level = levels.get(key)
-            if level and abs(current_price - level) / level <= threshold:
+            if level and abs(level) > 0 and abs(current_price - level) / abs(level) <= threshold:
                 alert_msg = f"testing {name_str}"
                 
                 if last_alert_date != today_ist:
@@ -514,7 +547,7 @@ class PriceChecker:
                 alert_status = alert_msg
                 break # Only alert the highest timeframe reached
 
-        return alerts, alert_status, last_alert_date, last_alert_msg
+        return alerts, alert_status, last_alert_date, last_alert_msg, current_signal
 
     def sync_to_supabase(self, payload):
         try:
@@ -570,7 +603,7 @@ class PriceChecker:
             current_price = self.get_current_price(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
             levels = self.get_support_resistance_levels(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym, current_price=current_price)
             
-            new_alerts, alert_status, last_alert_date, last_alert_msg = self.evaluate_levels(name, symbol, levels, current_price, previous_state)
+            new_alerts, alert_status, last_alert_date, last_alert_msg, current_signal = self.evaluate_levels(name, symbol, levels, current_price, previous_state)
             alerts.extend(new_alerts)
             
             if levels and current_price:
@@ -587,6 +620,7 @@ class PriceChecker:
                     "alert_status": alert_status,
                     "last_alert_date": last_alert_date,
                     "last_alert_msg": last_alert_msg,
+                    "signal": current_signal,
                     "intrinsic_value": None,
                     "last_updated": datetime.utcnow().isoformat()
                 })
@@ -601,7 +635,7 @@ class PriceChecker:
             levels = self.get_support_resistance_levels(symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=yf_sym, current_price=current_price)
             intrinsic_val = self.get_intrinsic_value(yf_sym)
             
-            new_alerts, alert_status, last_alert_date, last_alert_msg = self.evaluate_levels(name, symbol, levels, current_price, previous_state)
+            new_alerts, alert_status, last_alert_date, last_alert_msg, current_signal = self.evaluate_levels(name, symbol, levels, current_price, previous_state)
             alerts.extend(new_alerts)
             
             if levels and current_price:
@@ -618,6 +652,7 @@ class PriceChecker:
                     "alert_status": alert_status,
                     "last_alert_date": last_alert_date,
                     "last_alert_msg": last_alert_msg,
+                    "signal": current_signal,
                     "intrinsic_value": intrinsic_val,
                     "last_updated": datetime.utcnow().isoformat()
                 })
