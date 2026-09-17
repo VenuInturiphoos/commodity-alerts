@@ -1103,7 +1103,7 @@ function renderTradeMarket() {
     }
     
     marketData.forEach(item => {
-        if (item.asset_type === 'Commodity') return;
+        if (item.asset_type === 'Commodity' || item.asset_type === 'Stock') return;
         
         const tr = document.createElement('tr');
         let badgeClass = 'type-stock';
@@ -1143,7 +1143,57 @@ const LOT_SIZES = {
     'COPPER': 2500,
     'ALUMINIUM': 5000,
     'NIFTY': 25,
-    'BANKNIFTY': 15
+    'BANKNIFTY': 15,
+    'ADANIENT.NS': 309,
+    'ADANIPORTS.NS': 475,
+    'APOLLOHOSP.NS': 125,
+    'ASIANPAINT.NS': 250,
+    'AXISBANK.NS': 625,
+    'BAJAJ-AUTO.NS': 75,
+    'BAJFINANCE.NS': 750,
+    'BAJAJFINSV.NS': 300,
+    'BPCL.NS': 1975,
+    'BHARTIARTL.NS': 475,
+    'BRITANNIA.NS': 125,
+    'CIPLA.NS': 425,
+    'COALINDIA.NS': 1350,
+    'DIVISLAB.NS': 100,
+    'DRREDDY.NS': 625,
+    'EICHERMOT.NS': 100,
+    'GRASIM.NS': 250,
+    'HCLTECH.NS': 400,
+    'HDFCBANK.NS': 650,
+    'HDFCLIFE.NS': 1100,
+    'HEROMOTOCO.NS': 150,
+    'HINDALCO.NS': 700,
+    'HINDUNILVR.NS': 300,
+    'ICICIBANK.NS': 700,
+    'ITC.NS': 1725,
+    'INDUSINDBK.NS': 700,
+    'INFY.NS': 400,
+    'JSWSTEEL.NS': 675,
+    'KOTAKBANK.NS': 2000,
+    'LTIM.NS': 250,
+    'LT.NS': 175,
+    'M&M.NS': 200,
+    'MARUTI.NS': 50,
+    'NTPC.NS': 1500,
+    'NESTLEIND.NS': 500,
+    'ONGC.NS': 2250,
+    'POWERGRID.NS': 1900,
+    'RELIANCE.NS': 500,
+    'SBILIFE.NS': 375,
+    'SBIN.NS': 750,
+    'SUNPHARMA.NS': 350,
+    'TCS.NS': 225,
+    'TATACONSUM.NS': 550,
+    'TATAMOTORS.NS': 1425,
+    'TATASTEEL.NS': 2750,
+    'TECHM.NS': 600,
+    'TITAN.NS': 175,
+    'SHRIRAMFIN.NS': 825,
+    'ULTRACEMCO.NS': 50,
+    'WIPRO.NS': 3000
 };
 
 function getLotSize(symbol) {
