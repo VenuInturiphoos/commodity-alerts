@@ -176,46 +176,138 @@
                 <div id="trade-dashboard-content" style="display: none; width: 100%;">
                     <!-- Paper Trading Dashboard -->
                     <div class="glass-card full-width" style="margin-bottom: 2rem;">
-                        <h3 style="margin: 0; color: var(--text-secondary); font-size: 1rem;">Virtual Balance</h3>
-                        <h1 id="virtual-balance" style="margin: 0.5rem 0 0 0; font-size: 2.5rem; color: #4ade80;">₹...</h1>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <h3 style="margin: 0; color: var(--text-secondary); font-size: 1rem;">Net Worth</h3>
+                                <h1 id="virtual-net-worth" style="margin: 0.5rem 0 0 0; font-size: 2.5rem; color: #4ade80;">₹...</h1>
+                            </div>
+                            <div style="display: flex; gap: 1rem;">
+                                <button onclick="editVirtualBalance()" style="background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.3); color: var(--text-primary); padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                    <i class="fa-solid fa-pen-to-square"></i> Edit Cash
+                                </button>
+                                <button onclick="resetPaperTradingAccount()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fb7185; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                    <i class="fa-solid fa-rotate-right"></i> Reset Account
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                            <div>
+                                <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Available Cash</h4>
+                                <p id="virtual-balance" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Total Invested</h4>
+                                <p id="virtual-invested" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Current Portfolio Value</h4>
+                                <p id="virtual-portfolio-value" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Total P&L</h4>
+                                <p id="virtual-total-pl" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Portfolio Holdings -->
+                    <div style="margin-bottom: 2rem;">
+                        <h2 style="margin-bottom: 1rem;">Your Portfolio</h2>
+                        <div class="table-container glass-card full-width" style="margin-bottom: 1rem;">
+                            <h3 style="color: var(--text-secondary); font-size: 1.1rem;"><i class="fa-solid fa-chart-line" style="color:#60a5fa; margin-right:8px;"></i> Stocks</h3>
+                            <table class="market-table">
+                                <thead>
+                                    <tr>
+                                        <th>Asset</th>
+                                        <th>Shares</th>
+                                        <th>Avg Price</th>
+                                        <th>Current Price</th>
+                                        <th>Total Value</th>
+                                        <th>P&L</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="portfolio-stocks-body">
+                                    <tr><td colspan="6" class="loading">Loading portfolio...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="table-container glass-card full-width">
+                            <h3 style="color: var(--text-secondary); font-size: 1.1rem;"><i class="fa-solid fa-oil-well" style="color:#f59e0b; margin-right:8px;"></i> Commodities</h3>
+                            <table class="market-table">
+                                <thead>
+                                    <tr>
+                                        <th>Asset</th>
+                                        <th>Quantity</th>
+                                        <th>Avg Price</th>
+                                        <th>Current Price</th>
+                                        <th>Total Value</th>
+                                        <th>P&L</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="portfolio-commodities-body">
+                                    <tr><td colspan="6" class="loading">Loading portfolio...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Order History -->
                     <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
-                        <h3>Your Portfolio</h3>
+                        <h3>Order History</h3>
                         <table class="market-table">
                             <thead>
                                 <tr>
+                                    <th>Date</th>
                                     <th>Asset</th>
-                                    <th>Shares</th>
-                                    <th>Avg Price</th>
-                                    <th>Current Price</th>
+                                    <th>Type</th>
+                                    <th>Quantity</th>
+                                    <th>Execution Price</th>
                                     <th>Total Value</th>
-                                    <th>P&L</th>
                                 </tr>
                             </thead>
-                            <tbody id="portfolio-body">
-                                <tr><td colspan="6" class="loading">Loading portfolio...</td></tr>
+                            <tbody id="order-history-body">
+                                <tr><td colspan="6" class="loading">Loading order history...</td></tr>
                             </tbody>
                         </table>
                     </div>
 
                     <!-- Trading Terminal -->
-                    <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
-                        <h3>Trade Assets</h3>
-                        <table class="market-table">
-                            <thead>
-                                <tr>
-                                    <th>Asset</th>
-                                    <th>Type</th>
-                                    <th>Live Price</th>
-                                    <th style="text-align: right;">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="trade-market-body">
-                                <tr><td colspan="4" class="loading">Loading market data...</td></tr>
-                            </tbody>
-                        </table>
+                    <div style="margin-bottom: 2rem;">
+                        <h2 style="margin-bottom: 1rem;">Trade Assets</h2>
+                        <div class="table-container glass-card full-width" style="margin-bottom: 1rem;">
+                            <h3 style="color: var(--text-secondary); font-size: 1.1rem;"><i class="fa-solid fa-chart-line" style="color:#60a5fa; margin-right:8px;"></i> Stocks</h3>
+                            <table class="market-table">
+                                <thead>
+                                    <tr>
+                                        <th>Asset</th>
+                                        <th>Type</th>
+                                        <th>Live Price</th>
+                                        <th style="text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trade-market-stocks-body">
+                                    <tr><td colspan="4" class="loading">Loading market data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-container glass-card full-width">
+                            <h3 style="color: var(--text-secondary); font-size: 1.1rem;"><i class="fa-solid fa-oil-well" style="color:#f59e0b; margin-right:8px;"></i> Commodities</h3>
+                            <table class="market-table">
+                                <thead>
+                                    <tr>
+                                        <th>Asset</th>
+                                        <th>Type</th>
+                                        <th>Live Price</th>
+                                        <th style="text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trade-market-commodities-body">
+                                    <tr><td colspan="4" class="loading">Loading market data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -619,9 +711,16 @@ function renderMarketTable() {
                 yfLink = `https://finance.yahoo.com/quote/${yfSymbolMap[item.symbol]}`;
             }
 
+            let signalBadge = '';
+            if (item.signal === 'STRONG BUY') {
+                signalBadge = `<span style="background-color: rgba(74, 222, 128, 0.2); color: #4ade80; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(74, 222, 128, 0.3);">🟢 BUY</span>`;
+            } else if (item.signal === 'STRONG SELL') {
+                signalBadge = `<span style="background-color: rgba(251, 113, 133, 0.2); color: #fb7185; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(251, 113, 133, 0.3);">🔴 SELL</span>`;
+            }
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
+                <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>${signalBadge}</td>
                 <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
                 <td>${intrinsicHtml}</td>
                 <td style="color:#fb7185">₹${parseFloat(item.s1).toFixed(2)}</td>
@@ -643,7 +742,10 @@ function renderAlertTable() {
     tbodyStocks.innerHTML = '';
     tbodyCommodities.innerHTML = '';
     
-    const alertData = marketData.filter(item => item.alert_status && item.alert_status.trim() !== '');
+    const alertData = marketData.filter(item => 
+        (item.alert_status && item.alert_status.trim() !== '') || 
+        (item.signal && item.signal !== 'NEUTRAL')
+    );
     const stockAlerts = alertData.filter(item => item.asset_type === 'Stock');
     const commodityAlerts = alertData.filter(item => item.asset_type === 'Commodity');
     
@@ -654,7 +756,8 @@ function renderAlertTable() {
         }
 
         data.forEach(item => {
-            const statusLower = item.alert_status.toLowerCase();
+            const statusLower = item.alert_status ? item.alert_status.toLowerCase() : '';
+            const displayStatus = item.alert_status ? item.alert_status.toUpperCase() : (item.signal || 'TRENDING');
             let actionLevelHtml = "Action Required";
             
             if (statusLower.includes("support") || statusLower.includes("s1") || statusLower.includes("s2")) {
@@ -688,11 +791,18 @@ function renderAlertTable() {
                 yfLink = `https://finance.yahoo.com/quote/${yfSymbolMap[item.symbol]}`;
             }
 
+            let signalBadge = '';
+            if (item.signal === 'STRONG BUY') {
+                signalBadge = `<span style="background-color: rgba(74, 222, 128, 0.2); color: #4ade80; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(74, 222, 128, 0.3);">🟢 BUY</span>`;
+            } else if (item.signal === 'STRONG SELL') {
+                signalBadge = `<span style="background-color: rgba(251, 113, 133, 0.2); color: #fb7185; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(251, 113, 133, 0.3);">🔴 SELL</span>`;
+            }
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
+                <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>${signalBadge}</td>
                 <td style="font-weight:600; font-size: 1.1rem;">₹${parseFloat(item.current_price).toFixed(2)}</td>
-                <td><span class="alert-tag">${item.alert_status.toUpperCase()}</span></td>
+                <td><span class="alert-tag">${displayStatus}</span></td>
                 <td>${actionLevelHtml}</td>
             `;
             tbody.appendChild(tr);
@@ -810,19 +920,51 @@ async function fetchPaperTradingData(user) {
         
         txData.forEach(tx => {
             if (!userPortfolio[tx.symbol]) {
-                userPortfolio[tx.symbol] = { shares: 0, totalCost: 0 };
+                userPortfolio[tx.symbol] = { shares: 0, avgPrice: 0 };
             }
+            
+            const currentShares = userPortfolio[tx.symbol].shares;
+            const qty = tx.quantity;
+            const price = tx.price;
+
             if (tx.transaction_type === 'BUY') {
-                userPortfolio[tx.symbol].shares += tx.quantity;
-                userPortfolio[tx.symbol].totalCost += (tx.quantity * tx.price);
+                if (currentShares >= 0) {
+                    // Adding to long
+                    const totalCost = (currentShares * userPortfolio[tx.symbol].avgPrice) + (qty * price);
+                    userPortfolio[tx.symbol].shares += qty;
+                    userPortfolio[tx.symbol].avgPrice = totalCost / userPortfolio[tx.symbol].shares;
+                } else {
+                    // Covering short
+                    if (qty <= Math.abs(currentShares)) {
+                        userPortfolio[tx.symbol].shares += qty;
+                        if (userPortfolio[tx.symbol].shares === 0) userPortfolio[tx.symbol].avgPrice = 0;
+                    } else {
+                        // Flipped to long
+                        userPortfolio[tx.symbol].shares += qty; // becomes positive
+                        userPortfolio[tx.symbol].avgPrice = price; // new long position price
+                    }
+                }
             } else if (tx.transaction_type === 'SELL') {
-                // Approximate avg cost reduction
-                const avgCost = userPortfolio[tx.symbol].shares > 0 ? userPortfolio[tx.symbol].totalCost / userPortfolio[tx.symbol].shares : 0;
-                userPortfolio[tx.symbol].shares -= tx.quantity;
-                userPortfolio[tx.symbol].totalCost -= (tx.quantity * avgCost);
+                if (currentShares <= 0) {
+                    // Adding to short
+                    const totalCost = (Math.abs(currentShares) * userPortfolio[tx.symbol].avgPrice) + (qty * price);
+                    userPortfolio[tx.symbol].shares -= qty;
+                    userPortfolio[tx.symbol].avgPrice = totalCost / Math.abs(userPortfolio[tx.symbol].shares);
+                } else {
+                    // Closing long
+                    if (qty <= currentShares) {
+                        userPortfolio[tx.symbol].shares -= qty;
+                        if (userPortfolio[tx.symbol].shares === 0) userPortfolio[tx.symbol].avgPrice = 0;
+                    } else {
+                        // Flipped to short
+                        userPortfolio[tx.symbol].shares -= qty; // becomes negative
+                        userPortfolio[tx.symbol].avgPrice = price; // new short position price
+                    }
+                }
             }
         });
         
+        renderOrderHistory(txData);
         renderPortfolio();
         renderTradeMarket();
     }
@@ -832,57 +974,130 @@ async function fetchPaperTradingData(user) {
 }
 
 function renderPortfolio() {
-    const tbody = document.getElementById('portfolio-body');
-    tbody.innerHTML = '';
+    const tbodyStocks = document.getElementById('portfolio-stocks-body');
+    const tbodyCommodities = document.getElementById('portfolio-commodities-body');
+    tbodyStocks.innerHTML = '';
+    tbodyCommodities.innerHTML = '';
     
-    let hasHoldings = false;
+    let hasStockHoldings = false;
+    let hasCommodityHoldings = false;
+    let totalInvested = 0;
+    let currentPortfolioValue = 0;
+    let totalPl = 0;
     
     for (const [symbol, data] of Object.entries(userPortfolio)) {
-        if (data.shares <= 0) continue;
-        hasHoldings = true;
+        if (data.shares === 0) continue;
         
         const marketItem = marketData.find(item => item.symbol === symbol);
         const currentPrice = marketItem ? parseFloat(marketItem.current_price) : 0;
-        const avgPrice = data.totalCost / data.shares;
-        const totalValue = data.shares * currentPrice;
+        const avgPrice = data.avgPrice;
         
-        const pl = totalValue - data.totalCost;
-        const plPercent = data.totalCost > 0 ? (pl / data.totalCost) * 100 : 0;
+        const isLong = data.shares > 0;
+        const absShares = Math.abs(data.shares);
+        
+        // P&L Math
+        const costBasis = absShares * avgPrice;
+        const currentValue = absShares * currentPrice;
+        const pl = isLong ? (currentValue - costBasis) : (costBasis - currentValue);
+        const plPercent = costBasis > 0 ? (pl / costBasis) * 100 : 0;
+        
+        totalInvested += costBasis;
+        currentPortfolioValue += (costBasis + pl);
+        totalPl += pl;
         
         const isProfit = pl >= 0;
         const color = isProfit ? '#4ade80' : '#fb7185';
         const sign = isProfit ? '+' : '';
+        const positionType = isLong ? '<span style="color:#4ade80; font-size:0.8rem; border:1px solid #4ade80; padding:2px 4px; border-radius:4px;">LONG</span>' : '<span style="color:#fb7185; font-size:0.8rem; border:1px solid #fb7185; padding:2px 4px; border-radius:4px;">SHORT</span>';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><strong>${marketItem ? marketItem.name : symbol}</strong> <small style="color:var(--text-secondary)">(${symbol})</small></td>
-            <td>${data.shares}</td>
+            <td><strong>${marketItem ? marketItem.name : symbol}</strong> <small style="color:var(--text-secondary)">(${symbol})</small><br>${positionType}</td>
+            <td>${absShares}</td>
             <td>₹${avgPrice.toFixed(2)}</td>
             <td>₹${currentPrice.toFixed(2)}</td>
-            <td style="font-weight: bold;">₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            <td style="font-weight: bold;">₹${currentValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
             <td style="color: ${color}; font-weight: bold;">${sign}₹${pl.toFixed(2)} <br><small>(${sign}${plPercent.toFixed(2)}%)</small></td>
         `;
-        tbody.appendChild(tr);
+
+        if (marketItem && marketItem.asset_type === 'Commodity') {
+            tbodyCommodities.appendChild(tr);
+            hasCommodityHoldings = true;
+        } else {
+            tbodyStocks.appendChild(tr);
+            hasStockHoldings = true;
+        }
     }
     
-    if (!hasHoldings) {
-        tbody.innerHTML = `<tr><td colspan="6" class="loading" style="padding: 2rem !important;">No active holdings in your portfolio.</td></tr>`;
+    if (!hasStockHoldings) {
+        tbodyStocks.innerHTML = `<tr><td colspan="6" class="loading" style="padding: 2rem !important;">No active stock holdings.</td></tr>`;
     }
+    if (!hasCommodityHoldings) {
+        tbodyCommodities.innerHTML = `<tr><td colspan="6" class="loading" style="padding: 2rem !important;">No active commodity holdings.</td></tr>`;
+    }
+
+    // Update Summary Dashboard
+    const netWorth = userBalance + totalInvested + totalPl;
+    document.getElementById('virtual-net-worth').textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('virtual-invested').textContent = `₹${totalInvested.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('virtual-portfolio-value').textContent = `₹${currentPortfolioValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    
+    const plColor = totalPl >= 0 ? '#4ade80' : '#fb7185';
+    const plSign = totalPl >= 0 ? '+' : '';
+    document.getElementById('virtual-total-pl').textContent = `${plSign}₹${Math.abs(totalPl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('virtual-total-pl').style.color = plColor;
+}
+
+function renderOrderHistory(txData) {
+    const tbody = document.getElementById('order-history-body');
+    tbody.innerHTML = '';
+
+    if (!txData || txData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="loading" style="padding: 2rem !important;">No order history found.</td></tr>`;
+        return;
+    }
+
+    // Reverse to show newest first
+    const reversedData = [...txData].reverse();
+
+    reversedData.forEach(tx => {
+        const date = new Date(tx.timestamp).toLocaleString('en-IN', { 
+            year: 'numeric', month: 'short', day: 'numeric', 
+            hour: '2-digit', minute:'2-digit', second:'2-digit' 
+        });
+        
+        const marketItem = marketData.find(item => item.symbol === tx.symbol);
+        const name = marketItem ? marketItem.name : tx.symbol;
+        
+        const totalValue = tx.quantity * tx.price;
+        const color = tx.transaction_type === 'BUY' ? '#4ade80' : '#fb7185';
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="color:var(--text-secondary); font-size:0.9rem;">${date}</td>
+            <td><strong>${name}</strong> <small style="color:var(--text-secondary)">(${tx.symbol})</small></td>
+            <td style="color:${color}; font-weight:bold;">${tx.transaction_type}</td>
+            <td>${tx.quantity}</td>
+            <td>₹${tx.price.toFixed(2)}</td>
+            <td>₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 function renderTradeMarket() {
-    const tbody = document.getElementById('trade-market-body');
-    tbody.innerHTML = '';
+    const tbodyStocks = document.getElementById('trade-market-stocks-body');
+    const tbodyCommodities = document.getElementById('trade-market-commodities-body');
+    tbodyStocks.innerHTML = '';
+    tbodyCommodities.innerHTML = '';
     
     if (marketData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="loading">No market data available to trade.</td></tr>`;
+        tbodyStocks.innerHTML = `<tr><td colspan="4" class="loading">No market data available to trade.</td></tr>`;
+        tbodyCommodities.innerHTML = `<tr><td colspan="4" class="loading">No market data available to trade.</td></tr>`;
         return;
     }
     
-    // Allow trading all available assets (stocks and commodities)
-    const tradableAssets = marketData;
-    
-    tradableAssets.forEach(item => {
+    marketData.forEach(item => {
         const tr = document.createElement('tr');
         let badgeClass = 'type-stock';
         if (item.asset_type === 'Commodity') badgeClass = 'type-commodity';
@@ -897,8 +1112,20 @@ function renderTradeMarket() {
                 <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${item.current_price})">Trade</button>
             </td>
         `;
-        tbody.appendChild(tr);
+
+        if (item.asset_type === 'Commodity') {
+            tbodyCommodities.appendChild(tr);
+        } else {
+            tbodyStocks.appendChild(tr);
+        }
     });
+
+    if (tbodyStocks.children.length === 0) {
+        tbodyStocks.innerHTML = `<tr><td colspan="4" class="loading">No stocks available.</td></tr>`;
+    }
+    if (tbodyCommodities.children.length === 0) {
+        tbodyCommodities.innerHTML = `<tr><td colspan="4" class="loading">No commodities available.</td></tr>`;
+    }
 }
 
 function openTradeModal(symbol, name, price) {
@@ -911,6 +1138,46 @@ function openTradeModal(symbol, name, price) {
     document.getElementById('trade-status-msg').textContent = '';
     
     document.getElementById('trade-modal').classList.remove('hidden');
+}
+
+window.editVirtualBalance = async function() {
+    if (!currentUser) return alert("Please log in first.");
+    const currentBal = userBalance;
+    const newBalStr = prompt(`Enter new virtual cash balance (Current: ₹${currentBal.toFixed(2)}):`, currentBal);
+    if (!newBalStr) return;
+    const newBal = parseFloat(newBalStr);
+    if (isNaN(newBal) || newBal < 0) return alert("Invalid amount.");
+
+    try {
+        const { error } = await supabaseClient.from('profiles')
+            .update({ balance: newBal })
+            .eq('id', currentUser.id);
+        if (error) throw error;
+        alert("Cash balance updated successfully!");
+        fetchPaperTradingData(currentUser);
+    } catch (err) {
+        alert("Error updating balance: " + err.message);
+    }
+}
+
+window.resetPaperTradingAccount = async function() {
+    if (!currentUser) return alert("Please log in first.");
+    if (!confirm("Are you sure you want to completely reset your account? This will wipe your portfolio, transaction history, and restore your balance to ₹1,000,000.")) return;
+
+    try {
+        // 1. Delete all transactions for this user
+        const { error: txError } = await supabaseClient.from('transactions').delete().eq('user_id', currentUser.id);
+        if (txError) throw txError;
+
+        // 2. Reset balance to 1M
+        const { error: profileError } = await supabaseClient.from('profiles').update({ balance: 1000000 }).eq('id', currentUser.id);
+        if (profileError) throw profileError;
+
+        alert("Account reset successfully!");
+        fetchPaperTradingData(currentUser);
+    } catch (err) {
+        alert("Error resetting account: " + err.message);
+    }
 }
 
 // Modal Event Listeners
@@ -943,15 +1210,6 @@ document.addEventListener('DOMContentLoaded', () => {
             statusMsg.textContent = "Insufficient virtual balance.";
             statusMsg.style.color = "#fb7185";
             return;
-        }
-        
-        if (type === 'SELL') {
-            const holding = userPortfolio[activeTradeAsset.symbol] ? userPortfolio[activeTradeAsset.symbol].shares : 0;
-            if (qty > holding) {
-                statusMsg.textContent = `You only have ${holding} shares to sell.`;
-                statusMsg.style.color = "#fb7185";
-                return;
-            }
         }
         
         buyBtn.disabled = true;
