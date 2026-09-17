@@ -619,24 +619,30 @@ class PriceChecker:
                 })
                 
                 # Fetch and add Commodity Future explicitly
+                fut_price = None
                 if self.dhan_active:
                     sec_id = self.get_dhan_mcx_near_month(symbol)
                     if sec_id:
                         fut_price = self.get_dhan_current_price(sec_id, exchange_segment="MCX_COMM", instrument_type="FUTCOM")
-                        if fut_price:
-                            market_data_payload.append({
-                                "symbol": f"{symbol}-FUT",
-                                "name": f"{name} Future",
-                                "asset_type": "Commodity Future",
-                                "current_price": round(fut_price, 2),
-                                "r1": None, "r2": None, "s1": None, "s2": None, "pivot": None,
-                                "alert_status": None,
-                                "last_alert_date": None,
-                                "last_alert_msg": None,
-                                "signal": None,
-                                "intrinsic_value": None,
-                                "last_updated": datetime.utcnow().isoformat()
-                            })
+                        
+                # Fallback to internet (yf converted price) if Dhan is down
+                if not fut_price:
+                    fut_price = current_price
+                    
+                if fut_price:
+                    market_data_payload.append({
+                        "symbol": f"{symbol}-FUT",
+                        "name": f"{name} Future",
+                        "asset_type": "Commodity Future",
+                        "current_price": round(fut_price, 2),
+                        "r1": None, "r2": None, "s1": None, "s2": None, "pivot": None,
+                        "alert_status": None,
+                        "last_alert_date": None,
+                        "last_alert_msg": None,
+                        "signal": None,
+                        "intrinsic_value": None,
+                        "last_updated": datetime.utcnow().isoformat()
+                    })
             
         # 2. Check Stocks
         for symbol, data in self.stocks.items():
@@ -671,7 +677,7 @@ class PriceChecker:
                 })
 
         # 3. Check Derivatives (Futures & Options)
-        if self.dhan_active and hasattr(self, 'derivatives'):
+        if hasattr(self, 'derivatives'):
             for base_symbol, config_data in self.derivatives.items():
                 print(f"\nChecking Derivatives for {base_symbol}...")
                 # Get spot price for ATM option calculation
@@ -686,17 +692,33 @@ class PriceChecker:
                     except Exception as e:
                         print(f"Error fetching spot price for {base_symbol}: {e}")
                 
-                derivs = self.get_dhan_derivatives(base_symbol, spot_price)
-                for deriv in derivs:
-                    symbol = deriv['symbol']
-                    print(f"Fetching price for {symbol}...")
-                    current_price = self.get_dhan_current_price(deriv['security_id'], exchange_segment=deriv['exchange_segment'], instrument_type=deriv['instrument_type'])
-                    if current_price:
+                if self.dhan_active:
+                    derivs = self.get_dhan_derivatives(base_symbol, spot_price)
+                    for deriv in derivs:
+                        symbol = deriv['symbol']
+                        print(f"Fetching price for {symbol}...")
+                        current_price = self.get_dhan_current_price(deriv['security_id'], exchange_segment=deriv['exchange_segment'], instrument_type=deriv['instrument_type'])
+                        if current_price:
+                            market_data_payload.append({
+                                "symbol": symbol,
+                                "name": symbol,
+                                "asset_type": deriv['type'],
+                                "current_price": round(current_price, 2),
+                                "r1": None, "r2": None, "s1": None, "s2": None, "pivot": None,
+                                "alert_status": None,
+                                "last_alert_date": None,
+                                "last_alert_msg": None,
+                                "intrinsic_value": None,
+                                "last_updated": datetime.utcnow().isoformat()
+                            })
+                else:
+                    # Internet fallback for NIFTY/BANKNIFTY futures using spot price
+                    if spot_price and config_data.get('track_futures'):
                         market_data_payload.append({
-                            "symbol": symbol,
-                            "name": symbol,
-                            "asset_type": deriv['type'],
-                            "current_price": round(current_price, 2),
+                            "symbol": f"{base_symbol}-FUT",
+                            "name": f"{config_data.get('name', base_symbol)} Future",
+                            "asset_type": "Future",
+                            "current_price": round(spot_price, 2),
                             "r1": None, "r2": None, "s1": None, "s2": None, "pivot": None,
                             "alert_status": None,
                             "last_alert_date": None,
