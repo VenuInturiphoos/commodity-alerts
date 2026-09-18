@@ -364,7 +364,7 @@ class PriceChecker:
             print(f"Error fetching previous state: {e}")
             return None
 
-    def evaluate_levels(self, name, symbol, levels, current_price, previous_state):
+    def evaluate_levels(self, name, symbol, levels, current_price, previous_state, is_commodity=False):
         alerts = []
         alert_status = None
         
@@ -413,16 +413,19 @@ class PriceChecker:
         # Resistance and Support alerts have been removed per user request.
 
         # Multi-timeframe extremes evaluation (Highest priority first)
-
-        high_alerts_config = [
-            ('Strong_R2', 'Strong Algorithmic Resistance (R2)', 0.01),
-            ('Strong_R1', 'Strong Algorithmic Resistance (R1)', 0.005),
-            ('AllTimeHigh', 'All-Time High', 0.01),
-            ('OneYearHigh', '1-Year High', 0.01),
-            ('ThreeMonthHigh', '3-Month High', 0.01),
-            ('TwoMonthHigh', '2-Month High', 0.01),
-            ('MonthlyHigh', '1-Month High', 0.005)
-        ]
+        if is_commodity:
+            high_alerts_config = [
+                ('Strong_R2', 'Strong Algorithmic Resistance (R2)', 0.01),
+                ('Strong_R1', 'Strong Algorithmic Resistance (R1)', 0.005),
+                ('MonthlyHigh', '1-Month High', 0.005)
+            ]
+        else:
+            high_alerts_config = [
+                ('Strong_R2', 'Strong Algorithmic Resistance (R2)', 0.01),
+                ('Strong_R1', 'Strong Algorithmic Resistance (R1)', 0.005),
+                ('ThreeMonthHigh', '3-Month High', 0.01)
+            ]
+            
         yf_symbol_map = {
             "GOLD": "GC=F",
             "SILVER": "SI=F",
@@ -453,16 +456,18 @@ class PriceChecker:
                 break # Only alert the highest timeframe reached
                 
 
-        low_alerts_config = [
-            ('Strong_S2', 'Strong Algorithmic Support (S2)', 0.01),
-            ('Strong_S1', 'Strong Algorithmic Support (S1)', 0.005),
-            ('AllTimeLow', 'All-Time Low', 0.01),
-
-            ('OneYearLow', '1-Year Low', 0.01),
-            ('ThreeMonthLow', '3-Month Low', 0.01),
-            ('TwoMonthLow', '2-Month Low', 0.01),
-            ('MonthlyLow', '1-Month Low', 0.005)
-        ]
+        if is_commodity:
+            low_alerts_config = [
+                ('Strong_S2', 'Strong Algorithmic Support (S2)', 0.01),
+                ('Strong_S1', 'Strong Algorithmic Support (S1)', 0.005),
+                ('MonthlyLow', '1-Month Low', 0.005)
+            ]
+        else:
+            low_alerts_config = [
+                ('Strong_S2', 'Strong Algorithmic Support (S2)', 0.01),
+                ('Strong_S1', 'Strong Algorithmic Support (S1)', 0.005),
+                ('ThreeMonthLow', '3-Month Low', 0.01)
+            ]
         
         for key, name_str, threshold in low_alerts_config:
             level = levels.get(key)
@@ -548,7 +553,7 @@ class PriceChecker:
             
             levels = self.get_support_resistance_levels(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym, current_price=current_price)
             
-            new_alerts, alert_status, last_alert_date, last_alert_msg, current_signal = self.evaluate_levels(name, symbol, levels, current_price, previous_state)
+            new_alerts, alert_status, last_alert_date, last_alert_msg, current_signal = self.evaluate_levels(name, symbol, levels, current_price, previous_state, is_commodity=True)
             alerts.extend(new_alerts)
             
             if levels and current_price:
@@ -599,7 +604,7 @@ class PriceChecker:
             levels = self.get_support_resistance_levels(symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=yf_sym, current_price=current_price)
             intrinsic_val = self.get_intrinsic_value(yf_sym)
             
-            new_alerts, alert_status, last_alert_date, last_alert_msg, current_signal = self.evaluate_levels(name, symbol, levels, current_price, previous_state)
+            new_alerts, alert_status, last_alert_date, last_alert_msg, current_signal = self.evaluate_levels(name, symbol, levels, current_price, previous_state, is_commodity=False)
             alerts.extend(new_alerts)
             
             if levels and current_price:
