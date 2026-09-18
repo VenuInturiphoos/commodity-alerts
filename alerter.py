@@ -35,6 +35,9 @@ class EmailAlerter:
         return list(recipients)
 
     def send_alert(self, subject, body):
+        # Send Telegram notification if configured
+        self._send_telegram(subject, body)
+        
         sender_email = self.config['sender_email']
         sender_password = os.environ.get('SENDER_PASSWORD', self.config.get('sender_password', ''))
         recipient_emails = self.get_recipients()
@@ -63,4 +66,21 @@ class EmailAlerter:
                 server.quit()
                 print(f"Successfully sent alert to {recipient}")
             except Exception as e:
-                print(f"Failed to send alert to {recipient}. Error: {e}")
+                print(f"Failed to send email to {recipient}: {e}")
+
+    def _send_telegram(self, subject, body):
+        bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
+        chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+        if not bot_token or not chat_id:
+            return
+            
+        text = f"{subject}\n\n{body}"
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        try:
+            response = requests.post(url, json={"chat_id": chat_id, "text": text}, timeout=10)
+            if response.status_code == 200:
+                print("Telegram alert sent successfully.")
+            else:
+                print(f"Failed to send Telegram alert: {response.text}")
+        except Exception as e:
+            print(f"Failed to send Telegram alert Exception: {e}")

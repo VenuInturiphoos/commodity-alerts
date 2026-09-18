@@ -8,6 +8,7 @@ import json
 import math
 import numpy as np
 from scipy.signal import argrelextrema
+import ta
 from SmartApi import SmartConnect
 import pyotp
 import urllib.request
@@ -224,6 +225,26 @@ class PriceChecker:
             print(f"Error fetching live price from AngelOne for {token}: {e}")
             return None
 
+    def get_angel_oi(self, token, exchange_segment="NFO"):
+        try:
+            if not hasattr(self.angel, 'marketData'):
+                return 0 # Fallback if library version doesn't support marketData
+            params = {
+                "mode": "FULL",
+                "exchangeTokens": {
+                    exchange_segment: [str(token)]
+                }
+            }
+            data = self.angel.marketData("FULL", {exchange_segment: [str(token)]})
+            if data and data.get('status') and data.get('data'):
+                fetched = data['data'].get('fetched', [])
+                if fetched:
+                    return fetched[0].get('opnInterest', 0)
+            return 0
+        except Exception as e:
+            print(f"Error fetching OI from AngelOne for {token}: {e}")
+            return 0
+
     def get_support_resistance_levels(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None, current_price=None):
         levels = None
         
@@ -307,6 +328,21 @@ class PriceChecker:
             else:
                 levels['EMA_50'] = None
                 levels['EMA_200'] = None
+
+            # Calculate ATR, Bollinger Bands, and Volume Confirmation
+            if len(hist) >= 20:
+                levels['ATR_14'] = ta.volatility.average_true_range(hist['High'], hist['Low'], hist['Close'], window=14).iloc[-1] * fallback_multiplier
+                levels['BB_Upper'] = ta.volatility.bollinger_hband(hist['Close'], window=20, window_dev=2).iloc[-1] * fallback_multiplier
+                levels['BB_Lower'] = ta.volatility.bollinger_lband(hist['Close'], window=20, window_dev=2).iloc[-1] * fallback_multiplier
+                levels['Vol_20_MA'] = hist['Volume'].rolling(window=20).mean().iloc[-2] # previous day MA
+                levels['Vol_Current'] = hist['Volume'].iloc[-1]
+            else:
+                levels['ATR_14'] = None
+                levels['BB_Upper'] = None
+                levels['BB_Lower'] = None
+                levels['Vol_20_MA'] = None
+                levels['Vol_Current'] = None
+
             
         except Exception as e:
             print(f"Error fetching historical extremes from yfinance for {ticker_symbol}: {e}")
@@ -416,6 +452,16 @@ class PriceChecker:
             
         # Resistance and Support alerts have been removed per user request.
 
+        # Volume and Volatility Checks
+        vol_ma = levels.get('Vol_20_MA')
+        vol_curr = levels.get('Vol_Current')
+        is_high_volume = (vol_curr and vol_ma and vol_curr > 1.5 * vol_ma)
+        volume_msg = " [High Volume Confirmed]" if is_high_volume else ""
+
+        bb_upper = levels.get('BB_Upper')
+        bb_lower = levels.get('BB_Lower')
+        atr = levels.get('ATR_14')
+
         # Multi-timeframe extremes evaluation (Highest priority first)
         if is_commodity:
             high_alerts_config = [
@@ -442,18 +488,30 @@ class PriceChecker:
         }
         yf_sym = yf_symbol_map.get(symbol, symbol)
         chart_url = f"https://finance.yahoo.com/quote/{yf_sym}"
-        
+
+        # Check Bollinger Band Breakout
+        if bb_upper and current_price > bb_upper and is_high_volume:
+            if last_alert_date != today_ist:
+                alerts.append({
+                    'subject': f"🔥 Volatility Breakout: {name} pierced Upper Bollinger Band!",
+                    'body': f"{name} ({symbol}) has broken above its Upper Bollinger Band (₹{bb_upper:.2f}) with high volume.\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
+                })
+                last_alert_date = today_ist
+                last_alert_msg = "Upper BB Breakout"
+            alert_status = "Upper BB Breakout"
+
         for key, name_str, threshold in high_alerts_config:
             level = levels.get(key)
             if level and abs(level) > 0 and abs(current_price - level) / abs(level) <= threshold:
                 alert_msg = f"testing {name_str}"
-                
-                # If we already sent ANY alert for this symbol today, don't send another one.
-                # This prevents "flapping" spam if the price bounces between two threshold levels.
+                # Require volume confirmation for breakouts (except R1/R2 which are static pivots)
+                if ("High" in key) and not is_high_volume:
+                    continue
+
                 if last_alert_date != today_ist:
                     alerts.append({
-                        'subject': f"🚀 Market Breakout: {name} {alert_msg}!",
-                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
+                        'subject': f"🚀 Market Breakout: {name} {alert_msg}!{volume_msg}",
+                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
                     })
                     last_alert_date = today_ist
                     last_alert_msg = alert_msg
@@ -461,7 +519,17 @@ class PriceChecker:
                 alert_status = alert_msg
                 break # Only alert the highest timeframe reached
                 
-
+        # Check Lower Bollinger Band Breakdown
+        if bb_lower and current_price < bb_lower and is_high_volume:
+            if last_alert_date != today_ist:
+                alerts.append({
+                    'subject': f"⚠️ Volatility Breakdown: {name} pierced Lower Bollinger Band!",
+                    'body': f"{name} ({symbol}) has broken below its Lower Bollinger Band (₹{bb_lower:.2f}) with high volume.\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
+                })
+                last_alert_date = today_ist
+                last_alert_msg = "Lower BB Breakout"
+            alert_status = "Lower BB Breakout"
+            
         if is_commodity:
             low_alerts_config = [
                 ('Strong_S2', 'Strong Algorithmic Support (S2)', 0.01),
@@ -482,10 +550,13 @@ class PriceChecker:
             if level and abs(level) > 0 and abs(current_price - level) / abs(level) <= threshold:
                 alert_msg = f"testing {name_str}"
                 
+                if ("Low" in key) and not is_high_volume:
+                    continue
+                    
                 if last_alert_date != today_ist:
                     alerts.append({
-                        'subject': f"📉 Market Breakdown: {name} {alert_msg}!",
-                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
+                        'subject': f"📉 Market Breakdown: {name} {alert_msg}!{volume_msg}",
+                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
                     })
                     last_alert_date = today_ist
                     last_alert_msg = alert_msg
@@ -667,24 +738,49 @@ class PriceChecker:
                 
                 if self.angel_active:
                     derivs = self.get_angel_derivatives(base_symbol, spot_price)
+                    total_ce_oi = 0
+                    total_pe_oi = 0
+                    derivs_with_oi = []
+                    
                     for deriv in derivs:
                         symbol = deriv['symbol']
                         print(f"Fetching price for {symbol}...")
                         current_price = self.get_angel_current_price(deriv['security_id'], exchange_segment=deriv['exchange_segment'], )
+                        
+                        oi = 0
+                        if 'Option' in deriv['type']:
+                            oi = self.get_angel_oi(deriv['security_id'], exchange_segment=deriv['exchange_segment'])
+                            if 'CE' in deriv['type']:
+                                total_ce_oi += oi
+                            elif 'PE' in deriv['type']:
+                                total_pe_oi += oi
+                                
                         if current_price:
-                            market_data_payload.append({
-                                "symbol": symbol,
-                                "name": symbol,
-                                "asset_type": deriv['type'],
-                                "current_price": round(current_price, 2),
-                                "r1": None, "r2": None, "s1": None, "s2": None, "pivot": None,
-                                "alert_status": None,
-                                "last_alert_date": None,
-                                "last_alert_msg": None,
-                                "signal": None,
-                                "intrinsic_value": None,
-                                "last_updated": datetime.utcnow().isoformat()
+                            derivs_with_oi.append({
+                                'deriv': deriv,
+                                'current_price': current_price,
+                                'oi': oi
                             })
+                            
+                    pcr = total_pe_oi / total_ce_oi if total_ce_oi > 0 else None
+                    
+                    for item in derivs_with_oi:
+                        deriv = item['deriv']
+                        market_data_payload.append({
+                            "symbol": deriv['symbol'],
+                            "name": deriv['symbol'],
+                            "asset_type": deriv['type'],
+                            "current_price": round(item['current_price'], 2),
+                            "r1": None, "r2": None, "s1": None, "s2": None, "pivot": None,
+                            "alert_status": None,
+                            "last_alert_date": None,
+                            "last_alert_msg": None,
+                            "signal": None,
+                            "intrinsic_value": None,
+                            "open_interest": item['oi'],
+                            "pcr": round(pcr, 2) if pcr else None,
+                            "last_updated": datetime.utcnow().isoformat()
+                        })
                 else:
                     # Internet fallback for NIFTY/BANKNIFTY futures using spot price
                     if spot_price and config_data.get('track_futures'):
