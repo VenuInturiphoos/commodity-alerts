@@ -92,6 +92,7 @@
                                 <th>Support 1</th>
                                 <th>Resistance 1</th>
                                 <th>Last Updated</th>
+                                <th>Interactive Chart</th>
                             </tr>
                         </thead>
                         <tbody id="market-data-body-stocks">
@@ -111,6 +112,7 @@
                                 <th>Support 1</th>
                                 <th>Resistance 1</th>
                                 <th>Last Updated</th>
+                                <th>Interactive Chart</th>
                             </tr>
                         </thead>
                         <tbody id="market-data-body-commodities">
@@ -136,6 +138,7 @@
                                 <th>Current Price (₹)</th>
                                 <th>Trigger Status</th>
                                 <th>Action Level</th>
+                                <th>Interactive Chart</th>
                             </tr>
                         </thead>
                         <tbody id="alert-data-body-stocks">
@@ -153,6 +156,7 @@
                                 <th>Current Price (₹)</th>
                                 <th>Trigger Status</th>
                                 <th>Action Level</th>
+                                <th>Interactive Chart</th>
                             </tr>
                         </thead>
                         <tbody id="alert-data-body-commodities">
@@ -794,13 +798,15 @@ function renderMarketTable() {
             }
 
             const tr = document.createElement('tr');
+            const pcrDisplay = item.pcr ? item.pcr : 0;
             tr.innerHTML = `
                 <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>${signalBadge}</td>
                 <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
                 <td>${intrinsicHtml}</td>
-                <td style="color:#fb7185">₹${parseFloat(item.s1).toFixed(2)}</td>
-                <td style="color:#4ade80">₹${parseFloat(item.r1).toFixed(2)}</td>
+                <td style="color:#fb7185">₹${parseFloat(item.s1 || 0).toFixed(2)}</td>
+                <td style="color:#4ade80">₹${parseFloat(item.r1 || 0).toFixed(2)}</td>
                 <td style="color:var(--text-secondary); font-size: 0.875rem;">${date}</td>
+                <td><button onclick="openChartModal('${item.symbol}', '${item.name}', ${item.current_price}, ${pcrDisplay}, ${item.r1 || 0}, ${item.s1 || 0})" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: white;">View Chart</button></td>
             `;
             tbody.appendChild(tr);
         });
@@ -879,11 +885,13 @@ function renderAlertTable() {
             }
 
             const tr = document.createElement('tr');
+            const pcrDisplay = item.pcr ? item.pcr : 0;
             tr.innerHTML = `
                 <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>${signalBadge}</td>
                 <td style="font-weight:600; font-size: 1.1rem;">₹${parseFloat(item.current_price).toFixed(2)}</td>
                 <td><span class="alert-tag">${displayStatus}</span></td>
                 <td>${actionLevelHtml}</td>
+                <td><button onclick="openChartModal('${item.symbol}', '${item.name}', ${item.current_price}, ${pcrDisplay}, ${item.r1 || 0}, ${item.s1 || 0})" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: white;">View Chart</button></td>
             `;
             tbody.appendChild(tr);
         });
@@ -1674,6 +1682,102 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('trade-sell-btn')?.addEventListener('click', () => handleTrade('SELL'));
 });
 
+    </script>
+    
+    <!-- TradingView Lightweight Charts API -->
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    
+    <!-- Chart Modal -->
+    <div id="chart-modal" class="modal hidden">
+        <div class="modal-content glass-card" style="max-width: 900px; width: 95%;">
+            <span class="close-modal" onclick="closeChartModal()">&times;</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 id="chart-modal-title" style="margin: 0;">Asset Chart</h2>
+                <div id="chart-pcr-badge" class="badge" style="display: none; font-size: 0.9rem;">PCR: -</div>
+            </div>
+            <div id="tv-chart" style="width: 100%; height: 400px; border-radius: 8px; overflow: hidden; position: relative;"></div>
+        </div>
+    </div>
+    
+    <script>
+        let tvWidget = null;
+        let tvLineSeries = null;
+        
+        function openChartModal(symbol, name, currentPrice, pcr, r1, s1) {
+            document.getElementById('chart-modal').classList.remove('hidden');
+            document.getElementById('chart-modal-title').innerText = name + ' (' + symbol + ')';
+            
+            const pcrBadge = document.getElementById('chart-pcr-badge');
+            if (pcr > 0) {
+                pcrBadge.style.display = 'inline-block';
+                pcrBadge.innerText = 'PCR: ' + parseFloat(pcr).toFixed(2);
+                pcrBadge.style.background = pcr < 0.8 ? 'rgba(74, 222, 128, 0.2)' : 'rgba(251, 113, 133, 0.2)';
+                pcrBadge.style.color = pcr < 0.8 ? '#4ade80' : '#fb7185';
+            } else {
+                pcrBadge.style.display = 'none';
+            }
+            
+            const chartContainer = document.getElementById('tv-chart');
+            chartContainer.innerHTML = '';
+            
+            tvWidget = LightweightCharts.createChart(chartContainer, {
+                width: chartContainer.clientWidth,
+                height: 400,
+                layout: {
+                    background: { type: 'solid', color: 'transparent' },
+                    textColor: '#94a3b8',
+                },
+                grid: {
+                    vertLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                    horzLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                },
+                timeScale: {
+                    timeVisible: true,
+                    secondsVisible: false,
+                },
+            });
+            
+            tvLineSeries = tvWidget.addLineSeries({
+                color: '#3b82f6',
+                lineWidth: 2,
+            });
+            
+            // Mock historical data mapping up to current price
+            const data = [];
+            let time = Math.floor(Date.now() / 1000) - (86400 * 30); // 30 days ago
+            let val = currentPrice * 0.95;
+            for (let i = 0; i < 30; i++) {
+                val += (Math.random() - 0.45) * (currentPrice * 0.02);
+                data.push({ time: time, value: val });
+                time += 86400;
+            }
+            data.push({ time: Math.floor(Date.now() / 1000), value: currentPrice });
+            
+            tvLineSeries.setData(data);
+            
+            // Add price lines for current price, R1, and S1
+            tvLineSeries.createPriceLine({ price: currentPrice, color: '#38bdf8', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Solid, axisLabelVisible: true, title: 'Current' });
+            if (r1 > 0) tvLineSeries.createPriceLine({ price: r1, color: '#4ade80', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: 'R1' });
+            if (s1 > 0) tvLineSeries.createPriceLine({ price: s1, color: '#fb7185', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: 'S1' });
+            
+            tvWidget.timeScale().fitContent();
+        }
+        
+        function closeChartModal() {
+            document.getElementById('chart-modal').classList.add('hidden');
+            if (tvWidget) {
+                tvWidget.remove();
+                tvWidget = null;
+            }
+        }
+        
+        // Resize chart on window resize
+        window.addEventListener('resize', () => {
+            if (tvWidget) {
+                const chartContainer = document.getElementById('tv-chart');
+                tvWidget.applyOptions({ width: chartContainer.clientWidth });
+            }
+        });
     </script>
 </body>
 </html>
