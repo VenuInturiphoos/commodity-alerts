@@ -421,6 +421,8 @@ class PriceChecker:
             high_alerts_config = [
                 ('Strong_R2', 'Strong Algorithmic Resistance (R2)', 0.01),
                 ('Strong_R1', 'Strong Algorithmic Resistance (R1)', 0.005),
+                ('ThreeMonthHigh', '3-Month High', 0.01),
+                ('MonthlyHigh', '1-Month High', 0.005),
                 ('WeeklyHigh', '1-Week High', 0.005)
             ]
         else:
@@ -464,6 +466,8 @@ class PriceChecker:
             low_alerts_config = [
                 ('Strong_S2', 'Strong Algorithmic Support (S2)', 0.01),
                 ('Strong_S1', 'Strong Algorithmic Support (S1)', 0.005),
+                ('ThreeMonthLow', '3-Month Low', 0.01),
+                ('MonthlyLow', '1-Month Low', 0.005),
                 ('WeeklyLow', '1-Week Low', 0.005)
             ]
         else:
