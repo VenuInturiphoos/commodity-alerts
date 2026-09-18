@@ -276,10 +276,14 @@ class PriceChecker:
                 hist.index = hist.index.tz_localize('UTC')
             
             # Slices
+            hist_1w = hist[hist.index >= (now - timedelta(days=7))]
             hist_1m = hist[hist.index >= (now - timedelta(days=30))]
             hist_2m = hist[hist.index >= (now - timedelta(days=60))]
             hist_3m = hist[hist.index >= (now - timedelta(days=90))]
             hist_1y = hist[hist.index >= (now - timedelta(days=365))]
+            
+            levels['WeeklyHigh'] = hist_1w['High'].max() * fallback_multiplier if not hist_1w.empty else None
+            levels['WeeklyLow'] = hist_1w['Low'].min() * fallback_multiplier if not hist_1w.empty else None
             
             levels['MonthlyHigh'] = hist_1m['High'].max() * fallback_multiplier if not hist_1m.empty else None
             levels['MonthlyLow'] = hist_1m['Low'].min() * fallback_multiplier if not hist_1m.empty else None
@@ -417,7 +421,7 @@ class PriceChecker:
             high_alerts_config = [
                 ('Strong_R2', 'Strong Algorithmic Resistance (R2)', 0.01),
                 ('Strong_R1', 'Strong Algorithmic Resistance (R1)', 0.005),
-                ('MonthlyHigh', '1-Month High', 0.005)
+                ('WeeklyHigh', '1-Week High', 0.005)
             ]
         else:
             high_alerts_config = [
@@ -460,7 +464,7 @@ class PriceChecker:
             low_alerts_config = [
                 ('Strong_S2', 'Strong Algorithmic Support (S2)', 0.01),
                 ('Strong_S1', 'Strong Algorithmic Support (S1)', 0.005),
-                ('MonthlyLow', '1-Month Low', 0.005)
+                ('WeeklyLow', '1-Week Low', 0.005)
             ]
         else:
             low_alerts_config = [
