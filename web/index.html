@@ -839,8 +839,7 @@ function renderAlertTable() {
         data.forEach(item => {
             const statusLower = item.alert_status ? item.alert_status.toLowerCase() : '';
             const displayStatus = item.alert_status ? item.alert_status.toUpperCase() : (item.signal || 'TRENDING');
-            let actionLevelHtml = "Action Required";
-            
+            let actionLevelHtml = `<span style="cursor: pointer; text-decoration: underline; text-decoration-style: dotted; color: var(--text-primary);" onclick="openActionHelpModal('${item.name}', '${displayStatus}')">Action Required <i class="fa-solid fa-circle-info" style="font-size: 0.8em; margin-left: 2px;"></i></span>`;
             if (statusLower.includes("support") || statusLower.includes("s1") || statusLower.includes("s2")) {
                 actionLevelHtml = `<div style="display:flex; flex-direction:column; gap:4px; font-size:0.9rem;">
                     <span style="color:#fb7185">S1: ₹${parseFloat(item.s1).toFixed(2)}</span>
@@ -1784,6 +1783,76 @@ document.addEventListener('DOMContentLoaded', () => {
             const modal = document.getElementById('chart-modal');
             if (event.target === modal) {
                 closeChartModal();
+            }
+        });
+    </script>
+
+    <!-- Action Help Modal -->
+    <div id="action-help-modal" class="modal hidden">
+        <div class="modal-content glass-card" style="max-width: 600px; width: 95%;">
+            <span class="close-modal" onclick="closeActionHelpModal()">&times;</span>
+            <h2 id="action-help-title" style="margin-top: 0; color: #3b82f6;">Action Guide</h2>
+            <div id="action-help-content" style="color: var(--text-secondary); line-height: 1.6;">
+                <!-- Content injected via JS -->
+            </div>
+            <div style="margin-top: 1.5rem; text-align: right;">
+                <button onclick="closeActionHelpModal()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 4px; cursor: pointer; color: white;">Got it</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openActionHelpModal(assetName, signal) {
+            document.getElementById('action-help-modal').classList.remove('hidden');
+            document.getElementById('action-help-title').innerText = 'Action Guide: ' + assetName;
+            
+            let advice = "";
+            let color = "var(--text-primary)";
+            
+            if (signal.includes('BUY') || signal.includes('SUPPORT') || signal.includes('S1') || signal.includes('S2')) {
+                advice = `<p style="font-size: 1.1rem; color: #4ade80; font-weight: 600;">Bullish Signal Detected</p>
+                <p>This asset is showing a Buy signal or has bounced off a key Support level.</p>
+                <ul style="margin-left: 1.5rem; padding-left: 0;">
+                    <li style="margin-bottom: 0.5rem;"><strong>Ideal Action:</strong> Look for entry points to go LONG (Buy).</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Stop Loss:</strong> Place a stop loss slightly below the nearest Support level.</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Take Profit:</strong> Target the next Resistance level (R1 or R2) for booking profits.</li>
+                </ul>`;
+            } else if (signal.includes('SELL') || signal.includes('RESISTANCE') || signal.includes('R1') || signal.includes('R2')) {
+                advice = `<p style="font-size: 1.1rem; color: #fb7185; font-weight: 600;">Bearish Signal Detected</p>
+                <p>This asset is showing a Sell signal or has faced rejection at a Resistance level.</p>
+                <ul style="margin-left: 1.5rem; padding-left: 0;">
+                    <li style="margin-bottom: 0.5rem;"><strong>Ideal Action:</strong> Look for entry points to go SHORT (Sell).</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Stop Loss:</strong> Place a stop loss slightly above the nearest Resistance level.</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Take Profit:</strong> Target the next Support level (S1 or S2) for booking profits.</li>
+                </ul>`;
+            } else if (signal.includes('TRENDING')) {
+                advice = `<p style="font-size: 1.1rem; color: #60a5fa; font-weight: 600;">Strong Momentum</p>
+                <p>This asset is currently in a strong trend and breaking through pivot points.</p>
+                <ul style="margin-left: 1.5rem; padding-left: 0;">
+                    <li style="margin-bottom: 0.5rem;"><strong>Ideal Action:</strong> Trail your stop loss to lock in profits if you are already in a position.</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Caution:</strong> Avoid taking contrarian trades against this strong momentum until price action stalls.</li>
+                </ul>`;
+            } else {
+                advice = `<p style="font-size: 1.1rem; color: #f59e0b; font-weight: 600;">Monitoring Required</p>
+                <p>This asset is currently testing a key pivot level.</p>
+                <ul style="margin-left: 1.5rem; padding-left: 0;">
+                    <li style="margin-bottom: 0.5rem;"><strong>Ideal Action:</strong> Wait for a clear breakout or rejection candle before entering.</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Note:</strong> Volume confirmation is recommended before taking any trades.</li>
+                </ul>`;
+            }
+            
+            document.getElementById('action-help-content').innerHTML = advice;
+        }
+        
+        function closeActionHelpModal() {
+            document.getElementById('action-help-modal').classList.add('hidden');
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('action-help-modal');
+            if (event.target === modal) {
+                closeActionHelpModal();
             }
         });
     </script>
