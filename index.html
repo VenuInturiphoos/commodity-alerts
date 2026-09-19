@@ -28,18 +28,18 @@
                 <div class="logo-icon"></div>
                 <span>Trade Analyser</span>
             </div>
-            <nav class="tabs" id="main-nav">
-                <a href="#subscribe-section" class="nav-link active">Subscribe</a>
-                <a href="#dashboard-section" class="nav-link">Live Market</a>
-                <a href="#alerts-section" class="nav-link">🔥 Alert Zone</a>
-                <a href="#trade-section" class="nav-link" style="background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3); color: #4ade80;">📈 Paper Trading</a>
-                <a href="#admin-section" class="nav-link" style="background: rgba(255,255,255,0.05); color: #888;">Account</a>
+            <nav class="tabs">
+                <button class="tab-btn active" onclick="switchTab(this, 'subscribe-tab')">Subscribe</button>
+                <button class="tab-btn" onclick="switchTab(this, 'dashboard-tab')">Live Market</button>
+                <button class="tab-btn" onclick="switchTab(this, 'alerts-tab')">🔥 Alert Zone</button>
+                <button class="tab-btn" onclick="switchTab(this, 'trade-tab')" style="background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3); color: #4ade80;">📈 Paper Trading</button>
+                <button class="tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Account</button>
             </nav>
         </header>
 
         <main>
-            <!-- Subscribe Section -->
-            <section id="subscribe-section" class="scroll-section">
+            <!-- Subscribe Tab -->
+            <section id="subscribe-tab" class="tab-content active">
                 <div class="hero">
                     <div class="badge">Never miss a breakout 🚀</div>
                     <h1 id="main-title">Trade smarter, not harder.</h1>
@@ -74,8 +74,8 @@
                 </div>
             </section>
 
-            <!-- Dashboard Section -->
-            <section id="dashboard-section" class="scroll-section">
+            <!-- Dashboard Tab -->
+            <section id="dashboard-tab" class="tab-content">
                 <div class="dashboard-header">
                     <h2>Live Market Prices</h2>
                     <p>Auto-synced every 5 minutes from the cloud.</p>
@@ -122,8 +122,8 @@
                 </div>
             </section>
 
-            <!-- Alerts Section -->
-            <section id="alerts-section" class="scroll-section">
+            <!-- Alerts Tab -->
+            <section id="alerts-tab" class="tab-content">
                 <div class="dashboard-header">
                     <h2>🔥 Assets in the Alert Zone</h2>
                     <p>These assets are currently testing a critical Support or Resistance level.</p>
@@ -166,8 +166,8 @@
                 </div>
             </section>
 
-            <!-- Paper Trading Section -->
-            <section id="trade-section" class="scroll-section">
+            <!-- Paper Trading Tab -->
+            <section id="trade-tab" class="tab-content">
                 <div class="dashboard-header">
                     <h2>Paper Trading Terminal</h2>
                     <p>Practice trading Indian stocks and commodities with a virtual balance.</p>
@@ -318,8 +318,8 @@
                 </div>
             </section>
 
-            <!-- Admin Section -->
-            <section id="admin-section" class="scroll-section">
+            <!-- Account Tab -->
+            <section id="admin-tab" class="tab-content">
                 <div class="dashboard-header">
                     <h2>Account Management</h2>
                     <p>Manage your account and alert subscriptions.</p>
@@ -489,7 +489,6 @@ function initApp() {
     try { setupUnsubscribeForm(); } catch(e) { console.error("Unsub Form setup error:", e); }
     try { fetchMarketData(); } catch(e) { console.error("Fetch data error:", e); }
     try { setupAuth(); } catch(e) { console.error("Auth setup error:", e); }
-    try { setupScrollSpy(); } catch(e) { console.error("ScrollSpy setup error:", e); }
     setInterval(fetchMarketData, 300000); 
 }
 
@@ -501,50 +500,26 @@ if (document.readyState === 'loading') {
     try { initApp(); } catch(e) { console.error("Init Error:", e); }
 }
 
-// Scroll Spy Logic for Modern UI
-function setupScrollSpy() {
-    const sections = document.querySelectorAll('.scroll-section');
-    const navLinks = document.querySelectorAll('.nav-link');
+window.switchTab = function(btn, targetId) {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
     
-    // Add initial visibility check
-    setTimeout(() => {
-        sections.forEach(sec => {
-            const rect = sec.getBoundingClientRect();
-            if (rect.top < window.innerHeight && rect.bottom > 0) {
-                sec.classList.add('visible');
-            }
-        });
-    }, 100);
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                // Add fade-in animation class
-                entry.target.classList.add('visible');
-                
-                // Highlight corresponding nav link
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === '#' + entry.target.id) {
-                        link.classList.add('active');
-                    }
-                });
-                
-                // Load data dynamically if scrolling to specific sections
-                if (entry.target.id === 'dashboard-section' || entry.target.id === 'alerts-section' || entry.target.id === 'trade-section') {
-                    // Prevent spamming the API by checking last fetch time if necessary, 
-                    // but for now we just rely on the 5min interval or single fetch
-                }
-                if (entry.target.id === 'admin-section') {
-                    if (typeof fetchSubscribers === 'function') fetchSubscribers();
-                }
-            }
-        });
-    }, {
-        rootMargin: '-50% 0px -50% 0px' // Trigger when section is in the middle of screen
-    });
-
-    sections.forEach(sec => observer.observe(sec));
+    // Remove active class from all
+    tabBtns.forEach(b => b.classList.remove('active'));
+    tabContents.forEach(c => c.classList.remove('active'));
+    
+    // Add active class to clicked
+    btn.classList.add('active');
+    document.getElementById(targetId).classList.add('active');
+    
+    // If switching to dashboard, refresh data
+    if (targetId === 'dashboard-tab' || targetId === 'alerts-tab' || targetId === 'trade-tab') {
+        fetchMarketData();
+    }
+    
+    if (targetId === 'admin-tab') {
+        fetchSubscribers();
+    }
 }
 
 function setupFilters() {
