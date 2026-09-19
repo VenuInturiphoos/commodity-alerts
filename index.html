@@ -120,25 +120,6 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
-                    <h3>Futures & Options (F&O)</h3>
-                    <table class="market-table">
-                        <thead>
-                            <tr>
-                                <th>Asset Name</th>
-                                <th>Type</th>
-                                <th>Current Price (₹)</th>
-                                <th>Open Interest</th>
-                                <th>Put-Call Ratio (PCR)</th>
-                                <th>Last Updated</th>
-                                <th>Interactive Chart</th>
-                            </tr>
-                        </thead>
-                        <tbody id="market-data-body-derivatives">
-                            <tr><td colspan="7" class="loading">Loading live F&O data...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
             </section>
 
             <!-- Alerts Tab -->
@@ -766,15 +747,12 @@ async function fetchMarketData() {
 function renderMarketTable() {
     const tbodyStocks = document.getElementById('market-data-body-stocks');
     const tbodyCommodities = document.getElementById('market-data-body-commodities');
-    const tbodyDerivatives = document.getElementById('market-data-body-derivatives');
     
     tbodyStocks.innerHTML = '';
     tbodyCommodities.innerHTML = '';
-    if (tbodyDerivatives) tbodyDerivatives.innerHTML = '';
     
     const stocks = marketData.filter(item => item.asset_type === 'Stock');
     const commodities = marketData.filter(item => item.asset_type === 'Commodity');
-    const derivatives = marketData.filter(item => item.asset_type === 'Future' || (item.asset_type && item.asset_type.includes('Option')));
     
     const renderRows = (data, tbody) => {
         if (data.length === 0) {
@@ -834,50 +812,8 @@ function renderMarketTable() {
         });
     };
 
-    const renderDerivativeRows = (data, tbody) => {
-        if (!tbody) return;
-        if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="loading">No F&O data available.</td></tr>`;
-            return;
-        }
-
-        data.forEach(item => {
-            const date = new Date(item.last_updated).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            const tr = document.createElement('tr');
-            
-            let typeBadge = '';
-            if (item.asset_type === 'Future') {
-                typeBadge = '<span class="type-badge type-future">FUT</span>';
-            } else if (item.asset_type && item.asset_type.includes('CE')) {
-                typeBadge = '<span class="type-badge type-option" style="background: rgba(74, 222, 128, 0.1); color: #4ade80; border-color: rgba(74, 222, 128, 0.2);">CE</span>';
-            } else if (item.asset_type && item.asset_type.includes('PE')) {
-                typeBadge = '<span class="type-badge type-option" style="background: rgba(251, 113, 133, 0.1); color: #fb7185; border-color: rgba(251, 113, 133, 0.2);">PE</span>';
-            }
-            
-            const oiDisplay = item.open_interest !== null && item.open_interest !== undefined ? item.open_interest.toLocaleString('en-IN') : '-';
-            const pcrDisplay = item.pcr !== null && item.pcr !== undefined ? parseFloat(item.pcr).toFixed(2) : '-';
-            let pcrHtml = pcrDisplay;
-            if (item.pcr !== null && item.pcr !== undefined) {
-                if (item.pcr > 1.2) pcrHtml = `<span style="color:#fb7185; font-weight:600">${pcrDisplay} (Overbought)</span>`;
-                else if (item.pcr < 0.8) pcrHtml = `<span style="color:#4ade80; font-weight:600">${pcrDisplay} (Oversold)</span>`;
-            }
-
-            tr.innerHTML = `
-                <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
-                <td>${typeBadge}</td>
-                <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
-                <td>${oiDisplay}</td>
-                <td>${pcrHtml}</td>
-                <td style="color:var(--text-secondary); font-size: 0.875rem;">${date}</td>
-                <td><button onclick="openChartModal('${item.symbol}', '${item.name}', ${item.current_price}, ${item.pcr || 0}, 0, 0)" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: white;">View Chart</button></td>
-            `;
-            tbody.appendChild(tr);
-        });
-    };
-
     renderRows(stocks, tbodyStocks);
     renderRows(commodities, tbodyCommodities);
-    renderDerivativeRows(derivatives, tbodyDerivatives);
 }
 
 function renderAlertTable() {
