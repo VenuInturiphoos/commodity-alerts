@@ -34,6 +34,7 @@
                 <button class="tab-btn" onclick="switchTab(this, 'alerts-tab')">🔥 Alert Zone</button>
                 <button class="tab-btn" onclick="switchTab(this, 'trade-tab')" style="background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3); color: #4ade80;">📈 Paper Trading</button>
                 <button class="tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Account</button>
+                <button id="theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Mode" style="margin-left: 0.5rem;"><i class="fa-solid fa-moon"></i></button>
             </nav>
         </header>
 
@@ -480,6 +481,32 @@ try {
 } catch (e) {
     console.warn("Supabase not fully configured yet.");
 }
+
+// Theme Toggle Logic
+function toggleTheme() {
+    const body = document.body;
+    const isLight = body.classList.toggle('light-theme');
+    const icon = document.querySelector('#theme-toggle i');
+    if (isLight) {
+        if (icon) { icon.classList.remove('fa-moon'); icon.classList.add('fa-sun'); }
+        localStorage.setItem('theme', 'light');
+    } else {
+        if (icon) { icon.classList.remove('fa-sun'); icon.classList.add('fa-moon'); }
+        localStorage.setItem('theme', 'dark');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        const icon = document.querySelector('#theme-toggle i');
+        if (icon) {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        }
+    }
+});
 
 let marketData = [];
 
