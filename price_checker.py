@@ -106,6 +106,19 @@ class PriceChecker:
             print(f"Error fetching MCX near month for {base_symbol}: {e}")
             return None
 
+    def get_usd_inr_rate(self):
+        try:
+            ticker = yf.Ticker('INR=X')
+            hist = ticker.history(period="1d")
+            if len(hist) > 0:
+                rate = hist['Close'].iloc[-1]
+                return rate
+        except Exception as e:
+            print(f"Failed to fetch USD/INR rate: {e}")
+        
+        print("Using fallback USD/INR exchange rate of 83.50")
+        return 83.50
+
     def get_angel_derivatives(self, base_symbol, spot_price):
         if not self.angel_active or self.angel_master is None:
             return []
