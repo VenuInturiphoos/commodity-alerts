@@ -360,6 +360,30 @@ class PriceChecker:
         except Exception as e:
             print(f"Error fetching historical extremes from yfinance for {ticker_symbol}: {e}")
             
+        # Dynamically frame S1/S2 and R1/R2 around the current price
+        if current_price and levels:
+            pivot_levels = sorted([
+                v for k, v in levels.items()
+                if k in ['S2', 'S1', 'Pivot', 'R1', 'R2'] and v is not None
+            ])
+            if pivot_levels:
+                below = [v for v in pivot_levels if v < current_price]
+                above = [v for v in pivot_levels if v > current_price]
+                
+                if below:
+                    levels['S1'] = below[-1]
+                    levels['S2'] = below[-2] if len(below) > 1 else below[-1]
+                else:
+                    levels['S1'] = pivot_levels[0]
+                    levels['S2'] = pivot_levels[0]
+                    
+                if above:
+                    levels['R1'] = above[0]
+                    levels['R2'] = above[1] if len(above) > 1 else above[0]
+                else:
+                    levels['R1'] = pivot_levels[-1]
+                    levels['R2'] = pivot_levels[-1]
+            
         return levels
 
     def get_intrinsic_value(self, yf_symbol):
