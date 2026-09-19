@@ -1778,6 +1778,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 tvWidget.applyOptions({ width: chartContainer.clientWidth });
             }
         });
+        
+        // Close modal when clicking outside of the chart content
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('chart-modal');
+            if (event.target === modal) {
+                closeChartModal();
+            }
+        });
     </script>
 </body>
 </html>
