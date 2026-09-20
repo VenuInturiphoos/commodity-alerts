@@ -546,9 +546,10 @@ class PriceChecker:
                     continue
 
                 if last_alert_date != today_ist:
+                    action_text = "Action Required: This asset is testing a major resistance level. If you are holding long positions, consider booking partial profits. If it breaks and sustains above this level, it could signal a strong bullish continuation."
                     alerts.append({
                         'subject': f"🚀 Market Breakout: {name} {alert_msg}!{volume_msg}",
-                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
+                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
                     })
                     last_alert_date = today_ist
                     last_alert_msg = alert_msg
@@ -559,9 +560,10 @@ class PriceChecker:
         # Check Lower Bollinger Band Breakdown
         if bb_lower and current_price < bb_lower and is_high_volume:
             if last_alert_date != today_ist:
+                action_text = "Action Required: The price has aggressively pierced the Lower Bollinger Band on high volume. This often indicates extreme oversold conditions. Look for a potential mean-reversion bounce, but avoid catching a falling knife until price stabilizes."
                 alerts.append({
                     'subject': f"⚠️ Volatility Breakdown: {name} pierced Lower Bollinger Band!",
-                    'body': f"{name} ({symbol}) has broken below its Lower Bollinger Band (₹{bb_lower:.2f}) with high volume.\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
+                    'body': f"{name} ({symbol}) has broken below its Lower Bollinger Band (₹{bb_lower:.2f}) with high volume.\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
                 })
                 last_alert_date = today_ist
                 last_alert_msg = "Lower BB Breakout"
@@ -591,9 +593,10 @@ class PriceChecker:
                     continue
                     
                 if last_alert_date != today_ist:
+                    action_text = "Action Required: This asset is testing a major support level. This is a potential buying opportunity if the price respects the support and bounces. Watch for reversal candlestick patterns before entering a new long position."
                     alerts.append({
                         'subject': f"📉 Market Breakdown: {name} {alert_msg}!{volume_msg}",
-                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
+                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
                     })
                     last_alert_date = today_ist
                     last_alert_msg = alert_msg

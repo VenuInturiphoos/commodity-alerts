@@ -56,13 +56,28 @@ class EmailAlerter:
             server.login(sender_email, sender_password)
             
             for recipient in recipient_emails:
-                msg = MIMEMultipart()
+                msg = MIMEMultipart('alternative')
                 msg['From'] = sender_email
                 msg['To'] = recipient
                 msg['Subject'] = subject
 
-                personalized_body = f"{body}\n\n---\nTo unsubscribe from these market alerts, click here:\nhttps://VenuInturiphoos.github.io/commodity-alerts/unsubscribe.html?email={recipient}"
-                msg.attach(MIMEText(personalized_body, 'plain'))
+                plain_body = f"{body}\n\n---\nTo unsubscribe from these market alerts, click here:\nhttps://VenuInturiphoos.github.io/commodity-alerts/unsubscribe.html?email={recipient}"
+                
+                body_html = body.replace('\n', '<br>')
+                html_body = f"""
+                <html>
+                  <body>
+                    <p>{body_html}</p>
+                    <hr style="margin-top: 20px; border: 0; border-top: 1px solid #eee;">
+                    <p style="font-size: 12px; color: #888;">
+                      To unsubscribe from these market alerts, <a href="https://VenuInturiphoos.github.io/commodity-alerts/unsubscribe.html?email={recipient}">click here</a>.
+                    </p>
+                  </body>
+                </html>
+                """
+
+                msg.attach(MIMEText(plain_body, 'plain'))
+                msg.attach(MIMEText(html_body, 'html'))
 
                 try:
                     server.send_message(msg)
