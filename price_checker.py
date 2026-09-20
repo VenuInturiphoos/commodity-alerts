@@ -342,19 +342,37 @@ class PriceChecker:
                 levels['EMA_50'] = None
                 levels['EMA_200'] = None
 
-            # Calculate ATR, Bollinger Bands, and Volume Confirmation
-            if len(hist) >= 20:
+            # Calculate ATR, Bollinger Bands, Volume, RSI, and MACD
+            if len(hist) >= 35:
                 levels['ATR_14'] = ta.volatility.average_true_range(hist['High'], hist['Low'], hist['Close'], window=14).iloc[-1] * fallback_multiplier
                 levels['BB_Upper'] = ta.volatility.bollinger_hband(hist['Close'], window=20, window_dev=2).iloc[-1] * fallback_multiplier
                 levels['BB_Lower'] = ta.volatility.bollinger_lband(hist['Close'], window=20, window_dev=2).iloc[-1] * fallback_multiplier
                 levels['Vol_20_MA'] = hist['Volume'].rolling(window=20).mean().iloc[-2] # previous day MA
                 levels['Vol_Current'] = hist['Volume'].iloc[-1]
+                
+                # Confluence Indicators
+                levels['RSI_14'] = ta.momentum.rsi(hist['Close'], window=14).iloc[-1]
+                macd = ta.trend.MACD(hist['Close'])
+                levels['MACD_Line'] = macd.macd().iloc[-1]
+                levels['MACD_Signal'] = macd.macd_signal().iloc[-1]
+            elif len(hist) >= 20:
+                levels['ATR_14'] = ta.volatility.average_true_range(hist['High'], hist['Low'], hist['Close'], window=14).iloc[-1] * fallback_multiplier
+                levels['BB_Upper'] = ta.volatility.bollinger_hband(hist['Close'], window=20, window_dev=2).iloc[-1] * fallback_multiplier
+                levels['BB_Lower'] = ta.volatility.bollinger_lband(hist['Close'], window=20, window_dev=2).iloc[-1] * fallback_multiplier
+                levels['Vol_20_MA'] = hist['Volume'].rolling(window=20).mean().iloc[-2] # previous day MA
+                levels['Vol_Current'] = hist['Volume'].iloc[-1]
+                levels['RSI_14'] = None
+                levels['MACD_Line'] = None
+                levels['MACD_Signal'] = None
             else:
                 levels['ATR_14'] = None
                 levels['BB_Upper'] = None
                 levels['BB_Lower'] = None
                 levels['Vol_20_MA'] = None
                 levels['Vol_Current'] = None
+                levels['RSI_14'] = None
+                levels['MACD_Line'] = None
+                levels['MACD_Signal'] = None
 
             
         except Exception as e:
@@ -526,49 +544,19 @@ class PriceChecker:
         yf_sym = yf_symbol_map.get(symbol, symbol)
         chart_url = f"https://finance.yahoo.com/quote/{yf_sym}"
 
-        # Check Bollinger Band Breakout
-        if bb_upper and current_price > bb_upper and is_high_volume:
-            if last_alert_date != today_ist:
-                alerts.append({
-                    'subject': f"🔥 Volatility Breakout: {name} pierced Upper Bollinger Band!",
-                    'body': f"{name} ({symbol}) has broken above its Upper Bollinger Band (₹{bb_upper:.2f}) with high volume.\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
-                })
-                last_alert_date = today_ist
-                last_alert_msg = "Upper BB Breakout"
-            alert_status = "Upper BB Breakout"
-
+        # Determine Price Action Triggers
+        is_upper_bb_test = bb_upper and current_price > bb_upper
+        is_lower_bb_test = bb_lower and current_price < bb_lower
+        
+        is_r_test = False
+        tested_r_level = ""
         for key, name_str, threshold in high_alerts_config:
             level = levels.get(key)
             if level and abs(level) > 0 and abs(current_price - level) / abs(level) <= threshold:
-                alert_msg = f"testing {name_str}"
-                # Require volume confirmation for breakouts (except R1/R2 which are static pivots)
-                if ("High" in key) and not is_high_volume:
-                    continue
+                is_r_test = True
+                tested_r_level = name_str
+                break
 
-                if last_alert_date != today_ist:
-                    action_text = "Action Required: This asset is testing a major resistance level. If you are holding long positions, consider booking partial profits. If it breaks and sustains above this level, it could signal a strong bullish continuation."
-                    alerts.append({
-                        'subject': f"🚀 Market Breakout: {name} {alert_msg}!{volume_msg}",
-                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
-                    })
-                    last_alert_date = today_ist
-                    last_alert_msg = alert_msg
-                
-                alert_status = alert_msg
-                break # Only alert the highest timeframe reached
-                
-        # Check Lower Bollinger Band Breakdown
-        if bb_lower and current_price < bb_lower and is_high_volume:
-            if last_alert_date != today_ist:
-                action_text = "Action Required: The price has aggressively pierced the Lower Bollinger Band on high volume. This often indicates extreme oversold conditions. Look for a potential mean-reversion bounce, but avoid catching a falling knife until price stabilizes."
-                alerts.append({
-                    'subject': f"⚠️ Volatility Breakdown: {name} pierced Lower Bollinger Band!",
-                    'body': f"{name} ({symbol}) has broken below its Lower Bollinger Band (₹{bb_lower:.2f}) with high volume.\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
-                })
-                last_alert_date = today_ist
-                last_alert_msg = "Lower BB Breakout"
-            alert_status = "Lower BB Breakout"
-            
         if is_commodity:
             low_alerts_config = [
                 ('Strong_S2', 'Strong Algorithmic Support (S2)', 0.01),
@@ -583,26 +571,45 @@ class PriceChecker:
                 ('Strong_S1', 'Strong Algorithmic Support (S1)', 0.005),
                 ('ThreeMonthLow', '3-Month Low', 0.01)
             ]
-        
+
+        is_s_test = False
+        tested_s_level = ""
         for key, name_str, threshold in low_alerts_config:
             level = levels.get(key)
             if level and abs(level) > 0 and abs(current_price - level) / abs(level) <= threshold:
-                alert_msg = f"testing {name_str}"
+                is_s_test = True
+                tested_s_level = name_str
+                break
+
+        # Evaluate Confluence
+        rsi = levels.get('RSI_14')
+        macd_line = levels.get('MACD_Line')
+        macd_signal = levels.get('MACD_Signal')
+        
+        has_confluence_indicators = rsi is not None and macd_line is not None and macd_signal is not None
+
+        if has_confluence_indicators and last_alert_date != today_ist:
+            # STRONG BUY Confluence
+            if (is_lower_bb_test or is_s_test) and is_high_volume and rsi < 30 and macd_line > macd_signal:
+                trigger_reason = "Lower Bollinger Band" if is_lower_bb_test else tested_s_level
+                action_text = "Action Required: PERFECT ENTRY CONFLUENCE DETECTED. The price is at extreme support, volume is surging, RSI is oversold (<30), and MACD has crossed bullish. This is a high-probability setup for a long position or a bounce."
+                alerts.append({
+                    'subject': f"🟢 CONFLUENCE STRONG BUY: {name} at {trigger_reason}!",
+                    'body': f"{name} ({symbol}) has triggered a Confluence Strong Buy.\n\nTechnicals:\n- Price: ₹{current_price:.2f} (Testing {trigger_reason})\n- Volume: SURGING (>1.5x Avg)\n- RSI (14): {rsi:.2f} (Oversold)\n- MACD: Bullish Crossover\n\n{action_text}\n\nView Chart: {chart_url}"
+                })
+                last_alert_date = today_ist
+                alert_status = "Strong Buy"
                 
-                if ("Low" in key) and not is_high_volume:
-                    continue
-                    
-                if last_alert_date != today_ist:
-                    action_text = "Action Required: This asset is testing a major support level. This is a potential buying opportunity if the price respects the support and bounces. Watch for reversal candlestick patterns before entering a new long position."
-                    alerts.append({
-                        'subject': f"📉 Market Breakdown: {name} {alert_msg}!{volume_msg}",
-                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
-                    })
-                    last_alert_date = today_ist
-                    last_alert_msg = alert_msg
-                
-                alert_status = alert_msg
-                break # Only alert the highest timeframe reached
+            # STRONG SELL Confluence
+            elif (is_upper_bb_test or is_r_test) and is_high_volume and rsi > 70 and macd_line < macd_signal:
+                trigger_reason = "Upper Bollinger Band" if is_upper_bb_test else tested_r_level
+                action_text = "Action Required: PERFECT SELL CONFLUENCE DETECTED. The price is at extreme resistance, volume is surging, RSI is overbought (>70), and MACD has crossed bearish. This is a high-probability setup for a short position or booking profits."
+                alerts.append({
+                    'subject': f"🔴 CONFLUENCE STRONG SELL: {name} at {trigger_reason}!",
+                    'body': f"{name} ({symbol}) has triggered a Confluence Strong Sell.\n\nTechnicals:\n- Price: ₹{current_price:.2f} (Testing {trigger_reason})\n- Volume: SURGING (>1.5x Avg)\n- RSI (14): {rsi:.2f} (Overbought)\n- MACD: Bearish Crossover\n\n{action_text}\n\nView Chart: {chart_url}"
+                })
+                last_alert_date = today_ist
+                alert_status = "Strong Sell"
 
         return alerts, alert_status, last_alert_date, last_alert_msg, current_signal
 
