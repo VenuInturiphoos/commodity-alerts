@@ -589,24 +589,35 @@ class PriceChecker:
         has_confluence_indicators = rsi is not None and macd_line is not None and macd_signal is not None
 
         if has_confluence_indicators and last_alert_date != today_ist:
+            
+            is_oversold = rsi < 30
+            is_overbought = rsi > 70
+            is_macd_bullish = macd_line > macd_signal
+            is_macd_bearish = macd_line < macd_signal
+            
+            is_bullish_momentum = is_oversold or is_macd_bullish
+            is_bearish_momentum = is_overbought or is_macd_bearish
+
             # STRONG BUY Confluence
-            if (is_lower_bb_test or is_s_test) and is_high_volume and rsi < 30 and macd_line > macd_signal:
+            if (is_lower_bb_test or is_s_test) and is_high_volume and is_bullish_momentum:
                 trigger_reason = "Lower Bollinger Band" if is_lower_bb_test else tested_s_level
-                action_text = "Action Required: PERFECT ENTRY CONFLUENCE DETECTED. The price is at extreme support, volume is surging, RSI is oversold (<30), and MACD has crossed bullish. This is a high-probability setup for a long position or a bounce."
+                momentum_reason = "RSI is oversold (<30)" if is_oversold else "MACD has crossed bullish"
+                action_text = f"Action Required: STRONG ENTRY CONFLUENCE DETECTED. The price is at extreme support, volume is surging, and {momentum_reason}. This is a high-probability setup for a long position or a bounce."
                 alerts.append({
                     'subject': f"🟢 CONFLUENCE STRONG BUY: {name} at {trigger_reason}!",
-                    'body': f"{name} ({symbol}) has triggered a Confluence Strong Buy.\n\nTechnicals:\n- Price: ₹{current_price:.2f} (Testing {trigger_reason})\n- Volume: SURGING (>1.5x Avg)\n- RSI (14): {rsi:.2f} (Oversold)\n- MACD: Bullish Crossover\n\n{action_text}\n\nView Chart: {chart_url}"
+                    'body': f"{name} ({symbol}) has triggered a Confluence Strong Buy.\n\nTechnicals:\n- Price: ₹{current_price:.2f} (Testing {trigger_reason})\n- Volume: SURGING (>1.5x Avg)\n- RSI (14): {rsi:.2f}\n- MACD Line/Signal: {macd_line:.2f}/{macd_signal:.2f}\n\n{action_text}\n\nView Chart: {chart_url}"
                 })
                 last_alert_date = today_ist
                 alert_status = "Strong Buy"
                 
             # STRONG SELL Confluence
-            elif (is_upper_bb_test or is_r_test) and is_high_volume and rsi > 70 and macd_line < macd_signal:
+            elif (is_upper_bb_test or is_r_test) and is_high_volume and is_bearish_momentum:
                 trigger_reason = "Upper Bollinger Band" if is_upper_bb_test else tested_r_level
-                action_text = "Action Required: PERFECT SELL CONFLUENCE DETECTED. The price is at extreme resistance, volume is surging, RSI is overbought (>70), and MACD has crossed bearish. This is a high-probability setup for a short position or booking profits."
+                momentum_reason = "RSI is overbought (>70)" if is_overbought else "MACD has crossed bearish"
+                action_text = f"Action Required: STRONG SELL CONFLUENCE DETECTED. The price is at extreme resistance, volume is surging, and {momentum_reason}. This is a high-probability setup for a short position or booking profits."
                 alerts.append({
                     'subject': f"🔴 CONFLUENCE STRONG SELL: {name} at {trigger_reason}!",
-                    'body': f"{name} ({symbol}) has triggered a Confluence Strong Sell.\n\nTechnicals:\n- Price: ₹{current_price:.2f} (Testing {trigger_reason})\n- Volume: SURGING (>1.5x Avg)\n- RSI (14): {rsi:.2f} (Overbought)\n- MACD: Bearish Crossover\n\n{action_text}\n\nView Chart: {chart_url}"
+                    'body': f"{name} ({symbol}) has triggered a Confluence Strong Sell.\n\nTechnicals:\n- Price: ₹{current_price:.2f} (Testing {trigger_reason})\n- Volume: SURGING (>1.5x Avg)\n- RSI (14): {rsi:.2f}\n- MACD Line/Signal: {macd_line:.2f}/{macd_signal:.2f}\n\n{action_text}\n\nView Chart: {chart_url}"
                 })
                 last_alert_date = today_ist
                 alert_status = "Strong Sell"
