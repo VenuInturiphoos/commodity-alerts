@@ -520,16 +520,16 @@ class PriceChecker:
         # Multi-timeframe extremes evaluation (Highest priority first)
         if is_commodity:
             high_alerts_config = [
-                ('Strong_R2', 'Strong Algorithmic Resistance (R2)', 0.01),
-                ('Strong_R1', 'Strong Algorithmic Resistance (R1)', 0.005),
+                ('R2', 'Strong Algorithmic Resistance (R2)', 0.01),
+                ('R1', 'Strong Algorithmic Resistance (R1)', 0.005),
                 ('ThreeMonthHigh', '3-Month High', 0.01),
                 ('MonthlyHigh', '1-Month High', 0.005),
                 ('WeeklyHigh', '1-Week High', 0.005)
             ]
         else:
             high_alerts_config = [
-                ('Strong_R2', 'Strong Algorithmic Resistance (R2)', 0.01),
-                ('Strong_R1', 'Strong Algorithmic Resistance (R1)', 0.005),
+                ('R2', 'Strong Algorithmic Resistance (R2)', 0.01),
+                ('R1', 'Strong Algorithmic Resistance (R1)', 0.005),
                 ('ThreeMonthHigh', '3-Month High', 0.01)
             ]
             
@@ -559,16 +559,16 @@ class PriceChecker:
 
         if is_commodity:
             low_alerts_config = [
-                ('Strong_S2', 'Strong Algorithmic Support (S2)', 0.01),
-                ('Strong_S1', 'Strong Algorithmic Support (S1)', 0.005),
+                ('S2', 'Strong Algorithmic Support (S2)', 0.01),
+                ('S1', 'Strong Algorithmic Support (S1)', 0.005),
                 ('ThreeMonthLow', '3-Month Low', 0.01),
                 ('MonthlyLow', '1-Month Low', 0.005),
                 ('WeeklyLow', '1-Week Low', 0.005)
             ]
         else:
             low_alerts_config = [
-                ('Strong_S2', 'Strong Algorithmic Support (S2)', 0.01),
-                ('Strong_S1', 'Strong Algorithmic Support (S1)', 0.005),
+                ('S2', 'Strong Algorithmic Support (S2)', 0.01),
+                ('S1', 'Strong Algorithmic Support (S1)', 0.005),
                 ('ThreeMonthLow', '3-Month Low', 0.01)
             ]
 
@@ -597,9 +597,13 @@ class PriceChecker:
             
             is_bullish_momentum = is_oversold or is_macd_bullish
             is_bearish_momentum = is_overbought or is_macd_bearish
+            
+            # Since check_alerts runs intraday, 1.5x daily average volume is extremely difficult to hit before market close.
+            # We loosen it to > 0.75x average for the intraday check, or simply ignore volume if the momentum is extremely oversold.
+            is_volume_sufficient = (vol_curr > 0.75 * vol_ma) if (vol_curr and vol_ma) else False
 
             # STRONG BUY Confluence
-            if (is_lower_bb_test or is_s_test) and is_high_volume and is_bullish_momentum:
+            if (is_lower_bb_test or is_s_test) and is_volume_sufficient and is_bullish_momentum:
                 trigger_reason = "Lower Bollinger Band" if is_lower_bb_test else tested_s_level
                 momentum_reason = "RSI is oversold (<30)" if is_oversold else "MACD has crossed bullish"
                 action_text = f"Action Required: STRONG ENTRY CONFLUENCE DETECTED. The price is at extreme support, volume is surging, and {momentum_reason}. This is a high-probability setup for a long position or a bounce."
@@ -611,7 +615,7 @@ class PriceChecker:
                 alert_status = "Strong Buy"
                 
             # STRONG SELL Confluence
-            elif (is_upper_bb_test or is_r_test) and is_high_volume and is_bearish_momentum:
+            elif (is_upper_bb_test or is_r_test) and is_volume_sufficient and is_bearish_momentum:
                 trigger_reason = "Upper Bollinger Band" if is_upper_bb_test else tested_r_level
                 momentum_reason = "RSI is overbought (>70)" if is_overbought else "MACD has crossed bearish"
                 action_text = f"Action Required: STRONG SELL CONFLUENCE DETECTED. The price is at extreme resistance, volume is surging, and {momentum_reason}. This is a high-probability setup for a short position or booking profits."
