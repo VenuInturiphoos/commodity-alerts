@@ -56,6 +56,9 @@ def main():
         if not alerts:
             print("No levels triggered.")
             
+        print("Generating near alerts JSON for Web UI...")
+        checker.generate_near_alerts_json()
+            
     except Exception as e:
         print(f"Error during check loop: {e}")
         

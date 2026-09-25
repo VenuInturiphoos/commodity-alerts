@@ -944,3 +944,33 @@ class PriceChecker:
                                        
         except Exception as e:
             print(f"Error processing limit orders: {e}")
+    def generate_near_alerts_json(self):
+        import json, os
+        near_buy = []
+        near_sell = []
+        
+        # Check Commodities
+        for symbol, data in self.commodities.items():
+            name = data['name']
+            levels = self.get_support_resistance_levels(symbol, is_commodity=True, yf_symbol=data.get('yf_symbol'))
+            if levels and levels.get('RSI_14'):
+                rsi = levels['RSI_14']
+                if rsi < 45:
+                    near_buy.append({'symbol': symbol, 'name': name, 'rsi': round(rsi, 2)})
+                elif rsi > 55:
+                    near_sell.append({'symbol': symbol, 'name': name, 'rsi': round(rsi, 2)})
+
+        # Check Stocks
+        for symbol, name in self.stocks.items():
+            levels = self.get_support_resistance_levels(symbol, current_price=100)
+            if levels and levels.get('RSI_14'):
+                rsi = levels['RSI_14']
+                if rsi < 45:
+                    near_buy.append({'symbol': symbol, 'name': name, 'rsi': round(rsi, 2)})
+                elif rsi > 55:
+                    near_sell.append({'symbol': symbol, 'name': name, 'rsi': round(rsi, 2)})
+                    
+        output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'near_alerts.json')
+        with open(output_path, 'w') as f:
+            json.dump({'near_buy': near_buy, 'near_sell': near_sell}, f)
+        print(f"Exported {len(near_buy)} near buys and {len(near_sell)} near sells to web/near_alerts.json")

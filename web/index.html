@@ -1884,5 +1884,118 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     </script>
+    
+    <!-- Chat Widget -->
+    <div id="chat-widget-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; font-family: 'Inter', sans-serif;">
+        <!-- Chat Button -->
+        <button id="chat-widget-button" onclick="toggleChat()" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+            <i class="fa-solid fa-comments" style="color: white; font-size: 1.5rem;"></i>
+        </button>
+        
+        <!-- Chat Window -->
+        <div id="chat-widget-window" class="glass-card" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; height: 450px; border-radius: 12px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <!-- Header -->
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 30px; height: 30px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-robot" style="color: white; font-size: 0.9rem;"></i>
+                    </div>
+                    <strong style="color: white;">Trading Assistant</strong>
+                </div>
+                <button onclick="toggleChat()" style="background: none; border: none; color: #a1a1aa; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <!-- Messages -->
+            <div id="chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                <div style="align-self: flex-start; background: rgba(59, 130, 246, 0.2); padding: 10px 15px; border-radius: 12px 12px 12px 0; max-width: 80%; border: 1px solid rgba(59, 130, 246, 0.3);">
+                    <p style="margin: 0; color: #e2e8f0; font-size: 0.9rem;">Hi! I'm your Trading Assistant. Type <strong>"near"</strong> to see which stocks are approaching a Strong Buy/Sell state.</p>
+                </div>
+            </div>
+            
+            <!-- Input -->
+            <div style="padding: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; background: rgba(0,0,0,0.2);">
+                <input type="text" id="chat-input" placeholder="Ask about near alerts..." style="flex: 1; padding: 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; outline: none;" onkeypress="if(event.key === 'Enter') handleChatInput()">
+                <button onclick="handleChatInput()" style="background: #3b82f6; border: none; width: 40px; height: 40px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleChat() {
+            const window = document.getElementById('chat-widget-window');
+            window.style.display = window.style.display === 'none' ? 'flex' : 'none';
+        }
+        
+        async function handleChatInput() {
+            const input = document.getElementById('chat-input');
+            const messages = document.getElementById('chat-messages');
+            const text = input.value.trim().toLowerCase();
+            
+            if (!text) return;
+            
+            // Add user message
+            messages.innerHTML += `
+                <div style="align-self: flex-end; background: rgba(139, 92, 246, 0.2); padding: 10px 15px; border-radius: 12px 12px 0 12px; max-width: 80%; border: 1px solid rgba(139, 92, 246, 0.3);">
+                    <p style="margin: 0; color: white; font-size: 0.9rem;">${text}</p>
+                </div>
+            `;
+            input.value = '';
+            messages.scrollTop = messages.scrollHeight;
+            
+            // Add typing indicator
+            const typingId = 'typing-' + Date.now();
+            messages.innerHTML += `
+                <div id="${typingId}" style="align-self: flex-start; padding: 10px 15px;">
+                    <p style="margin: 0; color: #a1a1aa; font-size: 0.9rem; font-style: italic;">Assistant is typing...</p>
+                </div>
+            `;
+            messages.scrollTop = messages.scrollHeight;
+            
+            // Process response
+            setTimeout(async () => {
+                document.getElementById(typingId).remove();
+                
+                let reply = "";
+                if (text.includes("near") || text.includes("buy") || text.includes("sell") || text.includes("alert")) {
+                    try {
+                        const response = await fetch('near_alerts.json?t=' + Date.now());
+                        if (response.ok) {
+                            const data = await response.json();
+                            reply = "<p style='margin:0 0 10px 0;'><strong>Near Buy (Oversold)</strong></p>";
+                            if (data.near_buy && data.near_buy.length > 0) {
+                                reply += "<ul style='margin:0; padding-left:15px;'>";
+                                data.near_buy.forEach(i => reply += `<li>${i.symbol.replace('.NS','')} (RSI: ${i.rsi})</li>`);
+                                reply += "</ul>";
+                            } else {
+                                reply += "<p style='margin:0; color:#a1a1aa;'>None right now.</p>";
+                            }
+                            
+                            reply += "<p style='margin:10px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top:10px;'><strong>Near Sell (Overbought)</strong></p>";
+                            if (data.near_sell && data.near_sell.length > 0) {
+                                reply += "<ul style='margin:0; padding-left:15px;'>";
+                                data.near_sell.forEach(i => reply += `<li>${i.symbol.replace('.NS','')} (RSI: ${i.rsi})</li>`);
+                                reply += "</ul>";
+                            } else {
+                                reply += "<p style='margin:0; color:#a1a1aa;'>None right now.</p>";
+                            }
+                        } else {
+                            reply = "I couldn't fetch the latest near alerts. They might not be generated yet.";
+                        }
+                    } catch (e) {
+                        reply = "Error fetching near alerts. Please try again later.";
+                    }
+                } else {
+                    reply = "I am a simple Trading Assistant. Type 'near' to see the latest near-alert setups!";
+                }
+                
+                messages.innerHTML += `
+                    <div style="align-self: flex-start; background: rgba(59, 130, 246, 0.2); padding: 10px 15px; border-radius: 12px 12px 12px 0; max-width: 80%; border: 1px solid rgba(59, 130, 246, 0.3);">
+                        <div style="margin: 0; color: #e2e8f0; font-size: 0.9rem;">${reply}</div>
+                    </div>
+                `;
+                messages.scrollTop = messages.scrollHeight;
+            }, 600);
+        }
+    </script>
 </body>
 </html>
