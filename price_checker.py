@@ -341,6 +341,19 @@ class PriceChecker:
             else:
                 levels['EMA_50'] = None
                 levels['EMA_200'] = None
+                
+            # Calculate 30-day average up/down % for commodities
+            if is_commodity and not hist_1m.empty and len(hist_1m) > 1:
+                returns = hist_1m['Close'].pct_change().dropna()
+                up_days = returns[returns > 0]
+                down_days = returns[returns < 0]
+                levels['Avg_Up_Pct'] = up_days.mean() if not up_days.empty else 0
+                levels['Avg_Down_Pct'] = down_days.mean() if not down_days.empty else 0
+                levels['Prev_Close'] = hist['Close'].iloc[-2] * fallback_multiplier
+            else:
+                levels['Avg_Up_Pct'] = None
+                levels['Avg_Down_Pct'] = None
+                levels['Prev_Close'] = hist['Close'].iloc[-2] * fallback_multiplier if len(hist) >= 2 else None
 
             # Calculate ATR, Bollinger Bands, Volume, RSI, and MACD
             if len(hist) >= 35:
@@ -587,6 +600,34 @@ class PriceChecker:
         macd_signal = levels.get('MACD_Signal')
         
         has_confluence_indicators = rsi is not None and macd_line is not None and macd_signal is not None
+
+        # Commodity 30-Day Average Movement Alert
+        if is_commodity and levels.get('Avg_Up_Pct') is not None and levels.get('Avg_Down_Pct') is not None and levels.get('Prev_Close') is not None:
+            if last_alert_date != today_ist:
+                prev_close = levels['Prev_Close']
+                avg_up = levels['Avg_Up_Pct']
+                avg_down = levels['Avg_Down_Pct']
+                
+                if prev_close > 0:
+                    today_pct = (current_price - prev_close) / prev_close
+                    
+                    # Check for average UP breakout
+                    if today_pct > 0 and avg_up > 0 and today_pct >= avg_up:
+                        alerts.append({
+                            'subject': f"🚀 COMMODITY SURGE: {name} exceeds 30-day average up move!",
+                            'body': f"{name} ({symbol}) is currently up {today_pct*100:.2f}%, which exceeds its 30-day average up day of {avg_up*100:.2f}%.\n\nTechnicals:\n- Current Price: ₹{current_price:.2f}\n- Previous Close: ₹{prev_close:.2f}\n\nView Chart: {chart_url}"
+                        })
+                        last_alert_date = today_ist
+                        alert_status = "Commodity Surge"
+                        
+                    # Check for average DOWN breakdown
+                    elif today_pct < 0 and avg_down < 0 and today_pct <= avg_down:
+                        alerts.append({
+                            'subject': f"📉 COMMODITY DROP: {name} exceeds 30-day average down move!",
+                            'body': f"{name} ({symbol}) is currently down {abs(today_pct)*100:.2f}%, which exceeds its 30-day average down day of {abs(avg_down)*100:.2f}%.\n\nTechnicals:\n- Current Price: ₹{current_price:.2f}\n- Previous Close: ₹{prev_close:.2f}\n\nView Chart: {chart_url}"
+                        })
+                        last_alert_date = today_ist
+                        alert_status = "Commodity Drop"
 
         if has_confluence_indicators and last_alert_date != today_ist:
             
