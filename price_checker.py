@@ -590,26 +590,26 @@ class PriceChecker:
 
         if has_confluence_indicators and last_alert_date != today_ist:
             
-            is_oversold = rsi < 30
-            is_overbought = rsi > 70
+            is_oversold = rsi < 35
+            is_overbought = rsi > 65
             is_macd_bullish = macd_line > macd_signal
             is_macd_bearish = macd_line < macd_signal
             
             is_bullish_momentum = is_oversold or is_macd_bullish
             is_bearish_momentum = is_overbought or is_macd_bearish
             
-            # Since check_alerts runs intraday, 1.5x daily average volume is extremely difficult to hit before market close.
-            # We loosen it to > 0.75x average for the intraday check, or simply ignore volume if the momentum is extremely oversold.
-            is_volume_sufficient = (vol_curr > 0.75 * vol_ma) if (vol_curr and vol_ma) else False
+            # Since check_alerts runs intraday, 0.75x daily average volume is extremely difficult to hit before late afternoon.
+            # We loosen it to > 0.4x average for the intraday check.
+            is_volume_sufficient = (vol_curr > 0.4 * vol_ma) if (vol_curr and vol_ma) else False
 
             # STRONG BUY Confluence
             if (is_lower_bb_test or is_s_test) and is_volume_sufficient and is_bullish_momentum:
                 trigger_reason = "Lower Bollinger Band" if is_lower_bb_test else tested_s_level
-                momentum_reason = "RSI is oversold (<30)" if is_oversold else "MACD has crossed bullish"
+                momentum_reason = "RSI is oversold (<35)" if is_oversold else "MACD has crossed bullish"
                 action_text = f"Action Required: STRONG ENTRY CONFLUENCE DETECTED. The price is at extreme support, volume is surging, and {momentum_reason}. This is a high-probability setup for a long position or a bounce."
                 alerts.append({
                     'subject': f"🟢 CONFLUENCE STRONG BUY: {name} at {trigger_reason}!",
-                    'body': f"{name} ({symbol}) has triggered a Confluence Strong Buy.\n\nTechnicals:\n- Price: ₹{current_price:.2f} (Testing {trigger_reason})\n- Volume: SURGING (>1.5x Avg)\n- RSI (14): {rsi:.2f}\n- MACD Line/Signal: {macd_line:.2f}/{macd_signal:.2f}\n\n{action_text}\n\nView Chart: {chart_url}"
+                    'body': f"{name} ({symbol}) has triggered a Confluence Strong Buy.\n\nTechnicals:\n- Price: ₹{current_price:.2f} (Testing {trigger_reason})\n- Volume: HIGH (>0.4x Daily Avg Intraday)\n- RSI (14): {rsi:.2f}\n- MACD Line/Signal: {macd_line:.2f}/{macd_signal:.2f}\n\n{action_text}\n\nView Chart: {chart_url}"
                 })
                 last_alert_date = today_ist
                 alert_status = "Strong Buy"
@@ -617,11 +617,11 @@ class PriceChecker:
             # STRONG SELL Confluence
             elif (is_upper_bb_test or is_r_test) and is_volume_sufficient and is_bearish_momentum:
                 trigger_reason = "Upper Bollinger Band" if is_upper_bb_test else tested_r_level
-                momentum_reason = "RSI is overbought (>70)" if is_overbought else "MACD has crossed bearish"
+                momentum_reason = "RSI is overbought (>65)" if is_overbought else "MACD has crossed bearish"
                 action_text = f"Action Required: STRONG SELL CONFLUENCE DETECTED. The price is at extreme resistance, volume is surging, and {momentum_reason}. This is a high-probability setup for a short position or booking profits."
                 alerts.append({
                     'subject': f"🔴 CONFLUENCE STRONG SELL: {name} at {trigger_reason}!",
-                    'body': f"{name} ({symbol}) has triggered a Confluence Strong Sell.\n\nTechnicals:\n- Price: ₹{current_price:.2f} (Testing {trigger_reason})\n- Volume: SURGING (>1.5x Avg)\n- RSI (14): {rsi:.2f}\n- MACD Line/Signal: {macd_line:.2f}/{macd_signal:.2f}\n\n{action_text}\n\nView Chart: {chart_url}"
+                    'body': f"{name} ({symbol}) has triggered a Confluence Strong Sell.\n\nTechnicals:\n- Price: ₹{current_price:.2f} (Testing {trigger_reason})\n- Volume: HIGH (>0.4x Daily Avg Intraday)\n- RSI (14): {rsi:.2f}\n- MACD Line/Signal: {macd_line:.2f}/{macd_signal:.2f}\n\n{action_text}\n\nView Chart: {chart_url}"
                 })
                 last_alert_date = today_ist
                 alert_status = "Strong Sell"
