@@ -806,7 +806,8 @@ function renderMarketTable() {
                 "NATURALGAS": "NG=F",
                 "COPPER": "HG=F",
                 "ALUMINIUM": "ALI=F",
-                "ZINC": "ZNC=F"
+                "ZINC": "ZNC=F",
+                "ELECTRICITY": "HP=F"
             };
             
             let yfLink = `https://finance.yahoo.com/quote/${item.symbol}`;
@@ -892,7 +893,8 @@ function renderAlertTable() {
                 "NATURALGAS": "NG=F",
                 "COPPER": "HG=F",
                 "ALUMINIUM": "ALI=F",
-                "ZINC": "ZNC=F"
+                "ZINC": "ZNC=F",
+                "ELECTRICITY": "HP=F"
             };
             
             let yfLink = `https://finance.yahoo.com/quote/${item.symbol}`;
@@ -1339,6 +1341,7 @@ const LOT_SIZES = {
     'COPPER': 2500,
     'ALUMINIUM': 5000,
     'ZINC': 5000,
+    'ELECTRICITY': 50,
     'NIFTY': 25,
     'BANKNIFTY': 15,
     'ADANIENT.NS': 309,
