@@ -282,18 +282,30 @@ class PriceChecker:
         try:
             print(f"Fetching yfinance period='max' for extremes for {ticker_symbol}...")
             ticker = yf.Ticker(ticker_symbol)
-            hist = ticker.history(period="max")
+            try:
+                hist = ticker.history(period="max")
+            except Exception:
+                hist = pd.DataFrame()
+                
+            if hist.empty or len(hist) < 2:
+                try:
+                    hist_fallback = ticker.history(period="5d")
+                    if not hist_fallback.empty:
+                        hist = hist_fallback
+                except Exception:
+                    pass
             
-            if len(hist) < 2:
+            if len(hist) < 1:
                 print(f"Not enough historical data from yfinance for {ticker_symbol}.")
                 return levels # Return dhan levels if yfinance fails
                 
             # If AngelOne failed, calculate Pivot/R/S from yfinance
             if not levels:
                 print(f"Using yfinance for Pivot/R/S fallback for {ticker_symbol}...")
-                high = hist['High'].iloc[-2] * fallback_multiplier
-                low = hist['Low'].iloc[-2] * fallback_multiplier
-                close = hist['Close'].iloc[-2] * fallback_multiplier
+                idx = -2 if len(hist) >= 2 else -1
+                high = hist['High'].iloc[idx] * fallback_multiplier
+                low = hist['Low'].iloc[idx] * fallback_multiplier
+                close = hist['Close'].iloc[idx] * fallback_multiplier
                 
                 p = (high + low + close) / 3
                 levels = {
@@ -443,10 +455,12 @@ class PriceChecker:
                 if price:
                     return price
         
-        # Fallback to yfinance for Stocks
+        # Fallback to yfinance for Stocks / Commodities
         try:
             ticker = yf.Ticker(ticker_symbol)
             hist = ticker.history(period="1d")
+            if len(hist) == 0:
+                hist = ticker.history(period="5d")
             if len(hist) > 0:
                 price = hist['Close'].iloc[-1]
                 return price * fallback_multiplier
@@ -510,7 +524,8 @@ class PriceChecker:
             yf_symbol_map = {
                 "GOLD": "GC=F", "SILVER": "SI=F", "CRUDEOIL": "CL=F", 
                 "NATURALGAS": "NG=F", "COPPER": "HG=F", "ALUMINIUM": "ALI=F",
-                "ZINC": "ZNC=F"
+                "ZINC": "ZNC=F",
+                "ELECTRICITY": "HP=F"
             }
             yf_sym = yf_symbol_map.get(symbol, symbol)
             chart_url = f"https://finance.yahoo.com/quote/{yf_sym}"
@@ -560,7 +575,8 @@ class PriceChecker:
             "NATURALGAS": "NG=F",
             "COPPER": "HG=F",
             "ALUMINIUM": "ALI=F",
-            "ZINC": "ZNC=F"
+            "ZINC": "ZNC=F",
+            "ELECTRICITY": "HP=F"
         }
         yf_sym = yf_symbol_map.get(symbol, symbol)
         chart_url = f"https://finance.yahoo.com/quote/{yf_sym}"
