@@ -40,7 +40,8 @@ def get_near_alerts(message):
         near_sell = []
         
         # Scan stocks
-        for symbol, name in checker.stocks.items():
+        for symbol, data in checker.stocks.items():
+            stock_name = data.get('name', symbol) if isinstance(data, dict) else data
             levels = checker.get_support_resistance_levels(symbol, current_price=100)
             if not levels or 'RSI_14' not in levels or levels['RSI_14'] is None:
                 continue
@@ -48,9 +49,9 @@ def get_near_alerts(message):
             rsi = levels['RSI_14']
             
             if rsi < 45: # Approaching 30
-                near_buy.append(f"• *{name}*: RSI {rsi:.2f}")
+                near_buy.append(f"• *{stock_name}*: RSI {rsi:.2f}")
             elif rsi > 65: # Approaching 70
-                near_sell.append(f"• *{name}*: RSI {rsi:.2f}")
+                near_sell.append(f"• *{stock_name}*: RSI {rsi:.2f}")
                 
         # Format response
         response = "*🚨 Near Alert Setups 🚨*\n\n"

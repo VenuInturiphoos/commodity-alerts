@@ -509,7 +509,8 @@ class PriceChecker:
         if current_signal != previous_signal and current_signal in ["STRONG BUY", "STRONG SELL"]:
             yf_symbol_map = {
                 "GOLD": "GC=F", "SILVER": "SI=F", "CRUDEOIL": "CL=F", 
-                "NATURALGAS": "NG=F", "COPPER": "HG=F", "ALUMINIUM": "ALI=F"
+                "NATURALGAS": "NG=F", "COPPER": "HG=F", "ALUMINIUM": "ALI=F",
+                "ZINC": "ZNC=F"
             }
             yf_sym = yf_symbol_map.get(symbol, symbol)
             chart_url = f"https://finance.yahoo.com/quote/{yf_sym}"
@@ -531,20 +532,26 @@ class PriceChecker:
         atr = levels.get('ATR_14')
 
         # Multi-timeframe extremes evaluation (Highest priority first)
-        if is_commodity:
-            high_alerts_config = [
-                ('R2', 'Strong Algorithmic Resistance (R2)', 0.01),
-                ('R1', 'Strong Algorithmic Resistance (R1)', 0.005),
-                ('ThreeMonthHigh', '3-Month High', 0.01),
-                ('MonthlyHigh', '1-Month High', 0.005),
-                ('WeeklyHigh', '1-Week High', 0.005)
-            ]
-        else:
-            high_alerts_config = [
-                ('R2', 'Strong Algorithmic Resistance (R2)', 0.01),
-                ('R1', 'Strong Algorithmic Resistance (R1)', 0.005),
-                ('ThreeMonthHigh', '3-Month High', 0.01)
-            ]
+        # Applies to both Commodities and Stocks (Yearly, 3-Month, Monthly, Weekly, and Algorithmic S/R)
+        high_alerts_config = [
+            ('AllTimeHigh', 'All-Time High', 0.01),
+            ('OneYearHigh', 'Yearly High', 0.01),
+            ('ThreeMonthHigh', '3-Month High', 0.01),
+            ('MonthlyHigh', 'Monthly High', 0.005),
+            ('WeeklyHigh', 'Weekly High', 0.005),
+            ('R2', 'Strong Algorithmic Resistance (R2)', 0.01),
+            ('R1', 'Strong Algorithmic Resistance (R1)', 0.005)
+        ]
+
+        low_alerts_config = [
+            ('AllTimeLow', 'All-Time Low', 0.01),
+            ('OneYearLow', 'Yearly Low', 0.01),
+            ('ThreeMonthLow', '3-Month Low', 0.01),
+            ('MonthlyLow', 'Monthly Low', 0.005),
+            ('WeeklyLow', 'Weekly Low', 0.005),
+            ('S2', 'Strong Algorithmic Support (S2)', 0.01),
+            ('S1', 'Strong Algorithmic Support (S1)', 0.005)
+        ]
             
         yf_symbol_map = {
             "GOLD": "GC=F",
@@ -552,120 +559,105 @@ class PriceChecker:
             "CRUDEOIL": "CL=F",
             "NATURALGAS": "NG=F",
             "COPPER": "HG=F",
-            "ALUMINIUM": "ALI=F"
+            "ALUMINIUM": "ALI=F",
+            "ZINC": "ZNC=F"
         }
         yf_sym = yf_symbol_map.get(symbol, symbol)
         chart_url = f"https://finance.yahoo.com/quote/{yf_sym}"
 
-        # Determine Price Action Triggers
-        is_upper_bb_test = bb_upper and current_price > bb_upper
-        is_lower_bb_test = bb_lower and current_price < bb_lower
-        
-        is_r_test = False
-        tested_r_level = ""
+        # 1. Check Bollinger Band Breakout
+        if bb_upper and current_price > bb_upper:
+            alert_msg = "Upper BB Breakout"
+            if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
+                alerts.append({
+                    'subject': f"🔥 Volatility Breakout: {name} pierced Upper Bollinger Band!{volume_msg}",
+                    'body': f"{name} ({symbol}) has broken above its Upper Bollinger Band (₹{bb_upper:.2f}).{volume_msg}\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
+                })
+                last_alert_date = today_ist
+                last_alert_msg = alert_msg
+            alert_status = alert_msg
+
+        # 2. Multi-Timeframe High Alerts (Breakout / Resistance: Yearly, Monthly, Weekly, etc.)
         for key, name_str, threshold in high_alerts_config:
             level = levels.get(key)
             if level and abs(level) > 0 and abs(current_price - level) / abs(level) <= threshold:
-                is_r_test = True
-                tested_r_level = name_str
-                break
+                alert_msg = f"testing {name_str}"
 
-        if is_commodity:
-            low_alerts_config = [
-                ('S2', 'Strong Algorithmic Support (S2)', 0.01),
-                ('S1', 'Strong Algorithmic Support (S1)', 0.005),
-                ('ThreeMonthLow', '3-Month Low', 0.01),
-                ('MonthlyLow', '1-Month Low', 0.005),
-                ('WeeklyLow', '1-Week Low', 0.005)
-            ]
-        else:
-            low_alerts_config = [
-                ('S2', 'Strong Algorithmic Support (S2)', 0.01),
-                ('S1', 'Strong Algorithmic Support (S1)', 0.005),
-                ('ThreeMonthLow', '3-Month Low', 0.01)
-            ]
+                if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
+                    action_text = "Action Required: This asset is testing a major resistance level. If you are holding long positions, consider booking partial profits. If it breaks and sustains above this level, it could signal a strong bullish continuation."
+                    alerts.append({
+                        'subject': f"🚀 Market Breakout: {name} {alert_msg}!{volume_msg}",
+                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
+                    })
+                    last_alert_date = today_ist
+                    last_alert_msg = alert_msg
+                
+                alert_status = alert_msg
+                break # Only alert the highest timeframe reached
+                
+        # 3. Check Lower Bollinger Band Breakdown
+        if bb_lower and current_price < bb_lower:
+            alert_msg = "Lower BB Breakdown"
+            if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
+                action_text = "Action Required: The price has aggressively pierced the Lower Bollinger Band. This often indicates extreme oversold conditions. Look for a potential mean-reversion bounce, but avoid catching a falling knife until price stabilizes."
+                alerts.append({
+                    'subject': f"⚠️ Volatility Breakdown: {name} pierced Lower Bollinger Band!{volume_msg}",
+                    'body': f"{name} ({symbol}) has broken below its Lower Bollinger Band (₹{bb_lower:.2f}).{volume_msg}\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
+                })
+                last_alert_date = today_ist
+                last_alert_msg = alert_msg
+            alert_status = alert_msg
 
-        is_s_test = False
-        tested_s_level = ""
+        # 4. Multi-Timeframe Low Alerts (Breakdown / Support: Yearly, Monthly, Weekly, etc.)
         for key, name_str, threshold in low_alerts_config:
             level = levels.get(key)
             if level and abs(level) > 0 and abs(current_price - level) / abs(level) <= threshold:
-                is_s_test = True
-                tested_s_level = name_str
-                break
-
-        # Evaluate Confluence
-        rsi = levels.get('RSI_14')
-        macd_line = levels.get('MACD_Line')
-        macd_signal = levels.get('MACD_Signal')
-        
-        has_confluence_indicators = rsi is not None and macd_line is not None and macd_signal is not None
-
-        # Commodity 30-Day Average Movement Alert
-        if is_commodity and levels.get('Avg_Up_Pct') is not None and levels.get('Avg_Down_Pct') is not None and levels.get('Prev_Close') is not None:
-            if last_alert_date != today_ist:
-                prev_close = levels['Prev_Close']
-                avg_up = levels['Avg_Up_Pct']
-                avg_down = levels['Avg_Down_Pct']
+                alert_msg = f"testing {name_str}"
                 
-                if prev_close > 0:
-                    today_pct = (current_price - prev_close) / prev_close
-                    
-                    # Check for average UP breakout
-                    if today_pct > 0 and avg_up > 0 and today_pct >= avg_up:
+                if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
+                    action_text = "Action Required: This asset is testing a major support level. This is a potential buying opportunity if the price respects the support and bounces. Watch for reversal candlestick patterns before entering a new long position."
+                    alerts.append({
+                        'subject': f"📉 Market Breakdown: {name} {alert_msg}!{volume_msg}",
+                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
+                    })
+                    last_alert_date = today_ist
+                    last_alert_msg = alert_msg
+                
+                alert_status = alert_msg
+                break # Only alert the highest timeframe reached
+
+        # 5. Commodity 30-Day Average Movement Alert
+        if is_commodity and levels.get('Avg_Up_Pct') is not None and levels.get('Avg_Down_Pct') is not None and levels.get('Prev_Close') is not None:
+            prev_close = levels['Prev_Close']
+            avg_up = levels['Avg_Up_Pct']
+            avg_down = levels['Avg_Down_Pct']
+            
+            if prev_close > 0:
+                today_pct = (current_price - prev_close) / prev_close
+                
+                # Check for average UP breakout
+                if today_pct > 0 and avg_up > 0 and today_pct >= avg_up:
+                    alert_msg = "Commodity Surge"
+                    if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
                         alerts.append({
                             'subject': f"🚀 COMMODITY SURGE: {name} exceeds 30-day average up move!",
                             'body': f"{name} ({symbol}) is currently up {today_pct*100:.2f}%, which exceeds its 30-day average up day of {avg_up*100:.2f}%.\n\nTechnicals:\n- Current Price: ₹{current_price:.2f}\n- Previous Close: ₹{prev_close:.2f}\n\nView Chart: {chart_url}"
                         })
                         last_alert_date = today_ist
-                        alert_status = "Commodity Surge"
-                        
-                    # Check for average DOWN breakdown
-                    elif today_pct < 0 and avg_down < 0 and today_pct <= avg_down:
+                        last_alert_msg = alert_msg
+                    alert_status = "Commodity Surge"
+                    
+                # Check for average DOWN breakdown
+                elif today_pct < 0 and avg_down < 0 and today_pct <= avg_down:
+                    alert_msg = "Commodity Drop"
+                    if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
                         alerts.append({
                             'subject': f"📉 COMMODITY DROP: {name} exceeds 30-day average down move!",
                             'body': f"{name} ({symbol}) is currently down {abs(today_pct)*100:.2f}%, which exceeds its 30-day average down day of {abs(avg_down)*100:.2f}%.\n\nTechnicals:\n- Current Price: ₹{current_price:.2f}\n- Previous Close: ₹{prev_close:.2f}\n\nView Chart: {chart_url}"
                         })
                         last_alert_date = today_ist
-                        alert_status = "Commodity Drop"
-
-        if has_confluence_indicators and last_alert_date != today_ist:
-            
-            is_oversold = rsi < 35
-            is_overbought = rsi > 65
-            is_macd_bullish = macd_line > macd_signal
-            is_macd_bearish = macd_line < macd_signal
-            
-            is_bullish_momentum = is_oversold or is_macd_bullish
-            is_bearish_momentum = is_overbought or is_macd_bearish
-            
-            # Since check_alerts runs intraday, 0.75x daily average volume is extremely difficult to hit before late afternoon.
-            # We loosen it to > 0.4x average for the intraday check.
-            is_volume_sufficient = (vol_curr > 0.4 * vol_ma) if (vol_curr and vol_ma) else False
-
-            # STRONG BUY Confluence
-            if (is_lower_bb_test or is_s_test) and is_volume_sufficient and is_bullish_momentum:
-                trigger_reason = "Lower Bollinger Band" if is_lower_bb_test else tested_s_level
-                momentum_reason = "RSI is oversold (<35)" if is_oversold else "MACD has crossed bullish"
-                action_text = f"Action Required: STRONG ENTRY CONFLUENCE DETECTED. The price is at extreme support, volume is surging, and {momentum_reason}. This is a high-probability setup for a long position or a bounce."
-                alerts.append({
-                    'subject': f"🟢 CONFLUENCE STRONG BUY: {name} at {trigger_reason}!",
-                    'body': f"{name} ({symbol}) has triggered a Confluence Strong Buy.\n\nTechnicals:\n- Price: ₹{current_price:.2f} (Testing {trigger_reason})\n- Volume: HIGH (>0.4x Daily Avg Intraday)\n- RSI (14): {rsi:.2f}\n- MACD Line/Signal: {macd_line:.2f}/{macd_signal:.2f}\n\n{action_text}\n\nView Chart: {chart_url}"
-                })
-                last_alert_date = today_ist
-                alert_status = "Strong Buy"
-                
-            # STRONG SELL Confluence
-            elif (is_upper_bb_test or is_r_test) and is_volume_sufficient and is_bearish_momentum:
-                trigger_reason = "Upper Bollinger Band" if is_upper_bb_test else tested_r_level
-                momentum_reason = "RSI is overbought (>65)" if is_overbought else "MACD has crossed bearish"
-                action_text = f"Action Required: STRONG SELL CONFLUENCE DETECTED. The price is at extreme resistance, volume is surging, and {momentum_reason}. This is a high-probability setup for a short position or booking profits."
-                alerts.append({
-                    'subject': f"🔴 CONFLUENCE STRONG SELL: {name} at {trigger_reason}!",
-                    'body': f"{name} ({symbol}) has triggered a Confluence Strong Sell.\n\nTechnicals:\n- Price: ₹{current_price:.2f} (Testing {trigger_reason})\n- Volume: HIGH (>0.4x Daily Avg Intraday)\n- RSI (14): {rsi:.2f}\n- MACD Line/Signal: {macd_line:.2f}/{macd_signal:.2f}\n\n{action_text}\n\nView Chart: {chart_url}"
-                })
-                last_alert_date = today_ist
-                alert_status = "Strong Sell"
+                        last_alert_msg = alert_msg
+                    alert_status = "Commodity Drop"
 
         return alerts, alert_status, last_alert_date, last_alert_msg, current_signal
 
@@ -1002,14 +994,15 @@ class PriceChecker:
                     near_sell.append({'symbol': symbol, 'name': name, 'rsi': round(rsi, 2)})
 
         # Check Stocks
-        for symbol, name in self.stocks.items():
+        for symbol, data in self.stocks.items():
+            stock_name = data.get('name', symbol) if isinstance(data, dict) else data
             levels = self.get_support_resistance_levels(symbol, current_price=100)
             if levels and levels.get('RSI_14'):
                 rsi = levels['RSI_14']
                 if rsi < 45:
-                    near_buy.append({'symbol': symbol, 'name': name, 'rsi': round(rsi, 2)})
+                    near_buy.append({'symbol': symbol, 'name': stock_name, 'rsi': round(rsi, 2)})
                 elif rsi > 55:
-                    near_sell.append({'symbol': symbol, 'name': name, 'rsi': round(rsi, 2)})
+                    near_sell.append({'symbol': symbol, 'name': stock_name, 'rsi': round(rsi, 2)})
                     
         output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'near_alerts.json')
         with open(output_path, 'w') as f:
