@@ -45,15 +45,18 @@ def main():
     try:
         alerts = checker.check_alerts()
         
-        for alert in alerts:
-            subject = alert['subject']
-            if is_high_risk:
-                subject = f"[HIGH RISK - NEWS DAY] {subject}"
-            body = alert['body']
-            print(f">>> {subject} | {body.replace(chr(10), ' ')}")
-            alerter.send_alert(subject=subject, body=body)
-            
-        if not alerts:
+        if alerts:
+            formatted_alerts = []
+            for alert in alerts:
+                subject = alert['subject']
+                if is_high_risk:
+                    subject = f"[HIGH RISK - NEWS DAY] {subject}"
+                body = alert['body']
+                print(f">>> {subject} | {body.replace(chr(10), ' ')}")
+                formatted_alerts.append({'subject': subject, 'body': body})
+
+            alerter.send_alerts(formatted_alerts)
+        else:
             print("No levels triggered.")
             
         print("Generating near alerts JSON for Web UI...")
