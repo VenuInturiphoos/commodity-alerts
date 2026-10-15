@@ -502,7 +502,7 @@ class PriceChecker:
         print(f"Current Price: ₹{current_price:.2f}")
         print(f"Levels -> R2: ₹{levels.get('R2', 0):.2f}, R1: ₹{levels.get('R1', 0):.2f}, P: ₹{levels.get('Pivot', 0):.2f}, S1: ₹{levels.get('S1', 0):.2f}, S2: ₹{levels.get('S2', 0):.2f}")
         
-        # Check Trend Signals (EMA 50 vs EMA 200 vs Current Price)
+        # Calculate Trend Signals (EMA 50 vs EMA 200 vs Current Price)
         current_signal = "NEUTRAL"
         ema_50 = levels.get('EMA_50')
         ema_200 = levels.get('EMA_200')
@@ -518,56 +518,12 @@ class PriceChecker:
                     current_signal = "STRONG SELL"
                 else:
                     current_signal = "SELL (RALLY)"
-                
-        # Only send an email alert if the signal changes to a STRONG BUY/SELL
-        if current_signal != previous_signal and current_signal in ["STRONG BUY", "STRONG SELL"]:
-            yf_symbol_map = {
-                "GOLD": "GC=F", "SILVER": "SI=F", "CRUDEOIL": "CL=F", 
-                "NATURALGAS": "NG=F", "COPPER": "HG=F", "ALUMINIUM": "ALI=F",
-                "ZINC": "ZNC=F",
-                "ELECTRICITY": "HP=F"
-            }
-            yf_sym = yf_symbol_map.get(symbol, symbol)
-            chart_url = f"https://finance.yahoo.com/quote/{yf_sym}"
-            alerts.append({
-                'subject': f"🔔 Trading Signal: {name} is now a {current_signal}!",
-                'body': f"{name} ({symbol}) has crossed its Moving Averages and generated a {current_signal} signal.\n\nEMA 50: ₹{ema_50:.2f}\nEMA 200: ₹{ema_200:.2f}\nCurrent Price: ₹{current_price:.2f}\n\nView Chart: {chart_url}"
-            })
-            
-        # Resistance and Support alerts have been removed per user request.
 
-        # Volume and Volatility Checks
-        vol_ma = levels.get('Vol_20_MA')
-        vol_curr = levels.get('Vol_Current')
-        is_high_volume = (vol_curr and vol_ma and vol_curr > 1.5 * vol_ma)
-        volume_msg = " [High Volume Confirmed]" if is_high_volume else ""
+        # STRICT DEDUPLICATION: Maximum once a day per asset
+        if last_alert_date == today_ist:
+            print(f"Skipping alert for {name} ({symbol}): Already alerted today with '{last_alert_msg}'. (Max 1 alert/day)")
+            return alerts, last_alert_msg, last_alert_date, last_alert_msg, current_signal
 
-        bb_upper = levels.get('BB_Upper')
-        bb_lower = levels.get('BB_Lower')
-        atr = levels.get('ATR_14')
-
-        # Multi-timeframe extremes evaluation (Highest priority first)
-        # Applies to both Commodities and Stocks (Yearly, 3-Month, Monthly, Weekly, and Algorithmic S/R)
-        high_alerts_config = [
-            ('AllTimeHigh', 'All-Time High', 0.01),
-            ('OneYearHigh', 'Yearly High', 0.01),
-            ('ThreeMonthHigh', '3-Month High', 0.01),
-            ('MonthlyHigh', 'Monthly High', 0.005),
-            ('WeeklyHigh', 'Weekly High', 0.005),
-            ('R2', 'Strong Algorithmic Resistance (R2)', 0.01),
-            ('R1', 'Strong Algorithmic Resistance (R1)', 0.005)
-        ]
-
-        low_alerts_config = [
-            ('AllTimeLow', 'All-Time Low', 0.01),
-            ('OneYearLow', 'Yearly Low', 0.01),
-            ('ThreeMonthLow', '3-Month Low', 0.01),
-            ('MonthlyLow', 'Monthly Low', 0.005),
-            ('WeeklyLow', 'Weekly Low', 0.005),
-            ('S2', 'Strong Algorithmic Support (S2)', 0.01),
-            ('S1', 'Strong Algorithmic Support (S1)', 0.005)
-        ]
-            
         yf_symbol_map = {
             "GOLD": "GC=F",
             "SILVER": "SI=F",
@@ -581,68 +537,77 @@ class PriceChecker:
         yf_sym = yf_symbol_map.get(symbol, symbol)
         chart_url = f"https://finance.yahoo.com/quote/{yf_sym}"
 
-        # 1. Check Bollinger Band Breakout
-        if bb_upper and current_price > bb_upper:
-            alert_msg = "Upper BB Breakout"
-            if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
-                alerts.append({
-                    'subject': f"🔥 Volatility Breakout: {name} pierced Upper Bollinger Band!{volume_msg}",
-                    'body': f"{name} ({symbol}) has broken above its Upper Bollinger Band (₹{bb_upper:.2f}).{volume_msg}\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
-                })
-                last_alert_date = today_ist
-                last_alert_msg = alert_msg
-            alert_status = alert_msg
+        # Volume and Volatility Checks
+        vol_ma = levels.get('Vol_20_MA')
+        vol_curr = levels.get('Vol_Current')
+        is_high_volume = (vol_curr and vol_ma and vol_curr > 1.5 * vol_ma)
+        volume_msg = " [High Volume Confirmed]" if is_high_volume else ""
 
-        # 2. Multi-Timeframe High Alerts (Breakout / Resistance: Yearly, Monthly, Weekly, etc.)
+        bb_upper = levels.get('BB_Upper')
+        bb_lower = levels.get('BB_Lower')
+        atr = levels.get('ATR_14')
+
+        # Multi-timeframe extremes evaluation (Highest priority first)
+        # Note: Daily pivots (R1/R2/S1/S2) are excluded from alerts to prevent noisy false breakouts.
+        high_alerts_config = [
+            ('AllTimeHigh', 'All-Time High', 0.01),
+            ('OneYearHigh', 'Yearly High', 0.01),
+            ('ThreeMonthHigh', '3-Month High', 0.01),
+            ('MonthlyHigh', 'Monthly High', 0.005),
+            ('WeeklyHigh', 'Weekly High', 0.005)
+        ]
+
+        low_alerts_config = [
+            ('AllTimeLow', 'All-Time Low', 0.01),
+            ('OneYearLow', 'Yearly Low', 0.01),
+            ('ThreeMonthLow', '3-Month Low', 0.01),
+            ('MonthlyLow', 'Monthly Low', 0.005),
+            ('WeeklyLow', 'Weekly Low', 0.005)
+        ]
+
+        # 1. Multi-Timeframe High Extremes (Yearly, 3-Month, Monthly, Weekly)
         for key, name_str, threshold in high_alerts_config:
             level = levels.get(key)
             if level and abs(level) > 0 and abs(current_price - level) / abs(level) <= threshold:
                 alert_msg = f"testing {name_str}"
-
-                if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
-                    action_text = "Action Required: This asset is testing a major resistance level. If you are holding long positions, consider booking partial profits. If it breaks and sustains above this level, it could signal a strong bullish continuation."
-                    alerts.append({
-                        'subject': f"🚀 Market Breakout: {name} {alert_msg}!{volume_msg}",
-                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
-                    })
-                    last_alert_date = today_ist
-                    last_alert_msg = alert_msg
-                
-                alert_status = alert_msg
-                break # Only alert the highest timeframe reached
-                
-        # 3. Check Lower Bollinger Band Breakdown
-        if bb_lower and current_price < bb_lower:
-            alert_msg = "Lower BB Breakdown"
-            if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
-                action_text = "Action Required: The price has aggressively pierced the Lower Bollinger Band. This often indicates extreme oversold conditions. Look for a potential mean-reversion bounce, but avoid catching a falling knife until price stabilizes."
+                action_text = "Action Required: This asset is testing a major resistance level. If you are holding long positions, consider booking partial profits. If it breaks and sustains above this level, it could signal a strong bullish continuation."
                 alerts.append({
-                    'subject': f"⚠️ Volatility Breakdown: {name} pierced Lower Bollinger Band!{volume_msg}",
-                    'body': f"{name} ({symbol}) has broken below its Lower Bollinger Band (₹{bb_lower:.2f}).{volume_msg}\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
+                    'subject': f"🚀 Market Breakout: {name} {alert_msg}!{volume_msg}",
+                    'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
                 })
-                last_alert_date = today_ist
-                last_alert_msg = alert_msg
-            alert_status = alert_msg
+                return alerts, alert_msg, today_ist, alert_msg, current_signal
 
-        # 4. Multi-Timeframe Low Alerts (Breakdown / Support: Yearly, Monthly, Weekly, etc.)
+        # 2. Multi-Timeframe Low Extremes (Yearly, 3-Month, Monthly, Weekly)
         for key, name_str, threshold in low_alerts_config:
             level = levels.get(key)
             if level and abs(level) > 0 and abs(current_price - level) / abs(level) <= threshold:
                 alert_msg = f"testing {name_str}"
-                
-                if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
-                    action_text = "Action Required: This asset is testing a major support level. This is a potential buying opportunity if the price respects the support and bounces. Watch for reversal candlestick patterns before entering a new long position."
-                    alerts.append({
-                        'subject': f"📉 Market Breakdown: {name} {alert_msg}!{volume_msg}",
-                        'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
-                    })
-                    last_alert_date = today_ist
-                    last_alert_msg = alert_msg
-                
-                alert_status = alert_msg
-                break # Only alert the highest timeframe reached
+                action_text = "Action Required: This asset is testing a major support level. This is a potential buying opportunity if the price respects the support and bounces. Watch for reversal candlestick patterns before entering a new long position."
+                alerts.append({
+                    'subject': f"📉 Market Breakdown: {name} {alert_msg}!{volume_msg}",
+                    'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
+                })
+                return alerts, alert_msg, today_ist, alert_msg, current_signal
 
-        # 5. Commodity 30-Day Average Movement Alert
+        # 3. Bollinger Band Breakout / Breakdown
+        if bb_upper and current_price > bb_upper:
+            alert_msg = "Upper BB Breakout"
+            alerts.append({
+                'subject': f"🔥 Volatility Breakout: {name} pierced Upper Bollinger Band!{volume_msg}",
+                'body': f"{name} ({symbol}) has broken above its Upper Bollinger Band (₹{bb_upper:.2f}).{volume_msg}\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
+            })
+            return alerts, alert_msg, today_ist, alert_msg, current_signal
+
+        if bb_lower and current_price < bb_lower:
+            alert_msg = "Lower BB Breakdown"
+            action_text = "Action Required: The price has aggressively pierced the Lower Bollinger Band. This often indicates extreme oversold conditions. Look for a potential mean-reversion bounce, but avoid catching a falling knife until price stabilizes."
+            alerts.append({
+                'subject': f"⚠️ Volatility Breakdown: {name} pierced Lower Bollinger Band!{volume_msg}",
+                'body': f"{name} ({symbol}) has broken below its Lower Bollinger Band (₹{bb_lower:.2f}).{volume_msg}\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
+            })
+            return alerts, alert_msg, today_ist, alert_msg, current_signal
+
+        # 4. Commodity 30-Day Average Movement Alert
         if is_commodity and levels.get('Avg_Up_Pct') is not None and levels.get('Avg_Down_Pct') is not None and levels.get('Prev_Close') is not None:
             prev_close = levels['Prev_Close']
             avg_up = levels['Avg_Up_Pct']
@@ -650,30 +615,29 @@ class PriceChecker:
             
             if prev_close > 0:
                 today_pct = (current_price - prev_close) / prev_close
-                
-                # Check for average UP breakout
                 if today_pct > 0 and avg_up > 0 and today_pct >= avg_up:
                     alert_msg = "Commodity Surge"
-                    if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
-                        alerts.append({
-                            'subject': f"🚀 COMMODITY SURGE: {name} exceeds 30-day average up move!",
-                            'body': f"{name} ({symbol}) is currently up {today_pct*100:.2f}%, which exceeds its 30-day average up day of {avg_up*100:.2f}%.\n\nTechnicals:\n- Current Price: ₹{current_price:.2f}\n- Previous Close: ₹{prev_close:.2f}\n\nView Chart: {chart_url}"
-                        })
-                        last_alert_date = today_ist
-                        last_alert_msg = alert_msg
-                    alert_status = "Commodity Surge"
-                    
-                # Check for average DOWN breakdown
+                    alerts.append({
+                        'subject': f"🚀 COMMODITY SURGE: {name} exceeds 30-day average up move!",
+                        'body': f"{name} ({symbol}) is currently up {today_pct*100:.2f}%, which exceeds its 30-day average up day of {avg_up*100:.2f}%.\n\nTechnicals:\n- Current Price: ₹{current_price:.2f}\n- Previous Close: ₹{prev_close:.2f}\n\nView Chart: {chart_url}"
+                    })
+                    return alerts, alert_msg, today_ist, alert_msg, current_signal
                 elif today_pct < 0 and avg_down < 0 and today_pct <= avg_down:
                     alert_msg = "Commodity Drop"
-                    if not (last_alert_date == today_ist and last_alert_msg == alert_msg):
-                        alerts.append({
-                            'subject': f"📉 COMMODITY DROP: {name} exceeds 30-day average down move!",
-                            'body': f"{name} ({symbol}) is currently down {abs(today_pct)*100:.2f}%, which exceeds its 30-day average down day of {abs(avg_down)*100:.2f}%.\n\nTechnicals:\n- Current Price: ₹{current_price:.2f}\n- Previous Close: ₹{prev_close:.2f}\n\nView Chart: {chart_url}"
-                        })
-                        last_alert_date = today_ist
-                        last_alert_msg = alert_msg
-                    alert_status = "Commodity Drop"
+                    alerts.append({
+                        'subject': f"📉 COMMODITY DROP: {name} exceeds 30-day average down move!",
+                        'body': f"{name} ({symbol}) is currently down {abs(today_pct)*100:.2f}%, which exceeds its 30-day average down day of {abs(avg_down)*100:.2f}%.\n\nTechnicals:\n- Current Price: ₹{current_price:.2f}\n- Previous Close: ₹{prev_close:.2f}\n\nView Chart: {chart_url}"
+                    })
+                    return alerts, alert_msg, today_ist, alert_msg, current_signal
+
+        # 5. Trend Signals (EMA 50 / 200 crossover to STRONG BUY / STRONG SELL)
+        if current_signal != previous_signal and current_signal in ["STRONG BUY", "STRONG SELL"]:
+            alert_msg = f"{current_signal} Signal"
+            alerts.append({
+                'subject': f"🔔 Trading Signal: {name} is now a {current_signal}!",
+                'body': f"{name} ({symbol}) has crossed its Moving Averages and generated a {current_signal} signal.\n\nEMA 50: ₹{ema_50:.2f}\nEMA 200: ₹{ema_200:.2f}\nCurrent Price: ₹{current_price:.2f}\n\nView Chart: {chart_url}"
+            })
+            return alerts, alert_msg, today_ist, alert_msg, current_signal
 
         return alerts, alert_status, last_alert_date, last_alert_msg, current_signal
 
