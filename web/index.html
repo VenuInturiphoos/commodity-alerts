@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="styles.css?v=4">
     <script>
         window.onerror = function(msg, url, line, col, error) {
-            alert("Error: " + msg + "\nLine: " + line);
+            console.error("Global Error: " + msg + " at line " + line + ":" + col, error);
         };
     </script>
 </head>
@@ -32,6 +32,7 @@
             <nav class="tabs">
                 <button class="tab-btn active" onclick="switchTab(this, 'subscribe-tab')">Subscribe</button>
                 <button class="tab-btn" onclick="switchTab(this, 'dashboard-tab')">Live Market</button>
+                <button class="tab-btn" onclick="switchTab(this, 'circuits-tab')" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24;">⚡ Circuit Limits</button>
                 <button class="tab-btn" onclick="switchTab(this, 'alerts-tab')">🔥 Alert Zone</button>
                 <button class="tab-btn" onclick="switchTab(this, 'trade-tab')" style="background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3); color: #4ade80;">📈 Paper Trading</button>
                 <button class="tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Account</button>
@@ -121,6 +122,131 @@
                             <tr><td colspan="6" class="loading">Loading live data...</td></tr>
                         </tbody>
                     </table>
+                </div>
+            </section>
+
+            <!-- Circuit Limits Tab -->
+            <section id="circuits-tab" class="tab-content">
+                <div class="circuits-header-card full-width">
+                    <div class="circuits-title-area">
+                        <h2>⚡ MCX Daily Circuit Limits (DPL)</h2>
+                        <p>Live floor and ceiling prices computed daily from exchange settlement anchors & SEBI slabs.</p>
+                    </div>
+                    <div class="circuits-controls-right">
+                        <div class="pulse-pill">
+                            <span class="pulse-dot"></span>
+                            <span>Live MCX Feed</span>
+                        </div>
+                        <span id="circuits-updated-time" style="font-size: 0.8rem; color: var(--text-secondary);">Syncing...</span>
+                        <button class="refresh-circuit-btn" id="circuit-refresh-btn" onclick="refreshCircuitsData()">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Top Metrics KPI Cards -->
+                <div class="circuits-kpi-grid">
+                    <div class="circuit-kpi-card">
+                        <div class="circuit-kpi-header">
+                            <span>Tracked MCX Contracts</span>
+                            <div class="circuit-kpi-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+                                <i class="fa-solid fa-cubes-stacked"></i>
+                            </div>
+                        </div>
+                        <div class="circuit-kpi-value" id="kpi-circuit-count">8</div>
+                        <div class="circuit-kpi-sub">Continuous active futures</div>
+                    </div>
+
+                    <div class="circuit-kpi-card">
+                        <div class="circuit-kpi-header">
+                            <span>Closest to Upper Circuit</span>
+                            <div class="circuit-kpi-icon" style="background: rgba(74, 222, 128, 0.15); color: #4ade80;">
+                                <i class="fa-solid fa-arrow-trend-up"></i>
+                            </div>
+                        </div>
+                        <div class="circuit-kpi-value" id="kpi-closest-uc" style="color: #4ade80;">--</div>
+                        <div class="circuit-kpi-sub" id="kpi-closest-uc-sub">Remaining room to ceiling</div>
+                    </div>
+
+                    <div class="circuit-kpi-card">
+                        <div class="circuit-kpi-header">
+                            <span>Closest to Lower Circuit</span>
+                            <div class="circuit-kpi-icon" style="background: rgba(251, 113, 133, 0.15); color: #fb7185;">
+                                <i class="fa-solid fa-arrow-trend-down"></i>
+                            </div>
+                        </div>
+                        <div class="circuit-kpi-value" id="kpi-closest-lc" style="color: #fb7185;">--</div>
+                        <div class="circuit-kpi-sub" id="kpi-closest-lc-sub">Remaining room to floor</div>
+                    </div>
+
+                    <div class="circuit-kpi-card">
+                        <div class="circuit-kpi-header">
+                            <span>Exchange Limit Status</span>
+                            <div class="circuit-kpi-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                        </div>
+                        <div class="circuit-kpi-value" id="kpi-circuit-status" style="font-size: 1.3rem; color: #10b981;">Safe Range 🟢</div>
+                        <div class="circuit-kpi-sub">Zero circuit halts triggered</div>
+                    </div>
+                </div>
+
+                <!-- Toolbar (Category Filter & Search) -->
+                <div class="circuits-toolbar">
+                    <div class="circuit-filters">
+                        <button class="circuit-filter-pill active" onclick="setCircuitCategoryFilter('ALL', this)">All Commodities</button>
+                        <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Bullion', this)">Bullion (Gold/Silver)</button>
+                        <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Energy', this)">Energy (Crude/Gas)</button>
+                        <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Base Metals', this)">Base Metals</button>
+                    </div>
+                    <div class="circuit-search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="circuit-search-input" placeholder="Search commodity..." onkeyup="filterCircuitsTable()">
+                    </div>
+                </div>
+
+                <!-- Live Circuit Table -->
+                <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                    <table class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Commodity Contract</th>
+                                <th>Live Price (₹)</th>
+                                <th>Day Range</th>
+                                <th>Prev Close (Anchor)</th>
+                                <th>Lower Circuit (Floor)</th>
+                                <th>Upper Circuit (Ceiling)</th>
+                                <th style="min-width: 200px;">Circuit Range Meter</th>
+                                <th>Room to Limits</th>
+                                <th>Trading Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="circuits-data-body">
+                            <tr><td colspan="9" class="loading">Loading daily circuit limits from exchange feed...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Educational Explainer Guide -->
+                <div class="circuit-explainer-card">
+                    <h4><i class="fa-solid fa-circle-question" style="color: #60a5fa;"></i> How MCX Daily Price Limits (DPL) & Circuit Bands Work</h4>
+                    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">MCX contracts are bounded by daily limits designed to curb artificial manipulation and panic flash-crashes. These limits are calculated daily strictly from the contract's <strong>Previous Daily Settlement Price (DSP)</strong>.</p>
+                    
+                    <div class="circuit-explainer-grid">
+                        <div class="explainer-box">
+                            <h5>1. Initial Slab (Base Filter)</h5>
+                            <p>Trading begins each morning bound by an initial price band (typically <strong>3% for Gold</strong>, <strong>4% for Silver, Crude & Base Metals</strong>, and <strong>6% for Natural Gas</strong>). Orders beyond this band are rejected by the RMS.</p>
+                        </div>
+                        <div class="explainer-box">
+                            <h5>2. 15-Min Cooling-Off Period</h5>
+                            <p>If the market experiences sudden extreme volatility and touches the initial slab, the exchange activates a <strong>15-minute cooling-off period</strong> or automatic relaxation step to absorb news.</p>
+                        </div>
+                        <div class="explainer-box">
+                            <h5>3. Enhanced Slab & International Parity</h5>
+                            <p>Post cooling-off, the limit automatically expands to the enhanced slab (up to <strong>6% - 9%</strong>). For internationally linked energy/metals, additional 3% steps can be relaxed to match COMEX/NYMEX global parity.</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -516,8 +642,15 @@ function initApp() {
     try { setupSubscribeForm(); } catch(e) { console.error("Form setup error:", e); }
     try { setupUnsubscribeForm(); } catch(e) { console.error("Unsub Form setup error:", e); }
     try { fetchMarketData(); } catch(e) { console.error("Fetch data error:", e); }
+    try { fetchCircuitsData(); } catch(e) { console.error("Fetch circuits error:", e); }
     try { setupAuth(); } catch(e) { console.error("Auth setup error:", e); }
     setInterval(fetchMarketData, 300000); 
+    setInterval(() => {
+        const circuitsTab = document.getElementById('circuits-tab');
+        if (circuitsTab && circuitsTab.classList.contains('active')) {
+            fetchCircuitsData();
+        }
+    }, 45000);
 }
 
 if (document.readyState === 'loading') {
@@ -545,8 +678,357 @@ window.switchTab = function(btn, targetId) {
         fetchMarketData();
     }
     
+    if (targetId === 'circuits-tab') {
+        fetchCircuitsData();
+    }
+    
     if (targetId === 'admin-tab') {
         fetchSubscribers();
+    }
+}
+
+// ==========================================
+// ⚡ MCX Daily Circuit Limits & Price Bands
+// ==========================================
+let rawCircuitsData = [];
+let activeCircuitCategory = 'ALL';
+
+async function fetchCircuitsData(forceNetwork = false) {
+    const tbody = document.getElementById('circuits-data-body');
+    const updatedEl = document.getElementById('circuits-updated-time');
+    
+    if (forceNetwork) {
+        const btn = document.getElementById('circuit-refresh-btn');
+        if (btn) btn.classList.add('spinning');
+    }
+
+    try {
+        let loaded = false;
+        
+        // 1. Try local JSON first (updated by GitHub Actions every 3 mins)
+        if (!forceNetwork) {
+            try {
+                const res = await fetch('circuits_data.json?t=' + Date.now());
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.commodities && data.commodities.length > 0) {
+                        rawCircuitsData = data.commodities;
+                        if (updatedEl) updatedEl.textContent = 'Exchange Feed • ' + (data.last_updated || 'Live');
+                        loaded = true;
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not fetch circuits_data.json, trying live TradingView scanner fallback:", e);
+            }
+        }
+        
+        // 2. Direct client-side live scanner fetch fallback or forced refresh
+        if (!loaded || forceNetwork) {
+            const tvEndpoint = 'https://scanner.tradingview.com/futures/scan';
+            const commodityMap = {
+                'GOLD': { ticker: 'MCX:GOLD1!', name: 'Gold', dpl_initial: 0.03, dpl_max: 0.06, category: 'Bullion', unit: '10 g' },
+                'SILVER': { ticker: 'MCX:SILVER1!', name: 'Silver', dpl_initial: 0.04, dpl_max: 0.06, category: 'Bullion', unit: '1 kg' },
+                'CRUDEOIL': { ticker: 'MCX:CRUDEOIL1!', name: 'Crude Oil', dpl_initial: 0.04, dpl_max: 0.07, category: 'Energy', unit: '1 bbl' },
+                'NATURALGAS': { ticker: 'MCX:NATURALGAS1!', name: 'Natural Gas', dpl_initial: 0.06, dpl_max: 0.09, category: 'Energy', unit: '1 mmBtu' },
+                'COPPER': { ticker: 'MCX:COPPER1!', name: 'Copper', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' },
+                'ZINC': { ticker: 'MCX:ZINC1!', name: 'Zinc', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' },
+                'ALUMINIUM': { ticker: 'MCX:ALUMINIUM1!', name: 'Aluminium', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' },
+                'LEAD': { ticker: 'MCX:LEAD1!', name: 'Lead', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' }
+            };
+            
+            const tickers = Object.values(commodityMap).map(m => m.ticker);
+            const scanRes = await fetch(tvEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    symbols: { tickers: tickers },
+                    columns: ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume']
+                })
+            });
+            
+            if (scanRes.ok) {
+                const scanJson = await scanRes.json();
+                const tickerData = {};
+                (scanJson.data || []).forEach(row => {
+                    tickerData[row.s] = {
+                        close: row.d[0],
+                        open: row.d[1],
+                        high: row.d[2],
+                        low: row.d[3],
+                        change_pct: row.d[4],
+                        change_abs: row.d[5],
+                        volume: row.d[6]
+                    };
+                });
+                
+                const parsedCircuits = [];
+                for (const [sym, meta] of Object.entries(commodityMap)) {
+                    const t = tickerData[meta.ticker];
+                    if (!t || t.close === null || t.close === undefined) continue;
+                    
+                    const close = parseFloat(t.close);
+                    const chg_abs = parseFloat(t.change_abs || 0);
+                    const chg_pct = parseFloat(t.change_pct || 0);
+                    const prev_close = Math.round((close - chg_abs) * 100) / 100;
+                    const day_high = parseFloat(t.high || close);
+                    const day_low = parseFloat(t.low || close);
+                    const volume = parseInt(t.volume || 0);
+                    
+                    const lc_init = Math.round(prev_close * (1 - meta.dpl_initial) * 100) / 100;
+                    const uc_init = Math.round(prev_close * (1 + meta.dpl_initial) * 100) / 100;
+                    const lc_max = Math.round(prev_close * (1 - meta.dpl_max) * 100) / 100;
+                    const uc_max = Math.round(prev_close * (1 + meta.dpl_max) * 100) / 100;
+                    
+                    const dist_to_uc_pct = Math.round(((uc_init - close) / close) * 10000) / 100;
+                    const dist_to_lc_pct = Math.round(((close - lc_init) / close) * 10000) / 100;
+                    const dist_to_uc_pts = Math.round((uc_init - close) * 100) / 100;
+                    const dist_to_lc_pts = Math.round((close - lc_init) * 100) / 100;
+                    
+                    const total_band = uc_init - lc_init;
+                    const band_pos = total_band > 0 ? Math.round(Math.max(0, Math.min(100, ((close - lc_init) / total_band) * 100)) * 10) / 10 : 50.0;
+                    
+                    let status = "NORMAL";
+                    let status_color = "#10b981";
+                    let status_text = "Normal Trading 🟢";
+                    
+                    if (close >= uc_init) {
+                        status = "LOCKED UPPER";
+                        status_color = "#ef4444";
+                        status_text = "Upper Circuit Locked 🚨";
+                    } else if (close <= lc_init) {
+                        status = "LOCKED LOWER";
+                        status_color = "#ef4444";
+                        status_text = "Lower Circuit Locked 🚨";
+                    } else if (dist_to_uc_pct <= 1.0) {
+                        status = "NEAR UPPER";
+                        status_color = "#f59e0b";
+                        status_text = "Near Upper Band ⚠️";
+                    } else if (dist_to_lc_pct <= 1.0) {
+                        status = "NEAR LOWER";
+                        status_color = "#f59e0b";
+                        status_text = "Near Lower Band ⚠️";
+                    }
+                    
+                    parsedCircuits.push({
+                        symbol: sym,
+                        name: meta.name,
+                        category: meta.category,
+                        unit: meta.unit,
+                        ticker: meta.ticker,
+                        current_price: close,
+                        prev_close: prev_close,
+                        open_price: parseFloat(t.open || close),
+                        day_high: day_high,
+                        day_low: day_low,
+                        change_pct: Math.round(chg_pct * 100) / 100,
+                        change_abs: Math.round(chg_abs * 100) / 100,
+                        volume: volume,
+                        dpl_initial_pct: Math.round(meta.dpl_initial * 1000) / 10,
+                        dpl_max_pct: Math.round(meta.dpl_max * 1000) / 10,
+                        lower_circuit: lc_init,
+                        upper_circuit: uc_init,
+                        lower_circuit_max: lc_max,
+                        upper_circuit_max: uc_max,
+                        dist_to_uc_pct: dist_to_uc_pct,
+                        dist_to_lc_pct: dist_to_lc_pct,
+                        dist_to_uc_pts: dist_to_uc_pts,
+                        dist_to_lc_pts: dist_to_lc_pts,
+                        band_position_pct: band_pos,
+                        status: status,
+                        status_color: status_color,
+                        status_text: status_text
+                    });
+                }
+                
+                if (parsedCircuits.length > 0) {
+                    rawCircuitsData = parsedCircuits;
+                    if (updatedEl) updatedEl.textContent = 'Live Internet Feed • ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    loaded = true;
+                }
+            }
+        }
+        
+        renderCircuitsTable();
+    } catch (err) {
+        console.error("Error fetching circuits data:", err);
+        if (tbody && rawCircuitsData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="error">Failed to fetch circuit limits from exchange feed. <button onclick="fetchCircuitsData(true)" style="padding:4px 8px; margin-left:8px; cursor:pointer;">Retry</button></td></tr>`;
+        }
+    } finally {
+        const btn = document.getElementById('circuit-refresh-btn');
+        if (btn) btn.classList.remove('spinning');
+    }
+}
+
+function refreshCircuitsData() {
+    fetchCircuitsData(true);
+}
+
+function setCircuitCategoryFilter(category, btn) {
+    activeCircuitCategory = category;
+    document.querySelectorAll('.circuit-filter-pill').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderCircuitsTable();
+}
+
+function filterCircuitsTable() {
+    renderCircuitsTable();
+}
+
+function renderCircuitsTable() {
+    const tbody = document.getElementById('circuits-data-body');
+    if (!tbody) return;
+    
+    if (!rawCircuitsData || rawCircuitsData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="loading">No circuit limits available. Connecting to exchange feed...</td></tr>`;
+        return;
+    }
+    
+    const searchVal = (document.getElementById('circuit-search-input')?.value || '').trim().toLowerCase();
+    
+    let filtered = rawCircuitsData.filter(item => {
+        const matchesCategory = (activeCircuitCategory === 'ALL') || (item.category === activeCircuitCategory);
+        const matchesSearch = !searchVal || 
+            item.name.toLowerCase().includes(searchVal) || 
+            item.symbol.toLowerCase().includes(searchVal) ||
+            (item.category && item.category.toLowerCase().includes(searchVal));
+        return matchesCategory && matchesSearch;
+    });
+    
+    updateCircuitsKPIs(rawCircuitsData);
+    
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="loading" style="padding: 2rem !important;">No commodities found matching current filters.</td></tr>`;
+        return;
+    }
+    
+    tbody.innerHTML = '';
+    
+    filtered.forEach(item => {
+        const tr = document.createElement('tr');
+        
+        const isUp = item.change_pct >= 0;
+        const changeSign = isUp ? '+' : '';
+        const changeColor = isUp ? '#4ade80' : '#fb7185';
+        
+        const chartUrl = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(item.ticker || 'MCX:' + item.symbol + '1!')}`;
+        
+        let statusBadgeClass = 'circuit-badge-normal';
+        if (item.status.includes('LOCKED')) statusBadgeClass = 'circuit-badge-lock';
+        else if (item.status.includes('NEAR')) statusBadgeClass = 'circuit-badge-near';
+        
+        tr.innerHTML = `
+            <td>
+                <strong>
+                    <a href="${chartUrl}" target="_blank" style="color: var(--text-primary); text-decoration: none;">
+                        ${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i>
+                    </a>
+                </strong>
+                <span class="category-tag">${item.category}</span>
+                <span class="unit-tag">(${item.unit})</span>
+                <br>
+                <small style="color:var(--text-secondary)">${item.ticker || item.symbol}</small>
+            </td>
+            
+            <td>
+                <div style="font-size: 1.05rem; font-weight: 700;">₹${Number(item.current_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                <div style="font-size: 0.8rem; color: ${changeColor}; font-weight: 600;">
+                    ${changeSign}${item.change_pct.toFixed(2)}% (${changeSign}₹${item.change_abs.toFixed(2)})
+                </div>
+            </td>
+            
+            <td style="color: var(--text-secondary); font-size: 0.85rem;">
+                <span style="color: #cbd5e1;">H: ₹${Number(item.day_high).toLocaleString('en-IN')}</span><br>
+                <span style="color: #94a3b8;">L: ₹${Number(item.day_low).toLocaleString('en-IN')}</span>
+            </td>
+            
+            <td style="font-weight: 600; color: #cbd5e1;">
+                ₹${Number(item.prev_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+            </td>
+            
+            <td>
+                <div style="color: #fb7185; font-weight: 700;">₹${Number(item.lower_circuit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                <small style="color: #fda4af; font-size: 0.75rem;">-${item.dpl_initial_pct}% Slab</small>
+            </td>
+            
+            <td>
+                <div style="color: #4ade80; font-weight: 700;">₹${Number(item.upper_circuit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                <small style="color: #86efac; font-size: 0.75rem;">+${item.dpl_initial_pct}% Slab</small>
+            </td>
+            
+            <td>
+                <div class="circuit-meter-wrap">
+                    <div class="circuit-meter-labels">
+                        <span class="meter-lc">LC ₹${Number(item.lower_circuit).toLocaleString('en-IN')}</span>
+                        <span class="meter-mid">PC</span>
+                        <span class="meter-uc">UC ₹${Number(item.upper_circuit).toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="circuit-meter-track" title="Price is at ${item.band_position_pct}% between Lower and Upper Circuit">
+                        <div class="circuit-meter-mid-tick" title="Previous Settlement Anchor"></div>
+                        <div class="circuit-meter-pin" style="left: ${item.band_position_pct}%" title="Live Price: ₹${Number(item.current_price).toLocaleString('en-IN')} (${item.band_position_pct}%)"></div>
+                    </div>
+                </div>
+            </td>
+            
+            <td style="font-size: 0.825rem;">
+                <div style="color: #4ade80; font-weight: 600;">
+                    <i class="fa-solid fa-angles-up" style="font-size: 0.7em;"></i> +${item.dist_to_uc_pct.toFixed(2)}% <span style="color:var(--text-secondary); font-size:0.75rem;">(₹${item.dist_to_uc_pts.toFixed(1)})</span>
+                </div>
+                <div style="color: #fb7185; font-weight: 600; margin-top: 2px;">
+                    <i class="fa-solid fa-angles-down" style="font-size: 0.7em;"></i> -${item.dist_to_lc_pct.toFixed(2)}% <span style="color:var(--text-secondary); font-size:0.75rem;">(₹${item.dist_to_lc_pts.toFixed(1)})</span>
+                </div>
+            </td>
+            
+            <td>
+                <span class="circuit-badge ${statusBadgeClass}">
+                    ${item.status_text}
+                </span>
+            </td>
+        `;
+        
+        tbody.appendChild(tr);
+    });
+}
+
+function updateCircuitsKPIs(data) {
+    if (!data || data.length === 0) return;
+    
+    const countEl = document.getElementById('kpi-circuit-count');
+    if (countEl) countEl.textContent = data.length;
+    
+    let closestUC = data[0];
+    let closestLC = data[0];
+    let anyCautionOrLock = false;
+    
+    data.forEach(item => {
+        if (item.dist_to_uc_pct < closestUC.dist_to_uc_pct) closestUC = item;
+        if (item.dist_to_lc_pct < closestLC.dist_to_lc_pct) closestLC = item;
+        if (item.status !== 'NORMAL') anyCautionOrLock = true;
+    });
+    
+    const ucValEl = document.getElementById('kpi-closest-uc');
+    const ucSubEl = document.getElementById('kpi-closest-uc-sub');
+    if (ucValEl && closestUC) {
+        ucValEl.textContent = `${closestUC.name} (+${closestUC.dist_to_uc_pct.toFixed(2)}%)`;
+        if (ucSubEl) ucSubEl.textContent = `₹${closestUC.dist_to_uc_pts.toFixed(1)} room to ceiling`;
+    }
+    
+    const lcValEl = document.getElementById('kpi-closest-lc');
+    const lcSubEl = document.getElementById('kpi-closest-lc-sub');
+    if (lcValEl && closestLC) {
+        lcValEl.textContent = `${closestLC.name} (-${closestLC.dist_to_lc_pct.toFixed(2)}%)`;
+        if (lcSubEl) lcSubEl.textContent = `₹${closestLC.dist_to_lc_pts.toFixed(1)} room to floor`;
+    }
+    
+    const statusEl = document.getElementById('kpi-circuit-status');
+    if (statusEl) {
+        if (anyCautionOrLock) {
+            statusEl.textContent = "Caution ⚠️";
+            statusEl.style.color = "#f59e0b";
+        } else {
+            statusEl.textContent = "Safe Range 🟢";
+            statusEl.style.color = "#10b981";
+        }
     }
 }
 

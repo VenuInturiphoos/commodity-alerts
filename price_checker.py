@@ -258,26 +258,42 @@ class PriceChecker:
             print(f"Error fetching OI from AngelOne for {token}: {e}")
             return 0
 
-    def get_support_resistance_levels(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None, current_price=None):
+    def get_support_resistance_levels(self, ticker_symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=None, current_price=None, tv_quote=None):
         levels = None
         
-        # 1. Try to get Pivot/R/S from AngelOne
-        if is_commodity:
-            print(f"Attempting AngelOne for commodity {ticker_symbol}...")
-            if self.angel_active:
-                sec_id = self.get_angel_mcx_near_month(ticker_symbol)
-                if sec_id:
-                    print(f"Found SecID for {ticker_symbol}: {sec_id}. Fetching levels...")
-                    levels = self.get_angel_levels(sec_id, exchange_segment="MCX", )
-        else:
-            print(f"Attempting AngelOne for stock {ticker_symbol}...")
-            if self.angel_active and '.NS' in ticker_symbol:
-                sec_id = self.get_angel_token(ticker_symbol)
-                if sec_id:
-                    print(f"Found SecID for {ticker_symbol}: {sec_id}. Fetching levels...")
-                    levels = self.get_angel_levels(sec_id)
+        # 1. Try to get Pivot/R/S from live internet MCX scanner quote if available
+        if is_commodity and tv_quote and tv_quote.get('prev_close') is not None:
+            prev_close = float(tv_quote['prev_close'])
+            high = float(tv_quote.get('high') or prev_close)
+            low = float(tv_quote.get('low') or prev_close)
+            p = (high + low + prev_close) / 3
+            levels = {
+                "Pivot": p,
+                "R1": (p * 2) - low,
+                "R2": p + (high - low),
+                "S1": (p * 2) - high,
+                "S2": p - (high - low),
+                "Prev_Close": prev_close
+            }
+        
+        # 2. Try to get Pivot/R/S from AngelOne
+        if not levels:
+            if is_commodity:
+                print(f"Attempting AngelOne for commodity {ticker_symbol}...")
+                if self.angel_active:
+                    sec_id = self.get_angel_mcx_near_month(ticker_symbol)
+                    if sec_id:
+                        print(f"Found SecID for {ticker_symbol}: {sec_id}. Fetching levels...")
+                        levels = self.get_angel_levels(sec_id, exchange_segment="MCX", )
+            else:
+                print(f"Attempting AngelOne for stock {ticker_symbol}...")
+                if self.angel_active and '.NS' in ticker_symbol:
+                    sec_id = self.get_angel_token(ticker_symbol)
+                    if sec_id:
+                        print(f"Found SecID for {ticker_symbol}: {sec_id}. Fetching levels...")
+                        levels = self.get_angel_levels(sec_id)
 
-        # 2. Fetch all-time yfinance data for multi-timeframe extremes and fallback Pivot/R/S
+        # 3. Fetch all-time yfinance data for multi-timeframe extremes and fallback Pivot/R/S
         ticker_symbol = yf_symbol if yf_symbol else ticker_symbol
         try:
             print(f"Fetching yfinance period='max' for extremes for {ticker_symbol}...")
@@ -297,9 +313,9 @@ class PriceChecker:
             
             if len(hist) < 1:
                 print(f"Not enough historical data from yfinance for {ticker_symbol}.")
-                return levels # Return dhan levels if yfinance fails
+                return levels # Return levels if yfinance fails
                 
-            # If AngelOne failed, calculate Pivot/R/S from yfinance
+            # If previous steps failed, calculate Pivot/R/S from yfinance
             if not levels:
                 print(f"Using yfinance for Pivot/R/S fallback for {ticker_symbol}...")
                 idx = -2 if len(hist) >= 2 else -1
@@ -313,8 +329,12 @@ class PriceChecker:
                     "R1": (p * 2) - low,
                     "R2": p + (high - low),
                     "S1": (p * 2) - high,
-                    "S2": p - (high - low)
+                    "S2": p - (high - low),
+                    "Prev_Close": close
                 }
+            elif 'Prev_Close' not in levels:
+                idx = -2 if len(hist) >= 2 else -1
+                levels['Prev_Close'] = hist['Close'].iloc[idx] * fallback_multiplier
                 
             # Now calculate the multi-timeframe extremes
             now = datetime.now(pytz.timezone('UTC'))
@@ -657,6 +677,64 @@ class PriceChecker:
         except Exception as e:
             print(f"Error syncing to Supabase: {e}")
 
+    def fetch_tradingview_commodity_quotes(self):
+        """Fetches live MCX continuous futures quotes directly from TradingView futures scanner."""
+        try:
+            tickers = []
+            symbol_to_ticker = {}
+            for sym, data in self.commodities.items():
+                tv_tick = data.get('tv_ticker')
+                if tv_tick:
+                    tickers.append(tv_tick)
+                    symbol_to_ticker[tv_tick] = sym
+            
+            if not tickers:
+                return {}
+                
+            url = 'https://scanner.tradingview.com/futures/scan'
+            payload = {
+                'symbols': {'tickers': tickers},
+                'columns': ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume', 'description']
+            }
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+            resp = requests.post(url, json=payload, headers=headers, timeout=10)
+            if resp.status_code != 200:
+                print(f"TradingView scanner returned status {resp.status_code}")
+                return {}
+                
+            res_data = resp.json().get('data', [])
+            quotes = {}
+            cols = payload['columns']
+            for row in res_data:
+                tick = row.get('s')
+                sym = symbol_to_ticker.get(tick)
+                if sym:
+                    d = dict(zip(cols, row.get('d', [])))
+                    close = d.get('close')
+                    change_abs = d.get('change_abs') or 0.0
+                    change_pct = d.get('change') or 0.0
+                    prev_close = round(close - change_abs, 2) if close is not None else None
+                    quotes[sym] = {
+                        'symbol': sym,
+                        'ticker': tick,
+                        'name': self.commodities[sym].get('name', sym),
+                        'close': close,
+                        'open': d.get('open'),
+                        'high': d.get('high'),
+                        'low': d.get('low'),
+                        'change': change_pct,
+                        'change_abs': change_abs,
+                        'volume': d.get('volume'),
+                        'prev_close': prev_close,
+                        'description': d.get('description')
+                    }
+            return quotes
+        except Exception as e:
+            print(f"Error fetching TradingView commodity quotes: {e}")
+            return {}
+
     def check_alerts(self):
         alerts = []
         
@@ -668,14 +746,28 @@ class PriceChecker:
             
         market_data_payload = []
         
+        # 1. Fetch live MCX quotes directly from internet scanner for genuine MCX pricing
+        tv_quotes = self.fetch_tradingview_commodity_quotes()
+        if tv_quotes:
+            print(f"Loaded {len(tv_quotes)} live commodity quotes directly from exchange scanner feed.")
+        
         # 1. Check Commodities
         for symbol, data in self.commodities.items():
             name = data['name']
             yf_sym = data.get('yf_symbol')
             
-            # DYNAMIC UNIT CONVERSION (Global USD to MCX INR)
-            mcx_multiplier = data.get('mcx_multiplier')
+            # Check live internet MCX quote first
+            tv_quote = tv_quotes.get(symbol)
+            current_price = None
+            fut_price = None
             
+            if tv_quote and tv_quote.get('close') is not None:
+                current_price = float(tv_quote['close'])
+                fut_price = current_price
+                print(f"\nChecking Commodity {name} ({symbol}) via Live Internet MCX Scanner: ₹{current_price} (PrevClose: ₹{tv_quote.get('prev_close')})...")
+            
+            # DYNAMIC UNIT CONVERSION (Global USD to MCX INR) as fallback
+            mcx_multiplier = data.get('mcx_multiplier')
             if mcx_multiplier is not None:
                 conversion = self.usd_inr_rate * mcx_multiplier
             else:
@@ -691,21 +783,24 @@ class PriceChecker:
                 else:
                     conversion = self.usd_inr_rate
             
-            print(f"\nChecking Commodity {name} ({symbol}) via MCX API (or yfinance fallback)...")
-            current_price = self.get_current_price(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
+            if current_price is None:
+                print(f"\nChecking Commodity {name} ({symbol}) via MCX API (or yfinance fallback)...")
+                current_price = self.get_current_price(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
             
-            # Fetch Commodity Future explicitly early
-            fut_price = None
+            # Fetch Commodity Future explicitly early from Angel if available
             if self.angel_active:
                 sec_id = self.get_angel_mcx_near_month(symbol)
                 if sec_id:
-                    fut_price = self.get_angel_current_price(sec_id, exchange_segment="MCX", )
+                    angel_fut = self.get_angel_current_price(sec_id, exchange_segment="MCX")
+                    if angel_fut:
+                        fut_price = angel_fut
+                        current_price = fut_price
                     
             # Fallback for spot price if yfinance fails
             if current_price is None and fut_price is not None:
                 current_price = fut_price
             
-            levels = self.get_support_resistance_levels(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym, current_price=current_price)
+            levels = self.get_support_resistance_levels(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym, current_price=current_price, tv_quote=tv_quote)
             
             new_alerts, alert_status, last_alert_date, last_alert_msg, current_signal = self.evaluate_levels(name, symbol, levels, current_price, previous_state, is_commodity=True)
             alerts.extend(new_alerts)
@@ -877,6 +972,12 @@ class PriceChecker:
             self.sync_to_supabase(market_data_payload)
             self.process_limit_orders(market_data_payload)
 
+        # Generate the dedicated Daily Circuit Limits JSON
+        try:
+            self.generate_circuits_data(tv_quotes)
+        except Exception as e:
+            print(f"Error generating circuits data in check_alerts: {e}")
+
         return alerts
         
     def process_limit_orders(self, market_data_payload):
@@ -988,3 +1089,125 @@ class PriceChecker:
         with open(output_path, 'w') as f:
             json.dump({'near_buy': near_buy, 'near_sell': near_sell}, f)
         print(f"Exported {len(near_buy)} near buys and {len(near_sell)} near sells to web/near_alerts.json")
+
+    def generate_circuits_data(self, tv_quotes=None):
+        """Generates comprehensive Daily Upper and Lower Circuit Limits for commodities and writes to web/circuits_data.json."""
+        if tv_quotes is None:
+            tv_quotes = self.fetch_tradingview_commodity_quotes()
+            
+        circuits = []
+        now_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d %b %Y, %I:%M:%S %p IST')
+        
+        for symbol, data in self.commodities.items():
+            name = data.get('name', symbol)
+            dpl_initial = data.get('dpl_initial', 0.04)
+            dpl_max = data.get('dpl_max', 0.06)
+            category = data.get('category', 'Commodities')
+            unit = data.get('unit', '')
+            ticker = data.get('tv_ticker', '')
+            
+            quote = tv_quotes.get(symbol) if tv_quotes else None
+            if quote and quote.get('close') is not None:
+                close = float(quote['close'])
+                prev_close = float(quote['prev_close']) if quote.get('prev_close') is not None else close
+                open_price = float(quote.get('open') or close)
+                day_high = float(quote.get('high') or close)
+                day_low = float(quote.get('low') or close)
+                change_pct = float(quote.get('change') or 0.0)
+                change_abs = float(quote.get('change_abs') or 0.0)
+                volume = int(quote.get('volume') or 0)
+            else:
+                # Fallback calculation if TV quote is unavailable
+                yf_sym = data.get('yf_symbol')
+                mcx_multiplier = data.get('mcx_multiplier', 1.0)
+                conversion = self.usd_inr_rate * mcx_multiplier
+                close = self.get_current_price(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
+                if not close:
+                    continue
+                close = round(close, 2)
+                prev_close = close
+                open_price = close
+                day_high = close
+                day_low = close
+                change_pct = 0.0
+                change_abs = 0.0
+                volume = 0
+                
+            lc_init = round(prev_close * (1 - dpl_initial), 2)
+            uc_init = round(prev_close * (1 + dpl_initial), 2)
+            lc_max = round(prev_close * (1 - dpl_max), 2)
+            uc_max = round(prev_close * (1 + dpl_max), 2)
+            
+            dist_to_uc_pct = round(((uc_init - close) / close) * 100, 2)
+            dist_to_lc_pct = round(((close - lc_init) / close) * 100, 2)
+            dist_to_uc_pts = round(uc_init - close, 2)
+            dist_to_lc_pts = round(close - lc_init, 2)
+            
+            total_band = uc_init - lc_init
+            band_pos = round(max(0, min(100, ((close - lc_init) / total_band) * 100)), 1) if total_band > 0 else 50.0
+            
+            if close >= uc_init:
+                status = "LOCKED UPPER"
+                status_color = "#ef4444"
+                status_text = "Upper Circuit Locked 🚨"
+            elif close <= lc_init:
+                status = "LOCKED LOWER"
+                status_color = "#ef4444"
+                status_text = "Lower Circuit Locked 🚨"
+            elif dist_to_uc_pct <= 1.0:
+                status = "NEAR UPPER"
+                status_color = "#f59e0b"
+                status_text = "Near Upper Band ⚠️"
+            elif dist_to_lc_pct <= 1.0:
+                status = "NEAR LOWER"
+                status_color = "#f59e0b"
+                status_text = "Near Lower Band ⚠️"
+            else:
+                status = "NORMAL"
+                status_color = "#10b981"
+                status_text = "Normal Trading 🟢"
+                
+            circuits.append({
+                "symbol": symbol,
+                "name": name,
+                "category": category,
+                "unit": unit,
+                "ticker": ticker,
+                "current_price": close,
+                "prev_close": prev_close,
+                "open_price": open_price,
+                "day_high": day_high,
+                "day_low": day_low,
+                "change_pct": round(change_pct, 2),
+                "change_abs": round(change_abs, 2),
+                "volume": volume,
+                "dpl_initial_pct": round(dpl_initial * 100, 1),
+                "dpl_max_pct": round(dpl_max * 100, 1),
+                "lower_circuit": lc_init,
+                "upper_circuit": uc_init,
+                "lower_circuit_max": lc_max,
+                "upper_circuit_max": uc_max,
+                "dist_to_uc_pct": dist_to_uc_pct,
+                "dist_to_lc_pct": dist_to_lc_pct,
+                "dist_to_uc_pts": dist_to_uc_pts,
+                "dist_to_lc_pts": dist_to_lc_pts,
+                "band_position_pct": band_pos,
+                "status": status,
+                "status_color": status_color,
+                "status_text": status_text
+            })
+            
+        out_data = {
+            "last_updated": now_ist,
+            "source": "Direct Exchange Feed (MCX / TradingView Internet)",
+            "count": len(circuits),
+            "commodities": circuits
+        }
+        
+        output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_data.json')
+        with open(output_path, 'w') as f:
+            json.dump(out_data, f, indent=2)
+            
+        print(f"Exported {len(circuits)} commodity circuit limits to web/circuits_data.json at {now_ist}")
+        return out_data
+

@@ -12,42 +12,92 @@
     "GOLD": {
       "name": "Gold",
       "yf_symbol": "GC=F",
-      "mcx_multiplier": 0.373273
+      "tv_ticker": "MCX:GOLD1!",
+      "mcx_multiplier": 0.373273,
+      "dpl_initial": 0.03,
+      "dpl_max": 0.06,
+      "category": "Bullion",
+      "unit": "10 g"
     },
     "SILVER": {
       "name": "Silver",
       "yf_symbol": "SI=F",
-      "mcx_multiplier": 38.536532
+      "tv_ticker": "MCX:SILVER1!",
+      "mcx_multiplier": 38.536532,
+      "dpl_initial": 0.04,
+      "dpl_max": 0.06,
+      "category": "Bullion",
+      "unit": "1 kg"
     },
     "CRUDEOIL": {
       "name": "Crude Oil",
       "yf_symbol": "CL=F",
-      "mcx_multiplier": 1.000049
+      "tv_ticker": "MCX:CRUDEOIL1!",
+      "mcx_multiplier": 1.000049,
+      "dpl_initial": 0.04,
+      "dpl_max": 0.07,
+      "category": "Energy",
+      "unit": "1 bbl"
     },
     "NATURALGAS": {
       "name": "Natural Gas",
       "yf_symbol": "NG=F",
-      "mcx_multiplier": 1.004089
+      "tv_ticker": "MCX:NATURALGAS1!",
+      "mcx_multiplier": 1.004089,
+      "dpl_initial": 0.06,
+      "dpl_max": 0.09,
+      "category": "Energy",
+      "unit": "1 mmBtu"
     },
     "COPPER": {
       "name": "Copper",
       "yf_symbol": "HG=F",
-      "mcx_multiplier": 2.210742
+      "tv_ticker": "MCX:COPPER1!",
+      "mcx_multiplier": 2.210742,
+      "dpl_initial": 0.04,
+      "dpl_max": 0.06,
+      "category": "Base Metals",
+      "unit": "1 kg"
     },
     "ALUMINIUM": {
-      "name": "Aluminum",
+      "name": "Aluminium",
       "yf_symbol": "ALI=F",
-      "mcx_multiplier": 0.001105
+      "tv_ticker": "MCX:ALUMINIUM1!",
+      "mcx_multiplier": 0.001105,
+      "dpl_initial": 0.04,
+      "dpl_max": 0.06,
+      "category": "Base Metals",
+      "unit": "1 kg"
     },
     "ZINC": {
       "name": "Zinc",
       "yf_symbol": "ZNC=F",
-      "mcx_multiplier": 0.001116
+      "tv_ticker": "MCX:ZINC1!",
+      "mcx_multiplier": 0.001116,
+      "dpl_initial": 0.04,
+      "dpl_max": 0.06,
+      "category": "Base Metals",
+      "unit": "1 kg"
+    },
+    "LEAD": {
+      "name": "Lead",
+      "yf_symbol": "LED=F",
+      "tv_ticker": "MCX:LEAD1!",
+      "mcx_multiplier": 1.0,
+      "dpl_initial": 0.04,
+      "dpl_max": 0.06,
+      "category": "Base Metals",
+      "unit": "1 kg"
     },
     "ELECTRICITY": {
       "name": "Electricity",
       "yf_symbol": "HP=F",
-      "mcx_multiplier": 23.774944
+      "tv_ticker": null,
+      "mcx_multiplier": 23.774944,
+      "dpl_initial": 0.04,
+      "dpl_max": 0.06,
+      "category": "Energy",
+      "unit": "1 MWh"
     }
   },
   "derivatives": {

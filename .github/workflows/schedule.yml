@@ -45,14 +45,14 @@ jobs:
           ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
         run: python main.py
 
-      - name: Commit Near Alerts Data
+      - name: Commit Web Data
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add web/near_alerts.json
+          git add web/near_alerts.json web/circuits_data.json
           # Check if there are changes to commit
           if ! git diff --staged --quiet; then
-            git commit -m "Auto-update near alerts data"
+            git commit -m "Auto-update near alerts and circuit limits data"
             git pull --rebase origin main
             git push origin HEAD:main
           else

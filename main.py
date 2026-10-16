@@ -61,6 +61,9 @@ def main():
             
         print("Generating near alerts JSON for Web UI...")
         checker.generate_near_alerts_json()
+        
+        print("Generating Daily Circuit Limits JSON for Web UI...")
+        checker.generate_circuits_data()
             
     except Exception as e:
         print(f"Error during check loop: {e}")
