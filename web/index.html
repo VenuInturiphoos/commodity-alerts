@@ -696,34 +696,41 @@ let activeCircuitCategory = 'ALL';
 async function fetchCircuitsData(forceNetwork = false) {
     const tbody = document.getElementById('circuits-data-body');
     const updatedEl = document.getElementById('circuits-updated-time');
+    const btn = document.getElementById('circuit-refresh-btn');
     
-    if (forceNetwork) {
-        const btn = document.getElementById('circuit-refresh-btn');
-        if (btn) btn.classList.add('spinning');
+    if (forceNetwork && btn) {
+        btn.disabled = true;
+        btn.classList.add('spinning');
+        btn.innerHTML = `<i class="fa-solid fa-arrows-rotate fa-spin"></i> <span>Updating...</span>`;
     }
 
     try {
         let loaded = false;
         
-        // 1. Try local JSON first (updated by GitHub Actions every 3 mins)
-        if (!forceNetwork) {
+        // 1. Fetch latest precomputed exchange circuit data with cache busting
+        const candidateUrls = [
+            'circuits_data.json?t=' + Date.now(),
+            'https://venuinturiphoos.github.io/commodity-alerts/circuits_data.json?t=' + Date.now()
+        ];
+        
+        for (const url of candidateUrls) {
             try {
-                const res = await fetch('circuits_data.json?t=' + Date.now());
+                const res = await fetch(url, { cache: 'no-store' });
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.commodities && data.commodities.length > 0) {
                         rawCircuitsData = data.commodities;
-                        if (updatedEl) updatedEl.textContent = 'Exchange Feed • ' + (data.last_updated || 'Live');
                         loaded = true;
+                        break;
                     }
                 }
-            } catch (e) {
-                console.warn("Could not fetch circuits_data.json, trying live TradingView scanner fallback:", e);
+            } catch (err) {
+                console.warn(`Could not fetch circuits from ${url}:`, err);
             }
         }
         
-        // 2. Direct client-side live scanner fetch fallback or forced refresh
-        if (!loaded || forceNetwork) {
+        // 2. Progressive Enhancement: Attempt direct TradingView scanner probe in protected try/catch
+        try {
             const tvEndpoint = 'https://scanner.tradingview.com/futures/scan';
             const commodityMap = {
                 'GOLD': { ticker: 'MCX:GOLD1!', name: 'Gold', dpl_initial: 0.03, dpl_max: 0.06, category: 'Bullion', unit: '10 g' },
@@ -737,14 +744,19 @@ async function fetchCircuitsData(forceNetwork = false) {
             };
             
             const tickers = Object.values(commodityMap).map(m => m.ticker);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2500);
+            
             const scanRes = await fetch(tvEndpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     symbols: { tickers: tickers },
                     columns: ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume']
-                })
+                }),
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
             
             if (scanRes.ok) {
                 const scanJson = await scanRes.json();
@@ -842,21 +854,60 @@ async function fetchCircuitsData(forceNetwork = false) {
                 
                 if (parsedCircuits.length > 0) {
                     rawCircuitsData = parsedCircuits;
-                    if (updatedEl) updatedEl.textContent = 'Live Internet Feed • ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                     loaded = true;
                 }
             }
+        } catch (tvProbeErr) {
+            // Direct browser probe skipped (CORS/privacy protection) - fallback to precomputed exchange feed
+            console.log("Direct browser TradingView scanner skipped (CORS/adblock), using exchange circuits feed.");
         }
         
-        renderCircuitsTable();
+        // 3. Render and trigger visual feedback
+        if (rawCircuitsData && rawCircuitsData.length > 0) {
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            if (updatedEl) {
+                updatedEl.textContent = `Live MCX Feed • Updated at ${timeStr}`;
+            }
+            renderCircuitsTable();
+            
+            // Visual glow pulse on table card
+            const tableContainer = document.querySelector('#circuits-tab .table-container');
+            if (tableContainer) {
+                tableContainer.classList.remove('table-refreshed');
+                void tableContainer.offsetWidth; // Force reflow
+                tableContainer.classList.add('table-refreshed');
+                setTimeout(() => tableContainer.classList.remove('table-refreshed'), 1400);
+            }
+            
+            if (forceNetwork && btn) {
+                btn.classList.remove('spinning');
+                btn.innerHTML = `<i class="fa-solid fa-check" style="color: #4ade80;"></i> <span style="color: #4ade80;">Updated!</span>`;
+                setTimeout(() => {
+                    btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> <span>Refresh</span>`;
+                    btn.disabled = false;
+                }, 1400);
+            }
+        } else {
+            throw new Error("No circuit data available from feeds.");
+        }
     } catch (err) {
         console.error("Error fetching circuits data:", err);
-        if (tbody && rawCircuitsData.length === 0) {
+        if (tbody && (!rawCircuitsData || rawCircuitsData.length === 0)) {
             tbody.innerHTML = `<tr><td colspan="9" class="error">Failed to fetch circuit limits from exchange feed. <button onclick="fetchCircuitsData(true)" style="padding:4px 8px; margin-left:8px; cursor:pointer;">Retry</button></td></tr>`;
         }
+        if (forceNetwork && btn) {
+            btn.classList.remove('spinning');
+            btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color: #fb7185;"></i> <span style="color: #fb7185;">Retry</span>`;
+            setTimeout(() => {
+                btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> <span>Refresh</span>`;
+                btn.disabled = false;
+            }, 2000);
+        }
     } finally {
-        const btn = document.getElementById('circuit-refresh-btn');
-        if (btn) btn.classList.remove('spinning');
+        if (!forceNetwork && btn) {
+            btn.classList.remove('spinning');
+            btn.disabled = false;
+        }
     }
 }
 
