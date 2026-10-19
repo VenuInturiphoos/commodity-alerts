@@ -477,37 +477,83 @@ body.light-theme .market-table th {
     transform: rotate(15deg);
 }
 
+/* Mobile Scroll Hint */
+.mobile-scroll-indicator {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin-bottom: 0.6rem;
+    text-align: center;
+}
+
 @media (max-width: 768px) {
     .container {
-        padding: 1rem;
+        padding: 0.65rem;
     }
     
+    /* Sleek 2-row mobile app header */
     header { 
-        flex-direction: column; 
-        gap: 1rem; 
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between; 
         align-items: center;
+        gap: 0.6rem; 
+        padding: 0.6rem 0;
+        margin-bottom: 1rem;
+    }
+    
+    .logo {
+        order: 1;
+        font-size: 1.15rem;
+    }
+    
+    #theme-toggle {
+        order: 2;
+        margin-left: auto;
     }
     
     .tabs {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 0.5rem;
+        order: 3;
+        width: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 0.4rem;
+        padding: 2px 2px 6px 2px;
+        scrollbar-width: none;
+    }
+    
+    .tabs::-webkit-scrollbar {
+        display: none;
     }
     
     .tab-btn {
-        padding: 0.5rem;
-        font-size: 0.9rem;
+        flex-shrink: 0;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.825rem;
+        white-space: nowrap;
+        border-radius: 8px;
     }
 
-    h1 { font-size: 2.5rem; }
-    p { font-size: 1rem; }
+    h1 { font-size: 1.85rem; }
+    h2 { font-size: 1.35rem; }
+    p { font-size: 0.875rem; }
     
     .glass-card {
-        padding: 1.5rem;
+        padding: 1rem;
+        border-radius: 12px;
     }
     
     .glass-card.full-width {
-        padding: 1rem;
+        padding: 0.75rem;
     }
     
     .input-group { 
@@ -527,18 +573,164 @@ body.light-theme .market-table th {
         border: 1px solid var(--glass-border); 
     }
     
+    /* Circuits Header on Mobile */
+    .circuits-header-card {
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .circuits-title-area h2 {
+        font-size: 1.25rem !important;
+    }
+    
+    .circuits-title-area p {
+        font-size: 0.8rem !important;
+    }
+    
+    .circuits-controls-right {
+        width: 100%;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+    
+    .refresh-circuit-btn {
+        padding: 5px 12px;
+        font-size: 0.8rem;
+    }
+    
+    /* Sub-Navigation on Mobile */
+    .circuit-subnav-container {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.4rem !important;
+        padding: 4px !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .circuit-subnav-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 0.65rem 0.85rem !important;
+        font-size: 0.825rem !important;
+    }
+    
+    /* Compact 2x2 KPI Grid on Mobile */
+    .circuits-kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.6rem !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .circuit-kpi-card {
+        padding: 0.75rem 0.85rem !important;
+        border-radius: 10px !important;
+    }
+    
+    .circuit-kpi-header span {
+        font-size: 0.68rem !important;
+    }
+    
+    .circuit-kpi-icon {
+        width: 26px !important;
+        height: 26px !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .circuit-kpi-value {
+        font-size: 1.25rem !important;
+        margin-bottom: 0.15rem !important;
+    }
+    
+    .circuit-kpi-sub {
+        font-size: 0.68rem !important;
+        line-height: 1.25 !important;
+    }
+    
+    /* Control Box (Period + View Mode) on Mobile */
+    .circuits-control-panel {
+        padding: 0.75rem 0.85rem !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .circuits-toolbar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.75rem !important;
+    }
+    
+    .circuit-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem !important;
+    }
+    
+    .circuit-filter-pill {
+        padding: 4px 10px !important;
+        font-size: 0.75rem !important;
+        border-radius: 14px !important;
+    }
+    
+    .circuit-search-box {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 6px 12px !important;
+    }
+    
+    /* Show Mobile Scroll Hint */
+    .mobile-scroll-indicator {
+        display: flex;
+    }
+    
+    /* Fully responsive, touch-scrollable tables */
     .table-container {
-        -webkit-overflow-scrolling: touch;
-        margin-bottom: 1rem;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        margin-bottom: 1rem !important;
+        border-radius: 12px !important;
+        max-width: 100vw;
+    }
+    
+    .market-table {
+        min-width: 780px !important;
+        width: 100% !important;
+    }
+    
+    #circuits-tab .market-table {
+        min-width: 860px !important;
+    }
+    
+    #circuits-view-history .market-table {
+        min-width: 960px !important;
     }
     
     .market-table th, .market-table td {
-        padding: 0.75rem 0.5rem;
-        font-size: 0.85rem;
+        padding: 0.65rem 0.5rem !important;
+        font-size: 0.825rem !important;
+    }
+    
+    /* Pin the first column (Commodity / Date) so it stays visible while scrolling horizontally */
+    .market-table th:first-child,
+    .market-table td:first-child {
+        position: sticky !important;
+        left: 0 !important;
+        z-index: 10 !important;
+        background: #0f172a !important;
+        box-shadow: 3px 0 10px rgba(0, 0, 0, 0.45);
+    }
+    
+    body.light-theme .market-table th:first-child,
+    body.light-theme .market-table td:first-child {
+        background: #ffffff !important;
+        box-shadow: 3px 0 10px rgba(0, 0, 0, 0.08);
+    }
+    
+    .market-table th:first-child {
+        z-index: 50 !important;
     }
     
     #chat-widget-window {
-        width: calc(100vw - 40px) !important;
+        width: calc(100vw - 30px) !important;
         right: 0 !important;
         bottom: 70px !important;
     }

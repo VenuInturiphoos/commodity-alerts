@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css?v=layoutfix9">
+    <link rel="stylesheet" href="styles.css?v=mobilefix1">
     <script>
         window.onerror = function(msg, url, line, col, error) {
             console.error("Global Error: " + msg + " at line " + line + ":" + col, error);
@@ -84,6 +84,9 @@
                     <p>Auto-synced every 5 minutes from the cloud.</p>
                 </div>
                 
+                <div class="mobile-scroll-indicator">
+                    <i class="fa-solid fa-arrows-left-right"></i> Swipe table horizontally to view full prices & levels
+                </div>
                 <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
                     <h3>Nifty 50 Stocks</h3>
                     <table class="market-table">
@@ -104,6 +107,9 @@
                     </table>
                 </div>
 
+                <div class="mobile-scroll-indicator">
+                    <i class="fa-solid fa-arrows-left-right"></i> Swipe table horizontally to view full prices & levels
+                </div>
                 <div class="table-container glass-card full-width">
                     <h3>MCX Commodities</h3>
                     <table class="market-table">
@@ -222,6 +228,9 @@
                     </div>
 
                     <!-- Live Circuit Table -->
+                    <div class="mobile-scroll-indicator">
+                        <i class="fa-solid fa-arrows-left-right"></i> Swipe table horizontally to view floor/ceiling limits & meter
+                    </div>
                     <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
                         <table class="market-table">
                             <thead>
@@ -294,7 +303,7 @@
                     </div>
 
                     <!-- Lookback Window & View Mode Controls -->
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.03); padding: 0.85rem 1.25rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+                    <div class="circuits-control-panel" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.03); padding: 0.85rem 1.25rem; border-radius: 12px; border: 1px solid var(--glass-border);">
                         <!-- Lookback Period Toggle (30 Days vs 60 Days) -->
                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
                             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
@@ -361,6 +370,9 @@
                     </div>
 
                     <!-- 30-Day History Table -->
+                    <div class="mobile-scroll-indicator">
+                        <i class="fa-solid fa-arrows-left-right"></i> Swipe table horizontally to view day T reaction & T+1 next-day moves
+                    </div>
                     <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
                         <table class="market-table">
                             <thead id="circuits-history-thead">
