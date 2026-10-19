@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css?v=sticky7">
+    <link rel="stylesheet" href="styles.css?v=layoutfix9">
     <script>
         window.onerror = function(msg, url, line, col, error) {
             console.error("Global Error: " + msg + " at line " + line + ":" + col, error);
@@ -226,13 +226,13 @@
                         <table class="market-table">
                             <thead>
                                 <tr>
-                                    <th>Commodity Contract</th>
+                                    <th style="min-width: 160px;">Commodity Contract</th>
                                     <th>Live Price (₹)</th>
                                     <th>Day Range</th>
                                     <th>Prev Close (Anchor)</th>
                                     <th>Lower Circuit (Floor)</th>
                                     <th>Upper Circuit (Ceiling)</th>
-                                    <th style="min-width: 200px;">Circuit Range Meter</th>
+                                    <th style="min-width: 140px;">Circuit Range Meter</th>
                                     <th>Room to Limits</th>
                                     <th>Trading Status</th>
                                 </tr>
@@ -1122,7 +1122,7 @@ function renderCircuitsTable() {
         else if (item.status.includes('NEAR')) statusBadgeClass = 'circuit-badge-near';
         
         tr.innerHTML = `
-            <td>
+            <td style="min-width: 160px;">
                 <strong>
                     <a href="${chartUrl}" target="_blank" style="color: var(--text-primary); text-decoration: none;">
                         ${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i>

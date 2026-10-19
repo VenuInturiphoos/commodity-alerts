@@ -44,10 +44,11 @@ body {
     background-color: var(--bg-color);
     color: var(--text-primary);
     min-height: 100vh;
-    overflow-x: clip;
+    overflow-x: hidden;
     position: relative;
-    display: flex;
-    justify-content: center;
+    margin: 0;
+    padding: 0;
+    width: 100%;
     transition: background-color 0.4s ease, color 0.4s ease;
 }
 
@@ -107,9 +108,13 @@ body {
 .container {
     width: 100%;
     max-width: 1380px;
-    padding: 1.5rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1.25rem 1.5rem;
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 header {
@@ -320,19 +325,19 @@ button[type="submit"] {
     color: var(--bg-color);
 }
 
-/* Tables */
 .table-container {
     overflow: visible;
     position: relative;
     border-radius: 14px;
+    width: 100%;
 }
 
 .table-container.glass-card {
-    padding: 1.25rem 0.75rem;
+    padding: 1.25rem 0.5rem;
 }
 
 .table-container h3 {
-    padding: 0.25rem 0.5rem 0.75rem 0.5rem;
+    padding: 0.25rem 0.75rem 0.75rem 0.75rem;
 }
 
 @media (max-width: 1024px) {
@@ -362,11 +367,11 @@ button[type="submit"] {
     background: var(--table-header-bg);
     color: var(--text-secondary);
     font-weight: 700;
-    font-size: 0.77rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.5px;
     white-space: nowrap;
-    padding: 0.85rem 0.65rem;
+    padding: 0.85rem 0.55rem;
     border-bottom: 2px solid rgba(99, 102, 241, 0.4);
     box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
 }
@@ -384,10 +389,21 @@ body.light-theme .market-table th {
 }
 
 .market-table th, .market-table td {
-    padding: 0.85rem 0.65rem;
+    padding: 0.85rem 0.55rem;
     border-bottom: 1px solid var(--glass-border);
     line-height: 1.45;
     font-size: 0.84rem;
+}
+
+.market-table th:first-child,
+.market-table td:first-child {
+    padding-left: 1.25rem !important;
+    text-align: left;
+}
+
+.market-table th:last-child,
+.market-table td:last-child {
+    padding-right: 1.25rem !important;
 }
 
 .market-table tbody tr {
@@ -826,8 +842,8 @@ body.light-theme .market-table th {
 .circuit-meter-wrap {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    min-width: 180px;
+    gap: 3px;
+    min-width: 140px;
 }
 
 .circuit-meter-labels {
