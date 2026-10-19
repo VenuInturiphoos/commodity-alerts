@@ -1174,15 +1174,18 @@ class PriceChecker:
         print(f"Exported {len(circuits)} commodity circuit limits to web/circuits_data.json at {now_ist}")
         
         try:
-            self.generate_circuits_history_30d()
+            self.generate_circuits_history_30d(tv_quotes)
         except Exception as e:
             print(f"Error generating 30d circuit history: {e}")
             
         return out_data
 
-    def generate_circuits_history_30d(self):
+    def generate_circuits_history_30d(self, tv_quotes=None):
         """Identifies all circuit limit and near-circuit events across the past 30 days and computes reversal outcomes."""
         try:
+            if tv_quotes is None:
+                tv_quotes = self.fetch_tradingview_commodity_quotes()
+                
             commodities_map = {
                 'CRUDEOIL': {'name': 'Crude Oil', 'symbol': 'CL=F', 'slab': 0.04, 'unit': '1 bbl', 'category': 'Energy'},
                 'NATURALGAS': {'name': 'Natural Gas', 'symbol': 'NG=F', 'slab': 0.06, 'unit': '1 mmBtu', 'category': 'Energy'},
@@ -1196,6 +1199,7 @@ class PriceChecker:
             events = []
             commodity_counts = {}
             cutoff_date = datetime.now() - timedelta(days=32)
+            today_ist_str = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%Y-%m-%d')
             
             for sym, conf in commodities_map.items():
                 commodity_counts[conf['name']] = 0
@@ -1229,6 +1233,26 @@ class PriceChecker:
                     
                     for idx, row in df.iterrows():
                         date_key = idx.strftime('%Y-%m-%d')
+                        is_today = (date_key == today_ist_str)
+                        
+                        # For the current in-progress day, validate strictly against live MCX exchange quote
+                        if is_today:
+                            quote = tv_quotes.get(sym) if tv_quotes else None
+                            if quote and quote.get('prev_close') and quote.get('low') and quote.get('high'):
+                                mcx_pc = float(quote['prev_close'])
+                                mcx_low = float(quote['low'])
+                                mcx_high = float(quote['high'])
+                                mcx_lc = round(mcx_pc * (1 - slab), 2)
+                                mcx_uc = round(mcx_pc * (1 + slab), 2)
+                                
+                                mcx_uc_hit = bool(mcx_high >= mcx_uc or quote['close'] >= mcx_uc)
+                                mcx_lc_hit = bool(mcx_low <= mcx_lc or quote['close'] <= mcx_lc)
+                                mcx_near_uc = bool((mcx_high - mcx_pc) / mcx_pc >= near_threshold)
+                                mcx_near_lc = bool((mcx_low - mcx_pc) / mcx_pc <= -near_threshold)
+                                
+                                if not mcx_uc_hit and not mcx_lc_hit and not mcx_near_uc and not mcx_near_lc:
+                                    # MCX is trading normally within range today. Skip synthetic Yahoo candle.
+                                    continue
                         date_str = idx.strftime('%d %b %Y')
                         day_name = idx.strftime('%a')
                         p_close = row['PrevClose']
