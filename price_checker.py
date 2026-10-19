@@ -1209,5 +1209,179 @@ class PriceChecker:
             json.dump(out_data, f, indent=2)
             
         print(f"Exported {len(circuits)} commodity circuit limits to web/circuits_data.json at {now_ist}")
+        
+        try:
+            self.generate_circuits_history_30d()
+        except Exception as e:
+            print(f"Error generating 30d circuit history: {e}")
+            
         return out_data
+
+    def generate_circuits_history_30d(self):
+        """Identifies all circuit limit and near-circuit events across the past 30 days and computes reversal outcomes."""
+        try:
+            commodities_map = {
+                'CRUDEOIL': {'name': 'Crude Oil', 'symbol': 'CL=F', 'slab': 0.04, 'unit': '1 bbl', 'category': 'Energy'},
+                'NATURALGAS': {'name': 'Natural Gas', 'symbol': 'NG=F', 'slab': 0.06, 'unit': '1 mmBtu', 'category': 'Energy'},
+                'GOLD': {'name': 'Gold', 'symbol': 'GC=F', 'slab': 0.03, 'unit': '10 g', 'category': 'Bullion'},
+                'SILVER': {'name': 'Silver', 'symbol': 'SI=F', 'slab': 0.04, 'unit': '1 kg', 'category': 'Bullion'},
+                'COPPER': {'name': 'Copper', 'symbol': 'HG=F', 'slab': 0.04, 'unit': '1 kg', 'category': 'Base Metals'},
+                'ZINC': {'name': 'Zinc', 'symbol': 'ZNC=F', 'slab': 0.04, 'unit': '1 kg', 'category': 'Base Metals'},
+                'ALUMINIUM': {'name': 'Aluminium', 'symbol': 'ALI=F', 'slab': 0.04, 'unit': '1 kg', 'category': 'Base Metals'},
+            }
+            
+            events = []
+            commodity_counts = {}
+            cutoff_date = datetime.now() - timedelta(days=32)
+            
+            for sym, conf in commodities_map.items():
+                commodity_counts[conf['name']] = 0
+                try:
+                    ticker = yf.Ticker(conf['symbol'])
+                    df = ticker.history(period="45d", interval="1d")
+                    if df.empty or len(df) < 5:
+                        continue
+                        
+                    df['PrevClose'] = df['Close'].shift(1)
+                    df = df.dropna()
+                    df = df[df.index >= pd.Timestamp(cutoff_date, tz=df.index.tz)]
+                    
+                    slab = conf['slab']
+                    near_threshold = slab * 0.80
+                    
+                    for idx, row in df.iterrows():
+                        date_str = idx.strftime('%d %b %Y')
+                        day_name = idx.strftime('%a')
+                        p_close = row['PrevClose']
+                        high = row['High']
+                        low = row['Low']
+                        close = row['Close']
+                        
+                        high_move = (high - p_close) / p_close
+                        low_move = (low - p_close) / p_close
+                        close_move = (close - p_close) / p_close
+                        
+                        uc_limit = round(p_close * (1 + slab), 2)
+                        lc_limit = round(p_close * (1 - slab), 2)
+                        
+                        # Upper Extreme
+                        if high_move >= near_threshold:
+                            is_circuit_hit = bool(high_move >= slab)
+                            pullback = float((high - close) / high * 100)
+                            reversal_confirmed = bool(pullback >= 0.50)
+                            
+                            event_type = "UPPER CIRCUIT HIT" if is_circuit_hit else "NEAR UPPER BAND"
+                            badge_status = "REVERSED" if reversal_confirmed else "LOCKED/CLOSED HIGH"
+                            
+                            if pullback >= 2.0:
+                                rating = "Strong Reversal 🟢"
+                            elif pullback >= 0.5:
+                                rating = "Moderate Reversal 🟡"
+                            else:
+                                rating = "Locked / Closed High 🔴"
+                                
+                            commodity_counts[conf['name']] += 1
+                            events.append({
+                                'date': date_str,
+                                'day': day_name,
+                                'timestamp': int(idx.timestamp()),
+                                'symbol': sym,
+                                'name': conf['name'],
+                                'category': conf['category'],
+                                'unit': conf['unit'],
+                                'direction': 'UPPER',
+                                'event_type': event_type,
+                                'is_circuit_hit': is_circuit_hit,
+                                'slab_pct': round(float(slab * 100), 1),
+                                'prev_close': round(float(p_close), 2),
+                                'circuit_limit': float(uc_limit),
+                                'extreme_hit': round(float(high), 2),
+                                'extreme_move_pct': round(float(high_move * 100), 2),
+                                'close_price': round(float(close), 2),
+                                'close_move_pct': round(float(close_move * 100), 2),
+                                'reaction_move_pct': round(float(-pullback), 2),
+                                'reaction_text': f"-{pullback:.2f}% Pullback",
+                                'reversal_confirmed': reversal_confirmed,
+                                'badge_status': badge_status,
+                                'rating': rating
+                            })
+                            
+                        # Lower Extreme
+                        if low_move <= -near_threshold:
+                            is_circuit_hit = bool(low_move <= -slab)
+                            bounce = float((close - low) / low * 100)
+                            reversal_confirmed = bool(bounce >= 0.50)
+                            
+                            event_type = "LOWER CIRCUIT HIT" if is_circuit_hit else "NEAR LOWER BAND"
+                            badge_status = "REVERSED" if reversal_confirmed else "LOCKED/CLOSED LOW"
+                            
+                            if bounce >= 2.0:
+                                rating = "Strong Reversal 🟢"
+                            elif bounce >= 0.5:
+                                rating = "Moderate Reversal 🟡"
+                            else:
+                                rating = "Locked / Closed Floor 🔴"
+                                
+                            commodity_counts[conf['name']] += 1
+                            events.append({
+                                'date': date_str,
+                                'day': day_name,
+                                'timestamp': int(idx.timestamp()),
+                                'symbol': sym,
+                                'name': conf['name'],
+                                'category': conf['category'],
+                                'unit': conf['unit'],
+                                'direction': 'LOWER',
+                                'event_type': event_type,
+                                'is_circuit_hit': is_circuit_hit,
+                                'slab_pct': round(float(slab * 100), 1),
+                                'prev_close': round(float(p_close), 2),
+                                'circuit_limit': float(lc_limit),
+                                'extreme_hit': round(float(low), 2),
+                                'extreme_move_pct': round(float(low_move * 100), 2),
+                                'close_price': round(float(close), 2),
+                                'close_move_pct': round(float(close_move * 100), 2),
+                                'reaction_move_pct': round(float(bounce), 2),
+                                'reaction_text': f"+{bounce:.2f}% Bounce",
+                                'reversal_confirmed': reversal_confirmed,
+                                'badge_status': badge_status,
+                                'rating': rating
+                            })
+                except Exception as e:
+                    print(f"Error fetching history for {sym}: {e}")
+                    
+            events.sort(key=lambda x: x['timestamp'], reverse=True)
+            
+            total_events = len(events)
+            reversals = sum(1 for e in events if e['reversal_confirmed'])
+            locked = total_events - reversals
+            win_rate = round(reversals / total_events * 100, 1) if total_events > 0 else 0.0
+            avg_reaction = round(sum(abs(e['reaction_move_pct']) for e in events) / total_events, 2) if total_events > 0 else 0.0
+            
+            most_active = max(commodity_counts.items(), key=lambda x: x[1]) if commodity_counts else ("Crude Oil", 0)
+            now_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d %b %Y, %I:%M:%S %p IST')
+            
+            data_payload = {
+                'last_updated': now_ist,
+                'period_days': 30,
+                'summary': {
+                    'total_events': total_events,
+                    'reversals_count': reversals,
+                    'locked_count': locked,
+                    'reversal_win_rate_pct': win_rate,
+                    'avg_reaction_pct': avg_reaction,
+                    'most_active_commodity': f"{most_active[0]} ({most_active[1]} events)"
+                },
+                'events': events
+            }
+            
+            out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_history_30d.json')
+            with open(out_path, 'w') as f:
+                json.dump(data_payload, f, indent=2)
+                
+            print(f"Exported {total_events} 30-day circuit events to web/circuits_history_30d.json")
+            return data_payload
+        except Exception as e:
+            print(f"Error in generate_circuits_history_30d: {e}")
+            return None
 
