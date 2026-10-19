@@ -1398,7 +1398,7 @@ function renderCircuitsHistoryTable() {
         if (activeHistoryViewMode === 'nextday') {
             thead.innerHTML = `
                 <tr>
-                    <th>Event Date (Day T)</th>
+                    <th>Event Date & Time (Day T)</th>
                     <th>Commodity</th>
                     <th>Limit Event</th>
                     <th>Circuit Limit</th>
@@ -1412,7 +1412,7 @@ function renderCircuitsHistoryTable() {
         } else if (activeHistoryViewMode === 'both') {
             thead.innerHTML = `
                 <tr>
-                    <th>Event Date</th>
+                    <th>Event Date & Time</th>
                     <th>Commodity</th>
                     <th>Limit Event</th>
                     <th>Circuit Limit</th>
@@ -1427,7 +1427,7 @@ function renderCircuitsHistoryTable() {
         } else {
             thead.innerHTML = `
                 <tr>
-                    <th>Date & Day</th>
+                    <th>Event Date & Time</th>
                     <th>Commodity</th>
                     <th>Limit Event</th>
                     <th>Anchor (Prev Close)</th>
@@ -1472,6 +1472,7 @@ function renderCircuitsHistoryTable() {
         const matchesSearch = !searchVal || 
             item.name.toLowerCase().includes(searchVal) ||
             item.date.toLowerCase().includes(searchVal) ||
+            (item.time && item.time.toLowerCase().includes(searchVal)) ||
             item.event_type.toLowerCase().includes(searchVal) ||
             (item.next_date && item.next_date.toLowerCase().includes(searchVal)) ||
             (item.day && item.day.toLowerCase().includes(searchVal));
@@ -1527,9 +1528,12 @@ function renderCircuitsHistoryTable() {
         
         if (activeHistoryViewMode === 'nextday') {
             tr.innerHTML = `
-                <td>
+                <td style="min-width: 135px;">
                     <strong>${item.date}</strong>
                     <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
+                    <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 3px; font-weight: 500;">
+                        <i class="fa-regular fa-clock" style="font-size: 0.68rem; color: #818cf8; margin-right: 3px;"></i>${item.time ? item.time + ' IST' : '--'}
+                    </div>
                 </td>
                 <td>
                     <strong>${item.name}</strong>
@@ -1564,9 +1568,12 @@ function renderCircuitsHistoryTable() {
             `;
         } else if (activeHistoryViewMode === 'both') {
             tr.innerHTML = `
-                <td>
+                <td style="min-width: 135px;">
                     <strong>${item.date}</strong>
                     <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
+                    <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 3px; font-weight: 500;">
+                        <i class="fa-regular fa-clock" style="font-size: 0.68rem; color: #818cf8; margin-right: 3px;"></i>${item.time ? item.time + ' IST' : '--'}
+                    </div>
                 </td>
                 <td>
                     <strong>${item.name}</strong>
@@ -1612,9 +1619,12 @@ function renderCircuitsHistoryTable() {
                 : `<div style="font-size: 0.73rem; color: var(--text-secondary); margin-top: 3px;">Next Day: Pending</div>`;
                 
             tr.innerHTML = `
-                <td>
+                <td style="min-width: 135px;">
                     <strong>${item.date}</strong>
                     <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
+                    <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 3px; font-weight: 500;">
+                        <i class="fa-regular fa-clock" style="font-size: 0.68rem; color: #818cf8; margin-right: 3px;"></i>${item.time ? item.time + ' IST' : '--'}
+                    </div>
                 </td>
                 <td>
                     <strong>${item.name}</strong>
