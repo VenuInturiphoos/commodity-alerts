@@ -25,7 +25,7 @@ print("Telegram Bot is running...")
 def send_welcome(message):
     bot.reply_to(message, "Welcome to the Commodity Analysis Bot! 📈\n\n"
                           "Commands:\n"
-                          "• /circuits - View 30-day MCX circuit limit hits & next-day price movements\n"
+                          "• /circuits [30|60] - View 30-day or 60-day MCX circuit limit hits & next-day price movements\n"
                           "• /near - Scan assets nearing oversold/overbought setups")
 
 @bot.message_handler(commands=['near'])
@@ -75,6 +75,11 @@ def get_near_alerts(message):
 @bot.message_handler(commands=['circuits', 'circuit'])
 def get_circuits_summary(message):
     try:
+        # Check if user requested 60 days
+        msg_text = getattr(message, 'text', '') or ''
+        is_60d = '60' in msg_text
+        period_days = 60 if is_60d else 30
+
         data_path = 'web/circuits_history_30d.json'
         if os.path.exists(data_path):
             with open(data_path, 'r') as f:
@@ -85,15 +90,19 @@ def get_circuits_summary(message):
             checker = PriceChecker(config)
             data = checker.generate_circuits_history_30d()
 
-        summary = data.get('summary', {})
-        events = data.get('events', [])
+        if is_60d:
+            summary = data.get('summary_60d', data.get('summary', {}))
+            events = data.get('events', [])
+        else:
+            summary = data.get('summary_30d', data.get('summary', {}))
+            events = [e for e in data.get('events', []) if e.get('is_within_30d', True)]
 
-        resp = "⚡ *MCX Circuit Limits & Next-Day Moves (Past 30 Days)*\n\n"
+        resp = f"⚡ *MCX Circuit Limits & Next-Day Moves (Past {period_days} Days)*\n\n"
         resp += f"• *Total Events:* {summary.get('total_events', len(events))}\n"
         resp += f"• *Intraday Reversal Rate:* {summary.get('reversal_win_rate_pct', 0)}%\n"
         resp += f"• *Next-Day Reversal Rate:* {summary.get('next_day_win_rate_pct', 0)}%\n"
         resp += f"• *Avg Next-Day Move:* ±{summary.get('avg_next_day_move_pct', 0)}%\n\n"
-        resp += "*Recent Circuit Hits & Next-Day Moves:*\n"
+        resp += f"*Recent Circuit Hits & Next-Day Moves ({period_days}D Lookback):*\n"
 
         for ev in events[:6]:
             direction_icon = "🟢" if ev['direction'] == 'UPPER' else "🔴"
@@ -108,6 +117,9 @@ def get_circuits_summary(message):
             resp += f"   Extreme: ₹{ev['extreme_hit']} | Day Close: ₹{ev['close_price']}\n"
             resp += f"   {next_info}\n"
             resp += f"   Outcome: {ev.get('next_day_badge', ev.get('rating', ''))}\n\n"
+
+        if not is_60d:
+            resp += "_💡 Tip: Send `/circuits 60` to view complete 60-day history._"
 
         bot.send_message(message.chat.id, resp, parse_mode='Markdown')
     except Exception as e:

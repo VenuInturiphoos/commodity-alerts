@@ -1198,20 +1198,21 @@ class PriceChecker:
             
             events = []
             commodity_counts = {}
-            cutoff_date = datetime.now() - timedelta(days=32)
+            cutoff_60d = datetime.now() - timedelta(days=62)
+            cutoff_30d = datetime.now() - timedelta(days=32)
             today_ist_str = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%Y-%m-%d')
             
             for sym, conf in commodities_map.items():
                 commodity_counts[conf['name']] = 0
                 try:
                     ticker = yf.Ticker(conf['symbol'])
-                    df = ticker.history(period="60d", interval="1d")
+                    df = ticker.history(period="75d", interval="1d")
                     if df.empty or len(df) < 5:
                         continue
                         
                     df_hourly = None
                     try:
-                        df_h = ticker.history(period="45d", interval="1h")
+                        df_h = ticker.history(period="60d", interval="1h")
                         if not df_h.empty:
                             df_h.index = df_h.index.tz_convert(pytz.timezone('Asia/Kolkata'))
                             df_hourly = df_h
@@ -1226,7 +1227,7 @@ class PriceChecker:
                     df['NextDay'] = next_days
                     
                     df = df.dropna(subset=['PrevClose'])
-                    df = df[df.index >= pd.Timestamp(cutoff_date, tz=df.index.tz)]
+                    df = df[df.index >= pd.Timestamp(cutoff_60d, tz=df.index.tz)]
                     
                     slab = conf['slab']
                     near_threshold = slab * 0.80
@@ -1255,6 +1256,7 @@ class PriceChecker:
                                     continue
                         date_str = idx.strftime('%d %b %Y')
                         day_name = idx.strftime('%a')
+                        is_within_30d = bool(idx >= pd.Timestamp(cutoff_30d, tz=df.index.tz))
                         p_close = row['PrevClose']
                         high = row['High']
                         low = row['Low']
@@ -1334,6 +1336,7 @@ class PriceChecker:
                             events.append({
                                 'date': date_str,
                                 'day': day_name,
+                                'is_within_30d': is_within_30d,
                                 'time': high_time,
                                 'time_ist': f"{high_time} IST",
                                 'datetime_str': f"{date_str}, {high_time}",
@@ -1406,6 +1409,7 @@ class PriceChecker:
                             events.append({
                                 'date': date_str,
                                 'day': day_name,
+                                'is_within_30d': is_within_30d,
                                 'time': low_time,
                                 'time_ist': f"{low_time} IST",
                                 'datetime_str': f"{date_str}, {low_time}",
@@ -1443,43 +1447,66 @@ class PriceChecker:
                     
             events.sort(key=lambda x: x['timestamp'], reverse=True)
             
-            total_events = len(events)
-            reversals = sum(1 for e in events if e['reversal_confirmed'])
-            locked = total_events - reversals
-            win_rate = round(reversals / total_events * 100, 1) if total_events > 0 else 0.0
-            avg_reaction = round(sum(abs(e['reaction_move_pct']) for e in events) / total_events, 2) if total_events > 0 else 0.0
-            
-            next_day_completed = [e for e in events if e.get('next_day_reversed') is not None]
-            next_day_reversals = sum(1 for e in next_day_completed if e['next_day_reversed'])
-            next_day_win_rate = round(next_day_reversals / len(next_day_completed) * 100, 1) if next_day_completed else 0.0
-            avg_next_day_move = round(sum(abs(e['next_day_move_pct']) for e in next_day_completed) / len(next_day_completed), 2) if next_day_completed else 0.0
-            
-            most_active = max(commodity_counts.items(), key=lambda x: x[1]) if commodity_counts else ("Crude Oil", 0)
+            def compute_summary_stats(subset):
+                if not subset:
+                    return {
+                        'total_events': 0, 'reversals_count': 0, 'locked_count': 0,
+                        'reversal_win_rate_pct': 0.0, 'avg_reaction_pct': 0.0,
+                        'next_day_completed_events': 0, 'next_day_reversals_count': 0,
+                        'next_day_win_rate_pct': 0.0, 'avg_next_day_move_pct': 0.0,
+                        'most_active_commodity': '--'
+                    }
+                t = len(subset)
+                r = sum(1 for e in subset if e['reversal_confirmed'])
+                l = t - r
+                w = round(r / t * 100, 1) if t > 0 else 0.0
+                avg_r = round(sum(abs(e['reaction_move_pct']) for e in subset) / t, 2) if t > 0 else 0.0
+                next_c = [e for e in subset if e.get('next_day_reversed') is not None]
+                next_r = sum(1 for e in next_c if e['next_day_reversed'])
+                next_w = round(next_r / len(next_c) * 100, 1) if next_c else 0.0
+                avg_nm = round(sum(abs(e['next_day_move_pct']) for e in next_c) / len(next_c), 2) if next_c else 0.0
+                c_counts = {}
+                for e in subset:
+                    c_counts[e['name']] = c_counts.get(e['name'], 0) + 1
+                most = max(c_counts.items(), key=lambda x: x[1]) if c_counts else ("--", 0)
+                return {
+                    'total_events': t,
+                    'reversals_count': r,
+                    'locked_count': l,
+                    'reversal_win_rate_pct': w,
+                    'avg_reaction_pct': avg_r,
+                    'next_day_completed_events': len(next_c),
+                    'next_day_reversals_count': next_r,
+                    'next_day_win_rate_pct': next_w,
+                    'avg_next_day_move_pct': avg_nm,
+                    'most_active_commodity': f"{most[0]} ({most[1]} events)"
+                }
+
+            events_30d = [e for e in events if e.get('is_within_30d')]
+            summary_30d = compute_summary_stats(events_30d)
+            summary_60d = compute_summary_stats(events)
             now_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d %b %Y, %I:%M:%S %p IST')
             
             data_payload = {
                 'last_updated': now_ist,
-                'period_days': 30,
-                'summary': {
-                    'total_events': total_events,
-                    'reversals_count': reversals,
-                    'locked_count': locked,
-                    'reversal_win_rate_pct': win_rate,
-                    'avg_reaction_pct': avg_reaction,
-                    'next_day_completed_events': len(next_day_completed),
-                    'next_day_reversals_count': next_day_reversals,
-                    'next_day_win_rate_pct': next_day_win_rate,
-                    'avg_next_day_move_pct': avg_next_day_move,
-                    'most_active_commodity': f"{most_active[0]} ({most_active[1]} events)"
-                },
+                'period_days': 60,
+                'summary': summary_30d, # default summary
+                'summary_30d': summary_30d,
+                'summary_60d': summary_60d,
+                'events_30d_count': len(events_30d),
+                'events_60d_count': len(events),
                 'events': events
             }
             
-            out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_history_30d.json')
-            with open(out_path, 'w') as f:
+            out_30d_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_history_30d.json')
+            with open(out_30d_path, 'w') as f:
                 json.dump(data_payload, f, indent=2)
                 
-            print(f"Exported {total_events} 30-day circuit events to web/circuits_history_30d.json")
+            out_60d_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_history_60d.json')
+            with open(out_60d_path, 'w') as f:
+                json.dump(data_payload, f, indent=2)
+                
+            print(f"Exported {len(events)} events (60D) & {len(events_30d)} events (30D) to web/circuits_history_30d.json and circuits_history_60d.json")
             return data_payload
         except Exception as e:
             print(f"Error in generate_circuits_history_30d: {e}")
