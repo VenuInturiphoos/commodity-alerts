@@ -903,7 +903,8 @@ async function fetchCircuitsData(forceNetwork = false) {
             }
         }
         
-        // 2. Progressive Enhancement: Attempt direct TradingView scanner probe in protected try/catch
+        let hasLiveTicks = false;
+        // 2. Progressive Enhancement: Live TradingView scanner probe directly in browser
         try {
             const tvEndpoint = 'https://scanner.tradingview.com/futures/scan';
             const commodityMap = {
@@ -919,11 +920,12 @@ async function fetchCircuitsData(forceNetwork = false) {
             
             const tickers = Object.values(commodityMap).map(m => m.ticker);
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2500);
+            const timeoutId = setTimeout(() => controller.abort(), 3500);
             
+            // Using Content-Type: text/plain avoids CORS preflight OPTIONS rejection across browsers
             const scanRes = await fetch(tvEndpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({
                     symbols: { tickers: tickers },
                     columns: ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume']
@@ -947,100 +949,152 @@ async function fetchCircuitsData(forceNetwork = false) {
                     };
                 });
                 
-                const parsedCircuits = [];
-                for (const [sym, meta] of Object.entries(commodityMap)) {
-                    const t = tickerData[meta.ticker];
-                    if (!t || t.close === null || t.close === undefined) continue;
-                    
-                    const close = parseFloat(t.close);
-                    const chg_abs = parseFloat(t.change_abs || 0);
-                    const chg_pct = parseFloat(t.change_pct || 0);
-                    const prev_close = Math.round((close - chg_abs) * 100) / 100;
-                    const day_high = parseFloat(t.high || close);
-                    const day_low = parseFloat(t.low || close);
-                    const volume = parseInt(t.volume || 0);
-                    
-                    const lc_init = Math.round(prev_close * (1 - meta.dpl_initial) * 100) / 100;
-                    const uc_init = Math.round(prev_close * (1 + meta.dpl_initial) * 100) / 100;
-                    const lc_max = Math.round(prev_close * (1 - meta.dpl_max) * 100) / 100;
-                    const uc_max = Math.round(prev_close * (1 + meta.dpl_max) * 100) / 100;
-                    
-                    const dist_to_uc_pct = Math.round(((uc_init - close) / close) * 10000) / 100;
-                    const dist_to_lc_pct = Math.round(((close - lc_init) / close) * 10000) / 100;
-                    const dist_to_uc_pts = Math.round((uc_init - close) * 100) / 100;
-                    const dist_to_lc_pts = Math.round((close - lc_init) * 100) / 100;
-                    
-                    const total_band = uc_init - lc_init;
-                    const band_pos = total_band > 0 ? Math.round(Math.max(0, Math.min(100, ((close - lc_init) / total_band) * 100)) * 10) / 10 : 50.0;
-                    
-                    let status = "NORMAL";
-                    let status_color = "#10b981";
-                    let status_text = "Normal Trading 🟢";
-                    
-                    if (close >= uc_init) {
-                        status = "LOCKED UPPER";
-                        status_color = "#ef4444";
-                        status_text = "Upper Circuit Locked 🚨";
-                    } else if (close <= lc_init) {
-                        status = "LOCKED LOWER";
-                        status_color = "#ef4444";
-                        status_text = "Lower Circuit Locked 🚨";
-                    } else if (dist_to_uc_pct <= 1.0) {
-                        status = "NEAR UPPER";
-                        status_color = "#f59e0b";
-                        status_text = "Near Upper Band ⚠️";
-                    } else if (dist_to_lc_pct <= 1.0) {
-                        status = "NEAR LOWER";
-                        status_color = "#f59e0b";
-                        status_text = "Near Lower Band ⚠️";
+                if (rawCircuitsData && rawCircuitsData.length > 0) {
+                    // Update existing official exchange dataset with live real-time ticks
+                    rawCircuitsData.forEach(item => {
+                        const t = tickerData[item.ticker];
+                        if (t && t.close !== null && t.close !== undefined) {
+                            const close = parseFloat(t.close);
+                            const chg_abs = parseFloat(t.change_abs || 0);
+                            const chg_pct = parseFloat(t.change_pct || 0);
+                            item.current_price = close;
+                            item.open_price = parseFloat(t.open || close);
+                            item.day_high = parseFloat(t.high || item.day_high);
+                            item.day_low = parseFloat(t.low || item.day_low);
+                            item.change_pct = Math.round(chg_pct * 100) / 100;
+                            item.change_abs = Math.round(chg_abs * 100) / 100;
+                            item.volume = parseInt(t.volume || item.volume || 0);
+                            
+                            item.dist_to_uc_pct = Math.round(((item.upper_circuit - close) / close) * 10000) / 100;
+                            item.dist_to_lc_pct = Math.round(((close - item.lower_circuit) / close) * 10000) / 100;
+                            item.dist_to_uc_pts = Math.round((item.upper_circuit - close) * 100) / 100;
+                            item.dist_to_lc_pts = Math.round((close - item.lower_circuit) * 100) / 100;
+                            const total_band = item.upper_circuit - item.lower_circuit;
+                            item.band_position_pct = total_band > 0 ? Math.round(Math.max(0, Math.min(100, ((close - item.lower_circuit) / total_band) * 100)) * 10) / 10 : 50.0;
+                            
+                            if (close >= item.upper_circuit) {
+                                item.status = "LOCKED UPPER";
+                                item.status_color = "#ef4444";
+                                item.status_text = "Upper Circuit Locked 🚨";
+                            } else if (close <= item.lower_circuit) {
+                                item.status = "LOCKED LOWER";
+                                item.status_color = "#ef4444";
+                                item.status_text = "Lower Circuit Locked 🚨";
+                            } else if (item.dist_to_uc_pct <= 1.0) {
+                                item.status = "NEAR UPPER";
+                                item.status_color = "#f59e0b";
+                                item.status_text = "Near Upper Band ⚠️";
+                            } else if (item.dist_to_lc_pct <= 1.0) {
+                                item.status = "NEAR LOWER";
+                                item.status_color = "#f59e0b";
+                                item.status_text = "Near Lower Band ⚠️";
+                            } else {
+                                item.status = "NORMAL";
+                                item.status_color = "#10b981";
+                                item.status_text = "Normal Trading 🟢";
+                            }
+                            hasLiveTicks = true;
+                        }
+                    });
+                } else {
+                    const parsedCircuits = [];
+                    for (const [sym, meta] of Object.entries(commodityMap)) {
+                        const t = tickerData[meta.ticker];
+                        if (!t || t.close === null || t.close === undefined) continue;
+                        
+                        const close = parseFloat(t.close);
+                        const chg_abs = parseFloat(t.change_abs || 0);
+                        const chg_pct = parseFloat(t.change_pct || 0);
+                        const prev_close = Math.round((close - chg_abs) * 100) / 100;
+                        const day_high = parseFloat(t.high || close);
+                        const day_low = parseFloat(t.low || close);
+                        const volume = parseInt(t.volume || 0);
+                        
+                        const lc_init = Math.round(prev_close * (1 - meta.dpl_initial) * 100) / 100;
+                        const uc_init = Math.round(prev_close * (1 + meta.dpl_initial) * 100) / 100;
+                        const lc_max = Math.round(prev_close * (1 - meta.dpl_max) * 100) / 100;
+                        const uc_max = Math.round(prev_close * (1 + meta.dpl_max) * 100) / 100;
+                        
+                        const dist_to_uc_pct = Math.round(((uc_init - close) / close) * 10000) / 100;
+                        const dist_to_lc_pct = Math.round(((close - lc_init) / close) * 10000) / 100;
+                        const dist_to_uc_pts = Math.round((uc_init - close) * 100) / 100;
+                        const dist_to_lc_pts = Math.round((close - lc_init) * 100) / 100;
+                        
+                        const total_band = uc_init - lc_init;
+                        const band_pos = total_band > 0 ? Math.round(Math.max(0, Math.min(100, ((close - lc_init) / total_band) * 100)) * 10) / 10 : 50.0;
+                        
+                        let status = "NORMAL";
+                        let status_color = "#10b981";
+                        let status_text = "Normal Trading 🟢";
+                        
+                        if (close >= uc_init) {
+                            status = "LOCKED UPPER";
+                            status_color = "#ef4444";
+                            status_text = "Upper Circuit Locked 🚨";
+                        } else if (close <= lc_init) {
+                            status = "LOCKED LOWER";
+                            status_color = "#ef4444";
+                            status_text = "Lower Circuit Locked 🚨";
+                        } else if (dist_to_uc_pct <= 1.0) {
+                            status = "NEAR UPPER";
+                            status_color = "#f59e0b";
+                            status_text = "Near Upper Band ⚠️";
+                        } else if (dist_to_lc_pct <= 1.0) {
+                            status = "NEAR LOWER";
+                            status_color = "#f59e0b";
+                            status_text = "Near Lower Band ⚠️";
+                        }
+                        
+                        parsedCircuits.push({
+                            symbol: sym,
+                            name: meta.name,
+                            category: meta.category,
+                            unit: meta.unit,
+                            ticker: meta.ticker,
+                            current_price: close,
+                            prev_close: prev_close,
+                            open_price: parseFloat(t.open || close),
+                            day_high: day_high,
+                            day_low: day_low,
+                            change_pct: Math.round(chg_pct * 100) / 100,
+                            change_abs: Math.round(chg_abs * 100) / 100,
+                            volume: volume,
+                            dpl_initial_pct: Math.round(meta.dpl_initial * 1000) / 10,
+                            dpl_max_pct: Math.round(meta.dpl_max * 1000) / 10,
+                            lower_circuit: lc_init,
+                            upper_circuit: uc_init,
+                            lower_circuit_max: lc_max,
+                            upper_circuit_max: uc_max,
+                            dist_to_uc_pct: dist_to_uc_pct,
+                            dist_to_lc_pct: dist_to_lc_pct,
+                            dist_to_uc_pts: dist_to_uc_pts,
+                            dist_to_lc_pts: dist_to_lc_pts,
+                            band_position_pct: band_pos,
+                            status: status,
+                            status_color: status_color,
+                            status_text: status_text
+                        });
                     }
                     
-                    parsedCircuits.push({
-                        symbol: sym,
-                        name: meta.name,
-                        category: meta.category,
-                        unit: meta.unit,
-                        ticker: meta.ticker,
-                        current_price: close,
-                        prev_close: prev_close,
-                        open_price: parseFloat(t.open || close),
-                        day_high: day_high,
-                        day_low: day_low,
-                        change_pct: Math.round(chg_pct * 100) / 100,
-                        change_abs: Math.round(chg_abs * 100) / 100,
-                        volume: volume,
-                        dpl_initial_pct: Math.round(meta.dpl_initial * 1000) / 10,
-                        dpl_max_pct: Math.round(meta.dpl_max * 1000) / 10,
-                        lower_circuit: lc_init,
-                        upper_circuit: uc_init,
-                        lower_circuit_max: lc_max,
-                        upper_circuit_max: uc_max,
-                        dist_to_uc_pct: dist_to_uc_pct,
-                        dist_to_lc_pct: dist_to_lc_pct,
-                        dist_to_uc_pts: dist_to_uc_pts,
-                        dist_to_lc_pts: dist_to_lc_pts,
-                        band_position_pct: band_pos,
-                        status: status,
-                        status_color: status_color,
-                        status_text: status_text
-                    });
-                }
-                
-                if (parsedCircuits.length > 0) {
-                    rawCircuitsData = parsedCircuits;
-                    loaded = true;
+                    if (parsedCircuits.length > 0) {
+                        rawCircuitsData = parsedCircuits;
+                        hasLiveTicks = true;
+                    }
                 }
             }
         } catch (tvProbeErr) {
-            // Direct browser probe skipped (CORS/privacy protection) - fallback to precomputed exchange feed
-            console.log("Direct browser TradingView scanner skipped (CORS/adblock), using exchange circuits feed.");
+            console.warn("Direct browser TradingView scanner skipped:", tvProbeErr);
         }
         
         // 3. Render and trigger visual feedback
         if (rawCircuitsData && rawCircuitsData.length > 0) {
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             if (updatedEl) {
-                updatedEl.textContent = `Live MCX Feed • Updated at ${timeStr}`;
+                if (hasLiveTicks) {
+                    updatedEl.innerHTML = `<span style="color:#4ade80;">● Live Real-Time Feed</span> • Updated at ${timeStr}`;
+                } else {
+                    updatedEl.textContent = `Exchange Feed • Synced at ${timeStr}`;
+                }
             }
             renderCircuitsTable();
             
@@ -1055,7 +1109,8 @@ async function fetchCircuitsData(forceNetwork = false) {
             
             if (forceNetwork && btn) {
                 btn.classList.remove('spinning');
-                btn.innerHTML = `<i class="fa-solid fa-check" style="color: #4ade80;"></i> <span style="color: #4ade80;">Updated!</span>`;
+                const btnMsg = hasLiveTicks ? 'Live Ticks Updated!' : 'Synced!';
+                btn.innerHTML = `<i class="fa-solid fa-check" style="color: #4ade80;"></i> <span style="color: #4ade80;">${btnMsg}</span>`;
                 setTimeout(() => {
                     btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> <span>Refresh</span>`;
                     btn.disabled = false;
@@ -1085,8 +1140,22 @@ async function fetchCircuitsData(forceNetwork = false) {
     }
 }
 
-function refreshCircuitsData() {
-    fetchCircuitsData(true);
+async function refreshCircuitsData() {
+    const btn = document.getElementById('circuit-refresh-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.classList.add('spinning');
+        btn.innerHTML = `<i class="fa-solid fa-arrows-rotate fa-spin"></i> <span>Updating...</span>`;
+    }
+    
+    try {
+        await Promise.allSettled([
+            fetchCircuitsData(true),
+            fetchCircuitsHistory(true)
+        ]);
+    } catch (err) {
+        console.error("Error refreshing circuits:", err);
+    }
 }
 
 function setCircuitCategoryFilter(category, btn) {
