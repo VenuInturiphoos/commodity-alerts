@@ -153,8 +153,8 @@
                     </button>
                     <button class="circuit-subnav-btn" id="btn-subnav-history" onclick="switchCircuitsSubView('history')">
                         <i class="fa-solid fa-clock-rotate-left"></i>
-                        <span>Past 30 Days Reversal History</span>
-                        <span class="subnav-badge" id="history-badge-count">24 Events</span>
+                        <span id="subnav-history-title">Past 30 Days Reversal History</span>
+                        <span class="subnav-badge" id="history-badge-count">23 Events</span>
                     </button>
                 </div>
 
@@ -246,17 +246,17 @@
 
                 <!-- 2. Past 30 Days Reversal History View -->
                 <div id="circuits-view-history" style="display: none;">
-                    <!-- 30-Day Historical Metrics KPI Cards -->
+                    <!-- Historical Metrics KPI Cards -->
                     <div class="circuits-kpi-grid">
                         <div class="circuit-kpi-card">
                             <div class="circuit-kpi-header">
-                                <span>30-Day Circuit Events</span>
+                                <span id="kpi-hist-total-title">30-Day Circuit Events</span>
                                 <div class="circuit-kpi-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">
                                     <i class="fa-solid fa-calendar-days"></i>
                                 </div>
                             </div>
                             <div class="circuit-kpi-value" id="kpi-hist-total">--</div>
-                            <div class="circuit-kpi-sub">Touches of limit or near-band (Past 30D)</div>
+                            <div class="circuit-kpi-sub" id="kpi-hist-total-sub">Touches of limit or near-band (Past 30D)</div>
                         </div>
 
                         <div class="circuit-kpi-card">
@@ -293,24 +293,45 @@
                         </div>
                     </div>
 
-                    <!-- View Mode Toggle (Intraday vs Next-Day Movement) -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.03); padding: 0.85rem 1.25rem; border-radius: 12px; border: 1px solid var(--glass-border);">
-                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                            <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 600;">
-                                <i class="fa-solid fa-chart-pie" style="color: #6366f1; margin-right: 4px;"></i> Analysis Mode:
-                            </span>
-                            <button id="view-mode-intraday" class="circuit-filter-pill active" onclick="setHistoryViewMode('intraday', this)">
-                                <i class="fa-solid fa-clock-rotate-left"></i> Intraday Reaction (Day T)
-                            </button>
-                            <button id="view-mode-nextday" class="circuit-filter-pill" onclick="setHistoryViewMode('nextday', this)">
-                                <i class="fa-solid fa-calendar-check" style="color: #38bdf8;"></i> Next-Day Movement (Day T+1 End) ⚡
-                            </button>
-                            <button id="view-mode-both" class="circuit-filter-pill" onclick="setHistoryViewMode('both', this)">
-                                <i class="fa-solid fa-table-columns"></i> Complete Overview
-                            </button>
+                    <!-- Lookback Window & View Mode Controls -->
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.03); padding: 0.85rem 1.25rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <!-- Lookback Period Toggle (30 Days vs 60 Days) -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 600;">
+                                    <i class="fa-solid fa-calendar-days" style="color: #818cf8; margin-right: 4px;"></i> Lookback Window:
+                                </span>
+                                <button id="period-btn-30d" class="circuit-filter-pill active" onclick="setHistoryPeriod(30, this)">
+                                    <i class="fa-solid fa-clock"></i> 30 Days
+                                </button>
+                                <button id="period-btn-60d" class="circuit-filter-pill" onclick="setHistoryPeriod(60, this)">
+                                    <i class="fa-solid fa-calendar-week" style="color: #38bdf8;"></i> 60 Days ⚡
+                                </button>
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                                <span id="history-period-hint"><i class="fa-solid fa-circle-info" style="color: #818cf8; margin-right: 4px;"></i> Showing last 30 calendar days (23 events)</span>
+                            </div>
                         </div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">
-                            <span id="history-view-hint">Showing intraday price reaction from circuit test to session close</span>
+
+                        <!-- View Mode Toggle (Intraday vs Next-Day Movement) -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 600;">
+                                    <i class="fa-solid fa-chart-pie" style="color: #6366f1; margin-right: 4px;"></i> Analysis Mode:
+                                </span>
+                                <button id="view-mode-intraday" class="circuit-filter-pill active" onclick="setHistoryViewMode('intraday', this)">
+                                    <i class="fa-solid fa-clock-rotate-left"></i> Intraday Reaction (Day T)
+                                </button>
+                                <button id="view-mode-nextday" class="circuit-filter-pill" onclick="setHistoryViewMode('nextday', this)">
+                                    <i class="fa-solid fa-calendar-check" style="color: #38bdf8;"></i> Next-Day Movement (Day T+1 End) ⚡
+                                </button>
+                                <button id="view-mode-both" class="circuit-filter-pill" onclick="setHistoryViewMode('both', this)">
+                                    <i class="fa-solid fa-table-columns"></i> Complete Overview
+                                </button>
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                                <span id="history-view-hint">Showing intraday price reaction from circuit test to session close</span>
+                            </div>
                         </div>
                     </div>
 
@@ -1263,13 +1284,19 @@ function switchCircuitsSubView(subview) {
     }
 }
 
+let allHistoryEvents = [];
+let activeHistoryPeriod = 30;
+let circuitsHistoryFullData = null;
+let activeHistoryViewMode = 'intraday';
+let circuitsHistorySummary = null;
+
 async function fetchCircuitsHistory(forceNetwork = false) {
     const tbody = document.getElementById('circuits-history-body');
-    const badgeEl = document.getElementById('history-badge-count');
     
     try {
         const candidateUrls = [
             'circuits_history_30d.json?t=' + Date.now(),
+            'circuits_history_60d.json?t=' + Date.now(),
             'https://venuinturiphoos.github.io/commodity-alerts/circuits_history_30d.json?t=' + Date.now()
         ];
         
@@ -1280,9 +1307,9 @@ async function fetchCircuitsHistory(forceNetwork = false) {
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.events && data.events.length > 0) {
-                        rawCircuitsHistory = data.events;
-                        updateHistorySummaryKPIs(data.summary);
-                        if (badgeEl) badgeEl.textContent = `${data.summary?.total_events || data.events.length} Events`;
+                        circuitsHistoryFullData = data;
+                        allHistoryEvents = data.events;
+                        applyHistoryPeriod(activeHistoryPeriod);
                         loaded = true;
                         break;
                     }
@@ -1295,15 +1322,52 @@ async function fetchCircuitsHistory(forceNetwork = false) {
         if (loaded) {
             renderCircuitsHistoryTable();
         } else if (rawCircuitsHistory.length === 0 && tbody) {
-            tbody.innerHTML = `<tr><td colspan="9" class="loading">No 30-day circuit events recorded yet.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" class="loading">No circuit events recorded in the selected lookback window.</td></tr>`;
         }
     } catch (err) {
         console.error("Error loading circuits history:", err);
     }
 }
 
-let activeHistoryViewMode = 'intraday';
-let circuitsHistorySummary = null;
+function applyHistoryPeriod(days) {
+    activeHistoryPeriod = days;
+    const badgeEl = document.getElementById('history-badge-count');
+    const subnavTitle = document.getElementById('subnav-history-title');
+    const kpiTotalTitle = document.getElementById('kpi-hist-total-title');
+    const kpiTotalSub = document.getElementById('kpi-hist-total-sub');
+    const periodHint = document.getElementById('history-period-hint');
+    
+    if (days === 60) {
+        rawCircuitsHistory = allHistoryEvents;
+        circuitsHistorySummary = circuitsHistoryFullData?.summary_60d || circuitsHistoryFullData?.summary;
+        if (subnavTitle) subnavTitle.textContent = 'Past 60 Days Reversal History';
+        if (kpiTotalTitle) kpiTotalTitle.textContent = '60-Day Circuit Events';
+        if (kpiTotalSub) kpiTotalSub.textContent = 'Touches of limit or near-band (Past 60D)';
+        const count = circuitsHistorySummary?.total_events || allHistoryEvents.length;
+        if (badgeEl) badgeEl.textContent = `${count} Events (60D)`;
+        if (periodHint) periodHint.innerHTML = `<i class="fa-solid fa-circle-info" style="color: #38bdf8; margin-right: 4px;"></i> Showing last 60 calendar days (${count} events - complete history)`;
+    } else {
+        rawCircuitsHistory = allHistoryEvents.filter(e => e.is_within_30d);
+        circuitsHistorySummary = circuitsHistoryFullData?.summary_30d || circuitsHistoryFullData?.summary;
+        if (subnavTitle) subnavTitle.textContent = 'Past 30 Days Reversal History';
+        if (kpiTotalTitle) kpiTotalTitle.textContent = '30-Day Circuit Events';
+        if (kpiTotalSub) kpiTotalSub.textContent = 'Touches of limit or near-band (Past 30D)';
+        const count = circuitsHistorySummary?.total_events || rawCircuitsHistory.length;
+        if (badgeEl) badgeEl.textContent = `${count} Events (30D)`;
+        if (periodHint) periodHint.innerHTML = `<i class="fa-solid fa-circle-info" style="color: #818cf8; margin-right: 4px;"></i> Showing last 30 calendar days (${count} events)`;
+    }
+    
+    updateHistorySummaryKPIs(circuitsHistorySummary);
+}
+
+function setHistoryPeriod(days, btn) {
+    if (btn && btn.parentElement) {
+        btn.parentElement.querySelectorAll('.circuit-filter-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    applyHistoryPeriod(days);
+    renderCircuitsHistoryTable();
+}
 
 function updateHistorySummaryKPIs(summary) {
     if (!summary) return;
@@ -1442,7 +1506,7 @@ function renderCircuitsHistoryTable() {
     }
     
     if (!rawCircuitsHistory || rawCircuitsHistory.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="loading">No circuit events recorded in the past 30 days.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="loading">No circuit events recorded in the past ${activeHistoryPeriod} days.</td></tr>`;
         return;
     }
     
