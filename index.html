@@ -145,87 +145,200 @@
                     </div>
                 </div>
 
-                <!-- Top Metrics KPI Cards -->
-                <div class="circuits-kpi-grid">
-                    <div class="circuit-kpi-card">
-                        <div class="circuit-kpi-header">
-                            <span>Tracked MCX Contracts</span>
-                            <div class="circuit-kpi-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
-                                <i class="fa-solid fa-cubes-stacked"></i>
+                <!-- Sub-Navigation View Switcher: Live Limits vs 30-Day Reversal History -->
+                <div class="circuit-subnav-container">
+                    <button class="circuit-subnav-btn active" id="btn-subnav-live" onclick="switchCircuitsSubView('live')">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Today's Live Circuit Limits</span>
+                    </button>
+                    <button class="circuit-subnav-btn" id="btn-subnav-history" onclick="switchCircuitsSubView('history')">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Past 30 Days Reversal History</span>
+                        <span class="subnav-badge" id="history-badge-count">24 Events</span>
+                    </button>
+                </div>
+
+                <!-- 1. Live Exchange Limits View -->
+                <div id="circuits-view-live">
+                    <!-- Top Metrics KPI Cards -->
+                    <div class="circuits-kpi-grid">
+                        <div class="circuit-kpi-card">
+                            <div class="circuit-kpi-header">
+                                <span>Tracked MCX Contracts</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+                                    <i class="fa-solid fa-cubes-stacked"></i>
+                                </div>
                             </div>
+                            <div class="circuit-kpi-value" id="kpi-circuit-count">8</div>
+                            <div class="circuit-kpi-sub">Continuous active futures</div>
                         </div>
-                        <div class="circuit-kpi-value" id="kpi-circuit-count">8</div>
-                        <div class="circuit-kpi-sub">Continuous active futures</div>
+
+                        <div class="circuit-kpi-card">
+                            <div class="circuit-kpi-header">
+                                <span>Closest to Upper Circuit</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(74, 222, 128, 0.15); color: #4ade80;">
+                                    <i class="fa-solid fa-arrow-trend-up"></i>
+                                </div>
+                            </div>
+                            <div class="circuit-kpi-value" id="kpi-closest-uc" style="color: #4ade80;">--</div>
+                            <div class="circuit-kpi-sub" id="kpi-closest-uc-sub">Remaining room to ceiling</div>
+                        </div>
+
+                        <div class="circuit-kpi-card">
+                            <div class="circuit-kpi-header">
+                                <span>Closest to Lower Circuit</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(251, 113, 133, 0.15); color: #fb7185;">
+                                    <i class="fa-solid fa-arrow-trend-down"></i>
+                                </div>
+                            </div>
+                            <div class="circuit-kpi-value" id="kpi-closest-lc" style="color: #fb7185;">--</div>
+                            <div class="circuit-kpi-sub" id="kpi-closest-lc-sub">Remaining room to floor</div>
+                        </div>
+
+                        <div class="circuit-kpi-card">
+                            <div class="circuit-kpi-header">
+                                <span>Exchange Limit Status</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                </div>
+                            </div>
+                            <div class="circuit-kpi-value" id="kpi-circuit-status" style="font-size: 1.3rem; color: #10b981;">Safe Range 🟢</div>
+                            <div class="circuit-kpi-sub">Zero circuit halts triggered</div>
+                        </div>
                     </div>
 
-                    <div class="circuit-kpi-card">
-                        <div class="circuit-kpi-header">
-                            <span>Closest to Upper Circuit</span>
-                            <div class="circuit-kpi-icon" style="background: rgba(74, 222, 128, 0.15); color: #4ade80;">
-                                <i class="fa-solid fa-arrow-trend-up"></i>
-                            </div>
+                    <!-- Toolbar (Category Filter & Search) -->
+                    <div class="circuits-toolbar">
+                        <div class="circuit-filters">
+                            <button class="circuit-filter-pill active" onclick="setCircuitCategoryFilter('ALL', this)">All Commodities</button>
+                            <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Bullion', this)">Bullion (Gold/Silver)</button>
+                            <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Energy', this)">Energy (Crude/Gas)</button>
+                            <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Base Metals', this)">Base Metals</button>
                         </div>
-                        <div class="circuit-kpi-value" id="kpi-closest-uc" style="color: #4ade80;">--</div>
-                        <div class="circuit-kpi-sub" id="kpi-closest-uc-sub">Remaining room to ceiling</div>
+                        <div class="circuit-search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="circuit-search-input" placeholder="Search commodity..." onkeyup="filterCircuitsTable()">
+                        </div>
                     </div>
 
-                    <div class="circuit-kpi-card">
-                        <div class="circuit-kpi-header">
-                            <span>Closest to Lower Circuit</span>
-                            <div class="circuit-kpi-icon" style="background: rgba(251, 113, 133, 0.15); color: #fb7185;">
-                                <i class="fa-solid fa-arrow-trend-down"></i>
-                            </div>
-                        </div>
-                        <div class="circuit-kpi-value" id="kpi-closest-lc" style="color: #fb7185;">--</div>
-                        <div class="circuit-kpi-sub" id="kpi-closest-lc-sub">Remaining room to floor</div>
-                    </div>
-
-                    <div class="circuit-kpi-card">
-                        <div class="circuit-kpi-header">
-                            <span>Exchange Limit Status</span>
-                            <div class="circuit-kpi-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
-                                <i class="fa-solid fa-shield-halved"></i>
-                            </div>
-                        </div>
-                        <div class="circuit-kpi-value" id="kpi-circuit-status" style="font-size: 1.3rem; color: #10b981;">Safe Range 🟢</div>
-                        <div class="circuit-kpi-sub">Zero circuit halts triggered</div>
+                    <!-- Live Circuit Table -->
+                    <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                        <table class="market-table">
+                            <thead>
+                                <tr>
+                                    <th>Commodity Contract</th>
+                                    <th>Live Price (₹)</th>
+                                    <th>Day Range</th>
+                                    <th>Prev Close (Anchor)</th>
+                                    <th>Lower Circuit (Floor)</th>
+                                    <th>Upper Circuit (Ceiling)</th>
+                                    <th style="min-width: 200px;">Circuit Range Meter</th>
+                                    <th>Room to Limits</th>
+                                    <th>Trading Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="circuits-data-body">
+                                <tr><td colspan="9" class="loading">Loading daily circuit limits from exchange feed...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <!-- Toolbar (Category Filter & Search) -->
-                <div class="circuits-toolbar">
-                    <div class="circuit-filters">
-                        <button class="circuit-filter-pill active" onclick="setCircuitCategoryFilter('ALL', this)">All Commodities</button>
-                        <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Bullion', this)">Bullion (Gold/Silver)</button>
-                        <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Energy', this)">Energy (Crude/Gas)</button>
-                        <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Base Metals', this)">Base Metals</button>
-                    </div>
-                    <div class="circuit-search-box">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="circuit-search-input" placeholder="Search commodity..." onkeyup="filterCircuitsTable()">
-                    </div>
-                </div>
+                <!-- 2. Past 30 Days Reversal History View -->
+                <div id="circuits-view-history" style="display: none;">
+                    <!-- 30-Day Historical Metrics KPI Cards -->
+                    <div class="circuits-kpi-grid">
+                        <div class="circuit-kpi-card">
+                            <div class="circuit-kpi-header">
+                                <span>30-Day Circuit Events</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                </div>
+                            </div>
+                            <div class="circuit-kpi-value" id="kpi-hist-total">--</div>
+                            <div class="circuit-kpi-sub">Touches of limit or near-band (Past 30D)</div>
+                        </div>
 
-                <!-- Live Circuit Table -->
-                <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
-                    <table class="market-table">
-                        <thead>
-                            <tr>
-                                <th>Commodity Contract</th>
-                                <th>Live Price (₹)</th>
-                                <th>Day Range</th>
-                                <th>Prev Close (Anchor)</th>
-                                <th>Lower Circuit (Floor)</th>
-                                <th>Upper Circuit (Ceiling)</th>
-                                <th style="min-width: 200px;">Circuit Range Meter</th>
-                                <th>Room to Limits</th>
-                                <th>Trading Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="circuits-data-body">
-                            <tr><td colspan="9" class="loading">Loading daily circuit limits from exchange feed...</td></tr>
-                        </tbody>
-                    </table>
+                        <div class="circuit-kpi-card">
+                            <div class="circuit-kpi-header">
+                                <span>Intraday Reversal Win Rate</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(74, 222, 128, 0.15); color: #4ade80;">
+                                    <i class="fa-solid fa-arrows-spin"></i>
+                                </div>
+                            </div>
+                            <div class="circuit-kpi-value" id="kpi-hist-winrate" style="color: #4ade80;">--%</div>
+                            <div class="circuit-kpi-sub">Mean-reverted before session close</div>
+                        </div>
+
+                        <div class="circuit-kpi-card">
+                            <div class="circuit-kpi-header">
+                                <span>Avg. Reaction Move</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+                                    <i class="fa-solid fa-chart-line"></i>
+                                </div>
+                            </div>
+                            <div class="circuit-kpi-value" id="kpi-hist-reaction" style="color: #fbbf24;">--%</div>
+                            <div class="circuit-kpi-sub">Average bounce/pullback from extreme</div>
+                        </div>
+
+                        <div class="circuit-kpi-card">
+                            <div class="circuit-kpi-header">
+                                <span>Most Volatile Commodity</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">
+                                    <i class="fa-solid fa-fire-flame-curved"></i>
+                                </div>
+                            </div>
+                            <div class="circuit-kpi-value" id="kpi-hist-active" style="font-size: 1.15rem; color: #f87171;">--</div>
+                            <div class="circuit-kpi-sub">Highest frequency of limit tests</div>
+                        </div>
+                    </div>
+
+                    <!-- Toolbar (Filters & Search for History) -->
+                    <div class="circuits-toolbar" style="margin-bottom: 1rem;">
+                        <div class="circuit-filters" style="gap: 0.4rem;">
+                            <button class="circuit-filter-pill active" onclick="setHistoryResultFilter('ALL', this)">All Results</button>
+                            <button class="circuit-filter-pill" onclick="setHistoryResultFilter('REVERSED', this)">Reversals Only 🟢</button>
+                            <button class="circuit-filter-pill" onclick="setHistoryResultFilter('LOCKED', this)">Locked / No Bounce 🔴</button>
+                            <button class="circuit-filter-pill" onclick="setHistoryResultFilter('UPPER', this)">Upper Limits</button>
+                            <button class="circuit-filter-pill" onclick="setHistoryResultFilter('LOWER', this)">Lower Limits</button>
+                        </div>
+                        <div class="circuit-search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="history-search-input" placeholder="Search date or commodity..." onkeyup="filterHistoryTable()">
+                        </div>
+                    </div>
+
+                    <!-- Secondary Commodity Filter Bar -->
+                    <div class="circuit-filters" style="margin-bottom: 1.5rem; gap: 0.4rem;">
+                        <button class="circuit-filter-pill active" onclick="setHistoryCommodityFilter('ALL', this)">All Commodities</button>
+                        <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('CRUDEOIL', this)">Crude Oil</button>
+                        <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('NATURALGAS', this)">Natural Gas</button>
+                        <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('GOLD', this)">Gold</button>
+                        <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('SILVER', this)">Silver</button>
+                        <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('BASE', this)">Base Metals</button>
+                    </div>
+
+                    <!-- 30-Day History Table -->
+                    <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                        <table class="market-table">
+                            <thead>
+                                <tr>
+                                    <th>Date & Day</th>
+                                    <th>Commodity</th>
+                                    <th>Limit Event</th>
+                                    <th>Anchor (Prev Close)</th>
+                                    <th>Circuit Limit</th>
+                                    <th>Extreme Hit (% Move)</th>
+                                    <th>Session Close</th>
+                                    <th>Intraday Reaction</th>
+                                    <th>Reversal Outcome</th>
+                                </tr>
+                            </thead>
+                            <tbody id="circuits-history-body">
+                                <tr><td colspan="9" class="loading">Loading 30-day circuit events history...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- Educational Explainer Guide -->
@@ -643,7 +756,25 @@ function initApp() {
     try { setupUnsubscribeForm(); } catch(e) { console.error("Unsub Form setup error:", e); }
     try { fetchMarketData(); } catch(e) { console.error("Fetch data error:", e); }
     try { fetchCircuitsData(); } catch(e) { console.error("Fetch circuits error:", e); }
+    try { fetchCircuitsHistory(); } catch(e) { console.error("Fetch circuits history error:", e); }
     try { setupAuth(); } catch(e) { console.error("Auth setup error:", e); }
+    
+    // Check URL hash routing (e.g. #circuits, #dashboard, #trade, #alerts)
+    const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+    if (hash === 'circuits') {
+        const btn = document.querySelector('button[onclick*="circuits-tab"]');
+        if (btn) switchTab(btn, 'circuits-tab');
+    } else if (hash === 'dashboard' || hash === 'market') {
+        const btn = document.querySelector('button[onclick*="dashboard-tab"]');
+        if (btn) switchTab(btn, 'dashboard-tab');
+    } else if (hash === 'alerts') {
+        const btn = document.querySelector('button[onclick*="alerts-tab"]');
+        if (btn) switchTab(btn, 'alerts-tab');
+    } else if (hash === 'trade') {
+        const btn = document.querySelector('button[onclick*="trade-tab"]');
+        if (btn) switchTab(btn, 'trade-tab');
+    }
+    
     setInterval(fetchMarketData, 300000); 
     setInterval(() => {
         const circuitsTab = document.getElementById('circuits-tab');
@@ -680,6 +811,7 @@ window.switchTab = function(btn, targetId) {
     
     if (targetId === 'circuits-tab') {
         fetchCircuitsData();
+        fetchCircuitsHistory();
     }
     
     if (targetId === 'admin-tab') {
@@ -1083,8 +1215,215 @@ function updateCircuitsKPIs(data) {
     }
 }
 
-function setupFilters() {
-    // Deprecated: Filters removed in favor of split tables
+// ==========================================
+// 📜 30-Day Circuit Events & Reversal History
+// ==========================================
+let rawCircuitsHistory = [];
+let activeHistoryFilter = 'ALL';
+let activeHistoryCommodity = 'ALL';
+
+function switchCircuitsSubView(subview) {
+    const liveView = document.getElementById('circuits-view-live');
+    const historyView = document.getElementById('circuits-view-history');
+    const btnLive = document.getElementById('btn-subnav-live');
+    const btnHistory = document.getElementById('btn-subnav-history');
+    
+    if (subview === 'history') {
+        if (liveView) liveView.style.display = 'none';
+        if (historyView) historyView.style.display = 'block';
+        if (btnLive) btnLive.classList.remove('active');
+        if (btnHistory) btnHistory.classList.add('active');
+        fetchCircuitsHistory();
+    } else {
+        if (historyView) historyView.style.display = 'none';
+        if (liveView) liveView.style.display = 'block';
+        if (btnHistory) btnHistory.classList.remove('active');
+        if (btnLive) btnLive.classList.add('active');
+    }
+}
+
+async function fetchCircuitsHistory(forceNetwork = false) {
+    const tbody = document.getElementById('circuits-history-body');
+    const badgeEl = document.getElementById('history-badge-count');
+    
+    try {
+        const candidateUrls = [
+            'circuits_history_30d.json?t=' + Date.now(),
+            'https://venuinturiphoos.github.io/commodity-alerts/circuits_history_30d.json?t=' + Date.now()
+        ];
+        
+        let loaded = false;
+        for (const url of candidateUrls) {
+            try {
+                const res = await fetch(url, { cache: 'no-store' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.events && data.events.length > 0) {
+                        rawCircuitsHistory = data.events;
+                        updateHistorySummaryKPIs(data.summary);
+                        if (badgeEl) badgeEl.textContent = `${data.summary?.total_events || data.events.length} Events`;
+                        loaded = true;
+                        break;
+                    }
+                }
+            } catch (e) {
+                console.warn(`Could not load history from ${url}:`, e);
+            }
+        }
+        
+        if (loaded) {
+            renderCircuitsHistoryTable();
+        } else if (rawCircuitsHistory.length === 0 && tbody) {
+            tbody.innerHTML = `<tr><td colspan="9" class="loading">No 30-day circuit events recorded yet.</td></tr>`;
+        }
+    } catch (err) {
+        console.error("Error loading circuits history:", err);
+    }
+}
+
+function updateHistorySummaryKPIs(summary) {
+    if (!summary) return;
+    const totalEl = document.getElementById('kpi-hist-total');
+    const winRateEl = document.getElementById('kpi-hist-winrate');
+    const reactionEl = document.getElementById('kpi-hist-reaction');
+    const activeEl = document.getElementById('kpi-hist-active');
+    
+    if (totalEl) totalEl.textContent = summary.total_events || '--';
+    if (winRateEl) winRateEl.textContent = `${summary.reversal_win_rate_pct || 0}%`;
+    if (reactionEl) reactionEl.textContent = `±${summary.avg_reaction_pct || 0}%`;
+    if (activeEl) activeEl.textContent = summary.most_active_commodity || '--';
+}
+
+function setHistoryResultFilter(filter, btn) {
+    activeHistoryFilter = filter;
+    if (btn && btn.parentElement) {
+        btn.parentElement.querySelectorAll('.circuit-filter-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    renderCircuitsHistoryTable();
+}
+
+function setHistoryCommodityFilter(comm, btn) {
+    activeHistoryCommodity = comm;
+    if (btn && btn.parentElement) {
+        btn.parentElement.querySelectorAll('.circuit-filter-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    renderCircuitsHistoryTable();
+}
+
+function filterHistoryTable() {
+    renderCircuitsHistoryTable();
+}
+
+function renderCircuitsHistoryTable() {
+    const tbody = document.getElementById('circuits-history-body');
+    if (!tbody) return;
+    
+    if (!rawCircuitsHistory || rawCircuitsHistory.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="loading">No circuit events recorded in the past 30 days.</td></tr>`;
+        return;
+    }
+    
+    const searchVal = (document.getElementById('history-search-input')?.value || '').trim().toLowerCase();
+    
+    let filtered = rawCircuitsHistory.filter(item => {
+        // Result filter
+        let matchesResult = true;
+        if (activeHistoryFilter === 'REVERSED') matchesResult = item.reversal_confirmed === true;
+        else if (activeHistoryFilter === 'LOCKED') matchesResult = item.reversal_confirmed === false;
+        else if (activeHistoryFilter === 'UPPER') matchesResult = item.direction === 'UPPER';
+        else if (activeHistoryFilter === 'LOWER') matchesResult = item.direction === 'LOWER';
+        
+        // Commodity filter
+        let matchesCommodity = true;
+        if (activeHistoryCommodity !== 'ALL') {
+            if (activeHistoryCommodity === 'BASE') matchesCommodity = item.category === 'Base Metals';
+            else matchesCommodity = item.symbol === activeHistoryCommodity;
+        }
+        
+        // Search text
+        const matchesSearch = !searchVal || 
+            item.name.toLowerCase().includes(searchVal) ||
+            item.date.toLowerCase().includes(searchVal) ||
+            item.event_type.toLowerCase().includes(searchVal) ||
+            (item.day && item.day.toLowerCase().includes(searchVal));
+            
+        return matchesResult && matchesCommodity && matchesSearch;
+    });
+    
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="loading" style="padding: 2rem !important;">No circuit events found matching current filters.</td></tr>`;
+        return;
+    }
+    
+    tbody.innerHTML = '';
+    filtered.forEach(item => {
+        const tr = document.createElement('tr');
+        
+        const isUpper = item.direction === 'UPPER';
+        const typeColor = isUpper ? '#4ade80' : '#fb7185';
+        const typeIcon = isUpper ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+        
+        let statusBadge = '';
+        if (item.reversal_confirmed) {
+            statusBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #4ade80; border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">Reversed Intraday 🟢</span>`;
+        } else {
+            statusBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #fb7185; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">Locked / Closed Extreme 🔴</span>`;
+        }
+        
+        const reactionColor = item.reversal_confirmed ? '#4ade80' : '#94a3b8';
+        
+        tr.innerHTML = `
+            <td>
+                <strong>${item.date}</strong>
+                <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
+            </td>
+            <td>
+                <strong>${item.name}</strong>
+                <span class="category-tag">${item.category}</span>
+            </td>
+            <td>
+                <span style="color: ${typeColor}; font-weight: 600; font-size: 0.85rem;">
+                    <i class="fa-solid ${typeIcon}"></i> ${item.event_type}
+                </span>
+                <br>
+                <small style="color: var(--text-secondary);">Slab: ±${item.slab_pct}%</small>
+            </td>
+            <td style="color: #cbd5e1; font-weight: 600;">
+                ₹${Number(item.prev_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+            </td>
+            <td style="color: ${typeColor}; font-weight: 600;">
+                ₹${Number(item.circuit_limit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+            </td>
+            <td>
+                <div style="font-weight: 700; color: ${typeColor};">
+                    ₹${Number(item.extreme_hit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                </div>
+                <div style="font-size: 0.8rem; color: ${typeColor}; font-weight: 600;">
+                    ${item.extreme_move_pct > 0 ? '+' : ''}${item.extreme_move_pct}% from anchor
+                </div>
+            </td>
+            <td style="color: var(--text-primary); font-weight: 600;">
+                ₹${Number(item.close_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                    (${item.close_move_pct > 0 ? '+' : ''}${item.close_move_pct}%)
+                </div>
+            </td>
+            <td>
+                <span style="font-weight: 700; color: ${reactionColor}; font-size: 0.95rem;">
+                    ${item.reaction_text}
+                </span>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                    ${item.rating}
+                </div>
+            </td>
+            <td>
+                ${statusBadge}
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 function setupSubscribeForm() {

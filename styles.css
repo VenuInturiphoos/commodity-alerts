@@ -941,4 +941,67 @@ button[type="submit"] {
     animation: refreshPulse 1.2s ease-out;
 }
 
+/* Circuit Sub-Navigation Switcher */
+.circuit-subnav-container {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    background: rgba(15, 23, 42, 0.4);
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid var(--glass-border);
+    width: fit-content;
+}
+
+.circuit-subnav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    padding: 0.6rem 1.2rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.circuit-subnav-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.circuit-subnav-btn.active {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.25));
+    border-color: rgba(99, 102, 241, 0.45);
+    color: #c7d2fe;
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.2);
+}
+
+.subnav-badge {
+    background: rgba(99, 102, 241, 0.25);
+    color: #a5b4fc;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.circuit-subnav-btn.active .subnav-badge {
+    background: #6366f1;
+    color: #ffffff;
+}
+
+/* History Toolbar & Filter Enhancements */
+.history-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+
 
