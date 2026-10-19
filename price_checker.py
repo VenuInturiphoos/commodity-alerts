@@ -567,98 +567,8 @@ class PriceChecker:
         bb_lower = levels.get('BB_Lower')
         atr = levels.get('ATR_14')
 
-        # Multi-timeframe extremes evaluation (Highest priority first)
-        # Note: Daily pivots (R1/R2/S1/S2) are excluded from alerts to prevent noisy false breakouts.
-        high_alerts_config = [
-            ('AllTimeHigh', 'All-Time High', 0.01),
-            ('OneYearHigh', 'Yearly High', 0.01),
-            ('ThreeMonthHigh', '3-Month High', 0.01),
-            ('MonthlyHigh', 'Monthly High', 0.005),
-            ('WeeklyHigh', 'Weekly High', 0.005)
-        ]
-
-        low_alerts_config = [
-            ('AllTimeLow', 'All-Time Low', 0.01),
-            ('OneYearLow', 'Yearly Low', 0.01),
-            ('ThreeMonthLow', '3-Month Low', 0.01),
-            ('MonthlyLow', 'Monthly Low', 0.005),
-            ('WeeklyLow', 'Weekly Low', 0.005)
-        ]
-
-        # 1. Multi-Timeframe High Extremes (Yearly, 3-Month, Monthly, Weekly)
-        for key, name_str, threshold in high_alerts_config:
-            level = levels.get(key)
-            if level and abs(level) > 0 and abs(current_price - level) / abs(level) <= threshold:
-                alert_msg = f"testing {name_str}"
-                action_text = "Action Required: This asset is testing a major resistance level. If you are holding long positions, consider booking partial profits. If it breaks and sustains above this level, it could signal a strong bullish continuation."
-                alerts.append({
-                    'subject': f"🚀 Market Breakout: {name} {alert_msg}!{volume_msg}",
-                    'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
-                })
-                return alerts, alert_msg, today_ist, alert_msg, current_signal
-
-        # 2. Multi-Timeframe Low Extremes (Yearly, 3-Month, Monthly, Weekly)
-        for key, name_str, threshold in low_alerts_config:
-            level = levels.get(key)
-            if level and abs(level) > 0 and abs(current_price - level) / abs(level) <= threshold:
-                alert_msg = f"testing {name_str}"
-                action_text = "Action Required: This asset is testing a major support level. This is a potential buying opportunity if the price respects the support and bounces. Watch for reversal candlestick patterns before entering a new long position."
-                alerts.append({
-                    'subject': f"📉 Market Breakdown: {name} {alert_msg}!{volume_msg}",
-                    'body': f"{name} ({symbol}) is {alert_msg} of ₹{level:.2f}.{volume_msg}\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
-                })
-                return alerts, alert_msg, today_ist, alert_msg, current_signal
-
-        # 3. Bollinger Band Breakout / Breakdown
-        if bb_upper and current_price > bb_upper:
-            alert_msg = "Upper BB Breakout"
-            alerts.append({
-                'subject': f"🔥 Volatility Breakout: {name} pierced Upper Bollinger Band!{volume_msg}",
-                'body': f"{name} ({symbol}) has broken above its Upper Bollinger Band (₹{bb_upper:.2f}).{volume_msg}\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\nView Chart: {chart_url}"
-            })
-            return alerts, alert_msg, today_ist, alert_msg, current_signal
-
-        if bb_lower and current_price < bb_lower:
-            alert_msg = "Lower BB Breakdown"
-            action_text = "Action Required: The price has aggressively pierced the Lower Bollinger Band. This often indicates extreme oversold conditions. Look for a potential mean-reversion bounce, but avoid catching a falling knife until price stabilizes."
-            alerts.append({
-                'subject': f"⚠️ Volatility Breakdown: {name} pierced Lower Bollinger Band!{volume_msg}",
-                'body': f"{name} ({symbol}) has broken below its Lower Bollinger Band (₹{bb_lower:.2f}).{volume_msg}\nATR is ₹{atr:.2f}.\n\nCurrent price: ₹{current_price:.2f}.\n\n{action_text}\n\nView Chart: {chart_url}"
-            })
-            return alerts, alert_msg, today_ist, alert_msg, current_signal
-
-        # 4. Commodity 30-Day Average Movement Alert
-        if is_commodity and levels.get('Avg_Up_Pct') is not None and levels.get('Avg_Down_Pct') is not None and levels.get('Prev_Close') is not None:
-            prev_close = levels['Prev_Close']
-            avg_up = levels['Avg_Up_Pct']
-            avg_down = levels['Avg_Down_Pct']
-            
-            if prev_close > 0:
-                today_pct = (current_price - prev_close) / prev_close
-                if today_pct > 0 and avg_up > 0 and today_pct >= avg_up:
-                    alert_msg = "Commodity Surge"
-                    alerts.append({
-                        'subject': f"🚀 COMMODITY SURGE: {name} exceeds 30-day average up move!",
-                        'body': f"{name} ({symbol}) is currently up {today_pct*100:.2f}%, which exceeds its 30-day average up day of {avg_up*100:.2f}%.\n\nTechnicals:\n- Current Price: ₹{current_price:.2f}\n- Previous Close: ₹{prev_close:.2f}\n\nView Chart: {chart_url}"
-                    })
-                    return alerts, alert_msg, today_ist, alert_msg, current_signal
-                elif today_pct < 0 and avg_down < 0 and today_pct <= avg_down:
-                    alert_msg = "Commodity Drop"
-                    alerts.append({
-                        'subject': f"📉 COMMODITY DROP: {name} exceeds 30-day average down move!",
-                        'body': f"{name} ({symbol}) is currently down {abs(today_pct)*100:.2f}%, which exceeds its 30-day average down day of {abs(avg_down)*100:.2f}%.\n\nTechnicals:\n- Current Price: ₹{current_price:.2f}\n- Previous Close: ₹{prev_close:.2f}\n\nView Chart: {chart_url}"
-                    })
-                    return alerts, alert_msg, today_ist, alert_msg, current_signal
-
-        # 5. Trend Signals (EMA 50 / 200 crossover to STRONG BUY / STRONG SELL)
-        if current_signal != previous_signal and current_signal in ["STRONG BUY", "STRONG SELL"]:
-            alert_msg = f"{current_signal} Signal"
-            alerts.append({
-                'subject': f"🔔 Trading Signal: {name} is now a {current_signal}!",
-                'body': f"{name} ({symbol}) has crossed its Moving Averages and generated a {current_signal} signal.\n\nEMA 50: ₹{ema_50:.2f}\nEMA 200: ₹{ema_200:.2f}\nCurrent Price: ₹{current_price:.2f}\n\nView Chart: {chart_url}"
-            })
-            return alerts, alert_msg, today_ist, alert_msg, current_signal
-
+        # Note: Non-circuit alerts (High/Low extremes, Bollinger Bands, Moving Averages, 30d moves)
+        # are excluded per user preference: Alerts are exclusively sent when a Commodity hits its Upper or Lower Circuit.
         return alerts, alert_status, last_alert_date, last_alert_msg, current_signal
 
     def sync_to_supabase(self, payload):
@@ -802,8 +712,58 @@ class PriceChecker:
             
             levels = self.get_support_resistance_levels(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym, current_price=current_price, tv_quote=tv_quote)
             
-            new_alerts, alert_status, last_alert_date, last_alert_msg, current_signal = self.evaluate_levels(name, symbol, levels, current_price, previous_state, is_commodity=True)
-            alerts.extend(new_alerts)
+            # Check Commodity Upper/Lower Circuit Limits
+            dpl_initial = data.get('dpl_initial', 0.04)
+            prev_close_ref = None
+            if tv_quote and tv_quote.get('prev_close') is not None:
+                prev_close_ref = float(tv_quote['prev_close'])
+            elif levels and levels.get('Prev_Close'):
+                prev_close_ref = float(levels['Prev_Close'])
+            elif current_price:
+                prev_close_ref = float(current_price)
+                
+            day_high_ref = float(tv_quote.get('high') or current_price) if tv_quote else current_price
+            day_low_ref = float(tv_quote.get('low') or current_price) if tv_quote else current_price
+            
+            if prev_close_ref and current_price and prev_close_ref > 0:
+                uc_limit = round(prev_close_ref * (1 + dpl_initial), 2)
+                lc_limit = round(prev_close_ref * (1 - dpl_initial), 2)
+                
+                is_uc_hit = bool(current_price >= uc_limit or day_high_ref >= uc_limit)
+                is_lc_hit = bool(current_price <= lc_limit or day_low_ref <= lc_limit)
+                
+                if is_uc_hit or is_lc_hit:
+                    event_type = "UPPER CIRCUIT HIT" if is_uc_hit else "LOWER CIRCUIT HIT"
+                    circuit_price = uc_limit if is_uc_hit else lc_limit
+                    extreme_price = day_high_ref if is_uc_hit else day_low_ref
+                    move_from_anchor = ((current_price - prev_close_ref) / prev_close_ref) * 100
+                    today_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%Y-%m-%d')
+                    
+                    last_c_date = previous_state.get(symbol, {}).get('last_alert_date')
+                    last_c_msg = previous_state.get(symbol, {}).get('last_alert_msg')
+                    
+                    if last_c_date == today_ist and last_c_msg == event_type:
+                        print(f"Skipping duplicate circuit alert for {name} ({symbol}): already alerted today.")
+                    else:
+                        alert_subj = f"⚡ MCX CIRCUIT HIT: {name} reached {event_type} (₹{circuit_price:.2f})!"
+                        alert_body = (
+                            f"⚡ MCX DAILY CIRCUIT LIMIT (DPL) HIT!\n\n"
+                            f"Commodity: {name} ({symbol})\n"
+                            f"Event: {event_type}\n"
+                            f"Live Price: ₹{current_price:.2f}\n"
+                            f"Day Extreme: ₹{extreme_price:.2f}\n"
+                            f"Circuit Limit Price: ₹{circuit_price:.2f} ({'+' if is_uc_hit else '-'}{dpl_initial*100:.1f}% DPL)\n"
+                            f"Previous Close (Anchor): ₹{prev_close_ref:.2f}\n"
+                            f"Day Move: {move_from_anchor:+.2f}%\n\n"
+                            f"Exchange Status: Trading reached daily permissible limit.\n"
+                            f"Historical Pattern: Check 30-day mean reversion bounce/pullback rates.\n\n"
+                            f"Live Dashboard: https://VenuInturiphoos.github.io/commodity-alerts/index.html#circuits"
+                        )
+                        alerts.append({'subject': alert_subj, 'body': alert_body})
+                        alert_status = event_type
+                        last_alert_date = today_ist
+                        last_alert_msg = event_type
+                        print(f"🚨 [CIRCUIT ALERT GENERATED] {alert_subj}")
             
             if levels and current_price:
                 market_data_payload.append({
@@ -853,8 +813,8 @@ class PriceChecker:
             levels = self.get_support_resistance_levels(symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=yf_sym, current_price=current_price)
             intrinsic_val = self.get_intrinsic_value(yf_sym)
             
+            # Note: Non-circuit alerts excluded per user request. No alerts generated for stocks.
             new_alerts, alert_status, last_alert_date, last_alert_msg, current_signal = self.evaluate_levels(name, symbol, levels, current_price, previous_state, is_commodity=False)
-            alerts.extend(new_alerts)
             
             if levels and current_price:
                 market_data_payload.append({
@@ -1238,12 +1198,18 @@ class PriceChecker:
                 commodity_counts[conf['name']] = 0
                 try:
                     ticker = yf.Ticker(conf['symbol'])
-                    df = ticker.history(period="45d", interval="1d")
+                    df = ticker.history(period="60d", interval="1d")
                     if df.empty or len(df) < 5:
                         continue
                         
                     df['PrevClose'] = df['Close'].shift(1)
-                    df = df.dropna()
+                    df['NextClose'] = df['Close'].shift(-1)
+                    next_dates = [df.index[i + 1].strftime('%d %b %Y') if i + 1 < len(df) else None for i in range(len(df))]
+                    next_days = [df.index[i + 1].strftime('%a') if i + 1 < len(df) else None for i in range(len(df))]
+                    df['NextDate'] = next_dates
+                    df['NextDay'] = next_days
+                    
+                    df = df.dropna(subset=['PrevClose'])
                     df = df[df.index >= pd.Timestamp(cutoff_date, tz=df.index.tz)]
                     
                     slab = conf['slab']
@@ -1264,6 +1230,12 @@ class PriceChecker:
                         uc_limit = round(p_close * (1 + slab), 2)
                         lc_limit = round(p_close * (1 - slab), 2)
                         
+                        has_next = pd.notna(row['NextClose'])
+                        next_close = round(float(row['NextClose']), 2) if has_next else None
+                        next_date = row['NextDate'] or "Next Session"
+                        next_day = row['NextDay'] or "--"
+                        next_move = round(((next_close - close) / close) * 100, 2) if has_next else None
+                        
                         # Upper Extreme
                         if high_move >= near_threshold:
                             is_circuit_hit = bool(high_move >= slab)
@@ -1279,6 +1251,25 @@ class PriceChecker:
                                 rating = "Moderate Reversal 🟡"
                             else:
                                 rating = "Locked / Closed High 🔴"
+                                
+                            if has_next:
+                                next_day_reversed = bool(next_close < close)
+                                if next_move <= -1.5:
+                                    next_day_rating = f"{next_move:.2f}% Pullback 🟢"
+                                    next_day_badge = "Next-Day Pullback 🟢"
+                                elif next_move < 0:
+                                    next_day_rating = f"{next_move:.2f}% Pullback 🟢"
+                                    next_day_badge = "Next-Day Pullback 🟢"
+                                elif next_move == 0:
+                                    next_day_rating = "0.00% Flat ⚪"
+                                    next_day_badge = "Next-Day Flat ⚪"
+                                else:
+                                    next_day_rating = f"+{next_move:.2f}% Extension 🔴"
+                                    next_day_badge = "Next-Day Extension 🔴"
+                            else:
+                                next_day_reversed = None
+                                next_day_rating = "Session in progress ⏳"
+                                next_day_badge = "Pending ⏳"
                                 
                             commodity_counts[conf['name']] += 1
                             events.append({
@@ -1303,7 +1294,15 @@ class PriceChecker:
                                 'reaction_text': f"-{pullback:.2f}% Pullback",
                                 'reversal_confirmed': reversal_confirmed,
                                 'badge_status': badge_status,
-                                'rating': rating
+                                'rating': rating,
+                                # Next-day metrics
+                                'next_date': next_date,
+                                'next_day': next_day,
+                                'next_close': next_close,
+                                'next_day_move_pct': next_move,
+                                'next_day_reversed': next_day_reversed,
+                                'next_day_badge': next_day_badge,
+                                'next_day_rating': next_day_rating
                             })
                             
                         # Lower Extreme
@@ -1321,6 +1320,25 @@ class PriceChecker:
                                 rating = "Moderate Reversal 🟡"
                             else:
                                 rating = "Locked / Closed Floor 🔴"
+                                
+                            if has_next:
+                                next_day_reversed = bool(next_close > close)
+                                if next_move >= 1.5:
+                                    next_day_rating = f"+{next_move:.2f}% Bounce 🟢"
+                                    next_day_badge = "Next-Day Bounce 🟢"
+                                elif next_move > 0:
+                                    next_day_rating = f"+{next_move:.2f}% Bounce 🟢"
+                                    next_day_badge = "Next-Day Bounce 🟢"
+                                elif next_move == 0:
+                                    next_day_rating = "0.00% Flat ⚪"
+                                    next_day_badge = "Next-Day Flat ⚪"
+                                else:
+                                    next_day_rating = f"{next_move:.2f}% Extension 🔴"
+                                    next_day_badge = "Next-Day Extension 🔴"
+                            else:
+                                next_day_reversed = None
+                                next_day_rating = "Session in progress ⏳"
+                                next_day_badge = "Pending ⏳"
                                 
                             commodity_counts[conf['name']] += 1
                             events.append({
@@ -1345,7 +1363,15 @@ class PriceChecker:
                                 'reaction_text': f"+{bounce:.2f}% Bounce",
                                 'reversal_confirmed': reversal_confirmed,
                                 'badge_status': badge_status,
-                                'rating': rating
+                                'rating': rating,
+                                # Next-day metrics
+                                'next_date': next_date,
+                                'next_day': next_day,
+                                'next_close': next_close,
+                                'next_day_move_pct': next_move,
+                                'next_day_reversed': next_day_reversed,
+                                'next_day_badge': next_day_badge,
+                                'next_day_rating': next_day_rating
                             })
                 except Exception as e:
                     print(f"Error fetching history for {sym}: {e}")
@@ -1357,6 +1383,11 @@ class PriceChecker:
             locked = total_events - reversals
             win_rate = round(reversals / total_events * 100, 1) if total_events > 0 else 0.0
             avg_reaction = round(sum(abs(e['reaction_move_pct']) for e in events) / total_events, 2) if total_events > 0 else 0.0
+            
+            next_day_completed = [e for e in events if e.get('next_day_reversed') is not None]
+            next_day_reversals = sum(1 for e in next_day_completed if e['next_day_reversed'])
+            next_day_win_rate = round(next_day_reversals / len(next_day_completed) * 100, 1) if next_day_completed else 0.0
+            avg_next_day_move = round(sum(abs(e['next_day_move_pct']) for e in next_day_completed) / len(next_day_completed), 2) if next_day_completed else 0.0
             
             most_active = max(commodity_counts.items(), key=lambda x: x[1]) if commodity_counts else ("Crude Oil", 0)
             now_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d %b %Y, %I:%M:%S %p IST')
@@ -1370,6 +1401,10 @@ class PriceChecker:
                     'locked_count': locked,
                     'reversal_win_rate_pct': win_rate,
                     'avg_reaction_pct': avg_reaction,
+                    'next_day_completed_events': len(next_day_completed),
+                    'next_day_reversals_count': next_day_reversals,
+                    'next_day_win_rate_pct': next_day_win_rate,
+                    'avg_next_day_move_pct': avg_next_day_move,
                     'most_active_commodity': f"{most_active[0]} ({most_active[1]} events)"
                 },
                 'events': events

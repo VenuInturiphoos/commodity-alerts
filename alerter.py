@@ -183,8 +183,8 @@ class EmailAlerter:
         self.send_alerts([{'subject': subject, 'body': body}])
 
     def _send_telegram(self, subject, body):
-        bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
-        chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+        bot_token = os.environ.get('TELEGRAM_BOT_TOKEN') or self.config.get('telegram_bot_token')
+        chat_id = os.environ.get('TELEGRAM_CHAT_ID') or self.config.get('telegram_chat_id')
         if not bot_token or not chat_id:
             return
             

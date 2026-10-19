@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css?v=4">
+    <link rel="stylesheet" href="styles.css?v=sticky7">
     <script>
         window.onerror = function(msg, url, line, col, error) {
             console.error("Global Error: " + msg + " at line " + line + ":" + col, error);
@@ -293,6 +293,27 @@
                         </div>
                     </div>
 
+                    <!-- View Mode Toggle (Intraday vs Next-Day Movement) -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; background: rgba(255, 255, 255, 0.03); padding: 0.85rem 1.25rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                            <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 600;">
+                                <i class="fa-solid fa-chart-pie" style="color: #6366f1; margin-right: 4px;"></i> Analysis Mode:
+                            </span>
+                            <button id="view-mode-intraday" class="circuit-filter-pill active" onclick="setHistoryViewMode('intraday', this)">
+                                <i class="fa-solid fa-clock-rotate-left"></i> Intraday Reaction (Day T)
+                            </button>
+                            <button id="view-mode-nextday" class="circuit-filter-pill" onclick="setHistoryViewMode('nextday', this)">
+                                <i class="fa-solid fa-calendar-check" style="color: #38bdf8;"></i> Next-Day Movement (Day T+1 End) ⚡
+                            </button>
+                            <button id="view-mode-both" class="circuit-filter-pill" onclick="setHistoryViewMode('both', this)">
+                                <i class="fa-solid fa-table-columns"></i> Complete Overview
+                            </button>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                            <span id="history-view-hint">Showing intraday price reaction from circuit test to session close</span>
+                        </div>
+                    </div>
+
                     <!-- Toolbar (Filters & Search for History) -->
                     <div class="circuits-toolbar" style="margin-bottom: 1rem;">
                         <div class="circuit-filters" style="gap: 0.4rem;">
@@ -321,7 +342,7 @@
                     <!-- 30-Day History Table -->
                     <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
                         <table class="market-table">
-                            <thead>
+                            <thead id="circuits-history-thead">
                                 <tr>
                                     <th>Date & Day</th>
                                     <th>Commodity</th>
@@ -1281,17 +1302,68 @@ async function fetchCircuitsHistory(forceNetwork = false) {
     }
 }
 
+let activeHistoryViewMode = 'intraday';
+let circuitsHistorySummary = null;
+
 function updateHistorySummaryKPIs(summary) {
     if (!summary) return;
+    circuitsHistorySummary = summary;
+    
     const totalEl = document.getElementById('kpi-hist-total');
     const winRateEl = document.getElementById('kpi-hist-winrate');
     const reactionEl = document.getElementById('kpi-hist-reaction');
     const activeEl = document.getElementById('kpi-hist-active');
+    const hintEl = document.getElementById('history-view-hint');
+    
+    const winRateHeader = winRateEl?.parentElement?.querySelector('.circuit-kpi-header span');
+    const winRateSub = winRateEl?.parentElement?.querySelector('.circuit-kpi-sub');
+    const reactionHeader = reactionEl?.parentElement?.querySelector('.circuit-kpi-header span');
+    const reactionSub = reactionEl?.parentElement?.querySelector('.circuit-kpi-sub');
     
     if (totalEl) totalEl.textContent = summary.total_events || '--';
-    if (winRateEl) winRateEl.textContent = `${summary.reversal_win_rate_pct || 0}%`;
-    if (reactionEl) reactionEl.textContent = `±${summary.avg_reaction_pct || 0}%`;
     if (activeEl) activeEl.textContent = summary.most_active_commodity || '--';
+    
+    if (activeHistoryViewMode === 'nextday') {
+        if (winRateHeader) winRateHeader.textContent = 'Next-Day Reversal Win Rate';
+        if (winRateEl) winRateEl.textContent = `${summary.next_day_win_rate_pct || 0}%`;
+        if (winRateSub) winRateSub.textContent = `${summary.next_day_reversals_count || 0} of ${summary.next_day_completed_events || 0} reversed at next day close`;
+        
+        if (reactionHeader) reactionHeader.textContent = 'Avg. Next-Day Move';
+        if (reactionEl) reactionEl.textContent = `±${summary.avg_next_day_move_pct || 0}%`;
+        if (reactionSub) reactionSub.textContent = 'Average movement at next trading day end';
+        
+        if (hintEl) hintEl.textContent = 'Showing price movement and reversal outcome at the close of the next trading day (Day T+1)';
+    } else if (activeHistoryViewMode === 'both') {
+        if (winRateHeader) winRateHeader.textContent = 'Reversal Rates (Intraday / Next-Day)';
+        if (winRateEl) winRateEl.textContent = `${summary.reversal_win_rate_pct || 0}% / ${summary.next_day_win_rate_pct || 0}%`;
+        if (winRateSub) winRateSub.textContent = `Intraday win rate vs T+1 next-day close win rate`;
+        
+        if (reactionHeader) reactionHeader.textContent = 'Avg Moves (Intra / Next-Day)';
+        if (reactionEl) reactionEl.textContent = `±${summary.avg_reaction_pct || 0}% / ±${summary.avg_next_day_move_pct || 0}%`;
+        if (reactionSub) reactionSub.textContent = 'Intraday reaction vs next-day end movement';
+        
+        if (hintEl) hintEl.textContent = 'Showing both same-day reaction and next-day end movement side-by-side';
+    } else {
+        if (winRateHeader) winRateHeader.textContent = 'Intraday Reversal Win Rate';
+        if (winRateEl) winRateEl.textContent = `${summary.reversal_win_rate_pct || 0}%`;
+        if (winRateSub) winRateSub.textContent = 'Mean-reverted before session close';
+        
+        if (reactionHeader) reactionHeader.textContent = 'Avg. Reaction Move';
+        if (reactionEl) reactionEl.textContent = `±${summary.avg_reaction_pct || 0}%`;
+        if (reactionSub) reactionSub.textContent = 'Average bounce/pullback from extreme';
+        
+        if (hintEl) hintEl.textContent = 'Showing intraday price reaction from circuit test to session close';
+    }
+}
+
+function setHistoryViewMode(mode, btn) {
+    activeHistoryViewMode = mode;
+    if (btn && btn.parentElement) {
+        btn.parentElement.querySelectorAll('.circuit-filter-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    updateHistorySummaryKPIs(circuitsHistorySummary);
+    renderCircuitsHistoryTable();
 }
 
 function setHistoryResultFilter(filter, btn) {
@@ -1318,10 +1390,59 @@ function filterHistoryTable() {
 
 function renderCircuitsHistoryTable() {
     const tbody = document.getElementById('circuits-history-body');
+    const thead = document.getElementById('circuits-history-thead');
     if (!tbody) return;
     
+    // Update headers based on activeHistoryViewMode
+    if (thead) {
+        if (activeHistoryViewMode === 'nextday') {
+            thead.innerHTML = `
+                <tr>
+                    <th>Event Date (Day T)</th>
+                    <th>Commodity</th>
+                    <th>Limit Event</th>
+                    <th>Circuit Limit</th>
+                    <th>Day T Close</th>
+                    <th>Next Trading Day</th>
+                    <th>Next Day End Price</th>
+                    <th>Next Day Movement %</th>
+                    <th>Next-Day Outcome</th>
+                </tr>
+            `;
+        } else if (activeHistoryViewMode === 'both') {
+            thead.innerHTML = `
+                <tr>
+                    <th>Event Date</th>
+                    <th>Commodity</th>
+                    <th>Limit Event</th>
+                    <th>Circuit Limit</th>
+                    <th>Day T Close</th>
+                    <th>Intraday Reaction</th>
+                    <th>Next Trading Day</th>
+                    <th>Next Day End Price</th>
+                    <th>Next Day Move %</th>
+                    <th>Next-Day Outcome</th>
+                </tr>
+            `;
+        } else {
+            thead.innerHTML = `
+                <tr>
+                    <th>Date & Day</th>
+                    <th>Commodity</th>
+                    <th>Limit Event</th>
+                    <th>Anchor (Prev Close)</th>
+                    <th>Circuit Limit</th>
+                    <th>Extreme Hit (% Move)</th>
+                    <th>Session Close</th>
+                    <th>Intraday Reaction</th>
+                    <th>Reversal Outcome</th>
+                </tr>
+            `;
+        }
+    }
+    
     if (!rawCircuitsHistory || rawCircuitsHistory.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="loading">No circuit events recorded in the past 30 days.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="loading">No circuit events recorded in the past 30 days.</td></tr>`;
         return;
     }
     
@@ -1330,10 +1451,15 @@ function renderCircuitsHistoryTable() {
     let filtered = rawCircuitsHistory.filter(item => {
         // Result filter
         let matchesResult = true;
-        if (activeHistoryFilter === 'REVERSED') matchesResult = item.reversal_confirmed === true;
-        else if (activeHistoryFilter === 'LOCKED') matchesResult = item.reversal_confirmed === false;
-        else if (activeHistoryFilter === 'UPPER') matchesResult = item.direction === 'UPPER';
-        else if (activeHistoryFilter === 'LOWER') matchesResult = item.direction === 'LOWER';
+        if (activeHistoryFilter === 'REVERSED') {
+            matchesResult = activeHistoryViewMode === 'nextday' ? (item.next_day_reversed === true) : (item.reversal_confirmed === true);
+        } else if (activeHistoryFilter === 'LOCKED') {
+            matchesResult = activeHistoryViewMode === 'nextday' ? (item.next_day_reversed === false) : (item.reversal_confirmed === false);
+        } else if (activeHistoryFilter === 'UPPER') {
+            matchesResult = item.direction === 'UPPER';
+        } else if (activeHistoryFilter === 'LOWER') {
+            matchesResult = item.direction === 'LOWER';
+        }
         
         // Commodity filter
         let matchesCommodity = true;
@@ -1347,13 +1473,14 @@ function renderCircuitsHistoryTable() {
             item.name.toLowerCase().includes(searchVal) ||
             item.date.toLowerCase().includes(searchVal) ||
             item.event_type.toLowerCase().includes(searchVal) ||
+            (item.next_date && item.next_date.toLowerCase().includes(searchVal)) ||
             (item.day && item.day.toLowerCase().includes(searchVal));
             
         return matchesResult && matchesCommodity && matchesSearch;
     });
     
     if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="loading" style="padding: 2rem !important;">No circuit events found matching current filters.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="loading" style="padding: 2rem !important;">No circuit events found matching current filters.</td></tr>`;
         return;
     }
     
@@ -1365,63 +1492,175 @@ function renderCircuitsHistoryTable() {
         const typeColor = isUpper ? '#4ade80' : '#fb7185';
         const typeIcon = isUpper ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
         
-        let statusBadge = '';
+        let intradayBadge = '';
         if (item.reversal_confirmed) {
-            statusBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #4ade80; border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">Reversed Intraday 🟢</span>`;
+            intradayBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #4ade80; border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">Reversed Intraday 🟢</span>`;
         } else {
-            statusBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #fb7185; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">Locked / Closed Extreme 🔴</span>`;
+            intradayBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #fb7185; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">Locked / Closed Extreme 🔴</span>`;
         }
         
         const reactionColor = item.reversal_confirmed ? '#4ade80' : '#94a3b8';
         
-        tr.innerHTML = `
-            <td>
-                <strong>${item.date}</strong>
-                <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
-            </td>
-            <td>
-                <strong>${item.name}</strong>
-                <span class="category-tag">${item.category}</span>
-            </td>
-            <td>
-                <span style="color: ${typeColor}; font-weight: 600; font-size: 0.85rem;">
-                    <i class="fa-solid ${typeIcon}"></i> ${item.event_type}
-                </span>
-                <br>
-                <small style="color: var(--text-secondary);">Slab: ±${item.slab_pct}%</small>
-            </td>
-            <td style="color: #cbd5e1; font-weight: 600;">
-                ₹${Number(item.prev_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-            </td>
-            <td style="color: ${typeColor}; font-weight: 600;">
-                ₹${Number(item.circuit_limit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-            </td>
-            <td>
-                <div style="font-weight: 700; color: ${typeColor};">
-                    ₹${Number(item.extreme_hit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+        // Next-day elements
+        let nextMoveHtml = '';
+        let nextBadge = '';
+        if (item.next_day_move_pct !== null && item.next_day_move_pct !== undefined) {
+            const moveColor = item.next_day_reversed ? '#4ade80' : '#fb7185';
+            const moveSign = item.next_day_move_pct > 0 ? '+' : '';
+            nextMoveHtml = `
+                <div style="font-weight: 700; color: ${moveColor}; font-size: 0.95rem;">
+                    ${moveSign}${item.next_day_move_pct}%
                 </div>
-                <div style="font-size: 0.8rem; color: ${typeColor}; font-weight: 600;">
-                    ${item.extreme_move_pct > 0 ? '+' : ''}${item.extreme_move_pct}% from anchor
-                </div>
-            </td>
-            <td style="color: var(--text-primary); font-weight: 600;">
-                ₹${Number(item.close_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                 <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                    (${item.close_move_pct > 0 ? '+' : ''}${item.close_move_pct}%)
+                    ${item.next_day_rating || ''}
                 </div>
-            </td>
-            <td>
-                <span style="font-weight: 700; color: ${reactionColor}; font-size: 0.95rem;">
-                    ${item.reaction_text}
-                </span>
-                <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                    ${item.rating}
-                </div>
-            </td>
-            <td>
-                ${statusBadge}
-            </td>
-        `;
+            `;
+            if (item.next_day_reversed === true) {
+                nextBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #4ade80; border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">${item.next_day_badge || 'Next-Day Reversal 🟢'}</span>`;
+            } else {
+                nextBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #fb7185; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">${item.next_day_badge || 'Continuation 🔴'}</span>`;
+            }
+        } else {
+            nextMoveHtml = `<span style="color: var(--text-secondary); font-size: 0.82rem;">Session Pending ⏳</span>`;
+            nextBadge = `<span style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">Pending ⏳</span>`;
+        }
+        
+        if (activeHistoryViewMode === 'nextday') {
+            tr.innerHTML = `
+                <td>
+                    <strong>${item.date}</strong>
+                    <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
+                </td>
+                <td>
+                    <strong>${item.name}</strong>
+                    <span class="category-tag">${item.category}</span>
+                </td>
+                <td>
+                    <span style="color: ${typeColor}; font-weight: 600; font-size: 0.85rem;">
+                        <i class="fa-solid ${typeIcon}"></i> ${item.event_type}
+                    </span>
+                    <br>
+                    <small style="color: var(--text-secondary);">Slab: ±${item.slab_pct}%</small>
+                </td>
+                <td style="color: ${typeColor}; font-weight: 600;">
+                    ₹${Number(item.circuit_limit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                </td>
+                <td style="color: var(--text-primary); font-weight: 600;">
+                    ₹${Number(item.close_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                </td>
+                <td>
+                    <strong>${item.next_date}</strong>
+                    <span class="unit-tag" style="margin-left: 4px;">(${item.next_day || '--'})</span>
+                </td>
+                <td style="color: #f8fafc; font-weight: 700;">
+                    ${item.next_close !== null && item.next_close !== undefined ? '₹' + Number(item.next_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '<span style="color: var(--text-secondary);">Pending</span>'}
+                </td>
+                <td>
+                    ${nextMoveHtml}
+                </td>
+                <td>
+                    ${nextBadge}
+                </td>
+            `;
+        } else if (activeHistoryViewMode === 'both') {
+            tr.innerHTML = `
+                <td>
+                    <strong>${item.date}</strong>
+                    <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
+                </td>
+                <td>
+                    <strong>${item.name}</strong>
+                    <span class="category-tag">${item.category}</span>
+                </td>
+                <td>
+                    <span style="color: ${typeColor}; font-weight: 600; font-size: 0.85rem;">
+                        <i class="fa-solid ${typeIcon}"></i> ${item.event_type}
+                    </span>
+                </td>
+                <td style="color: ${typeColor}; font-weight: 600;">
+                    ₹${Number(item.circuit_limit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                </td>
+                <td style="color: var(--text-primary); font-weight: 600;">
+                    ₹${Number(item.close_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                </td>
+                <td>
+                    <span style="font-weight: 700; color: ${reactionColor}; font-size: 0.9rem;">
+                        ${item.reaction_text}
+                    </span>
+                    <div>${intradayBadge}</div>
+                </td>
+                <td>
+                    <strong>${item.next_date}</strong>
+                    <span class="unit-tag" style="margin-left: 4px;">(${item.next_day || '--'})</span>
+                </td>
+                <td style="color: #f8fafc; font-weight: 700;">
+                    ${item.next_close !== null && item.next_close !== undefined ? '₹' + Number(item.next_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '<span style="color: var(--text-secondary);">Pending</span>'}
+                </td>
+                <td>
+                    ${nextMoveHtml}
+                </td>
+                <td>
+                    ${nextBadge}
+                </td>
+            `;
+        } else {
+            // Intraday View (Default)
+            const nextDayPreview = (item.next_day_move_pct !== null && item.next_day_move_pct !== undefined)
+                ? `<div style="font-size: 0.73rem; color: ${item.next_day_reversed ? '#4ade80' : '#fb7185'}; margin-top: 3px; font-weight: 600;">
+                    <i class="fa-solid fa-arrow-right" style="font-size: 0.65rem;"></i> Next Day: ${item.next_day_move_pct > 0 ? '+' : ''}${item.next_day_move_pct}%
+                   </div>`
+                : `<div style="font-size: 0.73rem; color: var(--text-secondary); margin-top: 3px;">Next Day: Pending</div>`;
+                
+            tr.innerHTML = `
+                <td>
+                    <strong>${item.date}</strong>
+                    <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
+                </td>
+                <td>
+                    <strong>${item.name}</strong>
+                    <span class="category-tag">${item.category}</span>
+                </td>
+                <td>
+                    <span style="color: ${typeColor}; font-weight: 600; font-size: 0.85rem;">
+                        <i class="fa-solid ${typeIcon}"></i> ${item.event_type}
+                    </span>
+                    <br>
+                    <small style="color: var(--text-secondary);">Slab: ±${item.slab_pct}%</small>
+                </td>
+                <td style="color: #cbd5e1; font-weight: 600;">
+                    ₹${Number(item.prev_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                </td>
+                <td style="color: ${typeColor}; font-weight: 600;">
+                    ₹${Number(item.circuit_limit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                </td>
+                <td>
+                    <div style="font-weight: 700; color: ${typeColor};">
+                        ₹${Number(item.extreme_hit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </div>
+                    <div style="font-size: 0.8rem; color: ${typeColor}; font-weight: 600;">
+                        ${item.extreme_move_pct > 0 ? '+' : ''}${item.extreme_move_pct}% from anchor
+                    </div>
+                </td>
+                <td style="color: var(--text-primary); font-weight: 600;">
+                    ₹${Number(item.close_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                        (${item.close_move_pct > 0 ? '+' : ''}${item.close_move_pct}%)
+                    </div>
+                </td>
+                <td>
+                    <span style="font-weight: 700; color: ${reactionColor}; font-size: 0.95rem;">
+                        ${item.reaction_text}
+                    </span>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                        ${item.rating}
+                    </div>
+                    ${nextDayPreview}
+                </td>
+                <td>
+                    ${intradayBadge}
+                </td>
+            `;
+        }
         tbody.appendChild(tr);
     });
 }
