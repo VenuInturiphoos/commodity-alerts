@@ -103,7 +103,8 @@ def get_circuits_summary(message):
                 next_info = f"Next Day Close: ₹{next_close:.2f} ({move_pct:+.2f}%)"
             else:
                 next_info = "Next Day: Pending ⏳"
-            resp += f"{direction_icon} *{ev['name']}* ({ev['date']})\n"
+            time_str = f", {ev['time']} IST" if ev.get('time') else ""
+            resp += f"{direction_icon} *{ev['name']}* ({ev['date']}{time_str})\n"
             resp += f"   Extreme: ₹{ev['extreme_hit']} | Day Close: ₹{ev['close_price']}\n"
             resp += f"   {next_info}\n"
             resp += f"   Outcome: {ev.get('next_day_badge', ev.get('rating', ''))}\n\n"

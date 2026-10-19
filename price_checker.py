@@ -737,7 +737,9 @@ class PriceChecker:
                     circuit_price = uc_limit if is_uc_hit else lc_limit
                     extreme_price = day_high_ref if is_uc_hit else day_low_ref
                     move_from_anchor = ((current_price - prev_close_ref) / prev_close_ref) * 100
-                    today_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%Y-%m-%d')
+                    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+                    today_ist = now_dt.strftime('%Y-%m-%d')
+                    today_time_ist = now_dt.strftime('%d %b %Y, %I:%M %p IST')
                     
                     last_c_date = previous_state.get(symbol, {}).get('last_alert_date')
                     last_c_msg = previous_state.get(symbol, {}).get('last_alert_msg')
@@ -750,6 +752,7 @@ class PriceChecker:
                             f"⚡ MCX DAILY CIRCUIT LIMIT (DPL) HIT!\n\n"
                             f"Commodity: {name} ({symbol})\n"
                             f"Event: {event_type}\n"
+                            f"Event Date & Time: {today_time_ist}\n"
                             f"Live Price: ₹{current_price:.2f}\n"
                             f"Day Extreme: ₹{extreme_price:.2f}\n"
                             f"Circuit Limit Price: ₹{circuit_price:.2f} ({'+' if is_uc_hit else '-'}{dpl_initial*100:.1f}% DPL)\n"
@@ -1202,6 +1205,15 @@ class PriceChecker:
                     if df.empty or len(df) < 5:
                         continue
                         
+                    df_hourly = None
+                    try:
+                        df_h = ticker.history(period="45d", interval="1h")
+                        if not df_h.empty:
+                            df_h.index = df_h.index.tz_convert(pytz.timezone('Asia/Kolkata'))
+                            df_hourly = df_h
+                    except Exception as eh:
+                        print(f"Hourly fetch notice for {sym}: {eh}")
+                        
                     df['PrevClose'] = df['Close'].shift(1)
                     df['NextClose'] = df['Close'].shift(-1)
                     next_dates = [df.index[i + 1].strftime('%d %b %Y') if i + 1 < len(df) else None for i in range(len(df))]
@@ -1216,6 +1228,7 @@ class PriceChecker:
                     near_threshold = slab * 0.80
                     
                     for idx, row in df.iterrows():
+                        date_key = idx.strftime('%Y-%m-%d')
                         date_str = idx.strftime('%d %b %Y')
                         day_name = idx.strftime('%a')
                         p_close = row['PrevClose']
@@ -1229,6 +1242,28 @@ class PriceChecker:
                         
                         uc_limit = round(p_close * (1 + slab), 2)
                         lc_limit = round(p_close * (1 - slab), 2)
+                        
+                        # Find exact time of high / low in IST from hourly candles
+                        high_time = "11:30 PM"
+                        low_time = "11:30 PM"
+                        high_timestamp = int(idx.timestamp())
+                        low_timestamp = int(idx.timestamp())
+                        
+                        if df_hourly is not None and not df_hourly.empty:
+                            day_h = df_hourly[df_hourly.index.strftime('%Y-%m-%d') == date_key]
+                            if not day_h.empty:
+                                try:
+                                    h_idx = day_h['High'].idxmax()
+                                    high_time = h_idx.strftime('%I:%M %p')
+                                    high_timestamp = int(h_idx.timestamp())
+                                except Exception:
+                                    pass
+                                try:
+                                    l_idx = day_h['Low'].idxmin()
+                                    low_time = l_idx.strftime('%I:%M %p')
+                                    low_timestamp = int(l_idx.timestamp())
+                                except Exception:
+                                    pass
                         
                         has_next = pd.notna(row['NextClose'])
                         next_close = round(float(row['NextClose']), 2) if has_next else None
@@ -1275,7 +1310,10 @@ class PriceChecker:
                             events.append({
                                 'date': date_str,
                                 'day': day_name,
-                                'timestamp': int(idx.timestamp()),
+                                'time': high_time,
+                                'time_ist': f"{high_time} IST",
+                                'datetime_str': f"{date_str}, {high_time}",
+                                'timestamp': high_timestamp,
                                 'symbol': sym,
                                 'name': conf['name'],
                                 'category': conf['category'],
@@ -1344,7 +1382,10 @@ class PriceChecker:
                             events.append({
                                 'date': date_str,
                                 'day': day_name,
-                                'timestamp': int(idx.timestamp()),
+                                'time': low_time,
+                                'time_ist': f"{low_time} IST",
+                                'datetime_str': f"{date_str}, {low_time}",
+                                'timestamp': low_timestamp,
                                 'symbol': sym,
                                 'name': conf['name'],
                                 'category': conf['category'],
