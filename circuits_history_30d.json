@@ -1,5 +1,5 @@
 {
-  "last_updated": "19 Oct 2026, 08:55:56 AM IST",
+  "last_updated": "19 Oct 2026, 11:11:42 AM IST",
   "period_days": 30,
   "summary": {
     "total_events": 24,
@@ -7,32 +7,43 @@
     "locked_count": 6,
     "reversal_win_rate_pct": 75.0,
     "avg_reaction_pct": 1.59,
+    "next_day_completed_events": 23,
+    "next_day_reversals_count": 12,
+    "next_day_win_rate_pct": 52.2,
+    "avg_next_day_move_pct": 1.93,
     "most_active_commodity": "Crude Oil (13 events)"
   },
   "events": [
     {
-      "date": "18 Oct 2026",
-      "day": "Sun",
-      "timestamp": 1792296000,
+      "date": "19 Oct 2026",
+      "day": "Mon",
+      "timestamp": 1792382400,
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
       "category": "Energy",
       "unit": "1 bbl",
       "direction": "LOWER",
-      "event_type": "NEAR LOWER BAND",
-      "is_circuit_hit": false,
+      "event_type": "LOWER CIRCUIT HIT",
+      "is_circuit_hit": true,
       "slab_pct": 4.0,
       "prev_close": 101.41,
       "circuit_limit": 97.35,
-      "extreme_hit": 97.4,
-      "extreme_move_pct": -3.95,
-      "close_price": 97.53,
-      "close_move_pct": -3.83,
-      "reaction_move_pct": 0.13,
-      "reaction_text": "+0.13% Bounce",
+      "extreme_hit": 97.32,
+      "extreme_move_pct": -4.03,
+      "close_price": 97.39,
+      "close_move_pct": -3.96,
+      "reaction_move_pct": 0.07,
+      "reaction_text": "+0.07% Bounce",
       "reversal_confirmed": false,
       "badge_status": "LOCKED/CLOSED LOW",
-      "rating": "Locked / Closed Floor \ud83d\udd34"
+      "rating": "Locked / Closed Floor \ud83d\udd34",
+      "next_date": "Next Session",
+      "next_day": "--",
+      "next_close": null,
+      "next_day_move_pct": null,
+      "next_day_reversed": null,
+      "next_day_badge": "Pending \u23f3",
+      "next_day_rating": "Session in progress \u23f3"
     },
     {
       "date": "16 Oct 2026",
@@ -56,7 +67,14 @@
       "reaction_text": "-0.48% Pullback",
       "reversal_confirmed": false,
       "badge_status": "LOCKED/CLOSED HIGH",
-      "rating": "Locked / Closed High \ud83d\udd34"
+      "rating": "Locked / Closed High \ud83d\udd34",
+      "next_date": "19 Oct 2026",
+      "next_day": "Mon",
+      "next_close": 97.39,
+      "next_day_move_pct": -3.96,
+      "next_day_reversed": true,
+      "next_day_badge": "Next-Day Pullback \ud83d\udfe2",
+      "next_day_rating": "-3.96% Pullback \ud83d\udfe2"
     },
     {
       "date": "16 Oct 2026",
@@ -80,7 +98,14 @@
       "reaction_text": "+1.76% Bounce",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Moderate Reversal \ud83d\udfe1"
+      "rating": "Moderate Reversal \ud83d\udfe1",
+      "next_date": "19 Oct 2026",
+      "next_day": "Mon",
+      "next_close": 3.08,
+      "next_day_move_pct": -1.16,
+      "next_day_reversed": false,
+      "next_day_badge": "Next-Day Extension \ud83d\udd34",
+      "next_day_rating": "-1.16% Extension \ud83d\udd34"
     },
     {
       "date": "15 Oct 2026",
@@ -104,7 +129,14 @@
       "reaction_text": "-0.36% Pullback",
       "reversal_confirmed": false,
       "badge_status": "LOCKED/CLOSED HIGH",
-      "rating": "Locked / Closed High \ud83d\udd34"
+      "rating": "Locked / Closed High \ud83d\udd34",
+      "next_date": "16 Oct 2026",
+      "next_day": "Fri",
+      "next_close": 101.41,
+      "next_day_move_pct": 3.51,
+      "next_day_reversed": false,
+      "next_day_badge": "Next-Day Extension \ud83d\udd34",
+      "next_day_rating": "+3.51% Extension \ud83d\udd34"
     },
     {
       "date": "14 Oct 2026",
@@ -128,7 +160,14 @@
       "reaction_text": "+0.09% Bounce",
       "reversal_confirmed": false,
       "badge_status": "LOCKED/CLOSED LOW",
-      "rating": "Locked / Closed Floor \ud83d\udd34"
+      "rating": "Locked / Closed Floor \ud83d\udd34",
+      "next_date": "15 Oct 2026",
+      "next_day": "Thu",
+      "next_close": 56.84,
+      "next_day_move_pct": 2.32,
+      "next_day_reversed": true,
+      "next_day_badge": "Next-Day Bounce \ud83d\udfe2",
+      "next_day_rating": "+2.32% Bounce \ud83d\udfe2"
     },
     {
       "date": "13 Oct 2026",
@@ -152,7 +191,14 @@
       "reaction_text": "-1.41% Pullback",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Moderate Reversal \ud83d\udfe1"
+      "rating": "Moderate Reversal \ud83d\udfe1",
+      "next_date": "14 Oct 2026",
+      "next_day": "Wed",
+      "next_close": 3.2,
+      "next_day_move_pct": -2.53,
+      "next_day_reversed": true,
+      "next_day_badge": "Next-Day Pullback \ud83d\udfe2",
+      "next_day_rating": "-2.53% Pullback \ud83d\udfe2"
     },
     {
       "date": "08 Oct 2026",
@@ -176,7 +222,14 @@
       "reaction_text": "-1.83% Pullback",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Moderate Reversal \ud83d\udfe1"
+      "rating": "Moderate Reversal \ud83d\udfe1",
+      "next_date": "09 Oct 2026",
+      "next_day": "Fri",
+      "next_close": 91.85,
+      "next_day_move_pct": 0.39,
+      "next_day_reversed": false,
+      "next_day_badge": "Next-Day Extension \ud83d\udd34",
+      "next_day_rating": "+0.39% Extension \ud83d\udd34"
     },
     {
       "date": "02 Oct 2026",
@@ -200,7 +253,14 @@
       "reaction_text": "+3.46% Bounce",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Strong Reversal \ud83d\udfe2"
+      "rating": "Strong Reversal \ud83d\udfe2",
+      "next_date": "05 Oct 2026",
+      "next_day": "Mon",
+      "next_close": 89.43,
+      "next_day_move_pct": -1.84,
+      "next_day_reversed": false,
+      "next_day_badge": "Next-Day Extension \ud83d\udd34",
+      "next_day_rating": "-1.84% Extension \ud83d\udd34"
     },
     {
       "date": "01 Oct 2026",
@@ -224,7 +284,14 @@
       "reaction_text": "-0.86% Pullback",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Moderate Reversal \ud83d\udfe1"
+      "rating": "Moderate Reversal \ud83d\udfe1",
+      "next_date": "02 Oct 2026",
+      "next_day": "Fri",
+      "next_close": 91.11,
+      "next_day_move_pct": -1.9,
+      "next_day_reversed": true,
+      "next_day_badge": "Next-Day Pullback \ud83d\udfe2",
+      "next_day_rating": "-1.90% Pullback \ud83d\udfe2"
     },
     {
       "date": "29 Sep 2026",
@@ -248,7 +315,14 @@
       "reaction_text": "+0.68% Bounce",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Moderate Reversal \ud83d\udfe1"
+      "rating": "Moderate Reversal \ud83d\udfe1",
+      "next_date": "30 Sep 2026",
+      "next_day": "Wed",
+      "next_close": 90.42,
+      "next_day_move_pct": 1.16,
+      "next_day_reversed": true,
+      "next_day_badge": "Next-Day Bounce \ud83d\udfe2",
+      "next_day_rating": "+1.16% Bounce \ud83d\udfe2"
     },
     {
       "date": "29 Sep 2026",
@@ -272,7 +346,14 @@
       "reaction_text": "-4.59% Pullback",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Strong Reversal \ud83d\udfe2"
+      "rating": "Strong Reversal \ud83d\udfe2",
+      "next_date": "30 Sep 2026",
+      "next_day": "Wed",
+      "next_close": 3.03,
+      "next_day_move_pct": 0.63,
+      "next_day_reversed": false,
+      "next_day_badge": "Next-Day Extension \ud83d\udd34",
+      "next_day_rating": "+0.63% Extension \ud83d\udd34"
     },
     {
       "date": "29 Sep 2026",
@@ -296,7 +377,14 @@
       "reaction_text": "+0.00% Bounce",
       "reversal_confirmed": false,
       "badge_status": "LOCKED/CLOSED LOW",
-      "rating": "Locked / Closed Floor \ud83d\udd34"
+      "rating": "Locked / Closed Floor \ud83d\udd34",
+      "next_date": "30 Sep 2026",
+      "next_day": "Wed",
+      "next_close": 3943.5,
+      "next_day_move_pct": 0.0,
+      "next_day_reversed": false,
+      "next_day_badge": "Next-Day Flat \u26aa",
+      "next_day_rating": "0.00% Flat \u26aa"
     },
     {
       "date": "28 Sep 2026",
@@ -320,7 +408,14 @@
       "reaction_text": "-4.08% Pullback",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Strong Reversal \ud83d\udfe2"
+      "rating": "Strong Reversal \ud83d\udfe2",
+      "next_date": "29 Sep 2026",
+      "next_day": "Tue",
+      "next_close": 89.38,
+      "next_day_move_pct": -3.48,
+      "next_day_reversed": true,
+      "next_day_badge": "Next-Day Pullback \ud83d\udfe2",
+      "next_day_rating": "-3.48% Pullback \ud83d\udfe2"
     },
     {
       "date": "28 Sep 2026",
@@ -344,7 +439,14 @@
       "reaction_text": "+0.84% Bounce",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Moderate Reversal \ud83d\udfe1"
+      "rating": "Moderate Reversal \ud83d\udfe1",
+      "next_date": "29 Sep 2026",
+      "next_day": "Tue",
+      "next_close": 3.01,
+      "next_day_move_pct": 0.33,
+      "next_day_reversed": true,
+      "next_day_badge": "Next-Day Bounce \ud83d\udfe2",
+      "next_day_rating": "+0.33% Bounce \ud83d\udfe2"
     },
     {
       "date": "28 Sep 2026",
@@ -368,7 +470,14 @@
       "reaction_text": "+0.61% Bounce",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Moderate Reversal \ud83d\udfe1"
+      "rating": "Moderate Reversal \ud83d\udfe1",
+      "next_date": "29 Sep 2026",
+      "next_day": "Tue",
+      "next_close": 4179.7,
+      "next_day_move_pct": 0.27,
+      "next_day_reversed": true,
+      "next_day_badge": "Next-Day Bounce \ud83d\udfe2",
+      "next_day_rating": "+0.27% Bounce \ud83d\udfe2"
     },
     {
       "date": "28 Sep 2026",
@@ -392,7 +501,14 @@
       "reaction_text": "+0.00% Bounce",
       "reversal_confirmed": false,
       "badge_status": "LOCKED/CLOSED LOW",
-      "rating": "Locked / Closed Floor \ud83d\udd34"
+      "rating": "Locked / Closed Floor \ud83d\udd34",
+      "next_date": "29 Sep 2026",
+      "next_day": "Tue",
+      "next_close": 60.67,
+      "next_day_move_pct": -0.9,
+      "next_day_reversed": false,
+      "next_day_badge": "Next-Day Extension \ud83d\udd34",
+      "next_day_rating": "-0.90% Extension \ud83d\udd34"
     },
     {
       "date": "25 Sep 2026",
@@ -416,7 +532,14 @@
       "reaction_text": "+0.98% Bounce",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Moderate Reversal \ud83d\udfe1"
+      "rating": "Moderate Reversal \ud83d\udfe1",
+      "next_date": "28 Sep 2026",
+      "next_day": "Mon",
+      "next_close": 92.6,
+      "next_day_move_pct": 0.21,
+      "next_day_reversed": true,
+      "next_day_badge": "Next-Day Bounce \ud83d\udfe2",
+      "next_day_rating": "+0.21% Bounce \ud83d\udfe2"
     },
     {
       "date": "25 Sep 2026",
@@ -440,7 +563,14 @@
       "reaction_text": "+3.43% Bounce",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Strong Reversal \ud83d\udfe2"
+      "rating": "Strong Reversal \ud83d\udfe2",
+      "next_date": "28 Sep 2026",
+      "next_day": "Mon",
+      "next_close": 3.0,
+      "next_day_move_pct": -6.13,
+      "next_day_reversed": false,
+      "next_day_badge": "Next-Day Extension \ud83d\udd34",
+      "next_day_rating": "-6.13% Extension \ud83d\udd34"
     },
     {
       "date": "24 Sep 2026",
@@ -464,7 +594,14 @@
       "reaction_text": "-2.24% Pullback",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Strong Reversal \ud83d\udfe2"
+      "rating": "Strong Reversal \ud83d\udfe2",
+      "next_date": "25 Sep 2026",
+      "next_day": "Fri",
+      "next_close": 92.41,
+      "next_day_move_pct": -2.33,
+      "next_day_reversed": true,
+      "next_day_badge": "Next-Day Pullback \ud83d\udfe2",
+      "next_day_rating": "-2.33% Pullback \ud83d\udfe2"
     },
     {
       "date": "24 Sep 2026",
@@ -488,7 +625,14 @@
       "reaction_text": "-0.60% Pullback",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Moderate Reversal \ud83d\udfe1"
+      "rating": "Moderate Reversal \ud83d\udfe1",
+      "next_date": "25 Sep 2026",
+      "next_day": "Fri",
+      "next_close": 3.2,
+      "next_day_move_pct": -2.94,
+      "next_day_reversed": true,
+      "next_day_badge": "Next-Day Pullback \ud83d\udfe2",
+      "next_day_rating": "-2.94% Pullback \ud83d\udfe2"
     },
     {
       "date": "23 Sep 2026",
@@ -512,7 +656,14 @@
       "reaction_text": "+3.89% Bounce",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Strong Reversal \ud83d\udfe2"
+      "rating": "Strong Reversal \ud83d\udfe2",
+      "next_date": "24 Sep 2026",
+      "next_day": "Thu",
+      "next_close": 94.61,
+      "next_day_move_pct": 2.66,
+      "next_day_reversed": true,
+      "next_day_badge": "Next-Day Bounce \ud83d\udfe2",
+      "next_day_rating": "+2.66% Bounce \ud83d\udfe2"
     },
     {
       "date": "22 Sep 2026",
@@ -536,7 +687,14 @@
       "reaction_text": "+2.37% Bounce",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Strong Reversal \ud83d\udfe2"
+      "rating": "Strong Reversal \ud83d\udfe2",
+      "next_date": "23 Sep 2026",
+      "next_day": "Wed",
+      "next_close": 92.16,
+      "next_day_move_pct": -2.57,
+      "next_day_reversed": false,
+      "next_day_badge": "Next-Day Extension \ud83d\udd34",
+      "next_day_rating": "-2.57% Extension \ud83d\udd34"
     },
     {
       "date": "22 Sep 2026",
@@ -560,7 +718,14 @@
       "reaction_text": "-1.92% Pullback",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Moderate Reversal \ud83d\udfe1"
+      "rating": "Moderate Reversal \ud83d\udfe1",
+      "next_date": "23 Sep 2026",
+      "next_day": "Wed",
+      "next_close": 3.02,
+      "next_day_move_pct": 1.85,
+      "next_day_reversed": false,
+      "next_day_badge": "Next-Day Extension \ud83d\udd34",
+      "next_day_rating": "+1.85% Extension \ud83d\udd34"
     },
     {
       "date": "21 Sep 2026",
@@ -584,7 +749,14 @@
       "reaction_text": "+1.66% Bounce",
       "reversal_confirmed": true,
       "badge_status": "REVERSED",
-      "rating": "Moderate Reversal \ud83d\udfe1"
+      "rating": "Moderate Reversal \ud83d\udfe1",
+      "next_date": "22 Sep 2026",
+      "next_day": "Tue",
+      "next_close": 94.59,
+      "next_day_move_pct": -1.24,
+      "next_day_reversed": false,
+      "next_day_badge": "Next-Day Extension \ud83d\udd34",
+      "next_day_rating": "-1.24% Extension \ud83d\udd34"
     }
   ]
 }
