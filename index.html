@@ -219,7 +219,7 @@
                             <button class="circuit-filter-pill active" onclick="setCircuitCategoryFilter('ALL', this)">All Commodities</button>
                             <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Bullion', this)">Bullion (Gold/Silver)</button>
                             <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Energy', this)">Energy (Crude/Gas)</button>
-                            <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Base Metals', this)">Base Metals</button>
+                            <button class="circuit-filter-pill" onclick="setCircuitCategoryFilter('Base Metals', this)">Copper</button>
                         </div>
                         <div class="circuit-search-box">
                             <i class="fa-solid fa-magnifying-glass"></i>
@@ -366,7 +366,7 @@
                         <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('NATURALGAS', this)">Natural Gas</button>
                         <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('GOLD', this)">Gold</button>
                         <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('SILVER', this)">Silver</button>
-                        <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('BASE', this)">Base Metals</button>
+                        <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('COPPER', this)">Copper</button>
                     </div>
 
                     <!-- 30-Day History Table -->
@@ -924,10 +924,7 @@ async function fetchCircuitsData(forceNetwork = false) {
                 'SILVER': { ticker: 'MCX:SILVER1!', name: 'Silver', dpl_initial: 0.04, dpl_max: 0.06, category: 'Bullion', unit: '1 kg' },
                 'CRUDEOIL': { ticker: 'MCX:CRUDEOIL1!', name: 'Crude Oil', dpl_initial: 0.04, dpl_max: 0.07, category: 'Energy', unit: '1 bbl' },
                 'NATURALGAS': { ticker: 'MCX:NATURALGAS1!', name: 'Natural Gas', dpl_initial: 0.06, dpl_max: 0.09, category: 'Energy', unit: '1 mmBtu' },
-                'COPPER': { ticker: 'MCX:COPPER1!', name: 'Copper', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' },
-                'ZINC': { ticker: 'MCX:ZINC1!', name: 'Zinc', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' },
-                'ALUMINIUM': { ticker: 'MCX:ALUMINIUM1!', name: 'Aluminium', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' },
-                'LEAD': { ticker: 'MCX:LEAD1!', name: 'Lead', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' }
+                'COPPER': { ticker: 'MCX:COPPER1!', name: 'Copper', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' }
             };
             
             const tickers = Object.values(commodityMap).map(m => m.ticker);
@@ -1609,7 +1606,7 @@ function renderCircuitsHistoryTable() {
         // Commodity filter
         let matchesCommodity = true;
         if (activeHistoryCommodity !== 'ALL') {
-            if (activeHistoryCommodity === 'BASE') matchesCommodity = item.category === 'Base Metals';
+            if (activeHistoryCommodity === 'BASE' || activeHistoryCommodity === 'COPPER') matchesCommodity = (item.symbol === 'COPPER' || item.category === 'Base Metals');
             else matchesCommodity = item.symbol === activeHistoryCommodity;
         }
         
@@ -2070,10 +2067,7 @@ function renderMarketTable() {
                 "SILVER": "SI=F",
                 "CRUDEOIL": "CL=F",
                 "NATURALGAS": "NG=F",
-                "COPPER": "HG=F",
-                "ALUMINIUM": "ALI=F",
-                "ZINC": "ZNC=F",
-                "ELECTRICITY": "HP=F"
+                "COPPER": "HG=F"
             };
             
             let yfLink = `https://finance.yahoo.com/quote/${item.symbol}`;
@@ -2157,10 +2151,7 @@ function renderAlertTable() {
                 "SILVER": "SI=F",
                 "CRUDEOIL": "CL=F",
                 "NATURALGAS": "NG=F",
-                "COPPER": "HG=F",
-                "ALUMINIUM": "ALI=F",
-                "ZINC": "ZNC=F",
-                "ELECTRICITY": "HP=F"
+                "COPPER": "HG=F"
             };
             
             let yfLink = `https://finance.yahoo.com/quote/${item.symbol}`;
@@ -2605,9 +2596,6 @@ const LOT_SIZES = {
     'CRUDEOIL': 100,
     'NATURALGAS': 1250,
     'COPPER': 2500,
-    'ALUMINIUM': 5000,
-    'ZINC': 5000,
-    'ELECTRICITY': 50,
     'NIFTY': 25,
     'BANKNIFTY': 15,
     'ADANIENT.NS': 309,
