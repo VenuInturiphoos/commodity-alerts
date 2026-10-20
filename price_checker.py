@@ -549,10 +549,7 @@ class PriceChecker:
             "SILVER": "SI=F",
             "CRUDEOIL": "CL=F",
             "NATURALGAS": "NG=F",
-            "COPPER": "HG=F",
-            "ALUMINIUM": "ALI=F",
-            "ZINC": "ZNC=F",
-            "ELECTRICITY": "HP=F"
+            "COPPER": "HG=F"
         }
         yf_sym = yf_symbol_map.get(symbol, symbol)
         chart_url = f"https://finance.yahoo.com/quote/{yf_sym}"
@@ -688,8 +685,6 @@ class PriceChecker:
                     conversion = self.usd_inr_rate * (1000 / 31.1035) * 1.12
                 elif symbol == "COPPER":
                     conversion = self.usd_inr_rate * 2.20462
-                elif symbol == "ALUMINIUM":
-                    conversion = self.usd_inr_rate / 1000
                 else:
                     conversion = self.usd_inr_rate
             
@@ -1192,8 +1187,6 @@ class PriceChecker:
                 'GOLD': {'name': 'Gold', 'symbol': 'GC=F', 'slab': 0.03, 'unit': '10 g', 'category': 'Bullion'},
                 'SILVER': {'name': 'Silver', 'symbol': 'SI=F', 'slab': 0.04, 'unit': '1 kg', 'category': 'Bullion'},
                 'COPPER': {'name': 'Copper', 'symbol': 'HG=F', 'slab': 0.04, 'unit': '1 kg', 'category': 'Base Metals'},
-                'ZINC': {'name': 'Zinc', 'symbol': 'ZNC=F', 'slab': 0.04, 'unit': '1 kg', 'category': 'Base Metals'},
-                'ALUMINIUM': {'name': 'Aluminium', 'symbol': 'ALI=F', 'slab': 0.04, 'unit': '1 kg', 'category': 'Base Metals'},
             }
             
             events = []
