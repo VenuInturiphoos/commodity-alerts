@@ -103,7 +103,11 @@ async function fetchMarketData() {
 
         if (error) throw error;
         
-        marketData = data;
+        const EXCLUDED_SYMBOLS = ['LEAD', 'ZINC', 'ALUMINIUM', 'ELECTRICITY', 'LEAD-FUT', 'ZINC-FUT', 'ALUMINIUM-FUT', 'ELECTRICITY-FUT'];
+        marketData = (data || []).filter(item => {
+            const sym = (item.symbol || '').toUpperCase();
+            return !EXCLUDED_SYMBOLS.includes(sym) && !EXCLUDED_SYMBOLS.some(ex => sym.startsWith(ex));
+        });
         
         // Render both tables
         const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');

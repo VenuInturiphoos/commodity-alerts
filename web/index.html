@@ -403,7 +403,7 @@
                     <div class="circuit-explainer-grid">
                         <div class="explainer-box">
                             <h5>1. Initial Slab (Base Filter)</h5>
-                            <p>Trading begins each morning bound by an initial price band (typically <strong>3% for Gold</strong>, <strong>4% for Silver, Crude & Base Metals</strong>, and <strong>6% for Natural Gas</strong>). Orders beyond this band are rejected by the RMS.</p>
+                            <p>Trading begins each morning bound by an initial price band (typically <strong>3% for Gold</strong>, <strong>4% for Silver, Crude & Copper</strong>, and <strong>6% for Natural Gas</strong>). Orders beyond this band are rejected by the RMS.</p>
                         </div>
                         <div class="explainer-box">
                             <h5>2. 15-Min Cooling-Off Period</h5>
@@ -2023,7 +2023,11 @@ async function fetchMarketData() {
 
         if (error) throw error;
         
-        marketData = data;
+        const EXCLUDED_SYMBOLS = ['LEAD', 'ZINC', 'ALUMINIUM', 'ELECTRICITY', 'LEAD-FUT', 'ZINC-FUT', 'ALUMINIUM-FUT', 'ELECTRICITY-FUT'];
+        marketData = (data || []).filter(item => {
+            const sym = (item.symbol || '').toUpperCase();
+            return !EXCLUDED_SYMBOLS.includes(sym) && !EXCLUDED_SYMBOLS.some(ex => sym.startsWith(ex));
+        });
         
         // Render both tables
         renderMarketTable();
