@@ -629,6 +629,44 @@ class PriceChecker:
         except Exception as e:
             print(f"Error syncing to Supabase: {e}")
 
+    def record_alerts_dispatched(self, dispatched_alerts):
+        """
+        Record alerts in Supabase ONLY after email/notification dispatch has succeeded.
+        """
+        if not dispatched_alerts:
+            return
+            
+        headers = {
+            'apikey': self.supabase_key,
+            'Authorization': f'Bearer {self.supabase_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        for alert in dispatched_alerts:
+            symbol = alert.get('symbol')
+            event_type = alert.get('event_type')
+            today_ist = alert.get('today_ist') or datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%Y-%m-%d')
+            if not symbol or not event_type:
+                continue
+                
+            payload = {
+                'last_alert_date': today_ist,
+                'last_alert_msg': event_type,
+                'alert_status': event_type,
+                'last_updated': datetime.utcnow().isoformat()
+            }
+            try:
+                patch_url = f"{self.supabase_url}?symbol=eq.{symbol}"
+                resp = requests.patch(patch_url, headers=headers, json=payload, timeout=10)
+                if resp.status_code in [200, 204]:
+                    print(f"Recorded alert dispatch for {symbol} ({event_type}) in Supabase.")
+                else:
+                    payload['symbol'] = symbol
+                    resp = requests.post(self.supabase_url, headers=headers, json=[payload], timeout=10)
+                    print(f"Upserted alert dispatch for {symbol} in Supabase (status {resp.status_code}).")
+            except Exception as e:
+                print(f"Error recording alert dispatch for {symbol}: {e}")
+
     def fetch_tradingview_commodity_quotes(self):
         """Fetches live MCX continuous futures quotes directly from TradingView futures scanner."""
         try:
@@ -967,10 +1005,17 @@ class PriceChecker:
                                 f"Historical Pattern: Check 30-day mean reversion bounce/pullback rates.\n\n"
                                 f"Live Dashboard: https://VenuInturiphoos.github.io/commodity-alerts/index.html#circuits"
                             )
-                        alerts.append({'subject': alert_subj, 'body': alert_body})
+                        alerts.append({
+                            'symbol': symbol,
+                            'name': name,
+                            'event_type': event_type,
+                            'today_ist': today_ist,
+                            'subject': alert_subj,
+                            'body': alert_body
+                        })
                         alert_status = event_type
-                        last_alert_date = today_ist
-                        last_alert_msg = event_type
+                        # Note: last_alert_date and last_alert_msg are kept from previous_state
+                        # and will only be updated in Supabase via record_alerts_dispatched() after email/notification succeeds!
                         print(f"🚨 [{'CIRCUIT WARNING' if is_warning else 'CIRCUIT HIT'} ALERT GENERATED] {alert_subj}")
             
             if levels and current_price:
@@ -1309,11 +1354,19 @@ class PriceChecker:
                 status = "LOCKED LOWER"
                 status_color = "#ef4444"
                 status_text = "Lower Circuit Locked 🚨"
-            elif dist_to_uc_pct <= 1.0:
+            elif day_high >= uc_init:
+                status = "HIT UPPER"
+                status_color = "#ef4444"
+                status_text = "Upper Circuit Hit & Reverted 🚨"
+            elif day_low <= lc_init:
+                status = "HIT LOWER"
+                status_color = "#ef4444"
+                status_text = "Lower Circuit Hit & Reverted 🚨"
+            elif dist_to_uc_pct <= 1.0 or (day_high > 0 and ((uc_init - day_high) / day_high * 100 <= 1.0)):
                 status = "NEAR UPPER"
                 status_color = "#f59e0b"
                 status_text = "Near Upper Band ⚠️"
-            elif dist_to_lc_pct <= 1.0:
+            elif dist_to_lc_pct <= 1.0 or (day_low > 0 and ((day_low - lc_init) / day_low * 100 <= 1.0)):
                 status = "NEAR LOWER"
                 status_color = "#f59e0b"
                 status_text = "Near Lower Band ⚠️"
@@ -1491,8 +1544,8 @@ class PriceChecker:
                         
                         has_next = pd.notna(row['NextClose'])
                         next_close = round(float(row['NextClose']), 2) if has_next else None
-                        next_date = row['NextDate'] or "Next Session"
-                        next_day = row['NextDay'] or "--"
+                        next_date = str(row['NextDate']) if (pd.notna(row['NextDate']) and row['NextDate'] is not None and str(row['NextDate']).lower() != 'nan') else "Next Session"
+                        next_day = str(row['NextDay']) if (pd.notna(row['NextDay']) and row['NextDay'] is not None and str(row['NextDay']).lower() != 'nan') else "--"
                         next_move = round(((next_close - close) / close) * 100, 2) if has_next else None
                         
                         # Upper Extreme
@@ -1697,7 +1750,20 @@ class PriceChecker:
             summary_60d = compute_summary_stats(events)
             now_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d %b %Y, %I:%M:%S %p IST')
             
-            data_payload = {
+            def _clean_nan(v):
+                if isinstance(v, float):
+                    if math.isnan(v) or math.isinf(v):
+                        return None
+                    return v
+                elif isinstance(v, dict):
+                    return {k: _clean_nan(val) for k, val in v.items()}
+                elif isinstance(v, list):
+                    return [_clean_nan(val) for val in v]
+                elif isinstance(v, str) and v.lower() == 'nan':
+                    return None
+                return v
+
+            data_payload = _clean_nan({
                 'last_updated': now_ist,
                 'period_days': 60,
                 'summary': summary_30d, # default summary
@@ -1706,15 +1772,15 @@ class PriceChecker:
                 'events_30d_count': len(events_30d),
                 'events_60d_count': len(events),
                 'events': events
-            }
+            })
             
             out_30d_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_history_30d.json')
             with open(out_30d_path, 'w') as f:
-                json.dump(data_payload, f, indent=2)
+                json.dump(data_payload, f, indent=2, allow_nan=False)
                 
             out_60d_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_history_60d.json')
             with open(out_60d_path, 'w') as f:
-                json.dump(data_payload, f, indent=2)
+                json.dump(data_payload, f, indent=2, allow_nan=False)
                 
             print(f"Exported {len(events)} events (60D) & {len(events_30d)} events (30D) to web/circuits_history_30d.json and circuits_history_60d.json")
             self._last_history_data_time = now_ts

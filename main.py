@@ -53,9 +53,20 @@ def main():
                     subject = f"[HIGH RISK - NEWS DAY] {subject}"
                 body = alert['body']
                 print(f">>> {subject} | {body.replace(chr(10), ' ')}")
-                formatted_alerts.append({'subject': subject, 'body': body})
+                formatted_alerts.append({
+                    'symbol': alert.get('symbol'),
+                    'name': alert.get('name'),
+                    'event_type': alert.get('event_type'),
+                    'today_ist': alert.get('today_ist'),
+                    'subject': subject,
+                    'body': body
+                })
 
-            alerter.send_alerts(formatted_alerts)
+            success, sent_alerts = alerter.send_alerts(formatted_alerts)
+            if success and sent_alerts:
+                checker.record_alerts_dispatched(sent_alerts)
+            else:
+                print("Alert dispatch was not confirmed via email. State not locked in Supabase (will retry on next trigger).")
         else:
             print("No levels triggered.")
     except Exception as e:

@@ -111,7 +111,7 @@ class EmailAlerter:
 
     def send_alerts(self, alerts):
         if not alerts:
-            return
+            return False, []
 
         # 1. Send Telegram notifications first
         for alert in alerts:
@@ -125,15 +125,26 @@ class EmailAlerter:
         recipient_emails = self.get_recipients()
 
         if sender_email == "your_email@gmail.com" or not sender_password:
-            print(f"[ALERT NOT SENT VIA EMAIL - Please configure sender_email & SENDER_PASSWORD in config or env]")
-            return
+            print("\n" + "=" * 80)
+            print("❌ [CRITICAL ALERT: EMAIL NOT DISPATCHED]")
+            print("Reason: SENDER_PASSWORD secret is missing or empty.")
+            print(f"Sender Email: {sender_email}")
+            print("Pending Alerts:")
+            for a in alerts:
+                print(f"  - {a.get('subject')}")
+            print("\nAction Required:")
+            print("1. Go to your GitHub repository: Settings -> Secrets and variables -> Actions")
+            print("2. Ensure 'SENDER_PASSWORD' is created with your 16-character Google App Password.")
+            print("=" * 80 + "\n")
+            return False, []
 
         if not recipient_emails:
             print("No email recipients found.")
-            return
+            return False, []
 
         # 3. Connect ONCE for all alerts and recipients to avoid rate limiting
         server = None
+        sent_alerts = []
         try:
             server = self._create_smtp_session(sender_email, sender_password)
 
@@ -142,6 +153,7 @@ class EmailAlerter:
                 body = alert['body']
                 body_html = body.replace('\n', '<br>')
 
+                alert_dispatched_successfully = False
                 for recipient in recipient_emails:
                     msg = MIMEMultipart('alternative')
                     msg['From'] = sender_email
@@ -167,11 +179,18 @@ class EmailAlerter:
                     try:
                         server.send_message(msg)
                         print(f"Successfully sent alert to {recipient}: {subject}")
+                        alert_dispatched_successfully = True
                     except Exception as e:
                         print(f"Failed to send email to {recipient}: {e}")
 
+                if alert_dispatched_successfully:
+                    sent_alerts.append(alert)
+
         except Exception as e:
-            print(f"Failed to send alerts via SMTP: {e}")
+            print("\n" + "=" * 80)
+            print(f"❌ [SMTP DISPATCH ERROR]: {e}")
+            print("=" * 80 + "\n")
+            return False, []
         finally:
             if server:
                 try:
@@ -179,8 +198,10 @@ class EmailAlerter:
                 except Exception:
                     pass
 
+        return (len(sent_alerts) > 0), sent_alerts
+
     def send_alert(self, subject, body):
-        self.send_alerts([{'subject': subject, 'body': body}])
+        return self.send_alerts([{'subject': subject, 'body': body}])
 
     def _send_telegram(self, subject, body):
         bot_token = os.environ.get('TELEGRAM_BOT_TOKEN') or self.config.get('telegram_bot_token')
