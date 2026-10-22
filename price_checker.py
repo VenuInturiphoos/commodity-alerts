@@ -1,4 +1,6 @@
 import os
+import time
+import concurrent.futures
 import yfinance as yf
 import requests
 import pandas as pd
@@ -20,6 +22,13 @@ class PriceChecker:
         self.stocks = config.get('stocks', {})
         self.derivatives = config.get('derivatives', {})
         self.usd_inr_rate = self.get_usd_inr_rate()
+        
+        # In-memory caches to eliminate redundant passes
+        self.cached_rsi = {}
+        self.intrinsic_cache = self._load_intrinsic_cache()
+        self._last_circuits_data_time = 0
+        self._cached_circuits_data = None
+        self._last_history_data_time = 0
         
         # Supabase config
         self.supabase_url = 'https://cohupetijvykzmeliubg.supabase.co/rest/v1/market_data'
@@ -49,6 +58,24 @@ class PriceChecker:
             except Exception as e:
                 print(f"Failed to initialize AngelOne Exception: {e}")
                 self.angel_active = False
+
+    def _load_intrinsic_cache(self):
+        cache_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'intrinsic_cache.json')
+        if os.path.exists(cache_path):
+            try:
+                with open(cache_path, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Error reading intrinsic cache: {e}")
+        return {}
+
+    def _save_intrinsic_cache(self):
+        cache_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'intrinsic_cache.json')
+        try:
+            with open(cache_path, 'w') as f:
+                json.dump(self.intrinsic_cache, f, indent=2)
+        except Exception as e:
+            print(f"Error saving intrinsic cache: {e}")
 
     def load_angel_master(self):
         try:
@@ -293,13 +320,12 @@ class PriceChecker:
                         print(f"Found SecID for {ticker_symbol}: {sec_id}. Fetching levels...")
                         levels = self.get_angel_levels(sec_id)
 
-        # 3. Fetch all-time yfinance data for multi-timeframe extremes and fallback Pivot/R/S
+        # 3. Fetch yfinance data (period='2y') for multi-timeframe extremes and fallback Pivot/R/S
         ticker_symbol = yf_symbol if yf_symbol else ticker_symbol
         try:
-            print(f"Fetching yfinance period='max' for extremes for {ticker_symbol}...")
             ticker = yf.Ticker(ticker_symbol)
             try:
-                hist = ticker.history(period="max")
+                hist = ticker.history(period="2y")
             except Exception:
                 hist = pd.DataFrame()
                 
@@ -317,7 +343,6 @@ class PriceChecker:
                 
             # If previous steps failed, calculate Pivot/R/S from yfinance
             if not levels:
-                print(f"Using yfinance for Pivot/R/S fallback for {ticker_symbol}...")
                 idx = -2 if len(hist) >= 2 else -1
                 high = hist['High'].iloc[idx] * fallback_multiplier
                 low = hist['Low'].iloc[idx] * fallback_multiplier
@@ -335,6 +360,9 @@ class PriceChecker:
             elif 'Prev_Close' not in levels:
                 idx = -2 if len(hist) >= 2 else -1
                 levels['Prev_Close'] = hist['Close'].iloc[idx] * fallback_multiplier
+                
+            # Record current price directly from latest close
+            levels['Current_Price'] = hist['Close'].iloc[-1] * fallback_multiplier
                 
             # Now calculate the multi-timeframe extremes
             now = datetime.now(pytz.timezone('UTC'))
@@ -424,6 +452,9 @@ class PriceChecker:
             print(f"Error fetching historical extremes from yfinance for {ticker_symbol}: {e}")
             
         # Dynamically frame S1/S2 and R1/R2 around the current price
+        if not current_price and levels and 'Current_Price' in levels:
+            current_price = levels['Current_Price']
+
         if current_price and levels:
             pivot_levels = sorted([
                 v for k, v in levels.items()
@@ -450,14 +481,28 @@ class PriceChecker:
         return levels
 
     def get_intrinsic_value(self, yf_symbol):
+        if not hasattr(self, 'intrinsic_cache') or not self.intrinsic_cache:
+            self.intrinsic_cache = self._load_intrinsic_cache()
+            
+        now_ts = time.time()
+        cached = self.intrinsic_cache.get(yf_symbol)
+        # Graham number relies on quarterly earnings/book value; 14-day cache is safe & super fast
+        if cached and (now_ts - cached.get('timestamp', 0) < 86400 * 14):
+            return cached.get('value')
+            
         try:
             ticker = yf.Ticker(yf_symbol)
             info = ticker.info
             eps = info.get('trailingEps')
             bv = info.get('bookValue')
             if eps and bv and eps > 0 and bv > 0:
-                graham_number = math.sqrt(22.5 * eps * bv)
-                return round(graham_number, 2)
+                graham_number = round(math.sqrt(22.5 * eps * bv), 2)
+                self.intrinsic_cache[yf_symbol] = {'value': graham_number, 'timestamp': int(now_ts)}
+                self._save_intrinsic_cache()
+                return graham_number
+            else:
+                self.intrinsic_cache[yf_symbol] = {'value': None, 'timestamp': int(now_ts)}
+                self._save_intrinsic_cache()
         except Exception as e:
             print(f"Error calculating intrinsic value for {yf_symbol}: {e}")
         return None
@@ -641,6 +686,67 @@ class PriceChecker:
         except Exception as e:
             print(f"Error fetching TradingView commodity quotes: {e}")
             return {}
+
+    def _process_single_stock(self, symbol, data, previous_state):
+        name = data.get('name', symbol) if isinstance(data, dict) else symbol
+        yf_sym = data.get('yf_symbol', symbol) if isinstance(data, dict) else symbol
+        
+        current_price = None
+        if self.angel_active and '.NS' in symbol:
+            sec_id = self.get_angel_token(symbol)
+            if sec_id:
+                current_price = self.get_angel_current_price(sec_id)
+                
+        levels = self.get_support_resistance_levels(symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=yf_sym, current_price=current_price)
+        
+        if current_price is None and levels and 'Current_Price' in levels:
+            current_price = levels['Current_Price']
+            
+        intrinsic_val = self.get_intrinsic_value(yf_sym)
+        
+        new_alerts, alert_status, last_alert_date, last_alert_msg, current_signal = self.evaluate_levels(
+            name, symbol, levels, current_price, previous_state, is_commodity=False
+        )
+        
+        records = []
+        rsi_info = None
+        
+        if levels and current_price:
+            records.append({
+                "symbol": symbol,
+                "name": name,
+                "asset_type": "Stock",
+                "current_price": round(current_price, 2),
+                "r1": round(levels['R1'], 2),
+                "r2": round(levels['R2'], 2),
+                "s1": round(levels['S1'], 2),
+                "s2": round(levels['S2'], 2),
+                "pivot": round(levels['Pivot'], 2),
+                "alert_status": alert_status,
+                "last_alert_date": last_alert_date,
+                "last_alert_msg": last_alert_msg,
+                "signal": current_signal,
+                "intrinsic_value": intrinsic_val,
+                "last_updated": datetime.utcnow().isoformat()
+            })
+            records.append({
+                "symbol": f"{symbol}-FUT",
+                "name": f"{name} Future",
+                "asset_type": "Stock Future",
+                "current_price": round(current_price, 2),
+                "r1": None, "r2": None, "s1": None, "s2": None, "pivot": None,
+                "alert_status": None,
+                "last_alert_date": None,
+                "last_alert_msg": None,
+                "signal": None,
+                "intrinsic_value": None,
+                "last_updated": datetime.utcnow().isoformat()
+            })
+            
+            if levels.get('RSI_14') is not None:
+                rsi_info = {'symbol': symbol, 'name': name, 'rsi': levels['RSI_14'], 'type': 'stock'}
+                
+        return records, rsi_info
 
     def check_alerts(self):
         alerts = []
@@ -868,6 +974,9 @@ class PriceChecker:
                         print(f"🚨 [{'CIRCUIT WARNING' if is_warning else 'CIRCUIT HIT'} ALERT GENERATED] {alert_subj}")
             
             if levels and current_price:
+                if levels.get('RSI_14') is not None:
+                    self.cached_rsi[symbol] = {'name': name, 'rsi': levels['RSI_14'], 'type': 'commodity'}
+
                 market_data_payload.append({
                     "symbol": symbol,
                     "name": name,
@@ -905,52 +1014,22 @@ class PriceChecker:
                         "last_updated": datetime.utcnow().isoformat()
                     })
             
-        # 2. Check Stocks
-        for symbol, data in self.stocks.items():
-            name = data['name']
-            
-            print(f"\nChecking Stock {name} ({symbol})...")
-            yf_sym = data.get('yf_symbol', symbol)
-            current_price = self.get_current_price(symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=yf_sym)
-            levels = self.get_support_resistance_levels(symbol, is_commodity=False, fallback_multiplier=1.0, yf_symbol=yf_sym, current_price=current_price)
-            intrinsic_val = self.get_intrinsic_value(yf_sym)
-            
-            # Note: Non-circuit alerts excluded per user request. No alerts generated for stocks.
-            new_alerts, alert_status, last_alert_date, last_alert_msg, current_signal = self.evaluate_levels(name, symbol, levels, current_price, previous_state, is_commodity=False)
-            
-            if levels and current_price:
-                market_data_payload.append({
-                    "symbol": symbol,
-                    "name": name,
-                    "asset_type": "Stock",
-                    "current_price": round(current_price, 2),
-                    "r1": round(levels['R1'], 2),
-                    "r2": round(levels['R2'], 2),
-                    "s1": round(levels['S1'], 2),
-                    "s2": round(levels['S2'], 2),
-                    "pivot": round(levels['Pivot'], 2),
-                    "alert_status": alert_status,
-                    "last_alert_date": last_alert_date,
-                    "last_alert_msg": last_alert_msg,
-                    "signal": current_signal,
-                    "intrinsic_value": intrinsic_val,
-                    "last_updated": datetime.utcnow().isoformat()
-                })
-                
-                # Append Stock Future internet fallback
-                market_data_payload.append({
-                    "symbol": f"{symbol}-FUT",
-                    "name": f"{name} Future",
-                    "asset_type": "Stock Future",
-                    "current_price": round(current_price, 2),
-                    "r1": None, "r2": None, "s1": None, "s2": None, "pivot": None,
-                    "alert_status": None,
-                    "last_alert_date": None,
-                    "last_alert_msg": None,
-                    "signal": None,
-                    "intrinsic_value": None,
-                    "last_updated": datetime.utcnow().isoformat()
-                })
+        # 2. Check Stocks in Parallel (8 worker threads)
+        print("\nChecking Stocks in parallel (8 worker threads)...")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            futures = [
+                executor.submit(self._process_single_stock, symbol, data, previous_state)
+                for symbol, data in self.stocks.items()
+            ]
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    records, rsi_info = future.result()
+                    if records:
+                        market_data_payload.extend(records)
+                    if rsi_info:
+                        self.cached_rsi[rsi_info['symbol']] = rsi_info
+                except Exception as e:
+                    print(f"Error processing stock: {e}")
 
         # 3. Check Derivatives (Futures & Options)
         if hasattr(self, 'derivatives'):
@@ -1121,31 +1200,39 @@ class PriceChecker:
         except Exception as e:
             print(f"Error processing limit orders: {e}")
     def generate_near_alerts_json(self):
-        import json, os
         near_buy = []
         near_sell = []
         
-        # Check Commodities
-        for symbol, data in self.commodities.items():
-            name = data['name']
-            levels = self.get_support_resistance_levels(symbol, is_commodity=True, yf_symbol=data.get('yf_symbol'))
-            if levels and levels.get('RSI_14'):
-                rsi = levels['RSI_14']
-                if rsi < 45:
-                    near_buy.append({'symbol': symbol, 'name': name, 'rsi': round(rsi, 2)})
-                elif rsi > 55:
-                    near_sell.append({'symbol': symbol, 'name': name, 'rsi': round(rsi, 2)})
+        # Fast path: use cached RSI computed during check_alerts (0ms)
+        if getattr(self, 'cached_rsi', None):
+            for symbol, info in self.cached_rsi.items():
+                rsi = info.get('rsi')
+                if rsi is not None:
+                    if rsi < 45:
+                        near_buy.append({'symbol': symbol, 'name': info['name'], 'rsi': round(rsi, 2)})
+                    elif rsi > 55:
+                        near_sell.append({'symbol': symbol, 'name': info['name'], 'rsi': round(rsi, 2)})
+        else:
+            # Fallback if called standalone without check_alerts
+            for symbol, data in self.commodities.items():
+                name = data['name']
+                levels = self.get_support_resistance_levels(symbol, is_commodity=True, yf_symbol=data.get('yf_symbol'))
+                if levels and levels.get('RSI_14'):
+                    rsi = levels['RSI_14']
+                    if rsi < 45:
+                        near_buy.append({'symbol': symbol, 'name': name, 'rsi': round(rsi, 2)})
+                    elif rsi > 55:
+                        near_sell.append({'symbol': symbol, 'name': name, 'rsi': round(rsi, 2)})
 
-        # Check Stocks
-        for symbol, data in self.stocks.items():
-            stock_name = data.get('name', symbol) if isinstance(data, dict) else data
-            levels = self.get_support_resistance_levels(symbol, current_price=100)
-            if levels and levels.get('RSI_14'):
-                rsi = levels['RSI_14']
-                if rsi < 45:
-                    near_buy.append({'symbol': symbol, 'name': stock_name, 'rsi': round(rsi, 2)})
-                elif rsi > 55:
-                    near_sell.append({'symbol': symbol, 'name': stock_name, 'rsi': round(rsi, 2)})
+            for symbol, data in self.stocks.items():
+                stock_name = data.get('name', symbol) if isinstance(data, dict) else data
+                levels = self.get_support_resistance_levels(symbol, current_price=100)
+                if levels and levels.get('RSI_14'):
+                    rsi = levels['RSI_14']
+                    if rsi < 45:
+                        near_buy.append({'symbol': symbol, 'name': stock_name, 'rsi': round(rsi, 2)})
+                    elif rsi > 55:
+                        near_sell.append({'symbol': symbol, 'name': stock_name, 'rsi': round(rsi, 2)})
                     
         output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'near_alerts.json')
         with open(output_path, 'w') as f:
@@ -1154,6 +1241,12 @@ class PriceChecker:
 
     def generate_circuits_data(self, tv_quotes=None):
         """Generates comprehensive Daily Upper and Lower Circuit Limits for commodities and writes to web/circuits_data.json."""
+        now_ts = time.time()
+        output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_data.json')
+        if (now_ts - getattr(self, '_last_circuits_data_time', 0) < 60) and getattr(self, '_cached_circuits_data', None) and os.path.exists(output_path):
+            print("Circuits data freshly generated (<60s ago). Skipping redundant pass.")
+            return self._cached_circuits_data
+
         if tv_quotes is None:
             tv_quotes = self.fetch_tradingview_commodity_quotes()
             
@@ -1271,6 +1364,8 @@ class PriceChecker:
             json.dump(out_data, f, indent=2)
             
         print(f"Exported {len(circuits)} commodity circuit limits to web/circuits_data.json at {now_ist}")
+        self._last_circuits_data_time = now_ts
+        self._cached_circuits_data = out_data
         
         try:
             self.generate_circuits_history_30d(tv_quotes)
@@ -1282,6 +1377,12 @@ class PriceChecker:
     def generate_circuits_history_30d(self, tv_quotes=None):
         """Identifies all circuit limit and near-circuit events across the past 30 days and computes reversal outcomes."""
         try:
+            now_ts = time.time()
+            out_30d_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_history_30d.json')
+            if (now_ts - getattr(self, '_last_history_data_time', 0) < 60) and os.path.exists(out_30d_path):
+                print("Circuits 30d history freshly generated (<60s ago). Skipping redundant pass.")
+                return
+
             if tv_quotes is None:
                 tv_quotes = self.fetch_tradingview_commodity_quotes()
                 
@@ -1299,13 +1400,13 @@ class PriceChecker:
             cutoff_30d = datetime.now() - timedelta(days=32)
             today_ist_str = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%Y-%m-%d')
             
-            for sym, conf in commodities_map.items():
-                commodity_counts[conf['name']] = 0
+            def _fetch_commodity_history(sym, conf):
+                sym_events = []
                 try:
                     ticker = yf.Ticker(conf['symbol'])
                     df = ticker.history(period="75d", interval="1d")
                     if df.empty or len(df) < 5:
-                        continue
+                        return sym_events, 0, conf['name']
                         
                     df_hourly = None
                     try:
@@ -1429,8 +1530,7 @@ class PriceChecker:
                                 next_day_rating = "Session in progress ⏳"
                                 next_day_badge = "Pending ⏳"
                                 
-                            commodity_counts[conf['name']] += 1
-                            events.append({
+                            sym_events.append({
                                 'date': date_str,
                                 'day': day_name,
                                 'is_within_30d': is_within_30d,
@@ -1502,8 +1602,7 @@ class PriceChecker:
                                 next_day_rating = "Session in progress ⏳"
                                 next_day_badge = "Pending ⏳"
                                 
-                            commodity_counts[conf['name']] += 1
-                            events.append({
+                            sym_events.append({
                                 'date': date_str,
                                 'day': day_name,
                                 'is_within_30d': is_within_30d,
@@ -1541,6 +1640,20 @@ class PriceChecker:
                             })
                 except Exception as e:
                     print(f"Error fetching history for {sym}: {e}")
+                return sym_events, len(sym_events), conf['name']
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+                futures = [
+                    executor.submit(_fetch_commodity_history, sym, conf)
+                    for sym, conf in commodities_map.items()
+                ]
+                for future in concurrent.futures.as_completed(futures):
+                    try:
+                        sym_evs, ev_count, c_name = future.result()
+                        events.extend(sym_evs)
+                        commodity_counts[c_name] = ev_count
+                    except Exception as e:
+                        print(f"Error processing commodity history: {e}")
                     
             events.sort(key=lambda x: x['timestamp'], reverse=True)
             
@@ -1604,6 +1717,7 @@ class PriceChecker:
                 json.dump(data_payload, f, indent=2)
                 
             print(f"Exported {len(events)} events (60D) & {len(events_30d)} events (30D) to web/circuits_history_30d.json and circuits_history_60d.json")
+            self._last_history_data_time = now_ts
             return data_payload
         except Exception as e:
             print(f"Error in generate_circuits_history_30d: {e}")

@@ -68,7 +68,8 @@ def main():
         print(f"Error generating near alerts: {e}")
         
     try:
-        print("Generating Daily Circuit Limits & History JSON for Web UI...")
+        # Note: checker.check_alerts() already generates circuits data and history.
+        # This call checks cache guard (<60s) to guarantee web files are fresh without duplicate work.
         checker.generate_circuits_data()
     except Exception as e:
         print(f"Error generating circuits data & history: {e}")
