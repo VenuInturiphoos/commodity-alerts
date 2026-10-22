@@ -58,15 +58,20 @@ def main():
             alerter.send_alerts(formatted_alerts)
         else:
             print("No levels triggered.")
-            
+    except Exception as e:
+        print(f"Error during check_alerts loop: {e}")
+        
+    try:
         print("Generating near alerts JSON for Web UI...")
         checker.generate_near_alerts_json()
-        
-        print("Generating Daily Circuit Limits JSON for Web UI...")
-        checker.generate_circuits_data()
-            
     except Exception as e:
-        print(f"Error during check loop: {e}")
+        print(f"Error generating near alerts: {e}")
+        
+    try:
+        print("Generating Daily Circuit Limits & History JSON for Web UI...")
+        checker.generate_circuits_data()
+    except Exception as e:
+        print(f"Error generating circuits data & history: {e}")
         
     print("\nCheck complete. Exiting.")
 

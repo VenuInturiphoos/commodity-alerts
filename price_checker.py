@@ -707,8 +707,16 @@ class PriceChecker:
             
             levels = self.get_support_resistance_levels(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym, current_price=current_price, tv_quote=tv_quote)
             
-            # Check Commodity Upper/Lower Circuit Limits
+            # Default alert/signal states for commodity
+            alert_status = None
+            last_alert_date = previous_state.get(symbol, {}).get('last_alert_date')
+            last_alert_msg = previous_state.get(symbol, {}).get('last_alert_msg')
+            current_signal = 'NEUTRAL'
+
+            # Check Commodity Upper/Lower Circuit Limits (Initial & Enhanced Slabs)
             dpl_initial = data.get('dpl_initial', 0.04)
+            dpl_max = data.get('dpl_max', dpl_initial)
+            
             prev_close_ref = None
             if tv_quote and tv_quote.get('prev_close') is not None:
                 prev_close_ref = float(tv_quote['prev_close'])
@@ -721,16 +729,42 @@ class PriceChecker:
             day_low_ref = float(tv_quote.get('low') or current_price) if tv_quote else current_price
             
             if prev_close_ref and current_price and prev_close_ref > 0:
-                uc_limit = round(prev_close_ref * (1 + dpl_initial), 2)
-                lc_limit = round(prev_close_ref * (1 - dpl_initial), 2)
+                uc_initial = round(prev_close_ref * (1 + dpl_initial), 2)
+                uc_max = round(prev_close_ref * (1 + dpl_max), 2)
+                lc_initial = round(prev_close_ref * (1 - dpl_initial), 2)
+                lc_max = round(prev_close_ref * (1 - dpl_max), 2)
                 
-                is_uc_hit = bool(current_price >= uc_limit or day_high_ref >= uc_limit)
-                is_lc_hit = bool(current_price <= lc_limit or day_low_ref <= lc_limit)
+                is_enhanced_uc = bool(current_price >= uc_max or day_high_ref >= uc_max)
+                is_initial_uc = bool(current_price >= uc_initial or day_high_ref >= uc_initial)
+                is_enhanced_lc = bool(current_price <= lc_max or day_low_ref <= lc_max)
+                is_initial_lc = bool(current_price <= lc_initial or day_low_ref <= lc_initial)
                 
-                if is_uc_hit or is_lc_hit:
-                    event_type = "UPPER CIRCUIT HIT" if is_uc_hit else "LOWER CIRCUIT HIT"
-                    circuit_price = uc_limit if is_uc_hit else lc_limit
-                    extreme_price = day_high_ref if is_uc_hit else day_low_ref
+                event_type = None
+                circuit_price = None
+                circuit_slab_pct = None
+                
+                if is_enhanced_lc:
+                    event_type = f"ENHANCED LOWER CIRCUIT HIT (-{dpl_max*100:.0f}%)"
+                    circuit_price = lc_max
+                    circuit_slab_pct = dpl_max * 100
+                    extreme_price = day_low_ref
+                elif is_initial_lc:
+                    event_type = f"LOWER CIRCUIT HIT (-{dpl_initial*100:.0f}%)"
+                    circuit_price = lc_initial
+                    circuit_slab_pct = dpl_initial * 100
+                    extreme_price = day_low_ref
+                elif is_enhanced_uc:
+                    event_type = f"ENHANCED UPPER CIRCUIT HIT (+{dpl_max*100:.0f}%)"
+                    circuit_price = uc_max
+                    circuit_slab_pct = dpl_max * 100
+                    extreme_price = day_high_ref
+                elif is_initial_uc:
+                    event_type = f"UPPER CIRCUIT HIT (+{dpl_initial*100:.0f}%)"
+                    circuit_price = uc_initial
+                    circuit_slab_pct = dpl_initial * 100
+                    extreme_price = day_high_ref
+                    
+                if event_type:
                     move_from_anchor = ((current_price - prev_close_ref) / prev_close_ref) * 100
                     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
                     today_ist = now_dt.strftime('%Y-%m-%d')
@@ -739,8 +773,9 @@ class PriceChecker:
                     last_c_date = previous_state.get(symbol, {}).get('last_alert_date')
                     last_c_msg = previous_state.get(symbol, {}).get('last_alert_msg')
                     
+                    # Allow 2nd circuit hit alert (e.g. initial 6% followed by enhanced 9%, or distinct re-test)
                     if last_c_date == today_ist and last_c_msg == event_type:
-                        print(f"Skipping duplicate circuit alert for {name} ({symbol}): already alerted today.")
+                        print(f"Skipping duplicate circuit alert for {name} ({symbol}): already alerted for {event_type} today.")
                     else:
                         alert_subj = f"⚡ MCX CIRCUIT HIT: {name} reached {event_type} (₹{circuit_price:.2f})!"
                         alert_body = (
@@ -750,7 +785,7 @@ class PriceChecker:
                             f"Event Date & Time: {today_time_ist}\n"
                             f"Live Price: ₹{current_price:.2f}\n"
                             f"Day Extreme: ₹{extreme_price:.2f}\n"
-                            f"Circuit Limit Price: ₹{circuit_price:.2f} ({'+' if is_uc_hit else '-'}{dpl_initial*100:.1f}% DPL)\n"
+                            f"Circuit Limit Price: ₹{circuit_price:.2f} ({circuit_slab_pct:.1f}% DPL Limit)\n"
                             f"Previous Close (Anchor): ₹{prev_close_ref:.2f}\n"
                             f"Day Move: {move_from_anchor:+.2f}%\n\n"
                             f"Exchange Status: Trading reached daily permissible limit.\n"
