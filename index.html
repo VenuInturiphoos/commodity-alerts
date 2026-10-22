@@ -1217,7 +1217,7 @@ function renderCircuitsTable() {
         const chartUrl = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(item.ticker || 'MCX:' + item.symbol + '1!')}`;
         
         let statusBadgeClass = 'circuit-badge-normal';
-        if (item.status.includes('LOCKED')) statusBadgeClass = 'circuit-badge-lock';
+        if (item.status.includes('LOCKED') || item.status.includes('HIT')) statusBadgeClass = 'circuit-badge-lock';
         else if (item.status.includes('NEAR')) statusBadgeClass = 'circuit-badge-near';
         
         tr.innerHTML = `
@@ -1383,7 +1383,9 @@ async function fetchCircuitsHistory(forceNetwork = false) {
             try {
                 const res = await fetch(url, { cache: 'no-store' });
                 if (res.ok) {
-                    const data = await res.json();
+                    let text = await res.text();
+                    text = text.replace(/:\s*NaN\b/g, ': null').replace(/:\s*Infinity\b/g, ': null');
+                    const data = JSON.parse(text);
                     if (data && data.events && data.events.length > 0) {
                         circuitsHistoryFullData = data;
                         allHistoryEvents = data.events;
@@ -1616,7 +1618,7 @@ function renderCircuitsHistoryTable() {
             item.date.toLowerCase().includes(searchVal) ||
             (item.time && item.time.toLowerCase().includes(searchVal)) ||
             item.event_type.toLowerCase().includes(searchVal) ||
-            (item.next_date && item.next_date.toLowerCase().includes(searchVal)) ||
+            (item.next_date && String(item.next_date).toLowerCase().includes(searchVal)) ||
             (item.day && item.day.toLowerCase().includes(searchVal));
             
         return matchesResult && matchesCommodity && matchesSearch;
