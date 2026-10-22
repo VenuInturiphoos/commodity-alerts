@@ -734,35 +734,86 @@ class PriceChecker:
                 lc_initial = round(prev_close_ref * (1 - dpl_initial), 2)
                 lc_max = round(prev_close_ref * (1 - dpl_max), 2)
                 
+                # Distance to initial circuit limits (in percentage & absolute points)
+                dist_to_lc_pct = ((current_price - lc_initial) / current_price) * 100
+                dist_to_uc_pct = ((uc_initial - current_price) / current_price) * 100
+                day_low_dist_to_lc_pct = ((day_low_ref - lc_initial) / day_low_ref) * 100 if day_low_ref else dist_to_lc_pct
+                day_high_dist_to_uc_pct = ((uc_initial - day_high_ref) / day_high_ref) * 100 if day_high_ref else dist_to_uc_pct
+                
                 is_enhanced_uc = bool(current_price >= uc_max or day_high_ref >= uc_max)
                 is_initial_uc = bool(current_price >= uc_initial or day_high_ref >= uc_initial)
                 is_enhanced_lc = bool(current_price <= lc_max or day_low_ref <= lc_max)
                 is_initial_lc = bool(current_price <= lc_initial or day_low_ref <= lc_initial)
                 
+                # Check for 1% warning before initial circuit limit is breached (distance <= 1.0%)
+                is_warn_1pct_lc = bool(not is_initial_lc and (dist_to_lc_pct <= 1.0 or day_low_dist_to_lc_pct <= 1.0))
+                is_warn_1pct_uc = bool(not is_initial_uc and (dist_to_uc_pct <= 1.0 or day_high_dist_to_uc_pct <= 1.0))
+                
+                # Check for 1% warning before enhanced circuit limit if initial was breached
+                dist_to_lc_max_pct = ((current_price - lc_max) / current_price) * 100
+                dist_to_uc_max_pct = ((uc_max - current_price) / current_price) * 100
+                is_warn_1pct_enhanced_lc = bool(is_initial_lc and not is_enhanced_lc and dpl_max > dpl_initial and dist_to_lc_max_pct <= 1.0)
+                is_warn_1pct_enhanced_uc = bool(is_initial_uc and not is_enhanced_uc and dpl_max > dpl_initial and dist_to_uc_max_pct <= 1.0)
+                
                 event_type = None
                 circuit_price = None
                 circuit_slab_pct = None
+                is_warning = False
+                warning_dist_pct = None
+                warning_dist_pts = None
                 
                 if is_enhanced_lc:
                     event_type = f"ENHANCED LOWER CIRCUIT HIT (-{dpl_max*100:.0f}%)"
                     circuit_price = lc_max
                     circuit_slab_pct = dpl_max * 100
                     extreme_price = day_low_ref
+                elif is_warn_1pct_enhanced_lc:
+                    event_type = f"CIRCUIT WARNING: Within 1% of Enhanced Lower Circuit (-{dpl_max*100:.0f}%)"
+                    circuit_price = lc_max
+                    circuit_slab_pct = dpl_max * 100
+                    extreme_price = day_low_ref
+                    is_warning = True
+                    warning_dist_pct = dist_to_lc_max_pct
+                    warning_dist_pts = current_price - lc_max
                 elif is_initial_lc:
                     event_type = f"LOWER CIRCUIT HIT (-{dpl_initial*100:.0f}%)"
                     circuit_price = lc_initial
                     circuit_slab_pct = dpl_initial * 100
                     extreme_price = day_low_ref
+                elif is_warn_1pct_lc:
+                    event_type = f"CIRCUIT WARNING: Within 1% of Lower Circuit (-{dpl_initial*100:.0f}%)"
+                    circuit_price = lc_initial
+                    circuit_slab_pct = dpl_initial * 100
+                    extreme_price = day_low_ref
+                    is_warning = True
+                    warning_dist_pct = min(dist_to_lc_pct, day_low_dist_to_lc_pct)
+                    warning_dist_pts = min(current_price - lc_initial, day_low_ref - lc_initial)
                 elif is_enhanced_uc:
                     event_type = f"ENHANCED UPPER CIRCUIT HIT (+{dpl_max*100:.0f}%)"
                     circuit_price = uc_max
                     circuit_slab_pct = dpl_max * 100
                     extreme_price = day_high_ref
+                elif is_warn_1pct_enhanced_uc:
+                    event_type = f"CIRCUIT WARNING: Within 1% of Enhanced Upper Circuit (+{dpl_max*100:.0f}%)"
+                    circuit_price = uc_max
+                    circuit_slab_pct = dpl_max * 100
+                    extreme_price = day_high_ref
+                    is_warning = True
+                    warning_dist_pct = dist_to_uc_max_pct
+                    warning_dist_pts = uc_max - current_price
                 elif is_initial_uc:
                     event_type = f"UPPER CIRCUIT HIT (+{dpl_initial*100:.0f}%)"
                     circuit_price = uc_initial
                     circuit_slab_pct = dpl_initial * 100
                     extreme_price = day_high_ref
+                elif is_warn_1pct_uc:
+                    event_type = f"CIRCUIT WARNING: Within 1% of Upper Circuit (+{dpl_initial*100:.0f}%)"
+                    circuit_price = uc_initial
+                    circuit_slab_pct = dpl_initial * 100
+                    extreme_price = day_high_ref
+                    is_warning = True
+                    warning_dist_pct = min(dist_to_uc_pct, day_high_dist_to_uc_pct)
+                    warning_dist_pts = min(uc_initial - current_price, uc_initial - day_high_ref)
                     
                 if event_type:
                     move_from_anchor = ((current_price - prev_close_ref) / prev_close_ref) * 100
@@ -773,30 +824,48 @@ class PriceChecker:
                     last_c_date = previous_state.get(symbol, {}).get('last_alert_date')
                     last_c_msg = previous_state.get(symbol, {}).get('last_alert_msg')
                     
-                    # Allow 2nd circuit hit alert (e.g. initial 6% followed by enhanced 9%, or distinct re-test)
+                    # Deduplication check: only skip if alerted for the EXACT same stage today
                     if last_c_date == today_ist and last_c_msg == event_type:
                         print(f"Skipping duplicate circuit alert for {name} ({symbol}): already alerted for {event_type} today.")
                     else:
-                        alert_subj = f"⚡ MCX CIRCUIT HIT: {name} reached {event_type} (₹{circuit_price:.2f})!"
-                        alert_body = (
-                            f"⚡ MCX DAILY CIRCUIT LIMIT (DPL) HIT!\n\n"
-                            f"Commodity: {name} ({symbol})\n"
-                            f"Event: {event_type}\n"
-                            f"Event Date & Time: {today_time_ist}\n"
-                            f"Live Price: ₹{current_price:.2f}\n"
-                            f"Day Extreme: ₹{extreme_price:.2f}\n"
-                            f"Circuit Limit Price: ₹{circuit_price:.2f} ({circuit_slab_pct:.1f}% DPL Limit)\n"
-                            f"Previous Close (Anchor): ₹{prev_close_ref:.2f}\n"
-                            f"Day Move: {move_from_anchor:+.2f}%\n\n"
-                            f"Exchange Status: Trading reached daily permissible limit.\n"
-                            f"Historical Pattern: Check 30-day mean reversion bounce/pullback rates.\n\n"
-                            f"Live Dashboard: https://VenuInturiphoos.github.io/commodity-alerts/index.html#circuits"
-                        )
+                        if is_warning:
+                            target_direction = "LOWER" if "Lower" in event_type else "UPPER"
+                            alert_subj = f"⚠️ CIRCUIT WARNING: {name} is within 1% of {target_direction} CIRCUIT (₹{circuit_price:.2f})!"
+                            alert_body = (
+                                f"⚠️ MCX CIRCUIT EARLY WARNING (< 1% TO CIRCUIT LIMIT)\n\n"
+                                f"Commodity: {name} ({symbol})\n"
+                                f"Alert: {event_type}\n"
+                                f"Event Date & Time: {today_time_ist}\n"
+                                f"Live Price: ₹{current_price:.2f}\n"
+                                f"Day Extreme: ₹{extreme_price:.2f}\n"
+                                f"Circuit Limit Price: ₹{circuit_price:.2f} ({circuit_slab_pct:.1f}% DPL Limit)\n"
+                                f"Distance to Circuit: {max(0.0, warning_dist_pct):.2f}% (₹{max(0.0, warning_dist_pts):.2f} pts away)\n"
+                                f"Previous Close (Anchor): ₹{prev_close_ref:.2f}\n"
+                                f"Day Move: {move_from_anchor:+.2f}%\n\n"
+                                f"Trading Notice: Asset is within 1% of daily circuit band. High probability of cooling-off period or limit freeze.\n\n"
+                                f"Live Dashboard: https://VenuInturiphoos.github.io/commodity-alerts/index.html#circuits"
+                            )
+                        else:
+                            alert_subj = f"⚡ MCX CIRCUIT HIT: {name} reached {event_type} (₹{circuit_price:.2f})!"
+                            alert_body = (
+                                f"⚡ MCX DAILY CIRCUIT LIMIT (DPL) HIT!\n\n"
+                                f"Commodity: {name} ({symbol})\n"
+                                f"Event: {event_type}\n"
+                                f"Event Date & Time: {today_time_ist}\n"
+                                f"Live Price: ₹{current_price:.2f}\n"
+                                f"Day Extreme: ₹{extreme_price:.2f}\n"
+                                f"Circuit Limit Price: ₹{circuit_price:.2f} ({circuit_slab_pct:.1f}% DPL Limit)\n"
+                                f"Previous Close (Anchor): ₹{prev_close_ref:.2f}\n"
+                                f"Day Move: {move_from_anchor:+.2f}%\n\n"
+                                f"Exchange Status: Trading reached daily permissible limit.\n"
+                                f"Historical Pattern: Check 30-day mean reversion bounce/pullback rates.\n\n"
+                                f"Live Dashboard: https://VenuInturiphoos.github.io/commodity-alerts/index.html#circuits"
+                            )
                         alerts.append({'subject': alert_subj, 'body': alert_body})
                         alert_status = event_type
                         last_alert_date = today_ist
                         last_alert_msg = event_type
-                        print(f"🚨 [CIRCUIT ALERT GENERATED] {alert_subj}")
+                        print(f"🚨 [{'CIRCUIT WARNING' if is_warning else 'CIRCUIT HIT'} ALERT GENERATED] {alert_subj}")
             
             if levels and current_price:
                 market_data_payload.append({

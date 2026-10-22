@@ -2133,7 +2133,11 @@ function renderAlertTable() {
             const statusLower = item.alert_status ? item.alert_status.toLowerCase() : '';
             const displayStatus = item.alert_status ? item.alert_status.toUpperCase() : (item.signal || 'TRENDING');
             let actionLevelHtml = `<span style="cursor: pointer; text-decoration: underline; text-decoration-style: dotted; color: var(--text-primary);" onclick="openActionHelpModal('${item.name}', '${displayStatus}')">Action Required <i class="fa-solid fa-circle-info" style="font-size: 0.8em; margin-left: 2px;"></i></span>`;
-            if (statusLower.includes("support") || statusLower.includes("s1") || statusLower.includes("s2")) {
+            if (statusLower.includes("circuit")) {
+                const isWarn = statusLower.includes("warning") || statusLower.includes("within 1%") || statusLower.includes("near");
+                const color = isWarn ? '#f59e0b' : '#ef4444';
+                actionLevelHtml = `<span style="color:${color}; font-weight:600;"><i class="fa-solid fa-triangle-exclamation"></i> ${isWarn ? 'Within 1% of Circuit' : 'Circuit Limit Reached'}</span>`;
+            } else if (statusLower.includes("support") || statusLower.includes("s1") || statusLower.includes("s2")) {
                 actionLevelHtml = `<div style="display:flex; flex-direction:column; gap:4px; font-size:0.9rem;">
                     <span style="color:#fb7185">S1: ₹${parseFloat(item.s1).toFixed(2)}</span>
                     <span style="color:#fb7185">S2: ₹${parseFloat(item.s2).toFixed(2)}</span>
@@ -2176,10 +2180,17 @@ function renderAlertTable() {
 
             const tr = document.createElement('tr');
             const pcrDisplay = item.pcr ? item.pcr : 0;
+            let tagStyle = '';
+            if (statusLower.includes("warning") || statusLower.includes("within 1%")) {
+                tagStyle = 'style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4);"';
+            } else if (statusLower.includes("circuit")) {
+                tagStyle = 'style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4);"';
+            }
+            
             tr.innerHTML = `
                 <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>${signalBadge}</td>
                 <td style="font-weight:600; font-size: 1.1rem;">₹${parseFloat(item.current_price).toFixed(2)}</td>
-                <td><span class="alert-tag">${displayStatus}</span></td>
+                <td><span class="alert-tag" ${tagStyle}>${displayStatus}</span></td>
                 <td>${actionLevelHtml}</td>
                 <td><button onclick="openChartModal('${item.symbol}', '${item.name}', ${item.current_price}, ${pcrDisplay}, ${item.r1 || 0}, ${item.s1 || 0})" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: white;">View Chart</button></td>
             `;
