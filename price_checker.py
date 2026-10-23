@@ -1552,17 +1552,33 @@ class PriceChecker:
                         if high_move >= near_threshold:
                             is_circuit_hit = bool(high_move >= slab)
                             pullback = float((high - close) / high * 100)
-                            reversal_confirmed = bool(pullback >= 0.50)
                             
-                            event_type = "UPPER CIRCUIT HIT" if is_circuit_hit else "NEAR UPPER BAND"
-                            badge_status = "REVERSED" if reversal_confirmed else "LOCKED/CLOSED HIGH"
-                            
-                            if pullback >= 2.0:
-                                rating = "Strong Reversal 🟢"
-                            elif pullback >= 0.5:
-                                rating = "Moderate Reversal 🟡"
+                            # A true reversal requires that by day's end, the price reversed back inside the circuit (close < uc_limit)
+                            # and stayed positive in reverse (pullback >= 0.50%).
+                            # If it continued to move / close beyond the circuit limit, it broke the circuit and extended.
+                            is_extended = bool(close > uc_limit)
+                            if is_extended:
+                                reversal_confirmed = False
+                                ext_pct = round(((close - uc_limit) / p_close) * 100, 2)
+                                event_type = "UPPER CIRCUIT BROKEN" if close > uc_limit else "UPPER CIRCUIT HIT"
+                                badge_status = "EXTENDED"
+                                rating = "Broken Circuit & Extended 🔴"
+                                reaction_move_pct = ext_pct
+                                reaction_text = f"+{ext_pct:.2f}% Beyond Limit (Extended)"
+                            elif pullback >= 0.50 and close < uc_limit:
+                                reversal_confirmed = True
+                                event_type = "UPPER CIRCUIT HIT" if is_circuit_hit else "NEAR UPPER BAND"
+                                badge_status = "REVERSED"
+                                rating = "Strong Reversal 🟢" if pullback >= 2.0 else "Moderate Reversal 🟡"
+                                reaction_move_pct = round(float(-pullback), 2)
+                                reaction_text = f"-{pullback:.2f}% Pullback"
                             else:
+                                reversal_confirmed = False
+                                event_type = "UPPER CIRCUIT HIT" if is_circuit_hit else "NEAR UPPER BAND"
+                                badge_status = "LOCKED"
                                 rating = "Locked / Closed High 🔴"
+                                reaction_move_pct = round(float(-pullback), 2)
+                                reaction_text = f"Locked at Limit (-{pullback:.2f}%)"
                                 
                             if has_next:
                                 next_day_reversed = bool(next_close < close)
@@ -1598,6 +1614,7 @@ class PriceChecker:
                                 'direction': 'UPPER',
                                 'event_type': event_type,
                                 'is_circuit_hit': is_circuit_hit,
+                                'is_extended': is_extended,
                                 'slab_pct': round(float(slab * 100), 1),
                                 'prev_close': round(float(p_close), 2),
                                 'circuit_limit': float(uc_limit),
@@ -1605,8 +1622,8 @@ class PriceChecker:
                                 'extreme_move_pct': round(float(high_move * 100), 2),
                                 'close_price': round(float(close), 2),
                                 'close_move_pct': round(float(close_move * 100), 2),
-                                'reaction_move_pct': round(float(-pullback), 2),
-                                'reaction_text': f"-{pullback:.2f}% Pullback",
+                                'reaction_move_pct': reaction_move_pct,
+                                'reaction_text': reaction_text,
                                 'reversal_confirmed': reversal_confirmed,
                                 'badge_status': badge_status,
                                 'rating': rating,
@@ -1624,17 +1641,33 @@ class PriceChecker:
                         if low_move <= -near_threshold:
                             is_circuit_hit = bool(low_move <= -slab)
                             bounce = float((close - low) / low * 100)
-                            reversal_confirmed = bool(bounce >= 0.50)
                             
-                            event_type = "LOWER CIRCUIT HIT" if is_circuit_hit else "NEAR LOWER BAND"
-                            badge_status = "REVERSED" if reversal_confirmed else "LOCKED/CLOSED LOW"
-                            
-                            if bounce >= 2.0:
-                                rating = "Strong Reversal 🟢"
-                            elif bounce >= 0.5:
-                                rating = "Moderate Reversal 🟡"
+                            # A true reversal requires that by day's end, the price reversed back inside the circuit (close > lc_limit)
+                            # and stayed positive in reverse (bounce >= 0.50%).
+                            # If it continued to move / close beyond the circuit floor, it broke the circuit and extended.
+                            is_extended = bool(close < lc_limit)
+                            if is_extended:
+                                reversal_confirmed = False
+                                ext_pct = round(((lc_limit - close) / p_close) * 100, 2)
+                                event_type = "LOWER CIRCUIT BROKEN" if close < lc_limit else "LOWER CIRCUIT HIT"
+                                badge_status = "EXTENDED"
+                                rating = "Broken Circuit & Extended 🔴"
+                                reaction_move_pct = -ext_pct
+                                reaction_text = f"-{ext_pct:.2f}% Beyond Floor (Extended)"
+                            elif bounce >= 0.50 and close > lc_limit:
+                                reversal_confirmed = True
+                                event_type = "LOWER CIRCUIT HIT" if is_circuit_hit else "NEAR LOWER BAND"
+                                badge_status = "REVERSED"
+                                rating = "Strong Reversal 🟢" if bounce >= 2.0 else "Moderate Reversal 🟡"
+                                reaction_move_pct = round(float(bounce), 2)
+                                reaction_text = f"+{bounce:.2f}% Bounce"
                             else:
+                                reversal_confirmed = False
+                                event_type = "LOWER CIRCUIT HIT" if is_circuit_hit else "NEAR LOWER BAND"
+                                badge_status = "LOCKED"
                                 rating = "Locked / Closed Floor 🔴"
+                                reaction_move_pct = round(float(bounce), 2)
+                                reaction_text = f"Locked at Floor (+{bounce:.2f}%)"
                                 
                             if has_next:
                                 next_day_reversed = bool(next_close > close)
@@ -1670,6 +1703,7 @@ class PriceChecker:
                                 'direction': 'LOWER',
                                 'event_type': event_type,
                                 'is_circuit_hit': is_circuit_hit,
+                                'is_extended': is_extended,
                                 'slab_pct': round(float(slab * 100), 1),
                                 'prev_close': round(float(p_close), 2),
                                 'circuit_limit': float(lc_limit),
@@ -1677,8 +1711,8 @@ class PriceChecker:
                                 'extreme_move_pct': round(float(low_move * 100), 2),
                                 'close_price': round(float(close), 2),
                                 'close_move_pct': round(float(close_move * 100), 2),
-                                'reaction_move_pct': round(float(bounce), 2),
-                                'reaction_text': f"+{bounce:.2f}% Bounce",
+                                'reaction_move_pct': reaction_move_pct,
+                                'reaction_text': reaction_text,
                                 'reversal_confirmed': reversal_confirmed,
                                 'badge_status': badge_status,
                                 'rating': rating,
@@ -1713,7 +1747,7 @@ class PriceChecker:
             def compute_summary_stats(subset):
                 if not subset:
                     return {
-                        'total_events': 0, 'reversals_count': 0, 'locked_count': 0,
+                        'total_events': 0, 'reversals_count': 0, 'locked_count': 0, 'extended_count': 0,
                         'reversal_win_rate_pct': 0.0, 'avg_reaction_pct': 0.0,
                         'next_day_completed_events': 0, 'next_day_reversals_count': 0,
                         'next_day_win_rate_pct': 0.0, 'avg_next_day_move_pct': 0.0,
@@ -1721,6 +1755,7 @@ class PriceChecker:
                     }
                 t = len(subset)
                 r = sum(1 for e in subset if e['reversal_confirmed'])
+                ext = sum(1 for e in subset if e.get('is_extended'))
                 l = t - r
                 w = round(r / t * 100, 1) if t > 0 else 0.0
                 avg_r = round(sum(abs(e['reaction_move_pct']) for e in subset) / t, 2) if t > 0 else 0.0
@@ -1736,6 +1771,7 @@ class PriceChecker:
                     'total_events': t,
                     'reversals_count': r,
                     'locked_count': l,
+                    'extended_count': ext,
                     'reversal_win_rate_pct': w,
                     'avg_reaction_pct': avg_r,
                     'next_day_completed_events': len(next_c),

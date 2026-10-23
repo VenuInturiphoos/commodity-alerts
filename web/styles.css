@@ -33,11 +33,18 @@ body.light-theme {
     --table-header-bg: #f1f5f9;
 }
 
-* {
+html {
+    scroll-behavior: smooth;
+}
+
+*, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Outfit', sans-serif;
+}
+
+body, button, input, select, textarea {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 body {
@@ -49,10 +56,10 @@ body {
     margin: 0;
     padding: 0;
     width: 100%;
-    transition: background-color 0.4s ease, color 0.4s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Background */
+/* Background - Hardware Accelerated */
 .background-elements {
     position: fixed;
     top: 0;
@@ -62,14 +69,25 @@ body {
     z-index: -1;
     overflow: hidden;
     pointer-events: none;
+    contain: strict;
+    transform: translate3d(0, 0, 0);
 }
 
 .blob {
     position: absolute;
-    filter: blur(100px);
-    opacity: 0.6;
-    animation: float 20s infinite alternate ease-in-out;
+    filter: blur(80px);
+    opacity: 0.55;
+    animation: float 22s infinite alternate ease-in-out;
     pointer-events: none;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .blob {
+        animation: none !important;
+    }
 }
 
 .blob-1 {
@@ -99,10 +117,10 @@ body {
 }
 
 @keyframes float {
-    0% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(30px, -50px) scale(1.1); }
-    66% { transform: translate(-20px, 20px) scale(0.9); }
-    100% { transform: translate(0, 0) scale(1); }
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    33% { transform: translate3d(30px, -45px, 0) scale(1.08); }
+    66% { transform: translate3d(-20px, 20px, 0) scale(0.92); }
+    100% { transform: translate3d(0, 0, 0) scale(1); }
 }
 
 .container {
@@ -260,6 +278,11 @@ p {
     transform: translateY(-2px);
 }
 
+.glass-card.full-width:hover,
+.table-container.glass-card:hover {
+    transform: none !important;
+}
+
 .glass-card.full-width {
     width: 100%;
     padding: 1.5rem;
@@ -407,12 +430,11 @@ body.light-theme .market-table th {
 }
 
 .market-table tbody tr {
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.15s ease;
 }
 
 .market-table tbody tr:hover {
     background-color: var(--table-hover);
-    transform: translateY(-1px);
 }
 
 .loading {
