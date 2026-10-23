@@ -84,6 +84,16 @@ def main():
         checker.generate_circuits_data()
     except Exception as e:
         print(f"Error generating circuits data & history: {e}")
+
+    # Check and trigger Daily 6:00 PM IST Action Advisory (Monday - Friday)
+    try:
+        now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
+        if now_ist.weekday() < 5 and (now_ist.hour == 18 and now_ist.minute <= 10):
+            print("\n--- Checking Daily 6:00 PM IST Action Advisory ---")
+            from daily_6pm_advisory import generate_and_send_6pm_advisory
+            generate_and_send_6pm_advisory()
+    except Exception as e:
+        print(f"Error checking daily 6 PM advisory: {e}")
         
     print("\nCheck complete. Exiting.")
 

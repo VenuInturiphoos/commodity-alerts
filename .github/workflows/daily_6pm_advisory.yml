@@ -1,0 +1,63 @@
+name: Daily 6 PM IST Commodity Advisory
+
+on:
+  schedule:
+    # 12:30 UTC = 18:00 (6:00 PM) IST, Monday to Friday
+    - cron: '30 12 * * 1-5'
+  workflow_dispatch: # Allows manual one-click trigger from GitHub Actions UI anytime
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-6pm-advisory
+  cancel-in-progress: false
+
+jobs:
+  send-6pm-advisory:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run 6 PM Advisory Script
+        env:
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_CLIENT_ID: ${{ secrets.ANGEL_CLIENT_ID }}
+          ANGEL_PASSWORD: ${{ secrets.ANGEL_PASSWORD }}
+          ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+        run: |
+          # If triggered manually via workflow_dispatch, pass --force to bypass date deduplication
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            python daily_6pm_advisory.py --force
+          else
+            python daily_6pm_advisory.py
+          fi
+
+      - name: Commit State & Web Data
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add web/alerts_state.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-record 6:00 PM IST advisory dispatch state"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          else
+            echo "No state changes to commit."
+          fi

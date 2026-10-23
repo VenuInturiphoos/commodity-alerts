@@ -200,16 +200,33 @@ class EmailAlerter:
         if not bot_token or not chat_id:
             return False
             
-        text = f"{subject}\n\n{body}"
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        # Attempt HTML formatted send first for rich styling
+        formatted_text = f"<b>{subject}</b>\n\n{body}"
         try:
-            response = requests.post(url, json={"chat_id": chat_id, "text": text}, timeout=10)
+            response = requests.post(
+                url,
+                json={"chat_id": chat_id, "text": formatted_text, "parse_mode": "HTML"},
+                timeout=10
+            )
             if response.status_code == 200:
-                print("Telegram alert sent successfully.")
+                print("Telegram alert sent successfully (HTML).")
                 return True
             else:
-                print(f"Failed to send Telegram alert: {response.text}")
-                return False
+                # If HTML parsing fails due to unescaped tags, fallback to plain text
+                print(f"Telegram HTML send returned status {response.status_code}: {response.text}. Retrying plain text...")
+                plain_text = f"{subject}\n\n{body}"
+                plain_resp = requests.post(
+                    url,
+                    json={"chat_id": chat_id, "text": plain_text},
+                    timeout=10
+                )
+                if plain_resp.status_code == 200:
+                    print("Telegram alert sent successfully (plain text fallback).")
+                    return True
+                else:
+                    print(f"Failed to send Telegram alert: {plain_resp.text}")
+                    return False
         except Exception as e:
             print(f"Failed to send Telegram alert Exception: {e}")
             return False
