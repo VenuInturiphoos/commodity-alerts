@@ -8,8 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css?v=mobilefix1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    <link rel="stylesheet" href="styles.css?v=smooth2">
     <script>
         window.onerror = function(msg, url, line, col, error) {
             console.error("Global Error: " + msg + " at line " + line + ":" + col, error);
@@ -349,7 +350,7 @@
                         <div class="circuit-filters" style="gap: 0.4rem;">
                             <button class="circuit-filter-pill active" onclick="setHistoryResultFilter('ALL', this)">All Results</button>
                             <button class="circuit-filter-pill" onclick="setHistoryResultFilter('REVERSED', this)">Reversals Only 🟢</button>
-                            <button class="circuit-filter-pill" onclick="setHistoryResultFilter('LOCKED', this)">Locked / No Bounce 🔴</button>
+                            <button class="circuit-filter-pill" onclick="setHistoryResultFilter('LOCKED', this)">Locked / Extended 🔴</button>
                             <button class="circuit-filter-pill" onclick="setHistoryResultFilter('UPPER', this)">Upper Limits</button>
                             <button class="circuit-filter-pill" onclick="setHistoryResultFilter('LOWER', this)">Lower Limits</button>
                         </div>
@@ -846,6 +847,10 @@ if (document.readyState === 'loading') {
     try { initApp(); } catch(e) { console.error("Init Error:", e); }
 }
 
+let lastMarketFetchTime = 0;
+let lastCircuitsFetchTime = 0;
+let lastHistoryFetchTime = 0;
+
 window.switchTab = function(btn, targetId) {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -856,16 +861,34 @@ window.switchTab = function(btn, targetId) {
     
     // Add active class to clicked
     btn.classList.add('active');
-    document.getElementById(targetId).classList.add('active');
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) targetEl.classList.add('active');
     
-    // If switching to dashboard, refresh data
+    const now = Date.now();
+    // Fast tab switching: render instantly from memory cache if fresh, otherwise fetch in background
     if (targetId === 'dashboard-tab' || targetId === 'alerts-tab' || targetId === 'trade-tab') {
-        fetchMarketData();
+        if (!lastMarketFetchTime || (now - lastMarketFetchTime > 60000)) {
+            fetchMarketData();
+        } else {
+            renderMarketTable();
+            renderAlertTable();
+            if (targetId === 'trade-tab' && typeof renderTradeMarket === 'function') {
+                renderTradeMarket();
+            }
+        }
     }
     
     if (targetId === 'circuits-tab') {
-        fetchCircuitsData();
-        fetchCircuitsHistory();
+        if (!lastCircuitsFetchTime || (now - lastCircuitsFetchTime > 45000)) {
+            fetchCircuitsData();
+        } else {
+            renderCircuitsTable();
+        }
+        if (!circuitsHistoryFullData || (now - lastHistoryFetchTime > 120000)) {
+            fetchCircuitsHistory();
+        } else {
+            renderCircuitsHistoryTable();
+        }
     }
     
     if (targetId === 'admin-tab') {
@@ -1097,6 +1120,7 @@ async function fetchCircuitsData(forceNetwork = false) {
         
         // 3. Render and trigger visual feedback
         if (rawCircuitsData && rawCircuitsData.length > 0) {
+            lastCircuitsFetchTime = Date.now();
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             if (updatedEl) {
                 if (hasLiveTicks) {
@@ -1107,13 +1131,14 @@ async function fetchCircuitsData(forceNetwork = false) {
             }
             renderCircuitsTable();
             
-            // Visual glow pulse on table card
+            // Visual glow pulse on table card without forced synchronous reflow
             const tableContainer = document.querySelector('#circuits-tab .table-container');
             if (tableContainer) {
                 tableContainer.classList.remove('table-refreshed');
-                void tableContainer.offsetWidth; // Force reflow
-                tableContainer.classList.add('table-refreshed');
-                setTimeout(() => tableContainer.classList.remove('table-refreshed'), 1400);
+                requestAnimationFrame(() => {
+                    tableContainer.classList.add('table-refreshed');
+                    setTimeout(() => tableContainer.classList.remove('table-refreshed'), 1400);
+                });
             }
             
             if (forceNetwork && btn) {
@@ -1174,8 +1199,12 @@ function setCircuitCategoryFilter(category, btn) {
     renderCircuitsTable();
 }
 
+let circuitFilterTimer = null;
 function filterCircuitsTable() {
-    renderCircuitsTable();
+    clearTimeout(circuitFilterTimer);
+    circuitFilterTimer = setTimeout(() => {
+        renderCircuitsTable();
+    }, 120);
 }
 
 function renderCircuitsTable() {
@@ -1205,11 +1234,7 @@ function renderCircuitsTable() {
         return;
     }
     
-    tbody.innerHTML = '';
-    
-    filtered.forEach(item => {
-        const tr = document.createElement('tr');
-        
+    const rowsHtml = filtered.map(item => {
         const isUp = item.change_pct >= 0;
         const changeSign = isUp ? '+' : '';
         const changeColor = isUp ? '#4ade80' : '#fb7185';
@@ -1220,77 +1245,79 @@ function renderCircuitsTable() {
         if (item.status.includes('LOCKED') || item.status.includes('HIT')) statusBadgeClass = 'circuit-badge-lock';
         else if (item.status.includes('NEAR')) statusBadgeClass = 'circuit-badge-near';
         
-        tr.innerHTML = `
-            <td style="min-width: 160px;">
-                <strong>
-                    <a href="${chartUrl}" target="_blank" style="color: var(--text-primary); text-decoration: none;">
-                        ${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i>
-                    </a>
-                </strong>
-                <span class="category-tag">${item.category}</span>
-                <span class="unit-tag">(${item.unit})</span>
-                <br>
-                <small style="color:var(--text-secondary)">${item.ticker || item.symbol}</small>
-            </td>
-            
-            <td>
-                <div style="font-size: 1.05rem; font-weight: 700;">₹${Number(item.current_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
-                <div style="font-size: 0.8rem; color: ${changeColor}; font-weight: 600;">
-                    ${changeSign}${item.change_pct.toFixed(2)}% (${changeSign}₹${item.change_abs.toFixed(2)})
-                </div>
-            </td>
-            
-            <td style="color: var(--text-secondary); font-size: 0.85rem;">
-                <span style="color: #cbd5e1;">H: ₹${Number(item.day_high).toLocaleString('en-IN')}</span><br>
-                <span style="color: #94a3b8;">L: ₹${Number(item.day_low).toLocaleString('en-IN')}</span>
-            </td>
-            
-            <td style="font-weight: 600; color: #cbd5e1;">
-                ₹${Number(item.prev_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-            </td>
-            
-            <td>
-                <div style="color: #fb7185; font-weight: 700;">₹${Number(item.lower_circuit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
-                <small style="color: #fda4af; font-size: 0.75rem;">-${item.dpl_initial_pct}% Slab</small>
-            </td>
-            
-            <td>
-                <div style="color: #4ade80; font-weight: 700;">₹${Number(item.upper_circuit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
-                <small style="color: #86efac; font-size: 0.75rem;">+${item.dpl_initial_pct}% Slab</small>
-            </td>
-            
-            <td>
-                <div class="circuit-meter-wrap">
-                    <div class="circuit-meter-labels">
-                        <span class="meter-lc">LC ₹${Number(item.lower_circuit).toLocaleString('en-IN')}</span>
-                        <span class="meter-mid">PC</span>
-                        <span class="meter-uc">UC ₹${Number(item.upper_circuit).toLocaleString('en-IN')}</span>
+        return `
+            <tr>
+                <td style="min-width: 160px;">
+                    <strong>
+                        <a href="${chartUrl}" target="_blank" style="color: var(--text-primary); text-decoration: none;">
+                            ${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i>
+                        </a>
+                    </strong>
+                    <span class="category-tag">${item.category}</span>
+                    <span class="unit-tag">(${item.unit})</span>
+                    <br>
+                    <small style="color:var(--text-secondary)">${item.ticker || item.symbol}</small>
+                </td>
+                
+                <td>
+                    <div style="font-size: 1.05rem; font-weight: 700;">₹${Number(item.current_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    <div style="font-size: 0.8rem; color: ${changeColor}; font-weight: 600;">
+                        ${changeSign}${item.change_pct.toFixed(2)}% (${changeSign}₹${item.change_abs.toFixed(2)})
                     </div>
-                    <div class="circuit-meter-track" title="Price is at ${item.band_position_pct}% between Lower and Upper Circuit">
-                        <div class="circuit-meter-mid-tick" title="Previous Settlement Anchor"></div>
-                        <div class="circuit-meter-pin" style="left: ${item.band_position_pct}%" title="Live Price: ₹${Number(item.current_price).toLocaleString('en-IN')} (${item.band_position_pct}%)"></div>
+                </td>
+                
+                <td style="color: var(--text-secondary); font-size: 0.85rem;">
+                    <span style="color: #cbd5e1;">H: ₹${Number(item.day_high).toLocaleString('en-IN')}</span><br>
+                    <span style="color: #94a3b8;">L: ₹${Number(item.day_low).toLocaleString('en-IN')}</span>
+                </td>
+                
+                <td style="font-weight: 600; color: #cbd5e1;">
+                    ₹${Number(item.prev_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                </td>
+                
+                <td>
+                    <div style="color: #fb7185; font-weight: 700;">₹${Number(item.lower_circuit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    <small style="color: #fda4af; font-size: 0.75rem;">-${item.dpl_initial_pct}% Slab</small>
+                </td>
+                
+                <td>
+                    <div style="color: #4ade80; font-weight: 700;">₹${Number(item.upper_circuit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    <small style="color: #86efac; font-size: 0.75rem;">+${item.dpl_initial_pct}% Slab</small>
+                </td>
+                
+                <td>
+                    <div class="circuit-meter-wrap">
+                        <div class="circuit-meter-labels">
+                            <span class="meter-lc">LC ₹${Number(item.lower_circuit).toLocaleString('en-IN')}</span>
+                            <span class="meter-mid">PC</span>
+                            <span class="meter-uc">UC ₹${Number(item.upper_circuit).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div class="circuit-meter-track" title="Price is at ${item.band_position_pct}% between Lower and Upper Circuit">
+                            <div class="circuit-meter-mid-tick" title="Previous Settlement Anchor"></div>
+                            <div class="circuit-meter-pin" style="left: ${item.band_position_pct}%" title="Live Price: ₹${Number(item.current_price).toLocaleString('en-IN')} (${item.band_position_pct}%)"></div>
+                        </div>
                     </div>
-                </div>
-            </td>
-            
-            <td style="font-size: 0.825rem;">
-                <div style="color: #4ade80; font-weight: 600;">
-                    <i class="fa-solid fa-angles-up" style="font-size: 0.7em;"></i> +${item.dist_to_uc_pct.toFixed(2)}% <span style="color:var(--text-secondary); font-size:0.75rem;">(₹${item.dist_to_uc_pts.toFixed(1)})</span>
-                </div>
-                <div style="color: #fb7185; font-weight: 600; margin-top: 2px;">
-                    <i class="fa-solid fa-angles-down" style="font-size: 0.7em;"></i> -${item.dist_to_lc_pct.toFixed(2)}% <span style="color:var(--text-secondary); font-size:0.75rem;">(₹${item.dist_to_lc_pts.toFixed(1)})</span>
-                </div>
-            </td>
-            
-            <td>
-                <span class="circuit-badge ${statusBadgeClass}">
-                    ${item.status_text}
-                </span>
-            </td>
+                </td>
+                
+                <td style="font-size: 0.825rem;">
+                    <div style="color: #4ade80; font-weight: 600;">
+                        <i class="fa-solid fa-angles-up" style="font-size: 0.7em;"></i> +${item.dist_to_uc_pct.toFixed(2)}% <span style="color:var(--text-secondary); font-size:0.75rem;">(₹${item.dist_to_uc_pts.toFixed(1)})</span>
+                    </div>
+                    <div style="color: #fb7185; font-weight: 600; margin-top: 2px;">
+                        <i class="fa-solid fa-angles-down" style="font-size: 0.7em;"></i> -${item.dist_to_lc_pct.toFixed(2)}% <span style="color:var(--text-secondary); font-size:0.75rem;">(₹${item.dist_to_lc_pts.toFixed(1)})</span>
+                    </div>
+                </td>
+                
+                <td>
+                    <span class="circuit-badge ${statusBadgeClass}">
+                        ${item.status_text}
+                    </span>
+                </td>
+            </tr>
         `;
-        
-        tbody.appendChild(tr);
-    });
+    }).join('');
+    
+    tbody.innerHTML = rowsHtml;
 }
 
 function updateCircuitsKPIs(data) {
@@ -1371,6 +1398,13 @@ let circuitsHistorySummary = null;
 async function fetchCircuitsHistory(forceNetwork = false) {
     const tbody = document.getElementById('circuits-history-body');
     
+    // Fast memory cache check (3 minutes cache)
+    if (!forceNetwork && circuitsHistoryFullData && circuitsHistoryFullData.events && (Date.now() - lastHistoryFetchTime < 180000)) {
+        applyHistoryPeriod(activeHistoryPeriod);
+        renderCircuitsHistoryTable();
+        return;
+    }
+    
     try {
         const candidateUrls = [
             'circuits_history_30d.json?t=' + Date.now(),
@@ -1391,6 +1425,7 @@ async function fetchCircuitsHistory(forceNetwork = false) {
                         allHistoryEvents = data.events;
                         applyHistoryPeriod(activeHistoryPeriod);
                         loaded = true;
+                        lastHistoryFetchTime = Date.now();
                         break;
                     }
                 }
@@ -1528,8 +1563,12 @@ function setHistoryCommodityFilter(comm, btn) {
     renderCircuitsHistoryTable();
 }
 
+let historyFilterTimer = null;
 function filterHistoryTable() {
-    renderCircuitsHistoryTable();
+    clearTimeout(historyFilterTimer);
+    historyFilterTimer = setTimeout(() => {
+        renderCircuitsHistoryTable();
+    }, 120);
 }
 
 function renderCircuitsHistoryTable() {
@@ -1593,12 +1632,20 @@ function renderCircuitsHistoryTable() {
     const searchVal = (document.getElementById('history-search-input')?.value || '').trim().toLowerCase();
     
     let filtered = rawCircuitsHistory.filter(item => {
+        // Evaluate broken/extended vs true reversal
+        const isUpper = item.direction === 'UPPER';
+        const isBrokenExt = item.is_extended === true || 
+            item.badge_status === 'EXTENDED' || 
+            (item.rating && item.rating.includes('Extended')) ||
+            (isUpper ? (item.close_price > item.circuit_limit) : (item.close_price < item.circuit_limit));
+        const isRev = !isBrokenExt && (item.reversal_confirmed === true);
+
         // Result filter
         let matchesResult = true;
         if (activeHistoryFilter === 'REVERSED') {
-            matchesResult = activeHistoryViewMode === 'nextday' ? (item.next_day_reversed === true) : (item.reversal_confirmed === true);
+            matchesResult = activeHistoryViewMode === 'nextday' ? (item.next_day_reversed === true) : isRev;
         } else if (activeHistoryFilter === 'LOCKED') {
-            matchesResult = activeHistoryViewMode === 'nextday' ? (item.next_day_reversed === false) : (item.reversal_confirmed === false);
+            matchesResult = activeHistoryViewMode === 'nextday' ? (item.next_day_reversed === false) : !isRev;
         } else if (activeHistoryFilter === 'UPPER') {
             matchesResult = item.direction === 'UPPER';
         } else if (activeHistoryFilter === 'LOWER') {
@@ -1629,22 +1676,30 @@ function renderCircuitsHistoryTable() {
         return;
     }
     
-    tbody.innerHTML = '';
-    filtered.forEach(item => {
-        const tr = document.createElement('tr');
-        
+    const rowsHtml = filtered.map(item => {
         const isUpper = item.direction === 'UPPER';
         const typeColor = isUpper ? '#4ade80' : '#fb7185';
         const typeIcon = isUpper ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
         
-        let intradayBadge = '';
-        if (item.reversal_confirmed) {
-            intradayBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #4ade80; border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">Reversed Intraday 🟢</span>`;
-        } else {
-            intradayBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #fb7185; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">Locked / Closed Extreme 🔴</span>`;
-        }
+        const isBrokenExtended = item.is_extended === true || 
+            item.badge_status === 'EXTENDED' || 
+            (item.rating && item.rating.includes('Extended')) ||
+            (isUpper ? (item.close_price > item.circuit_limit) : (item.close_price < item.circuit_limit));
+            
+        const isReversed = !isBrokenExtended && (item.reversal_confirmed === true);
         
-        const reactionColor = item.reversal_confirmed ? '#4ade80' : '#94a3b8';
+        let intradayBadge = '';
+        let reactionColor = '#94a3b8';
+        if (isBrokenExtended) {
+            intradayBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #fb7185; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">Broken Circuit & Extended 🔴</span>`;
+            reactionColor = '#fb7185';
+        } else if (isReversed) {
+            intradayBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #4ade80; border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">Reversed Intraday 🟢</span>`;
+            reactionColor = '#4ade80';
+        } else {
+            intradayBadge = `<span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">Locked at Circuit 🔒</span>`;
+            reactionColor = '#94a3b8';
+        }
         
         // Next-day elements
         let nextMoveHtml = '';
@@ -1671,88 +1726,93 @@ function renderCircuitsHistoryTable() {
         }
         
         if (activeHistoryViewMode === 'nextday') {
-            tr.innerHTML = `
-                <td style="min-width: 135px;">
-                    <strong>${item.date}</strong>
-                    <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
-                    <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 3px; font-weight: 500;">
-                        <i class="fa-regular fa-clock" style="font-size: 0.68rem; color: #818cf8; margin-right: 3px;"></i>${item.time ? item.time + ' IST' : '--'}
-                    </div>
-                </td>
-                <td>
-                    <strong>${item.name}</strong>
-                    <span class="category-tag">${item.category}</span>
-                </td>
-                <td>
-                    <span style="color: ${typeColor}; font-weight: 600; font-size: 0.85rem;">
-                        <i class="fa-solid ${typeIcon}"></i> ${item.event_type}
-                    </span>
-                    <br>
-                    <small style="color: var(--text-secondary);">Slab: ±${item.slab_pct}%</small>
-                </td>
-                <td style="color: ${typeColor}; font-weight: 600;">
-                    ₹${Number(item.circuit_limit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                </td>
-                <td style="color: var(--text-primary); font-weight: 600;">
-                    ₹${Number(item.close_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                </td>
-                <td>
-                    <strong>${item.next_date}</strong>
-                    <span class="unit-tag" style="margin-left: 4px;">(${item.next_day || '--'})</span>
-                </td>
-                <td style="color: #f8fafc; font-weight: 700;">
-                    ${item.next_close !== null && item.next_close !== undefined ? '₹' + Number(item.next_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '<span style="color: var(--text-secondary);">Pending</span>'}
-                </td>
-                <td>
-                    ${nextMoveHtml}
-                </td>
-                <td>
-                    ${nextBadge}
-                </td>
+            return `
+                <tr>
+                    <td style="min-width: 135px;">
+                        <strong>${item.date}</strong>
+                        <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
+                        <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 3px; font-weight: 500;">
+                            <i class="fa-regular fa-clock" style="font-size: 0.68rem; color: #818cf8; margin-right: 3px;"></i>${item.time ? item.time + ' IST' : '--'}
+                        </div>
+                    </td>
+                    <td>
+                        <strong>${item.name}</strong>
+                        <span class="category-tag">${item.category}</span>
+                    </td>
+                    <td>
+                        <span style="color: ${typeColor}; font-weight: 600; font-size: 0.85rem;">
+                            <i class="fa-solid ${typeIcon}"></i> ${item.event_type}
+                        </span>
+                        <br>
+                        <small style="color: var(--text-secondary);">Slab: ±${item.slab_pct}%</small>
+                    </td>
+                    <td style="color: ${typeColor}; font-weight: 600;">
+                        ₹${Number(item.circuit_limit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </td>
+                    <td style="color: var(--text-primary); font-weight: 600;">
+                        ₹${Number(item.close_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </td>
+                    <td>
+                        <strong>${item.next_date}</strong>
+                        <span class="unit-tag" style="margin-left: 4px;">(${item.next_day || '--'})</span>
+                    </td>
+                    <td style="color: #f8fafc; font-weight: 700;">
+                        ${item.next_close !== null && item.next_close !== undefined ? '₹' + Number(item.next_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '<span style="color: var(--text-secondary);">Pending</span>'}
+                    </td>
+                    <td>
+                        ${nextMoveHtml}
+                    </td>
+                    <td>
+                        ${nextBadge}
+                    </td>
+                </tr>
             `;
         } else if (activeHistoryViewMode === 'both') {
-            tr.innerHTML = `
-                <td style="min-width: 135px;">
-                    <strong>${item.date}</strong>
-                    <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
-                    <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 3px; font-weight: 500;">
-                        <i class="fa-regular fa-clock" style="font-size: 0.68rem; color: #818cf8; margin-right: 3px;"></i>${item.time ? item.time + ' IST' : '--'}
-                    </div>
-                </td>
-                <td>
-                    <strong>${item.name}</strong>
-                    <span class="category-tag">${item.category}</span>
-                </td>
-                <td>
-                    <span style="color: ${typeColor}; font-weight: 600; font-size: 0.85rem;">
-                        <i class="fa-solid ${typeIcon}"></i> ${item.event_type}
-                    </span>
-                </td>
-                <td style="color: ${typeColor}; font-weight: 600;">
-                    ₹${Number(item.circuit_limit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                </td>
-                <td style="color: var(--text-primary); font-weight: 600;">
-                    ₹${Number(item.close_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                </td>
-                <td>
-                    <span style="font-weight: 700; color: ${reactionColor}; font-size: 0.9rem;">
-                        ${item.reaction_text}
-                    </span>
-                    <div>${intradayBadge}</div>
-                </td>
-                <td>
-                    <strong>${item.next_date}</strong>
-                    <span class="unit-tag" style="margin-left: 4px;">(${item.next_day || '--'})</span>
-                </td>
-                <td style="color: #f8fafc; font-weight: 700;">
-                    ${item.next_close !== null && item.next_close !== undefined ? '₹' + Number(item.next_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '<span style="color: var(--text-secondary);">Pending</span>'}
-                </td>
-                <td>
-                    ${nextMoveHtml}
-                </td>
-                <td>
-                    ${nextBadge}
-                </td>
+            return `
+                <tr>
+                    <td style="min-width: 135px;">
+                        <strong>${item.date}</strong>
+                        <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
+                        <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 3px; font-weight: 500;">
+                            <i class="fa-regular fa-clock" style="font-size: 0.68rem; color: #818cf8; margin-right: 3px;"></i>${item.time ? item.time + ' IST' : '--'}
+                        </div>
+                    </td>
+                    <td>
+                        <strong>${item.name}</strong>
+                        <span class="category-tag">${item.category}</span>
+                    </td>
+                    <td>
+                        <span style="color: ${typeColor}; font-weight: 600; font-size: 0.85rem;">
+                            <i class="fa-solid ${typeIcon}"></i> ${item.event_type}
+                        </span>
+                    </td>
+                    <td style="color: ${typeColor}; font-weight: 600;">
+                        ₹${Number(item.circuit_limit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </td>
+                    <td style="color: var(--text-primary); font-weight: 600;">
+                        ₹${Number(item.close_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </td>
+                    <td>
+                        <span style="font-weight: 700; color: ${reactionColor}; font-size: 0.9rem;">
+                            ${item.reaction_text}
+                        </span>
+                        <div style="font-size: 0.74rem; color: ${isBrokenExtended ? '#fb7185' : (isReversed ? '#4ade80' : 'var(--text-secondary)')}; font-weight: 500;">${item.rating}</div>
+                        <div style="margin-top: 4px;">${intradayBadge}</div>
+                    </td>
+                    <td>
+                        <strong>${item.next_date}</strong>
+                        <span class="unit-tag" style="margin-left: 4px;">(${item.next_day || '--'})</span>
+                    </td>
+                    <td style="color: #f8fafc; font-weight: 700;">
+                        ${item.next_close !== null && item.next_close !== undefined ? '₹' + Number(item.next_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '<span style="color: var(--text-secondary);">Pending</span>'}
+                    </td>
+                    <td>
+                        ${nextMoveHtml}
+                    </td>
+                    <td>
+                        ${nextBadge}
+                    </td>
+                </tr>
             `;
         } else {
             // Intraday View (Default)
@@ -1762,61 +1822,64 @@ function renderCircuitsHistoryTable() {
                    </div>`
                 : `<div style="font-size: 0.73rem; color: var(--text-secondary); margin-top: 3px;">Next Day: Pending</div>`;
                 
-            tr.innerHTML = `
-                <td style="min-width: 135px;">
-                    <strong>${item.date}</strong>
-                    <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
-                    <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 3px; font-weight: 500;">
-                        <i class="fa-regular fa-clock" style="font-size: 0.68rem; color: #818cf8; margin-right: 3px;"></i>${item.time ? item.time + ' IST' : '--'}
-                    </div>
-                </td>
-                <td>
-                    <strong>${item.name}</strong>
-                    <span class="category-tag">${item.category}</span>
-                </td>
-                <td>
-                    <span style="color: ${typeColor}; font-weight: 600; font-size: 0.85rem;">
-                        <i class="fa-solid ${typeIcon}"></i> ${item.event_type}
-                    </span>
-                    <br>
-                    <small style="color: var(--text-secondary);">Slab: ±${item.slab_pct}%</small>
-                </td>
-                <td style="color: #cbd5e1; font-weight: 600;">
-                    ₹${Number(item.prev_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                </td>
-                <td style="color: ${typeColor}; font-weight: 600;">
-                    ₹${Number(item.circuit_limit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                </td>
-                <td>
-                    <div style="font-weight: 700; color: ${typeColor};">
-                        ₹${Number(item.extreme_hit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                    </div>
-                    <div style="font-size: 0.8rem; color: ${typeColor}; font-weight: 600;">
-                        ${item.extreme_move_pct > 0 ? '+' : ''}${item.extreme_move_pct}% from anchor
-                    </div>
-                </td>
-                <td style="color: var(--text-primary); font-weight: 600;">
-                    ₹${Number(item.close_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                    <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                        (${item.close_move_pct > 0 ? '+' : ''}${item.close_move_pct}%)
-                    </div>
-                </td>
-                <td>
-                    <span style="font-weight: 700; color: ${reactionColor}; font-size: 0.95rem;">
-                        ${item.reaction_text}
-                    </span>
-                    <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                        ${item.rating}
-                    </div>
-                    ${nextDayPreview}
-                </td>
-                <td>
-                    ${intradayBadge}
-                </td>
+            return `
+                <tr>
+                    <td style="min-width: 135px;">
+                        <strong>${item.date}</strong>
+                        <span class="unit-tag" style="margin-left: 4px;">(${item.day})</span>
+                        <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 3px; font-weight: 500;">
+                            <i class="fa-regular fa-clock" style="font-size: 0.68rem; color: #818cf8; margin-right: 3px;"></i>${item.time ? item.time + ' IST' : '--'}
+                        </div>
+                    </td>
+                    <td>
+                        <strong>${item.name}</strong>
+                        <span class="category-tag">${item.category}</span>
+                    </td>
+                    <td>
+                        <span style="color: ${typeColor}; font-weight: 600; font-size: 0.85rem;">
+                            <i class="fa-solid ${typeIcon}"></i> ${item.event_type}
+                        </span>
+                        <br>
+                        <small style="color: var(--text-secondary);">Slab: ±${item.slab_pct}%</small>
+                    </td>
+                    <td style="color: #cbd5e1; font-weight: 600;">
+                        ₹${Number(item.prev_close).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </td>
+                    <td style="color: ${typeColor}; font-weight: 600;">
+                        ₹${Number(item.circuit_limit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </td>
+                    <td>
+                        <div style="font-weight: 700; color: ${typeColor};">
+                            ₹${Number(item.extreme_hit).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </div>
+                        <div style="font-size: 0.8rem; color: ${typeColor}; font-weight: 600;">
+                            ${item.extreme_move_pct > 0 ? '+' : ''}${item.extreme_move_pct}% from anchor
+                        </div>
+                    </td>
+                    <td style="color: var(--text-primary); font-weight: 600;">
+                        ₹${Number(item.close_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                            (${item.close_move_pct > 0 ? '+' : ''}${item.close_move_pct}%)
+                        </div>
+                    </td>
+                    <td>
+                        <span style="font-weight: 700; color: ${reactionColor}; font-size: 0.95rem;">
+                            ${item.reaction_text}
+                        </span>
+                        <div style="font-size: 0.75rem; color: ${isBrokenExtended ? '#fb7185' : (isReversed ? '#4ade80' : 'var(--text-secondary)')}; font-weight: 500;">
+                            ${item.rating}
+                        </div>
+                        ${nextDayPreview}
+                    </td>
+                    <td>
+                        ${intradayBadge}
+                    </td>
+                </tr>
             `;
         }
-        tbody.appendChild(tr);
-    });
+    }).join('');
+    
+    tbody.innerHTML = rowsHtml;
 }
 
 function setupSubscribeForm() {
@@ -2031,33 +2094,47 @@ async function fetchMarketData() {
             return !EXCLUDED_SYMBOLS.includes(sym) && !EXCLUDED_SYMBOLS.some(ex => sym.startsWith(ex));
         });
         
+        lastMarketFetchTime = Date.now();
         // Render both tables
         renderMarketTable();
         renderAlertTable();
+        if (typeof renderTradeMarket === 'function') {
+            const tradeTab = document.getElementById('trade-tab');
+            if (tradeTab && tradeTab.classList.contains('active')) renderTradeMarket();
+        }
         
     } catch (error) {
         console.error("Error fetching market data:", error);
-        document.getElementById('market-data-body').innerHTML = `<tr><td colspan="6" class="error">Failed to load live data. Check console.</td></tr>`;
+        const errHtml = `<tr><td colspan="7" class="error">Failed to load live data. Check console.</td></tr>`;
+        const tbodyStocks = document.getElementById('market-data-body-stocks');
+        const tbodyCommodities = document.getElementById('market-data-body-commodities');
+        if (tbodyStocks) tbodyStocks.innerHTML = errHtml;
+        if (tbodyCommodities) tbodyCommodities.innerHTML = errHtml;
     }
 }
 
 function renderMarketTable() {
     const tbodyStocks = document.getElementById('market-data-body-stocks');
     const tbodyCommodities = document.getElementById('market-data-body-commodities');
-    
-    tbodyStocks.innerHTML = '';
-    tbodyCommodities.innerHTML = '';
+    if (!tbodyStocks || !tbodyCommodities) return;
     
     const stocks = marketData.filter(item => item.asset_type === 'Stock');
     const commodities = marketData.filter(item => item.asset_type === 'Commodity');
     
-    const renderRows = (data, tbody) => {
+    const buildRowsHtml = (data) => {
         if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="loading">No data available.</td></tr>`;
-            return;
+            return `<tr><td colspan="7" class="loading">No data available.</td></tr>`;
         }
 
-        data.forEach(item => {
+        const yfSymbolMap = {
+            "GOLD": "GC=F",
+            "SILVER": "SI=F",
+            "CRUDEOIL": "CL=F",
+            "NATURALGAS": "NG=F",
+            "COPPER": "HG=F"
+        };
+
+        return data.map(item => {
             const date = new Date(item.last_updated).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
             let intrinsicHtml = '<span style="color:var(--text-secondary)">N/A</span>';
@@ -2067,15 +2144,6 @@ function renderMarketTable() {
                 intrinsicHtml = `<span style="color:${color}; font-weight: ${isUndervalued ? '600' : 'normal'}">₹${parseFloat(item.intrinsic_value).toFixed(2)}</span>`;
             }
 
-            // Map symbols to Yahoo Finance URLs
-            const yfSymbolMap = {
-                "GOLD": "GC=F",
-                "SILVER": "SI=F",
-                "CRUDEOIL": "CL=F",
-                "NATURALGAS": "NG=F",
-                "COPPER": "HG=F"
-            };
-            
             let yfLink = `https://finance.yahoo.com/quote/${item.symbol}`;
             if (item.asset_type === 'Commodity' && yfSymbolMap[item.symbol]) {
                 yfLink = `https://finance.yahoo.com/quote/${yfSymbolMap[item.symbol]}`;
@@ -2092,31 +2160,29 @@ function renderMarketTable() {
                 signalBadge = `<span style="background-color: rgba(251, 113, 133, 0.1); color: #fb7185; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(251, 113, 133, 0.2);">SELL (RALLY)</span>`;
             }
 
-            const tr = document.createElement('tr');
             const pcrDisplay = item.pcr ? item.pcr : 0;
-            tr.innerHTML = `
-                <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>${signalBadge}</td>
-                <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
-                <td>${intrinsicHtml}</td>
-                <td style="color:#fb7185">₹${parseFloat(item.s1 || 0).toFixed(2)}</td>
-                <td style="color:#4ade80">₹${parseFloat(item.r1 || 0).toFixed(2)}</td>
-                <td style="color:var(--text-secondary); font-size: 0.875rem;">${date}</td>
-                <td><button onclick="openChartModal('${item.symbol}', '${item.name}', ${item.current_price}, ${pcrDisplay}, ${item.r1 || 0}, ${item.s1 || 0})" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: white;">View Chart</button></td>
+            return `
+                <tr>
+                    <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>${signalBadge}</td>
+                    <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
+                    <td>${intrinsicHtml}</td>
+                    <td style="color:#fb7185">₹${parseFloat(item.s1 || 0).toFixed(2)}</td>
+                    <td style="color:#4ade80">₹${parseFloat(item.r1 || 0).toFixed(2)}</td>
+                    <td style="color:var(--text-secondary); font-size: 0.875rem;">${date}</td>
+                    <td><button onclick="openChartModal('${item.symbol}', '${item.name}', ${item.current_price}, ${pcrDisplay}, ${item.r1 || 0}, ${item.s1 || 0})" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: white;">View Chart</button></td>
+                </tr>
             `;
-            tbody.appendChild(tr);
-        });
+        }).join('');
     };
 
-    renderRows(stocks, tbodyStocks);
-    renderRows(commodities, tbodyCommodities);
+    tbodyStocks.innerHTML = buildRowsHtml(stocks);
+    tbodyCommodities.innerHTML = buildRowsHtml(commodities);
 }
 
 function renderAlertTable() {
     const tbodyStocks = document.getElementById('alert-data-body-stocks');
     const tbodyCommodities = document.getElementById('alert-data-body-commodities');
-    
-    tbodyStocks.innerHTML = '';
-    tbodyCommodities.innerHTML = '';
+    if (!tbodyStocks || !tbodyCommodities) return;
     
     const alertData = marketData.filter(item => 
         (item.alert_status && item.alert_status.trim() !== '') || 
@@ -2125,13 +2191,20 @@ function renderAlertTable() {
     const stockAlerts = alertData.filter(item => item.asset_type === 'Stock');
     const commodityAlerts = alertData.filter(item => item.asset_type === 'Commodity');
     
-    const renderRows = (data, tbody, emptyMessage) => {
+    const yfSymbolMap = {
+        "GOLD": "GC=F",
+        "SILVER": "SI=F",
+        "CRUDEOIL": "CL=F",
+        "NATURALGAS": "NG=F",
+        "COPPER": "HG=F"
+    };
+
+    const buildAlertRowsHtml = (data, emptyMessage) => {
         if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" class="loading" style="padding: 2rem !important;">${emptyMessage}</td></tr>`;
-            return;
+            return `<tr><td colspan="5" class="loading" style="padding: 2rem !important;">${emptyMessage}</td></tr>`;
         }
 
-        data.forEach(item => {
+        return data.map(item => {
             const statusLower = item.alert_status ? item.alert_status.toLowerCase() : '';
             const displayStatus = item.alert_status ? item.alert_status.toUpperCase() : (item.signal || 'TRENDING');
             let actionLevelHtml = `<span style="cursor: pointer; text-decoration: underline; text-decoration-style: dotted; color: var(--text-primary);" onclick="openActionHelpModal('${item.name}', '${displayStatus}')">Action Required <i class="fa-solid fa-circle-info" style="font-size: 0.8em; margin-left: 2px;"></i></span>`;
@@ -2155,15 +2228,6 @@ function renderAlertTable() {
                 </div>`;
             }
 
-            // Map symbols to Yahoo Finance URLs
-            const yfSymbolMap = {
-                "GOLD": "GC=F",
-                "SILVER": "SI=F",
-                "CRUDEOIL": "CL=F",
-                "NATURALGAS": "NG=F",
-                "COPPER": "HG=F"
-            };
-            
             let yfLink = `https://finance.yahoo.com/quote/${item.symbol}`;
             if (item.asset_type === 'Commodity' && yfSymbolMap[item.symbol]) {
                 yfLink = `https://finance.yahoo.com/quote/${yfSymbolMap[item.symbol]}`;
@@ -2180,7 +2244,6 @@ function renderAlertTable() {
                 signalBadge = `<span style="background-color: rgba(251, 113, 133, 0.1); color: #fb7185; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; border: 1px solid rgba(251, 113, 133, 0.2);">SELL (RALLY)</span>`;
             }
 
-            const tr = document.createElement('tr');
             const pcrDisplay = item.pcr ? item.pcr : 0;
             let tagStyle = '';
             if (statusLower.includes("warning") || statusLower.includes("within 1%")) {
@@ -2189,19 +2252,20 @@ function renderAlertTable() {
                 tagStyle = 'style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4);"';
             }
             
-            tr.innerHTML = `
-                <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>${signalBadge}</td>
-                <td style="font-weight:600; font-size: 1.1rem;">₹${parseFloat(item.current_price).toFixed(2)}</td>
-                <td><span class="alert-tag" ${tagStyle}>${displayStatus}</span></td>
-                <td>${actionLevelHtml}</td>
-                <td><button onclick="openChartModal('${item.symbol}', '${item.name}', ${item.current_price}, ${pcrDisplay}, ${item.r1 || 0}, ${item.s1 || 0})" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: white;">View Chart</button></td>
+            return `
+                <tr>
+                    <td><strong><a href="${yfLink}" target="_blank" style="color: var(--text-primary); text-decoration: none;">${item.name} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 2px;"></i></a></strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>${signalBadge}</td>
+                    <td style="font-weight:600; font-size: 1.1rem;">₹${parseFloat(item.current_price).toFixed(2)}</td>
+                    <td><span class="alert-tag" ${tagStyle}>${displayStatus}</span></td>
+                    <td>${actionLevelHtml}</td>
+                    <td><button onclick="openChartModal('${item.symbol}', '${item.name}', ${item.current_price}, ${pcrDisplay}, ${item.r1 || 0}, ${item.s1 || 0})" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: white;">View Chart</button></td>
+                </tr>
             `;
-            tbody.appendChild(tr);
-        });
+        }).join('');
     };
 
-    renderRows(stockAlerts, tbodyStocks, "No stocks currently in the alert zone. 💤");
-    renderRows(commodityAlerts, tbodyCommodities, "No commodities currently in the alert zone. 💤");
+    tbodyStocks.innerHTML = buildAlertRowsHtml(stockAlerts, "No stocks currently in the alert zone. 💤");
+    tbodyCommodities.innerHTML = buildAlertRowsHtml(commodityAlerts, "No commodities currently in the alert zone. 💤");
 }
 
 async function fetchSubscribers() {
@@ -2380,14 +2444,14 @@ async function fetchPaperTradingData(user) {
 function renderPortfolio() {
     const tbodyStocks = document.getElementById('portfolio-stocks-body');
     const tbodyCommodities = document.getElementById('portfolio-commodities-body');
-    tbodyStocks.innerHTML = '';
-    tbodyCommodities.innerHTML = '';
+    if (!tbodyStocks || !tbodyCommodities) return;
     
-    let hasStockHoldings = false;
-    let hasCommodityHoldings = false;
     let totalInvested = 0;
     let currentPortfolioValue = 0;
     let totalPl = 0;
+    
+    const stockRows = [];
+    const commodityRows = [];
     
     for (const [symbol, data] of Object.entries(userPortfolio)) {
         if (data.shares === 0) continue;
@@ -2414,34 +2478,34 @@ function renderPortfolio() {
         const sign = isProfit ? '+' : '';
         const positionType = isLong ? '<span style="color:#4ade80; font-size:0.8rem; border:1px solid #4ade80; padding:2px 4px; border-radius:4px;">LONG</span>' : '<span style="color:#fb7185; font-size:0.8rem; border:1px solid #fb7185; padding:2px 4px; border-radius:4px;">SHORT</span>';
         
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><strong>${marketItem ? marketItem.name : symbol}</strong> <small style="color:var(--text-secondary)">(${symbol})</small><br>${positionType}</td>
-            <td>${absShares}</td>
-            <td>₹${avgPrice.toFixed(2)}</td>
-            <td>₹${currentPrice.toFixed(2)}</td>
-            <td style="font-weight: bold;">₹${currentValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-            <td style="color: ${color}; font-weight: bold;">${sign}₹${pl.toFixed(2)} <br><small>(${sign}${plPercent.toFixed(2)}%)</small></td>
-            <td style="text-align: right;">
-                <button class="trade-btn sell-btn btn-small" onclick="exitPosition('${symbol}', '${marketItem ? marketItem.name : symbol}', ${currentPrice}, ${absShares}, ${isLong})">Exit</button>
-            </td>
+        const rowHtml = `
+            <tr>
+                <td><strong>${marketItem ? marketItem.name : symbol}</strong> <small style="color:var(--text-secondary)">(${symbol})</small><br>${positionType}</td>
+                <td>${absShares}</td>
+                <td>₹${avgPrice.toFixed(2)}</td>
+                <td>₹${currentPrice.toFixed(2)}</td>
+                <td style="font-weight: bold;">₹${currentValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color: ${color}; font-weight: bold;">${sign}₹${pl.toFixed(2)} <br><small>(${sign}${plPercent.toFixed(2)}%)</small></td>
+                <td style="text-align: right;">
+                    <button class="trade-btn sell-btn btn-small" onclick="exitPosition('${symbol}', '${marketItem ? marketItem.name : symbol}', ${currentPrice}, ${absShares}, ${isLong})">Exit</button>
+                </td>
+            </tr>
         `;
 
         if (marketItem && marketItem.asset_type.includes('Commodity')) {
-            tbodyCommodities.appendChild(tr);
-            hasCommodityHoldings = true;
+            commodityRows.push(rowHtml);
         } else {
-            tbodyStocks.appendChild(tr);
-            hasStockHoldings = true;
+            stockRows.push(rowHtml);
         }
     }
     
-    if (!hasStockHoldings) {
-        tbodyStocks.innerHTML = `<tr><td colspan="6" class="loading" style="padding: 2rem !important;">No active stock holdings.</td></tr>`;
-    }
-    if (!hasCommodityHoldings) {
-        tbodyCommodities.innerHTML = `<tr><td colspan="6" class="loading" style="padding: 2rem !important;">No active commodity holdings.</td></tr>`;
-    }
+    tbodyStocks.innerHTML = stockRows.length > 0 
+        ? stockRows.join('') 
+        : `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No active stock holdings.</td></tr>`;
+        
+    tbodyCommodities.innerHTML = commodityRows.length > 0 
+        ? commodityRows.join('') 
+        : `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No active commodity holdings.</td></tr>`;
 
     // Update Summary Dashboard (Margin Logic)
     let pendingMarginLocked = 0;
@@ -2461,15 +2525,22 @@ function renderPortfolio() {
     const usedMargin = (totalInvested * 0.15) + pendingMarginLocked; // 15% margin requirement for F&O + pending orders
     const availableMargin = netWorth - usedMargin;
 
-    document.getElementById('virtual-net-worth').textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('virtual-available-margin').textContent = `₹${availableMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('virtual-used-margin').textContent = `₹${usedMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('virtual-portfolio-value').textContent = `₹${currentPortfolioValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    const netWorthEl = document.getElementById('virtual-net-worth');
+    if (netWorthEl) netWorthEl.textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    const availEl = document.getElementById('virtual-available-margin');
+    if (availEl) availEl.textContent = `₹${availableMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    const usedEl = document.getElementById('virtual-used-margin');
+    if (usedEl) usedEl.textContent = `₹${usedMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    const portValEl = document.getElementById('virtual-portfolio-value');
+    if (portValEl) portValEl.textContent = `₹${currentPortfolioValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     
     const plColor = totalPl >= 0 ? '#4ade80' : '#fb7185';
     const plSign = totalPl >= 0 ? '+' : '';
-    document.getElementById('virtual-total-pl').textContent = `${plSign}₹${Math.abs(totalPl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('virtual-total-pl').style.color = plColor;
+    const plEl = document.getElementById('virtual-total-pl');
+    if (plEl) {
+        plEl.textContent = `${plSign}₹${Math.abs(totalPl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        plEl.style.color = plColor;
+    }
 }
 
 window.cancelPendingOrder = async function(orderId) {
@@ -2486,16 +2557,16 @@ window.cancelPendingOrder = async function(orderId) {
 
 function renderPendingOrders(orders) {
     const tbody = document.getElementById('pending-orders-body');
-    tbody.innerHTML = '';
+    if (!tbody) return;
     
-    const activeOrders = orders.filter(o => o.status === 'PENDING' || o.status === 'PENDING_STOP');
+    const activeOrders = (orders || []).filter(o => o.status === 'PENDING' || o.status === 'PENDING_STOP');
 
-    if (!activeOrders || activeOrders.length === 0) {
+    if (activeOrders.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No pending limit or stop orders.</td></tr>`;
         return;
     }
 
-    activeOrders.forEach(tx => {
+    tbody.innerHTML = activeOrders.map(tx => {
         const date = new Date(tx.created_at).toLocaleString('en-IN', { 
             year: 'numeric', month: 'short', day: 'numeric', 
             hour: '2-digit', minute:'2-digit', second:'2-digit' 
@@ -2509,35 +2580,34 @@ function renderPendingOrders(orders) {
         
         const orderTypeLabel = tx.status === 'PENDING_STOP' ? `Stop Loss (${tx.transaction_type})` : `Limit (${tx.transaction_type})`;
         
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td style="color:var(--text-secondary); font-size: 0.9rem;">${date}</td>
-            <td><strong>${name}</strong> <small style="color:var(--text-secondary)">(${tx.symbol})</small></td>
-            <td style="color: ${color}; font-weight: bold;">${orderTypeLabel}</td>
-            <td>${tx.quantity.toLocaleString('en-IN')}</td>
-            <td style="font-weight:600">₹${parseFloat(tx.limit_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            <td style="font-weight:600; color:var(--text-secondary)">₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            <td style="text-align: right;">
-                <button onclick="cancelPendingOrder('${tx.id}')" class="trade-btn sell-btn btn-small" style="background: rgba(239, 68, 68, 0.1) !important; color: #fb7185 !important; border-color: rgba(239, 68, 68, 0.3) !important;">Cancel</button>
-            </td>
+        return `
+            <tr>
+                <td style="color:var(--text-secondary); font-size: 0.9rem;">${date}</td>
+                <td><strong>${name}</strong> <small style="color:var(--text-secondary)">(${tx.symbol})</small></td>
+                <td style="color: ${color}; font-weight: bold;">${orderTypeLabel}</td>
+                <td>${tx.quantity.toLocaleString('en-IN')}</td>
+                <td style="font-weight:600">₹${parseFloat(tx.limit_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td style="font-weight:600; color:var(--text-secondary)">₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td style="text-align: right;">
+                    <button onclick="cancelPendingOrder('${tx.id}')" class="trade-btn sell-btn btn-small" style="background: rgba(239, 68, 68, 0.1) !important; color: #fb7185 !important; border-color: rgba(239, 68, 68, 0.3) !important;">Cancel</button>
+                </td>
+            </tr>
         `;
-        tbody.appendChild(tr);
-    });
+    }).join('');
 }
 
 function renderOrderHistory(txData) {
     const tbody = document.getElementById('order-history-body');
-    tbody.innerHTML = '';
+    if (!tbody) return;
 
     if (!txData || txData.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" class="loading" style="padding: 2rem !important;">No order history found.</td></tr>`;
         return;
     }
 
-    // Reverse to show newest first
     const reversedData = [...txData].reverse();
 
-    reversedData.forEach(tx => {
+    tbody.innerHTML = reversedData.map(tx => {
         const date = new Date(tx.timestamp).toLocaleString('en-IN', { 
             year: 'numeric', month: 'short', day: 'numeric', 
             hour: '2-digit', minute:'2-digit', second:'2-digit' 
@@ -2549,24 +2619,23 @@ function renderOrderHistory(txData) {
         const totalValue = tx.quantity * tx.price;
         const color = tx.transaction_type === 'BUY' ? '#4ade80' : '#fb7185';
         
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td style="color:var(--text-secondary); font-size:0.9rem;">${date}</td>
-            <td><strong>${name}</strong> <small style="color:var(--text-secondary)">(${tx.symbol})</small></td>
-            <td style="color:${color}; font-weight:bold;">${tx.transaction_type}</td>
-            <td>${tx.quantity}</td>
-            <td>₹${tx.price.toFixed(2)}</td>
-            <td>₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+        return `
+            <tr>
+                <td style="color:var(--text-secondary); font-size:0.9rem;">${date}</td>
+                <td><strong>${name}</strong> <small style="color:var(--text-secondary)">(${tx.symbol})</small></td>
+                <td style="color:${color}; font-weight:bold;">${tx.transaction_type}</td>
+                <td>${tx.quantity}</td>
+                <td>₹${tx.price.toFixed(2)}</td>
+                <td>₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            </tr>
         `;
-        tbody.appendChild(tr);
-    });
+    }).join('');
 }
 
 function renderTradeMarket() {
     const tbodyStocks = document.getElementById('trade-market-stocks-body');
     const tbodyCommodities = document.getElementById('trade-market-commodities-body');
-    tbodyStocks.innerHTML = '';
-    tbodyCommodities.innerHTML = '';
+    if (!tbodyStocks || !tbodyCommodities) return;
     
     if (marketData.length === 0) {
         tbodyStocks.innerHTML = `<tr><td colspan="4" class="loading">No market data available to trade.</td></tr>`;
@@ -2574,37 +2643,42 @@ function renderTradeMarket() {
         return;
     }
     
+    const stockRows = [];
+    const commodityRows = [];
+
     marketData.forEach(item => {
         if (item.asset_type === 'Commodity' || item.asset_type === 'Stock') return;
         
-        const tr = document.createElement('tr');
         let badgeClass = 'type-stock';
         if (item.asset_type === 'Commodity') badgeClass = 'type-commodity';
         else if (item.asset_type.includes('Future')) badgeClass = 'type-future';
         else if (item.asset_type.includes('Option')) badgeClass = 'type-option';
         
-        tr.innerHTML = `
-            <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
-            <td><span class="type-badge ${badgeClass}">${item.asset_type.toUpperCase()}</span></td>
-            <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
-            <td style="text-align: right;">
-                <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${item.current_price})">Trade</button>
-            </td>
+        const rowHtml = `
+            <tr>
+                <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
+                <td><span class="type-badge ${badgeClass}">${item.asset_type.toUpperCase()}</span></td>
+                <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
+                <td style="text-align: right;">
+                    <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${item.current_price})">Trade</button>
+                </td>
+            </tr>
         `;
 
         if (item.asset_type.includes('Commodity')) {
-            tbodyCommodities.appendChild(tr);
+            commodityRows.push(rowHtml);
         } else {
-            tbodyStocks.appendChild(tr);
+            stockRows.push(rowHtml);
         }
     });
 
-    if (tbodyStocks.children.length === 0) {
-        tbodyStocks.innerHTML = `<tr><td colspan="4" class="loading">No stocks available.</td></tr>`;
-    }
-    if (tbodyCommodities.children.length === 0) {
-        tbodyCommodities.innerHTML = `<tr><td colspan="4" class="loading">No commodities available.</td></tr>`;
-    }
+    tbodyStocks.innerHTML = stockRows.length > 0 
+        ? stockRows.join('') 
+        : `<tr><td colspan="4" class="loading">No stocks available.</td></tr>`;
+        
+    tbodyCommodities.innerHTML = commodityRows.length > 0 
+        ? commodityRows.join('') 
+        : `<tr><td colspan="4" class="loading">No commodities available.</td></tr>`;
 }
 
 const LOT_SIZES = {
@@ -2986,7 +3060,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </script>
     
     <!-- TradingView Lightweight Charts API -->
-    <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+    <script defer src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
     
     <!-- Chart Modal -->
     <div id="chart-modal" class="modal hidden">
