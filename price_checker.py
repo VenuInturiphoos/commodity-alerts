@@ -534,7 +534,47 @@ class PriceChecker:
             print(f"Error fetching current price for {ticker_symbol} via yfinance: {e}")
             return None
 
+    @staticmethod
+    def get_circuit_stage_rank(event_str):
+        """
+        Ranks circuit events so alerts only escalate and never downgrade or duplicate.
+        Returns (direction, rank):
+          rank 1: Warning (Within 1% of initial circuit)
+          rank 2: Initial Circuit Hit
+          rank 3: Warning Enhanced (Within 1% of enhanced circuit)
+          rank 4: Enhanced Circuit Hit
+        """
+        if not event_str:
+            return None, 0
+        s = str(event_str).upper()
+        direction = "LOWER" if "LOWER" in s else ("UPPER" if "UPPER" in s else None)
+        if not direction:
+            return None, 0
+            
+        if "ENHANCED" in s and "HIT" in s:
+            return direction, 4
+        elif "ENHANCED" in s and ("WARNING" in s or "WITHIN" in s):
+            return direction, 3
+        elif "HIT" in s:
+            return direction, 2
+        elif "WARNING" in s or "WITHIN" in s:
+            return direction, 1
+        return direction, 0
+
     def fetch_previous_state(self):
+        state = {}
+        # 1. Load local persistent alerts state if available
+        local_state_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
+        if os.path.exists(local_state_path):
+            try:
+                with open(local_state_path, 'r') as f:
+                    local_data = json.load(f)
+                    if isinstance(local_data, dict):
+                        state = local_data
+            except Exception as e:
+                print(f"Error reading local alerts_state.json: {e}")
+
+        # 2. Merge with Supabase market_data
         try:
             headers = {
                 'apikey': self.supabase_key,
@@ -543,13 +583,24 @@ class PriceChecker:
             response = requests.get(f"{self.supabase_url}?select=symbol,alert_status,last_alert_date,last_alert_msg,signal", headers=headers, timeout=15)
             if response.status_code == 200:
                 data = response.json()
-                return {item['symbol']: item for item in data}
+                for item in data:
+                    sym = item.get('symbol')
+                    if sym:
+                        if sym not in state:
+                            state[sym] = item
+                        else:
+                            # Keep whichever has the most recent alert date or non-empty message
+                            supa_date = item.get('last_alert_date')
+                            loc_date = state[sym].get('last_alert_date')
+                            if supa_date and (not loc_date or supa_date >= loc_date):
+                                state[sym].update(item)
+                return state
             else:
-                print(f"Failed to fetch previous state. Status: {response.status_code} {response.text}")
-                return None
+                print(f"Failed to fetch previous state from Supabase. Status: {response.status_code} {response.text}")
+                return state if state else None
         except Exception as e:
-            print(f"Error fetching previous state: {e}")
-            return None
+            print(f"Error fetching previous state from Supabase: {e}")
+            return state if state else None
 
     def evaluate_levels(self, name, symbol, levels, current_price, previous_state, is_commodity=False):
         alerts = []
@@ -631,7 +682,7 @@ class PriceChecker:
 
     def record_alerts_dispatched(self, dispatched_alerts):
         """
-        Record alerts in Supabase ONLY after email/notification dispatch has succeeded.
+        Record alerts in Supabase and local web/alerts_state.json cache ONLY after dispatch has succeeded.
         """
         if not dispatched_alerts:
             return
@@ -642,6 +693,17 @@ class PriceChecker:
             'Content-Type': 'application/json'
         }
         
+        local_state_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
+        local_state = {}
+        if os.path.exists(local_state_path):
+            try:
+                with open(local_state_path, 'r') as f:
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        local_state = data
+            except Exception:
+                local_state = {}
+
         for alert in dispatched_alerts:
             symbol = alert.get('symbol')
             event_type = alert.get('event_type')
@@ -650,22 +712,30 @@ class PriceChecker:
                 continue
                 
             payload = {
+                'symbol': symbol,
                 'last_alert_date': today_ist,
                 'last_alert_msg': event_type,
                 'alert_status': event_type,
                 'last_updated': datetime.utcnow().isoformat()
             }
+            local_state[symbol] = payload
             try:
                 patch_url = f"{self.supabase_url}?symbol=eq.{symbol}"
                 resp = requests.patch(patch_url, headers=headers, json=payload, timeout=10)
                 if resp.status_code in [200, 204]:
                     print(f"Recorded alert dispatch for {symbol} ({event_type}) in Supabase.")
                 else:
-                    payload['symbol'] = symbol
                     resp = requests.post(self.supabase_url, headers=headers, json=[payload], timeout=10)
                     print(f"Upserted alert dispatch for {symbol} in Supabase (status {resp.status_code}).")
             except Exception as e:
                 print(f"Error recording alert dispatch for {symbol}: {e}")
+
+        try:
+            with open(local_state_path, 'w') as f:
+                json.dump(local_state, f, indent=2)
+            print(f"Persisted {len(local_state)} alert states to web/alerts_state.json")
+        except Exception as e:
+            print(f"Error persisting alerts_state.json: {e}")
 
     def fetch_tradingview_commodity_quotes(self):
         """Fetches live MCX continuous futures quotes directly from TradingView futures scanner."""
@@ -966,11 +1036,24 @@ class PriceChecker:
                     today_time_ist = now_dt.strftime('%d %b %Y, %I:%M %p IST')
                     
                     last_c_date = previous_state.get(symbol, {}).get('last_alert_date')
-                    last_c_msg = previous_state.get(symbol, {}).get('last_alert_msg')
+                    last_c_msg = previous_state.get(symbol, {}).get('last_alert_msg') or ""
                     
-                    # Deduplication check: only skip if alerted for the EXACT same stage today
-                    if last_c_date == today_ist and last_c_msg == event_type:
-                        print(f"Skipping duplicate circuit alert for {name} ({symbol}): already alerted for {event_type} today.")
+                    curr_dir, curr_rank = self.get_circuit_stage_rank(event_type)
+                    last_dir, last_rank = self.get_circuit_stage_rank(last_c_msg)
+                    
+                    is_duplicate = False
+                    if last_c_date == today_ist:
+                        # Directional stage check: if alerted in the same direction today,
+                        # only escalate (e.g. Warning -> Hit). Never downgrade (e.g. Hit -> Warning)
+                        # and never re-send warnings for the same limit on the same day.
+                        if curr_dir and last_dir == curr_dir:
+                            if last_rank >= curr_rank:
+                                is_duplicate = True
+                        elif last_c_msg == event_type:
+                            is_duplicate = True
+                            
+                    if is_duplicate:
+                        print(f"Skipping duplicate circuit alert for {name} ({symbol}): already alerted for {last_c_msg} (stage {last_rank}) today.")
                     else:
                         if is_warning:
                             target_direction = "LOWER" if "Lower" in event_type else "UPPER"
@@ -1014,8 +1097,8 @@ class PriceChecker:
                             'body': alert_body
                         })
                         alert_status = event_type
-                        # Note: last_alert_date and last_alert_msg are kept from previous_state
-                        # and will only be updated in Supabase via record_alerts_dispatched() after email/notification succeeds!
+                        last_alert_date = today_ist
+                        last_alert_msg = event_type
                         print(f"🚨 [{'CIRCUIT WARNING' if is_warning else 'CIRCUIT HIT'} ALERT GENERATED] {alert_subj}")
             
             if levels and current_price:

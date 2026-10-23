@@ -113,9 +113,14 @@ class EmailAlerter:
         if not alerts:
             return False, []
 
-        # 1. Send Telegram notifications first
-        for alert in alerts:
-            self._send_telegram(alert['subject'], alert['body'])
+        telegram_sent_indices = set()
+        # 1. Send Telegram notifications
+        for idx, alert in enumerate(alerts):
+            try:
+                if self._send_telegram(alert['subject'], alert['body']):
+                    telegram_sent_indices.add(idx)
+            except Exception as e:
+                print(f"Error dispatching Telegram alert {idx}: {e}")
 
         # 2. Check email settings and credentials
         sender_email = (os.environ.get('SENDER_EMAIL') or self.config.get('sender_email') or 'your_email@gmail.com').strip()
@@ -124,80 +129,66 @@ class EmailAlerter:
         sender_password = raw_password.replace(' ', '').replace('"', '').replace("'", "")
         recipient_emails = self.get_recipients()
 
-        if sender_email == "your_email@gmail.com" or not sender_password:
-            print("\n" + "=" * 80)
-            print("❌ [CRITICAL ALERT: EMAIL NOT DISPATCHED]")
-            print("Reason: SENDER_PASSWORD secret is missing or empty.")
-            print(f"Sender Email: {sender_email}")
-            print("Pending Alerts:")
-            for a in alerts:
-                print(f"  - {a.get('subject')}")
-            print("\nAction Required:")
-            print("1. Go to your GitHub repository: Settings -> Secrets and variables -> Actions")
-            print("2. Ensure 'SENDER_PASSWORD' is created with your 16-character Google App Password.")
-            print("=" * 80 + "\n")
-            return False, []
+        email_sent_indices = set()
+        if sender_email != "your_email@gmail.com" and sender_password and recipient_emails:
+            server = None
+            try:
+                server = self._create_smtp_session(sender_email, sender_password)
+                for idx, alert in enumerate(alerts):
+                    subject = alert['subject']
+                    body = alert['body']
+                    body_html = body.replace('\n', '<br>')
 
-        if not recipient_emails:
-            print("No email recipients found.")
-            return False, []
+                    alert_dispatched_successfully = False
+                    for recipient in recipient_emails:
+                        msg = MIMEMultipart('alternative')
+                        msg['From'] = sender_email
+                        msg['To'] = recipient
+                        msg['Subject'] = subject
 
-        # 3. Connect ONCE for all alerts and recipients to avoid rate limiting
-        server = None
-        sent_alerts = []
-        try:
-            server = self._create_smtp_session(sender_email, sender_password)
+                        plain_body = f"{body}\n\n---\nTo unsubscribe from these market alerts, click here:\nhttps://VenuInturiphoos.github.io/commodity-alerts/unsubscribe.html?email={recipient}"
+                        html_body = f"""
+                        <html>
+                          <body>
+                            <p>{body_html}</p>
+                            <hr style="margin-top: 20px; border: 0; border-top: 1px solid #eee;">
+                            <p style="font-size: 12px; color: #888;">
+                              To unsubscribe from these market alerts, <a href="https://VenuInturiphoos.github.io/commodity-alerts/unsubscribe.html?email={recipient}">click here</a>.
+                            </p>
+                          </body>
+                        </html>
+                        """
 
-            for alert in alerts:
-                subject = alert['subject']
-                body = alert['body']
-                body_html = body.replace('\n', '<br>')
+                        msg.attach(MIMEText(plain_body, 'plain'))
+                        msg.attach(MIMEText(html_body, 'html'))
 
-                alert_dispatched_successfully = False
-                for recipient in recipient_emails:
-                    msg = MIMEMultipart('alternative')
-                    msg['From'] = sender_email
-                    msg['To'] = recipient
-                    msg['Subject'] = subject
+                        try:
+                            server.send_message(msg)
+                            print(f"Successfully sent alert to {recipient}: {subject}")
+                            alert_dispatched_successfully = True
+                        except Exception as e:
+                            print(f"Failed to send email to {recipient}: {e}")
 
-                    plain_body = f"{body}\n\n---\nTo unsubscribe from these market alerts, click here:\nhttps://VenuInturiphoos.github.io/commodity-alerts/unsubscribe.html?email={recipient}"
-                    html_body = f"""
-                    <html>
-                      <body>
-                        <p>{body_html}</p>
-                        <hr style="margin-top: 20px; border: 0; border-top: 1px solid #eee;">
-                        <p style="font-size: 12px; color: #888;">
-                          To unsubscribe from these market alerts, <a href="https://VenuInturiphoos.github.io/commodity-alerts/unsubscribe.html?email={recipient}">click here</a>.
-                        </p>
-                      </body>
-                    </html>
-                    """
+                    if alert_dispatched_successfully:
+                        email_sent_indices.add(idx)
 
-                    msg.attach(MIMEText(plain_body, 'plain'))
-                    msg.attach(MIMEText(html_body, 'html'))
-
+            except Exception as e:
+                print(f"SMTP Dispatch Error: {e}")
+            finally:
+                if server:
                     try:
-                        server.send_message(msg)
-                        print(f"Successfully sent alert to {recipient}: {subject}")
-                        alert_dispatched_successfully = True
-                    except Exception as e:
-                        print(f"Failed to send email to {recipient}: {e}")
+                        server.quit()
+                    except Exception:
+                        pass
+        else:
+            if not sender_password or sender_email == "your_email@gmail.com":
+                print("Email credentials (SENDER_PASSWORD) not configured. Email dispatch skipped.")
+            elif not recipient_emails:
+                print("No email recipients found. Email dispatch skipped.")
 
-                if alert_dispatched_successfully:
-                    sent_alerts.append(alert)
-
-        except Exception as e:
-            print("\n" + "=" * 80)
-            print(f"❌ [SMTP DISPATCH ERROR]: {e}")
-            print("=" * 80 + "\n")
-            return False, []
-        finally:
-            if server:
-                try:
-                    server.quit()
-                except Exception:
-                    pass
-
+        dispatched_indices = telegram_sent_indices | email_sent_indices
+        sent_alerts = [alerts[i] for i in sorted(dispatched_indices)]
+        
         return (len(sent_alerts) > 0), sent_alerts
 
     def send_alert(self, subject, body):
@@ -207,7 +198,7 @@ class EmailAlerter:
         bot_token = os.environ.get('TELEGRAM_BOT_TOKEN') or self.config.get('telegram_bot_token')
         chat_id = os.environ.get('TELEGRAM_CHAT_ID') or self.config.get('telegram_chat_id')
         if not bot_token or not chat_id:
-            return
+            return False
             
         text = f"{subject}\n\n{body}"
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
@@ -215,7 +206,10 @@ class EmailAlerter:
             response = requests.post(url, json={"chat_id": chat_id, "text": text}, timeout=10)
             if response.status_code == 200:
                 print("Telegram alert sent successfully.")
+                return True
             else:
                 print(f"Failed to send Telegram alert: {response.text}")
+                return False
         except Exception as e:
             print(f"Failed to send Telegram alert Exception: {e}")
+            return False
