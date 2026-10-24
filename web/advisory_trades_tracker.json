@@ -8,46 +8,46 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
-      "event_context": "US Pit Open Upper Limit Pressure",
+      "lot_size": 50,
+      "event_context": "US Pit Open Upper Circuit Test",
       "suggestion_6pm": {
         "status": "WAIT_615",
-        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
-        "rationale": "Heavy institutional momentum at US open.",
+        "action_text": "Wait for 6:15 PM candle before SELLING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
         "reference_price": 103.45,
         "stop_loss": 103.86,
         "target": 99.47
       },
       "check_615": {
         "checked": true,
-        "status": "NO_REVERSAL_STAND_ASIDE",
-        "price_615": 103.92,
-        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
-        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 103.24,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 50 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "STAND_ASIDE",
-        "quantity": 0,
-        "entry_price": 103.92,
+        "action": "SELL",
+        "quantity": 50,
+        "entry_price": 103.24,
         "entry_time": "06:15 PM IST",
-        "exit_price": 103.44,
+        "exit_price": 103.27,
         "exit_time": "11:30 PM IST",
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
+        "pnl_points": -0.03,
+        "pnl_inr": -112.31,
         "status": "CLOSED"
       },
       "eod_outcome": {
-        "session_close": 103.44,
+        "session_close": 103.27,
         "circuit_limit": 103.45,
-        "outcome": "PROTECTED",
-        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
-        "pnl_display": "\u20b90.00 (Protected)",
-        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+        "outcome": "WRONG",
+        "badge": "Wrong \u274c",
+        "pnl_display": "\u20b9-112.31",
+        "summary": "Confirmed SELL generated -0.03 pts into 11:30 PM settlement."
       }
     },
     {
-      "id": "ADV-1792756800-NATURALGAS",
+      "id": "ADV-1792735200-NATURALGAS",
       "date": "23 Oct 2026",
       "time_6pm": "06:00 PM IST",
       "time_615": "N/A",
@@ -55,41 +55,41 @@
       "symbol": "NATURALGAS",
       "name": "Natural Gas",
       "lot_size": 1250,
-      "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
+      "event_context": "Pre-6 PM Lower Circuit Test (Asian/EU Fade Setup)",
       "suggestion_6pm": {
         "status": "DIRECT_FADE",
-        "action_text": "SELL / FADE THE MOVE",
+        "action_text": "BUY / FADE THE MOVE",
         "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
-        "reference_price": 3.16,
-        "stop_loss": 2.97,
+        "reference_price": 2.62,
+        "stop_loss": 2.62,
         "target": 2.8
       },
       "check_615": {
         "checked": true,
         "status": "DIRECT_ENTRY",
-        "price_615": 3.16,
-        "action_taken": "Entered SELL 1250 units @ \u20b93.16",
+        "price_615": 2.62,
+        "action_taken": "Entered BUY 1250 units @ \u20b92.62",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "SELL",
+        "action": "BUY",
         "quantity": 1250,
-        "entry_price": 3.16,
+        "entry_price": 2.62,
         "entry_time": "06:00 PM IST",
-        "exit_price": 3.05,
+        "exit_price": 2.64,
         "exit_time": "11:30 PM IST",
-        "pnl_points": 0.11,
-        "pnl_inr": 11481.25,
+        "pnl_points": 0.02,
+        "pnl_inr": 2087.5,
         "status": "CLOSED"
       },
       "eod_outcome": {
-        "session_close": 3.05,
-        "circuit_limit": 2.96,
+        "session_close": 2.64,
+        "circuit_limit": 2.63,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b911,481.25",
-        "summary": "Pre-6 PM fade captured +0.11 pts retracement to session close."
+        "pnl_display": "+\u20b92,087.50",
+        "summary": "Pre-6 PM fade captured +0.02 pts retracement to session close."
       }
     },
     {
@@ -238,7 +238,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Lower Limit Pressure",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -284,7 +284,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
       "suggestion_6pm": {
         "status": "DIRECT_FADE",
@@ -298,19 +298,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 110.48,
-        "action_taken": "Entered SELL 100 units @ \u20b9110.48",
+        "action_taken": "Entered SELL 50 units @ \u20b9110.48",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 110.48,
         "entry_time": "06:00 PM IST",
         "exit_price": 101.79,
         "exit_time": "11:30 PM IST",
         "pnl_points": 8.69,
-        "pnl_inr": 72561.5,
+        "pnl_inr": 36280.75,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -318,7 +318,7 @@
         "circuit_limit": 107.81,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b972,561.50",
+        "pnl_display": "+\u20b936,280.75",
         "summary": "Pre-6 PM fade captured +8.69 pts retracement to session close."
       }
     },
@@ -330,7 +330,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Upper Limit Pressure",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -422,7 +422,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Upper Limit Pressure",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -560,7 +560,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Upper Circuit Test",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -574,19 +574,19 @@
         "checked": true,
         "status": "REVERSAL_CONFIRMED",
         "price_615": 91.63,
-        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 100 units.",
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 50 units.",
         "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 91.63,
         "entry_time": "06:15 PM IST",
         "exit_price": 91.49,
         "exit_time": "11:30 PM IST",
         "pnl_points": 0.14,
-        "pnl_inr": 1138.77,
+        "pnl_inr": 569.39,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -594,7 +594,7 @@
         "circuit_limit": 91.81,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b91,138.77",
+        "pnl_display": "+\u20b9569.39",
         "summary": "Confirmed SELL generated +0.14 pts into 11:30 PM settlement."
       }
     },
@@ -606,7 +606,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Lower Circuit Test",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -620,19 +620,19 @@
         "checked": true,
         "status": "REVERSAL_CONFIRMED",
         "price_615": 89.34,
-        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 100 units.",
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 50 units.",
         "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 89.34,
         "entry_time": "06:15 PM IST",
         "exit_price": 91.11,
         "exit_time": "11:30 PM IST",
         "pnl_points": 1.77,
-        "pnl_inr": 14793.53,
+        "pnl_inr": 7396.76,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -640,7 +640,7 @@
         "circuit_limit": 89.16,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b914,793.53",
+        "pnl_display": "+\u20b97,396.76",
         "summary": "Confirmed BUY generated +1.77 pts into 11:30 PM settlement."
       }
     },
@@ -652,7 +652,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Upper Circuit Test",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -666,19 +666,19 @@
         "checked": true,
         "status": "REVERSAL_CONFIRMED",
         "price_615": 93.85,
-        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 100 units.",
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 50 units.",
         "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 93.85,
         "entry_time": "06:15 PM IST",
         "exit_price": 92.87,
         "exit_time": "11:30 PM IST",
         "pnl_points": 0.98,
-        "pnl_inr": 8199.03,
+        "pnl_inr": 4099.52,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -686,7 +686,7 @@
         "circuit_limit": 94.04,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b98,199.03",
+        "pnl_display": "+\u20b94,099.52",
         "summary": "Confirmed SELL generated +0.98 pts into 11:30 PM settlement."
       }
     },
@@ -698,7 +698,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Lower Circuit Test",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -712,19 +712,19 @@
         "checked": true,
         "status": "REVERSAL_CONFIRMED",
         "price_615": 89.08,
-        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 100 units.",
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 50 units.",
         "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 89.08,
         "entry_time": "06:15 PM IST",
         "exit_price": 89.38,
         "exit_time": "11:30 PM IST",
         "pnl_points": 0.3,
-        "pnl_inr": 2523.37,
+        "pnl_inr": 1261.68,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -732,7 +732,7 @@
         "circuit_limit": 88.9,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b92,523.37",
+        "pnl_display": "+\u20b91,261.68",
         "summary": "Confirmed BUY generated +0.30 pts into 11:30 PM settlement."
       }
     },
@@ -928,7 +928,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
       "suggestion_6pm": {
         "status": "DIRECT_FADE",
@@ -942,19 +942,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 96.54,
-        "action_taken": "Entered SELL 100 units @ \u20b996.54",
+        "action_taken": "Entered SELL 50 units @ \u20b996.54",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 96.54,
         "entry_time": "06:00 PM IST",
         "exit_price": 92.6,
         "exit_time": "11:30 PM IST",
         "pnl_points": 3.94,
-        "pnl_inr": 32899.0,
+        "pnl_inr": 16449.5,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -962,7 +962,7 @@
         "circuit_limit": 96.11,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b932,899.00",
+        "pnl_display": "+\u20b916,449.50",
         "summary": "Pre-6 PM fade captured +3.94 pts retracement to session close."
       }
     },
@@ -974,7 +974,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Lower Circuit Test",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -988,19 +988,19 @@
         "checked": true,
         "status": "REVERSAL_CONFIRMED",
         "price_615": 91.01,
-        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 100 units.",
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 50 units.",
         "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 91.01,
         "entry_time": "06:15 PM IST",
         "exit_price": 92.41,
         "exit_time": "11:30 PM IST",
         "pnl_points": 1.4,
-        "pnl_inr": 11676.14,
+        "pnl_inr": 5838.07,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1008,7 +1008,7 @@
         "circuit_limit": 90.83,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b911,676.14",
+        "pnl_display": "+\u20b95,838.07",
         "summary": "Confirmed BUY generated +1.40 pts into 11:30 PM settlement."
       }
     },
@@ -1112,7 +1112,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Upper Circuit Test",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -1126,19 +1126,19 @@
         "checked": true,
         "status": "REVERSAL_CONFIRMED",
         "price_615": 95.66,
-        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 100 units.",
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 50 units.",
         "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 95.66,
         "entry_time": "06:15 PM IST",
         "exit_price": 94.61,
         "exit_time": "11:30 PM IST",
         "pnl_points": 1.05,
-        "pnl_inr": 8753.3,
+        "pnl_inr": 4376.65,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1146,7 +1146,7 @@
         "circuit_limit": 95.85,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b98,753.30",
+        "pnl_display": "+\u20b94,376.65",
         "summary": "Confirmed SELL generated +1.05 pts into 11:30 PM settlement."
       }
     },
@@ -1158,7 +1158,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "Pre-6 PM Lower Circuit Test (Asian/EU Fade Setup)",
       "suggestion_6pm": {
         "status": "DIRECT_FADE",
@@ -1172,19 +1172,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 88.71,
-        "action_taken": "Entered BUY 100 units @ \u20b988.71",
+        "action_taken": "Entered BUY 50 units @ \u20b988.71",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 88.71,
         "entry_time": "06:00 PM IST",
         "exit_price": 92.16,
         "exit_time": "11:30 PM IST",
         "pnl_points": 3.45,
-        "pnl_inr": 28807.5,
+        "pnl_inr": 14403.75,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1192,7 +1192,7 @@
         "circuit_limit": 90.81,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b928,807.50",
+        "pnl_display": "+\u20b914,403.75",
         "summary": "Pre-6 PM fade captured +3.45 pts retracement to session close."
       }
     },
@@ -1250,7 +1250,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "Pre-6 PM Lower Circuit Test (Asian/EU Fade Setup)",
       "suggestion_6pm": {
         "status": "DIRECT_FADE",
@@ -1264,19 +1264,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 92.4,
-        "action_taken": "Entered BUY 100 units @ \u20b992.40",
+        "action_taken": "Entered BUY 50 units @ \u20b992.40",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 92.4,
         "entry_time": "06:00 PM IST",
         "exit_price": 94.59,
         "exit_time": "11:30 PM IST",
         "pnl_points": 2.19,
-        "pnl_inr": 18286.5,
+        "pnl_inr": 9143.25,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1284,7 +1284,7 @@
         "circuit_limit": 91.95,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b918,286.50",
+        "pnl_display": "+\u20b99,143.25",
         "summary": "Pre-6 PM fade captured +2.19 pts retracement to session close."
       }
     },
@@ -1296,7 +1296,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Lower Limit Pressure",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -1342,7 +1342,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "Pre-6 PM Lower Circuit Test (Asian/EU Fade Setup)",
       "suggestion_6pm": {
         "status": "DIRECT_FADE",
@@ -1356,19 +1356,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 99.1,
-        "action_taken": "Entered BUY 100 units @ \u20b999.10",
+        "action_taken": "Entered BUY 50 units @ \u20b999.10",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 99.1,
         "entry_time": "06:00 PM IST",
         "exit_price": 101.91,
         "exit_time": "11:30 PM IST",
         "pnl_points": 2.81,
-        "pnl_inr": 23463.5,
+        "pnl_inr": 11731.75,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1376,7 +1376,7 @@
         "circuit_limit": 98.33,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b923,463.50",
+        "pnl_display": "+\u20b911,731.75",
         "summary": "Pre-6 PM fade captured +2.81 pts retracement to session close."
       }
     },
@@ -1388,7 +1388,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Lower Circuit Test",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -1402,19 +1402,19 @@
         "checked": true,
         "status": "REVERSAL_CONFIRMED",
         "price_615": 101.8,
-        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 100 units.",
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 50 units.",
         "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 101.8,
         "entry_time": "06:15 PM IST",
         "exit_price": 102.43,
         "exit_time": "11:30 PM IST",
         "pnl_points": 0.63,
-        "pnl_inr": 5233.78,
+        "pnl_inr": 2616.89,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1422,7 +1422,7 @@
         "circuit_limit": 101.6,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b95,233.78",
+        "pnl_display": "+\u20b92,616.89",
         "summary": "Confirmed BUY generated +0.63 pts into 11:30 PM settlement."
       }
     },
@@ -1434,7 +1434,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Upper Limit Pressure",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -1526,7 +1526,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
       "suggestion_6pm": {
         "status": "DIRECT_FADE",
@@ -1540,19 +1540,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 104.95,
-        "action_taken": "Entered SELL 100 units @ \u20b9104.95",
+        "action_taken": "Entered SELL 50 units @ \u20b9104.95",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 104.95,
         "entry_time": "06:00 PM IST",
         "exit_price": 101.39,
         "exit_time": "11:30 PM IST",
         "pnl_points": 3.56,
-        "pnl_inr": 29726.0,
+        "pnl_inr": 14863.0,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1560,7 +1560,7 @@
         "circuit_limit": 104.05,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b929,726.00",
+        "pnl_display": "+\u20b914,863.00",
         "summary": "Pre-6 PM fade captured +3.56 pts retracement to session close."
       }
     },
@@ -1572,7 +1572,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Lower Circuit Test",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -1586,19 +1586,19 @@
         "checked": true,
         "status": "REVERSAL_CONFIRMED",
         "price_615": 98.58,
-        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 100 units.",
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 50 units.",
         "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 98.58,
         "entry_time": "06:15 PM IST",
         "exit_price": 100.05,
         "exit_time": "11:30 PM IST",
         "pnl_points": 1.47,
-        "pnl_inr": 12301.55,
+        "pnl_inr": 6150.78,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1606,7 +1606,7 @@
         "circuit_limit": 98.38,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b912,301.55",
+        "pnl_display": "+\u20b96,150.78",
         "summary": "Confirmed BUY generated +1.47 pts into 11:30 PM settlement."
       }
     },
@@ -1618,7 +1618,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Upper Limit Pressure",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -1756,7 +1756,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Upper Circuit Test",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -1770,19 +1770,19 @@
         "checked": true,
         "status": "REVERSAL_CONFIRMED",
         "price_615": 96.56,
-        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 100 units.",
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 50 units.",
         "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 96.56,
         "entry_time": "06:15 PM IST",
         "exit_price": 96.05,
         "exit_time": "11:30 PM IST",
         "pnl_points": 0.51,
-        "pnl_inr": 4229.28,
+        "pnl_inr": 2114.64,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1790,7 +1790,7 @@
         "circuit_limit": 96.75,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b94,229.28",
+        "pnl_display": "+\u20b92,114.64",
         "summary": "Confirmed SELL generated +0.51 pts into 11:30 PM settlement."
       }
     },
@@ -1802,7 +1802,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
       "suggestion_6pm": {
         "status": "DIRECT_FADE",
@@ -1816,19 +1816,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 94.73,
-        "action_taken": "Entered SELL 100 units @ \u20b994.73",
+        "action_taken": "Entered SELL 50 units @ \u20b994.73",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 94.73,
         "entry_time": "06:00 PM IST",
         "exit_price": 93.03,
         "exit_time": "11:30 PM IST",
         "pnl_points": 1.7,
-        "pnl_inr": 14195.0,
+        "pnl_inr": 7097.5,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1836,7 +1836,7 @@
         "circuit_limit": 95.14,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b914,195.00",
+        "pnl_display": "+\u20b97,097.50",
         "summary": "Pre-6 PM fade captured +1.70 pts retracement to session close."
       }
     },
@@ -1986,7 +1986,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Upper Limit Pressure",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -2124,7 +2124,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
       "suggestion_6pm": {
         "status": "DIRECT_FADE",
@@ -2138,19 +2138,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 86.79,
-        "action_taken": "Entered SELL 100 units @ \u20b986.79",
+        "action_taken": "Entered SELL 50 units @ \u20b986.79",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 86.79,
         "entry_time": "06:00 PM IST",
         "exit_price": 85.76,
         "exit_time": "11:30 PM IST",
         "pnl_points": 1.03,
-        "pnl_inr": 8600.5,
+        "pnl_inr": 4300.25,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -2158,7 +2158,7 @@
         "circuit_limit": 86.74,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b98,600.50",
+        "pnl_display": "+\u20b94,300.25",
         "summary": "Pre-6 PM fade captured +1.03 pts retracement to session close."
       }
     },
@@ -2308,7 +2308,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "Pre-6 PM Lower Circuit Test (Asian/EU Fade Setup)",
       "suggestion_6pm": {
         "status": "DIRECT_FADE",
@@ -2322,19 +2322,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 79.62,
-        "action_taken": "Entered BUY 100 units @ \u20b979.62",
+        "action_taken": "Entered BUY 50 units @ \u20b979.62",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 79.62,
         "entry_time": "06:00 PM IST",
         "exit_price": 82.23,
         "exit_time": "11:30 PM IST",
         "pnl_points": 2.61,
-        "pnl_inr": 21793.5,
+        "pnl_inr": 10896.75,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -2342,7 +2342,7 @@
         "circuit_limit": 79.07,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b921,793.50",
+        "pnl_display": "+\u20b910,896.75",
         "summary": "Pre-6 PM fade captured +2.61 pts retracement to session close."
       }
     },
@@ -2354,7 +2354,7 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 100,
+      "lot_size": 50,
       "event_context": "US Pit Open Lower Circuit Test",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -2368,19 +2368,19 @@
         "checked": true,
         "status": "REVERSAL_CONFIRMED",
         "price_615": 81.77,
-        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 100 units.",
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 50 units.",
         "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 100,
+        "quantity": 50,
         "entry_price": 81.77,
         "entry_time": "06:15 PM IST",
         "exit_price": 82.36,
         "exit_time": "11:30 PM IST",
         "pnl_points": 0.59,
-        "pnl_inr": 4899.61,
+        "pnl_inr": 2449.81,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -2388,21 +2388,21 @@
         "circuit_limit": 81.61,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b94,899.61",
+        "pnl_display": "+\u20b92,449.81",
         "summary": "Confirmed BUY generated +0.59 pts into 11:30 PM settlement."
       }
     }
   ],
-  "last_updated": "24 Oct 2026, 09:35 AM IST",
+  "last_updated": "24 Oct 2026, 09:38 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "summary": {
     "total_signals": 52,
     "evaluated_count": 52,
-    "correct_count": 51,
-    "wrong_count": 1,
-    "win_rate_pct": 98.1,
-    "total_pnl_inr": 400180.65,
-    "avg_trade_pnl_inr": 7695.78,
+    "correct_count": 50,
+    "wrong_count": 2,
+    "win_rate_pct": 96.2,
+    "total_pnl_inr": 228633.92,
+    "avg_trade_pnl_inr": 4396.81,
     "active_trades_count": 0
   }
 }

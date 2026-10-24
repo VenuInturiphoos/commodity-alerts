@@ -7,7 +7,7 @@ TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', '
 USER_ACCOUNT = "venu.photos1@gmail.com"
 
 LOT_SIZES = {
-    'CRUDEOIL': 100,    # 100 bbl
+    'CRUDEOIL': 50,     # 50 bbl / units
     'NATURALGAS': 1250, # 1250 mmBtu
     'SILVER': 30,       # 30 kg
     'COPPER': 2500,     # 2500 kg
