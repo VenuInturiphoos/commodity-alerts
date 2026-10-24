@@ -47,53 +47,53 @@
       }
     },
     {
-      "id": "ADV-20261023-CRUDEOIL",
+      "id": "ADV-20261023-SILVER",
       "date": "23 Oct 2026",
       "time_6pm": "06:00 PM IST",
       "time_615": "06:15 PM IST",
       "time_exit": "11:30 PM IST",
-      "symbol": "CRUDEOIL",
-      "name": "Crude Oil",
-      "lot_size": 50,
-      "event_context": "US Pit Open Upper Limit Pressure",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 30,
+      "event_context": "US Pit Open Lower Band Test (Knife-Catch Warning)",
       "suggestion_6pm": {
         "status": "WAIT_615",
-        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
-        "rationale": "High institutional momentum at US open. Wait for 6:15 PM candle to confirm limit holds.",
-        "reference_price": 103.45,
-        "stop_loss": 103.86,
-        "target": 99.47
+        "action_text": "DO NOT KNIFE-CATCH! WAIT FOR 6:15 PM CONFIRMATION",
+        "rationale": "Lower circuit test carries 66.7% downward expansion risk. Wait for 6:15 PM candle close to confirm limit floor holds.",
+        "reference_price": 195719.0,
+        "stop_loss": 190848.5,
+        "target": 199599.0
       },
       "check_615": {
         "checked": true,
         "status": "NO_REVERSAL_STAND_ASIDE",
-        "price_615": 103.92,
-        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
-        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+        "price_615": 195650.0,
+        "action_taken": "No bullish reversal pin-bar at 6:15 PM. STOOD ASIDE (Avoided False Dip Buy).",
+        "detail": "Price remained pressed against lower limit band without bullish rejection. 15-min rule preserved capital."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "STAND_ASIDE",
         "quantity": 0,
-        "entry_price": 103.92,
+        "entry_price": 195650.0,
         "entry_time": "06:15 PM IST",
-        "exit_price": 103.44,
+        "exit_price": 195719.0,
         "exit_time": "11:30 PM IST",
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
         "status": "CLOSED"
       },
       "eod_outcome": {
-        "session_close": 103.44,
-        "circuit_limit": 103.45,
+        "session_close": 195719.0,
+        "circuit_limit": 191615.04,
         "outcome": "PROTECTED",
-        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00 (Protected)",
-        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+        "summary": "15-minute rule successfully protected capital by preventing premature counter-trend knife-catching."
       }
     }
   ],
-  "last_updated": "24 Oct 2026, 09:58 AM IST",
+  "last_updated": "24 Oct 2026, 10:04 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "summary": {
     "total_signals": 2,
