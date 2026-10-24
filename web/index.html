@@ -559,35 +559,35 @@
                     <div class="circuits-kpi-grid" style="margin-top: 1.25rem; margin-bottom: 1.5rem;">
                         <div class="circuit-kpi-card">
                             <div class="circuit-kpi-header">
-                                <span>Total 6 PM Signals</span>
+                                <span>Live Signals Tracked</span>
                                 <div class="circuit-kpi-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">
                                     <i class="fa-solid fa-bullhorn"></i>
                                 </div>
                             </div>
                             <div class="circuit-kpi-value" id="kpi-adv-total">--</div>
-                            <div class="circuit-kpi-sub" id="kpi-adv-total-sub">Evaluated 6 PM action setups</div>
+                            <div class="circuit-kpi-sub" id="kpi-adv-total-sub">Live forward data from 23 Oct 2026</div>
                         </div>
 
                         <div class="circuit-kpi-card">
                             <div class="circuit-kpi-header">
-                                <span>Advisory Win Rate</span>
+                                <span>Executed Win Rate</span>
                                 <div class="circuit-kpi-icon" style="background: rgba(74, 222, 128, 0.15); color: #4ade80;">
                                     <i class="fa-solid fa-chart-pie"></i>
                                 </div>
                             </div>
                             <div class="circuit-kpi-value" id="kpi-adv-winrate" style="color: #4ade80;">--%</div>
-                            <div class="circuit-kpi-sub" id="kpi-adv-correct-sub">-- Correct / -- Wrong</div>
+                            <div class="circuit-kpi-sub" id="kpi-adv-correct-sub">-- Won / -- Lost</div>
                         </div>
 
                         <div class="circuit-kpi-card">
                             <div class="circuit-kpi-header">
-                                <span>Total Realized P&L</span>
+                                <span>Live Realized P&L</span>
                                 <div class="circuit-kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
                                     <i class="fa-solid fa-sack-dollar"></i>
                                 </div>
                             </div>
                             <div class="circuit-kpi-value" id="kpi-adv-pnl" style="color: #4ade80;">₹--</div>
-                            <div class="circuit-kpi-sub">Virtual paper trade cumulative return</div>
+                            <div class="circuit-kpi-sub">Actual forward paper trading return</div>
                         </div>
 
                         <div class="circuit-kpi-card">
@@ -606,8 +606,9 @@
                     <div class="circuits-toolbar" style="margin-bottom: 1rem;">
                         <div class="circuit-filters" style="gap: 0.4rem;">
                             <button class="circuit-filter-pill active" id="adv-filter-all" onclick="filterAdvisoryTrades('ALL', this)">All Signals (<span id="adv-count-all">0</span>)</button>
-                            <button class="circuit-filter-pill" id="adv-filter-correct" onclick="filterAdvisoryTrades('CORRECT', this)">Correct Recommendations 🟢 (<span id="adv-count-correct">0</span>)</button>
+                            <button class="circuit-filter-pill" id="adv-filter-correct" onclick="filterAdvisoryTrades('CORRECT', this)">Correct Wins 🟢 (<span id="adv-count-correct">0</span>)</button>
                             <button class="circuit-filter-pill" id="adv-filter-wrong" onclick="filterAdvisoryTrades('WRONG', this)">Wrong 🔴 (<span id="adv-count-wrong">0</span>)</button>
+                            <button class="circuit-filter-pill" id="adv-filter-protected" onclick="filterAdvisoryTrades('PROTECTED', this)">Protected / Stood Aside 🛡️ (<span id="adv-count-protected">0</span>)</button>
                             <button class="circuit-filter-pill" id="adv-filter-active" onclick="filterAdvisoryTrades('ACTIVE', this)">Active / Today ⚡ (<span id="adv-count-active">0</span>)</button>
                         </div>
                         <div class="circuit-search-box">
@@ -3287,7 +3288,12 @@ async function loadAdvisoryTracker() {
         
         if (totalEl) totalEl.textContent = summary.total_signals || 0;
         if (winrateEl) winrateEl.textContent = (summary.win_rate_pct || 0) + '%';
-        if (correctSubEl) correctSubEl.textContent = `${summary.correct_count || 0} Correct / ${summary.wrong_count || 0} Wrong`;
+        if (correctSubEl) {
+            const correct = summary.correct_count || 0;
+            const wrong = summary.wrong_count || 0;
+            const prot = summary.protected_count || 0;
+            correctSubEl.textContent = `${correct} Won / ${wrong} Lost (${prot} Filtered)`;
+        }
         if (pnlEl) {
             const pnl = summary.total_pnl_inr || 0;
             pnlEl.textContent = (pnl >= 0 ? '+₹' : '-₹') + Math.abs(pnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -3299,21 +3305,24 @@ async function loadAdvisoryTracker() {
         // Update counts in filter pills
         const trades = advisoryTrackerData.trades || [];
         const countAll = trades.length;
-        const countCorrect = trades.filter(t => t.eod_outcome && (t.eod_outcome.outcome === 'CORRECT' || t.eod_outcome.outcome === 'PROTECTED')).length;
+        const countCorrect = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'CORRECT').length;
         const countWrong = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'WRONG').length;
+        const countProtected = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'PROTECTED').length;
         const countActive = trades.filter(t => t.paper_trade && (t.paper_trade.status === 'ACTIVE' || t.paper_trade.status === 'PENDING_615')).length;
 
         const countAllEl = document.getElementById('adv-count-all');
         const countCorrectEl = document.getElementById('adv-count-correct');
         const countWrongEl = document.getElementById('adv-count-wrong');
+        const countProtectedEl = document.getElementById('adv-count-protected');
         const countActiveEl = document.getElementById('adv-count-active');
         const subnavBadgeEl = document.getElementById('advisory-badge-count');
 
         if (countAllEl) countAllEl.textContent = countAll;
         if (countCorrectEl) countCorrectEl.textContent = countCorrect;
         if (countWrongEl) countWrongEl.textContent = countWrong;
+        if (countProtectedEl) countProtectedEl.textContent = countProtected;
         if (countActiveEl) countActiveEl.textContent = countActive;
-        if (subnavBadgeEl) subnavBadgeEl.textContent = `${countAll} Signals`;
+        if (subnavBadgeEl) subnavBadgeEl.textContent = `${countAll} Signals (Live)`;
 
         renderAdvisoryTradesTable();
     } catch (e) {
@@ -3340,10 +3349,11 @@ function renderAdvisoryTradesTable() {
     const filtered = trades.filter(t => {
         // Filter by pill
         if (activeAdvFilter === 'CORRECT') {
-            const out = t.eod_outcome?.outcome;
-            if (out !== 'CORRECT' && out !== 'PROTECTED') return false;
+            if (t.eod_outcome?.outcome !== 'CORRECT') return false;
         } else if (activeAdvFilter === 'WRONG') {
             if (t.eod_outcome?.outcome !== 'WRONG') return false;
+        } else if (activeAdvFilter === 'PROTECTED') {
+            if (t.eod_outcome?.outcome !== 'PROTECTED') return false;
         } else if (activeAdvFilter === 'ACTIVE') {
             const st = t.paper_trade?.status;
             if (st !== 'ACTIVE' && st !== 'PENDING_615') return false;
