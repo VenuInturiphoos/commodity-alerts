@@ -516,12 +516,27 @@
             <!-- Paper Trading Tab -->
             <section id="trade-tab" class="tab-content">
                 <div class="dashboard-header">
-                    <h2>Paper Trading Terminal</h2>
-                    <p>Practice trading Indian stocks and commodities with a virtual balance.</p>
+                    <h2>Paper Trading & Advisory</h2>
+                    <p>Practice trading with a virtual balance or track daily 6:00 PM IST automated advisory signals.</p>
                 </div>
 
-                <!-- 🎯 6:00 PM IST Advisory Signals & Paper Trade Tracker -->
-                <div id="advisory-tracker-section" class="glass-card full-width" style="margin-bottom: 2.5rem; border: 1px solid rgba(99, 102, 241, 0.35); background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));">
+                <!-- Sub-Navigation View Switcher: Paper Trading Terminal vs 6 PM Advisory Signals -->
+                <div class="circuit-subnav-container" style="margin-bottom: 2rem;">
+                    <button class="circuit-subnav-btn active" id="btn-subnav-trade-terminal" onclick="switchPaperTradingSubView('terminal')">
+                        <i class="fa-solid fa-wallet"></i>
+                        <span>Paper Trading Terminal</span>
+                    </button>
+                    <button class="circuit-subnav-btn" id="btn-subnav-trade-advisory" onclick="switchPaperTradingSubView('advisory')">
+                        <i class="fa-solid fa-crosshairs"></i>
+                        <span>6:00 PM IST Advisory Signals</span>
+                        <span class="subnav-badge" id="advisory-badge-count">52 Signals</span>
+                    </button>
+                </div>
+
+                <!-- 6:00 PM IST Advisory Signals & Tracker Subview -->
+                <div id="trade-view-advisory" style="display: none;">
+                    <!-- 🎯 6:00 PM IST Advisory Signals & Paper Trade Tracker -->
+                    <div id="advisory-tracker-section" class="glass-card full-width" style="margin-bottom: 2.5rem; border: 1px solid rgba(99, 102, 241, 0.35); background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1rem;">
                         <div>
                             <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 0.5rem; text-transform: uppercase;">
@@ -622,7 +637,10 @@
                         </table>
                     </div>
                 </div>
-                
+            </div>
+
+            <!-- Virtual Paper Trading Terminal Subview (Active by Default) -->
+            <div id="trade-view-terminal">
                 <div id="trade-login-prompt" style="text-align: center; margin: 4rem 0;">
                     <h3 style="color: var(--text-secondary);">Please log in via the Account tab to access Paper Trading.</h3>
                 </div>
@@ -766,7 +784,8 @@
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
             <!-- Account Tab -->
             <section id="admin-tab" class="tab-content">
@@ -1026,12 +1045,14 @@ window.switchTab = function(btn, targetId) {
         } else {
             renderMarketTable();
             renderAlertTable();
-            if (targetId === 'trade-tab' && typeof renderTradeMarket === 'function') {
-                renderTradeMarket();
+            if (targetId === 'trade-tab') {
+                if (typeof activePaperTradingSubView !== 'undefined' && activePaperTradingSubView === 'advisory') {
+                    if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker();
+                } else {
+                    if (typeof renderTradeMarket === 'function') renderTradeMarket();
+                    if (typeof renderTradePortfolio === 'function') renderTradePortfolio();
+                }
             }
-        }
-        if (targetId === 'trade-tab' && typeof loadAdvisoryTracker === 'function') {
-            loadAdvisoryTracker();
         }
     }
     
@@ -3215,6 +3236,34 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
+// 📈 PAPER TRADING SUB-NAVIGATION SWITCHER
+// ==========================================
+let activePaperTradingSubView = 'terminal';
+
+function switchPaperTradingSubView(subview) {
+    activePaperTradingSubView = subview;
+    const terminalView = document.getElementById('trade-view-terminal');
+    const advisoryView = document.getElementById('trade-view-advisory');
+    const btnTerminal = document.getElementById('btn-subnav-trade-terminal');
+    const btnAdvisory = document.getElementById('btn-subnav-trade-advisory');
+
+    if (subview === 'advisory') {
+        if (terminalView) terminalView.style.display = 'none';
+        if (advisoryView) advisoryView.style.display = 'block';
+        if (btnTerminal) btnTerminal.classList.remove('active');
+        if (btnAdvisory) btnAdvisory.classList.add('active');
+        loadAdvisoryTracker();
+    } else {
+        if (advisoryView) advisoryView.style.display = 'none';
+        if (terminalView) terminalView.style.display = 'block';
+        if (btnAdvisory) btnAdvisory.classList.remove('active');
+        if (btnTerminal) btnTerminal.classList.add('active');
+        if (typeof renderTradeMarket === 'function') renderTradeMarket();
+        if (typeof renderTradePortfolio === 'function') renderTradePortfolio();
+    }
+}
+
+// ==========================================
 // 🎯 6:00 PM IST ADVISORY SIGNALS & PAPER TRADE TRACKER
 // ==========================================
 let advisoryTrackerData = null;
@@ -3258,11 +3307,13 @@ async function loadAdvisoryTracker() {
         const countCorrectEl = document.getElementById('adv-count-correct');
         const countWrongEl = document.getElementById('adv-count-wrong');
         const countActiveEl = document.getElementById('adv-count-active');
+        const subnavBadgeEl = document.getElementById('advisory-badge-count');
 
         if (countAllEl) countAllEl.textContent = countAll;
         if (countCorrectEl) countCorrectEl.textContent = countCorrect;
         if (countWrongEl) countWrongEl.textContent = countWrong;
         if (countActiveEl) countActiveEl.textContent = countActive;
+        if (subnavBadgeEl) subnavBadgeEl.textContent = `${countAll} Signals`;
 
         renderAdvisoryTradesTable();
     } catch (e) {
