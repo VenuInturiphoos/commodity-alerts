@@ -378,15 +378,12 @@ button[type="submit"] {
 }
 
 .market-table thead {
-    position: sticky;
-    top: 66px;
-    z-index: 40;
+    position: relative;
+    z-index: 10;
 }
 
 .market-table th {
-    position: sticky;
-    top: 66px;
-    z-index: 40;
+    position: relative;
     background: var(--table-header-bg);
     color: var(--text-secondary);
     font-weight: 700;
