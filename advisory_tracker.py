@@ -689,7 +689,7 @@ def init_tracker_from_history():
                     }
                     trades.append(trade_entry)
 
-    trades.reverse()
+    # Keep newest trades first (descending chronological order)
     tracker_data = {"trades": trades}
     save_tracker(tracker_data)
     return tracker_data
