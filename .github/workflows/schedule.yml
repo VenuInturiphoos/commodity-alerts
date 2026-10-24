@@ -49,7 +49,7 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add web/near_alerts.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json web/alerts_state.json
+          git add web/near_alerts.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json web/alerts_state.json web/advisory_trades_tracker.json
           # Check if there are changes to commit
           if ! git diff --staged --quiet; then
             git commit -m "Auto-update near alerts and circuit limits data"

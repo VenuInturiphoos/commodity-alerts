@@ -94,6 +94,26 @@ def main():
             generate_and_send_6pm_advisory()
     except Exception as e:
         print(f"Error checking daily 6 PM advisory: {e}")
+
+    # Check and trigger 6:15 PM IST Confirmation Check (Monday - Friday)
+    try:
+        now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
+        if now_ist.weekday() < 5 and (now_ist.hour == 18 and 14 <= now_ist.minute <= 25):
+            print("\n--- Checking 6:15 PM IST Confirmation & Paper Trade Execution ---")
+            from advisory_tracker import check_and_execute_615_confirmation
+            check_and_execute_615_confirmation(checker, alerter)
+    except Exception as e:
+        print(f"Error checking 6:15 PM confirmation: {e}")
+
+    # Check and trigger 11:30 PM IST Session Close Exit & Evaluation (Monday - Friday)
+    try:
+        now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
+        if now_ist.weekday() < 5 and (now_ist.hour == 23 and now_ist.minute >= 15):
+            print("\n--- Checking 11:30 PM IST EOD Advisory Exit & Settlement ---")
+            from advisory_tracker import exit_and_evaluate_eod_trades
+            exit_and_evaluate_eod_trades(checker, alerter)
+    except Exception as e:
+        print(f"Error executing 11:30 PM EOD exit: {e}")
         
     print("\nCheck complete. Exiting.")
 

@@ -192,6 +192,13 @@ def generate_and_send_6pm_advisory(force=False):
         f"🌐 <b>Live Interactive Dashboard</b>: https://VenuInturiphoos.github.io/commodity-alerts/#circuits"
     )
 
+    # Record in paper trading advisory tracker
+    try:
+        from advisory_tracker import record_live_6pm_advisory
+        record_live_6pm_advisory(commodities_list, pre_6pm_events)
+    except Exception as e:
+        print(f"Error recording live advisory in paper trading tracker: {e}")
+
     alert_payload = [{
         'symbol': 'DAILY_6PM_ADVISORY',
         'name': 'Daily 6 PM Action Advisory',
@@ -224,5 +231,20 @@ def generate_and_send_6pm_advisory(force=False):
 
 if __name__ == "__main__":
     import sys
-    force_run = '--force' in sys.argv
-    generate_and_send_6pm_advisory(force=force_run)
+    if '--check-615' in sys.argv:
+        with open('config.json', 'r') as f:
+            cfg = json.load(f)
+        chk = PriceChecker(cfg)
+        alt = EmailAlerter(cfg)
+        from advisory_tracker import check_and_execute_615_confirmation
+        check_and_execute_615_confirmation(chk, alt)
+    elif '--exit-eod' in sys.argv:
+        with open('config.json', 'r') as f:
+            cfg = json.load(f)
+        chk = PriceChecker(cfg)
+        alt = EmailAlerter(cfg)
+        from advisory_tracker import exit_and_evaluate_eod_trades
+        exit_and_evaluate_eod_trades(chk, alt)
+    else:
+        force_run = '--force' in sys.argv
+        generate_and_send_6pm_advisory(force=force_run)

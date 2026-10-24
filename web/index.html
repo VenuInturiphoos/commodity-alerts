@@ -519,6 +519,109 @@
                     <h2>Paper Trading Terminal</h2>
                     <p>Practice trading Indian stocks and commodities with a virtual balance.</p>
                 </div>
+
+                <!-- 🎯 6:00 PM IST Advisory Signals & Paper Trade Tracker -->
+                <div id="advisory-tracker-section" class="glass-card full-width" style="margin-bottom: 2.5rem; border: 1px solid rgba(99, 102, 241, 0.35); background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1rem;">
+                        <div>
+                            <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 0.5rem; text-transform: uppercase;">
+                                <i class="fa-solid fa-crosshairs"></i> Empirical Trade Execution
+                            </div>
+                            <h2 style="margin: 0; font-size: 1.35rem; color: #f8fafc;">🎯 6:00 PM IST Advisory Signals & Paper Trade Tracker</h2>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">
+                                Tracking every 6:00 PM suggestion, 6:15 PM 15-minute confirmation check, and 11:30 PM session close outcome for <strong>venu.photos1@gmail.com</strong>.
+                            </p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span id="tracker-last-updated" style="font-size: 0.8rem; color: var(--text-secondary);">Syncing...</span>
+                            <button onclick="loadAdvisoryTracker()" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #c7d2fe; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-arrows-rotate"></i> Refresh Tracker
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards for 6 PM Advisory -->
+                    <div class="circuits-kpi-grid" style="margin-top: 1.25rem; margin-bottom: 1.5rem;">
+                        <div class="circuit-kpi-card">
+                            <div class="circuit-kpi-header">
+                                <span>Total 6 PM Signals</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">
+                                    <i class="fa-solid fa-bullhorn"></i>
+                                </div>
+                            </div>
+                            <div class="circuit-kpi-value" id="kpi-adv-total">--</div>
+                            <div class="circuit-kpi-sub" id="kpi-adv-total-sub">Evaluated 6 PM action setups</div>
+                        </div>
+
+                        <div class="circuit-kpi-card">
+                            <div class="circuit-kpi-header">
+                                <span>Advisory Win Rate</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(74, 222, 128, 0.15); color: #4ade80;">
+                                    <i class="fa-solid fa-chart-pie"></i>
+                                </div>
+                            </div>
+                            <div class="circuit-kpi-value" id="kpi-adv-winrate" style="color: #4ade80;">--%</div>
+                            <div class="circuit-kpi-sub" id="kpi-adv-correct-sub">-- Correct / -- Wrong</div>
+                        </div>
+
+                        <div class="circuit-kpi-card">
+                            <div class="circuit-kpi-header">
+                                <span>Total Realized P&L</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+                                    <i class="fa-solid fa-sack-dollar"></i>
+                                </div>
+                            </div>
+                            <div class="circuit-kpi-value" id="kpi-adv-pnl" style="color: #4ade80;">₹--</div>
+                            <div class="circuit-kpi-sub">Virtual paper trade cumulative return</div>
+                        </div>
+
+                        <div class="circuit-kpi-card">
+                            <div class="circuit-kpi-header">
+                                <span>Automated Account</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+                                    <i class="fa-solid fa-user-check"></i>
+                                </div>
+                            </div>
+                            <div class="circuit-kpi-value" style="font-size: 1.05rem; color: #93c5fd; word-break: break-all;">venu.photos1@gmail.com</div>
+                            <div class="circuit-kpi-sub">Auto-exited daily at 11:30 PM IST</div>
+                        </div>
+                    </div>
+
+                    <!-- Tracker Toolbar Filters -->
+                    <div class="circuits-toolbar" style="margin-bottom: 1rem;">
+                        <div class="circuit-filters" style="gap: 0.4rem;">
+                            <button class="circuit-filter-pill active" id="adv-filter-all" onclick="filterAdvisoryTrades('ALL', this)">All Signals (<span id="adv-count-all">0</span>)</button>
+                            <button class="circuit-filter-pill" id="adv-filter-correct" onclick="filterAdvisoryTrades('CORRECT', this)">Correct Recommendations 🟢 (<span id="adv-count-correct">0</span>)</button>
+                            <button class="circuit-filter-pill" id="adv-filter-wrong" onclick="filterAdvisoryTrades('WRONG', this)">Wrong 🔴 (<span id="adv-count-wrong">0</span>)</button>
+                            <button class="circuit-filter-pill" id="adv-filter-active" onclick="filterAdvisoryTrades('ACTIVE', this)">Active / Today ⚡ (<span id="adv-count-active">0</span>)</button>
+                        </div>
+                        <div class="circuit-search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="adv-search-input" placeholder="Search commodity or date..." onkeyup="renderAdvisoryTradesTable()">
+                        </div>
+                    </div>
+
+                    <!-- Tracker Table -->
+                    <div class="table-container glass-card full-width" style="margin-bottom: 0.5rem; overflow-x: auto;">
+                        <table class="market-table">
+                            <thead>
+                                <tr>
+                                    <th>Date & Commodity</th>
+                                    <th>6:00 PM Suggestion</th>
+                                    <th>6:15 PM Confirmation Check</th>
+                                    <th>Paper Trade Entry</th>
+                                    <th>Stop-Loss / Target</th>
+                                    <th>11:30 PM Exit Price</th>
+                                    <th>Day P&L (₹)</th>
+                                    <th>End Result Outcome</th>
+                                </tr>
+                            </thead>
+                            <tbody id="advisory-tracker-body">
+                                <tr><td colspan="8" class="loading">Loading 6 PM advisory tracker data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 
                 <div id="trade-login-prompt" style="text-align: center; margin: 4rem 0;">
                     <h3 style="color: var(--text-secondary);">Please log in via the Account tab to access Paper Trading.</h3>
@@ -926,6 +1029,9 @@ window.switchTab = function(btn, targetId) {
             if (targetId === 'trade-tab' && typeof renderTradeMarket === 'function') {
                 renderTradeMarket();
             }
+        }
+        if (targetId === 'trade-tab' && typeof loadAdvisoryTracker === 'function') {
+            loadAdvisoryTracker();
         }
     }
     
@@ -3108,6 +3214,194 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('trade-sell-btn')?.addEventListener('click', () => handleTrade('SELL'));
 });
 
+// ==========================================
+// 🎯 6:00 PM IST ADVISORY SIGNALS & PAPER TRADE TRACKER
+// ==========================================
+let advisoryTrackerData = null;
+let activeAdvFilter = 'ALL';
+
+async function loadAdvisoryTracker() {
+    const timeEl = document.getElementById('tracker-last-updated');
+    if (timeEl) timeEl.textContent = 'Syncing...';
+
+    try {
+        const res = await fetch('advisory_trades_tracker.json?t=' + Date.now());
+        if (!res.ok) throw new Error("Status " + res.status);
+        advisoryTrackerData = await res.json();
+        
+        // Update summary KPI cards
+        const summary = advisoryTrackerData.summary || {};
+        const totalEl = document.getElementById('kpi-adv-total');
+        const winrateEl = document.getElementById('kpi-adv-winrate');
+        const correctSubEl = document.getElementById('kpi-adv-correct-sub');
+        const pnlEl = document.getElementById('kpi-adv-pnl');
+        
+        if (totalEl) totalEl.textContent = summary.total_signals || 0;
+        if (winrateEl) winrateEl.textContent = (summary.win_rate_pct || 0) + '%';
+        if (correctSubEl) correctSubEl.textContent = `${summary.correct_count || 0} Correct / ${summary.wrong_count || 0} Wrong`;
+        if (pnlEl) {
+            const pnl = summary.total_pnl_inr || 0;
+            pnlEl.textContent = (pnl >= 0 ? '+₹' : '-₹') + Math.abs(pnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            pnlEl.style.color = pnl >= 0 ? '#4ade80' : '#fb7185';
+        }
+        
+        if (timeEl) timeEl.textContent = 'Updated: ' + (advisoryTrackerData.last_updated || 'Just now');
+
+        // Update counts in filter pills
+        const trades = advisoryTrackerData.trades || [];
+        const countAll = trades.length;
+        const countCorrect = trades.filter(t => t.eod_outcome && (t.eod_outcome.outcome === 'CORRECT' || t.eod_outcome.outcome === 'PROTECTED')).length;
+        const countWrong = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'WRONG').length;
+        const countActive = trades.filter(t => t.paper_trade && (t.paper_trade.status === 'ACTIVE' || t.paper_trade.status === 'PENDING_615')).length;
+
+        const countAllEl = document.getElementById('adv-count-all');
+        const countCorrectEl = document.getElementById('adv-count-correct');
+        const countWrongEl = document.getElementById('adv-count-wrong');
+        const countActiveEl = document.getElementById('adv-count-active');
+
+        if (countAllEl) countAllEl.textContent = countAll;
+        if (countCorrectEl) countCorrectEl.textContent = countCorrect;
+        if (countWrongEl) countWrongEl.textContent = countWrong;
+        if (countActiveEl) countActiveEl.textContent = countActive;
+
+        renderAdvisoryTradesTable();
+    } catch (e) {
+        console.error("Error loading advisory tracker:", e);
+        const tbody = document.getElementById('advisory-tracker-body');
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="error">Failed to load advisory tracker data: ${e.message}</td></tr>`;
+    }
+}
+
+function filterAdvisoryTrades(filterType, btnEl) {
+    activeAdvFilter = filterType;
+    document.querySelectorAll('.circuit-filters button[id^="adv-filter-"]').forEach(b => b.classList.remove('active'));
+    if (btnEl) btnEl.classList.add('active');
+    renderAdvisoryTradesTable();
+}
+
+function renderAdvisoryTradesTable() {
+    const tbody = document.getElementById('advisory-tracker-body');
+    if (!tbody || !advisoryTrackerData) return;
+
+    const trades = advisoryTrackerData.trades || [];
+    const searchVal = (document.getElementById('adv-search-input')?.value || '').trim().toLowerCase();
+
+    const filtered = trades.filter(t => {
+        // Filter by pill
+        if (activeAdvFilter === 'CORRECT') {
+            const out = t.eod_outcome?.outcome;
+            if (out !== 'CORRECT' && out !== 'PROTECTED') return false;
+        } else if (activeAdvFilter === 'WRONG') {
+            if (t.eod_outcome?.outcome !== 'WRONG') return false;
+        } else if (activeAdvFilter === 'ACTIVE') {
+            const st = t.paper_trade?.status;
+            if (st !== 'ACTIVE' && st !== 'PENDING_615') return false;
+        }
+
+        // Search filter
+        if (searchVal) {
+            const str = `${t.date} ${t.symbol} ${t.name} ${t.suggestion_6pm?.action_text} ${t.check_615?.status}`.toLowerCase();
+            if (!str.includes(searchVal)) return false;
+        }
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--text-secondary);">No advisory signals match the selected filter.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(t => {
+        const pt = t.paper_trade || {};
+        const s6 = t.suggestion_6pm || {};
+        const c15 = t.check_615 || {};
+        const outcome = t.eod_outcome || {};
+
+        let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
+        if (outcome.outcome === 'WRONG') {
+            outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
+        } else if (outcome.outcome === 'PROTECTED') {
+            outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${outcome.badge || 'Avoided Trap 🛡️'}</span>`;
+        } else if (outcome.outcome === 'PENDING' || pt.status === 'ACTIVE' || pt.status === 'PENDING_615') {
+            outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
+        }
+
+        let pnlColor = '#cbd5e1';
+        let pnlText = outcome.pnl_display || '₹0.00';
+        if (pt.pnl_inr > 0) pnlColor = '#4ade80';
+        else if (pt.pnl_inr < 0) pnlColor = '#fb7185';
+
+        // 6:15 check cell
+        let check615Html = `<span style="color:#94a3b8; font-size:0.8rem;">Direct Entry at 6 PM</span>`;
+        if (c15.status === 'REVERSAL_CONFIRMED') {
+            check615Html = `
+                <div>
+                    <span style="color:#4ade80; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-circle-check"></i> Reversal Confirmed</span>
+                    <div style="font-size:0.75rem; color:#cbd5e1;">Held at ₹${c15.price_615?.toLocaleString('en-IN', {minimumFractionDigits:2}) || '--'}</div>
+                </div>
+            `;
+        } else if (c15.status === 'EXTENSION_CONFIRMED') {
+            check615Html = `
+                <div>
+                    <span style="color:#fb7185; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation"></i> Limit Broken</span>
+                    <div style="font-size:0.75rem; color:#93c5fd;">Stood aside (Trap Avoided)</div>
+                </div>
+            `;
+        } else if (c15.status === 'PENDING_615') {
+            check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-hourglass-half"></i> Waiting for 6:15 PM</span>`;
+        } else if (c15.status === 'NO_REVERSAL_STAND_ASIDE') {
+            check615Html = `<span style="color:#60a5fa; font-size:0.8rem;"><i class="fa-solid fa-ban"></i> No rejection (Stood Aside)</span>`;
+        }
+
+        let paperTradeCell = `<span style="color:#94a3b8; font-size:0.8rem;">Stood Aside</span>`;
+        if (pt.action && pt.action !== 'STAND_ASIDE') {
+            const actColor = pt.action === 'BUY' ? 'adv-action-buy' : 'adv-action-sell';
+            paperTradeCell = `
+                <div>
+                    <span class="adv-action-tag ${actColor}">${pt.action}</span>
+                    <strong style="color:#f8fafc; font-size:0.85rem; margin-left:4px;">${pt.quantity} units</strong>
+                    <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${pt.entry_price ? Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} (${pt.entry_time || '6:15 PM'})</div>
+                </div>
+            `;
+        }
+
+        return `
+            <tr>
+                <td>
+                    <div style="font-weight:700; color:#f8fafc; font-size:0.9rem;">${t.name}</div>
+                    <div style="font-size:0.75rem; color:#94a3b8;">${t.date} | ${t.symbol}</div>
+                    <div style="font-size:0.7rem; color:#818cf8; margin-top:2px;">${t.event_context || ''}</div>
+                </td>
+                <td>
+                    <div style="font-size:0.85rem; font-weight:600; color:#f1f5f9;">${s6.action_text || '--'}</div>
+                    <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Ref: ₹${s6.reference_price ? Number(s6.reference_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
+                </td>
+                <td>${check615Html}</td>
+                <td>${paperTradeCell}</td>
+                <td>
+                    <div style="font-size:0.8rem; color:#fb7185;">SL: ₹${s6.stop_loss ? Number(s6.stop_loss).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
+                    <div style="font-size:0.8rem; color:#4ade80;">TGT: ₹${s6.target ? Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
+                </td>
+                <td>
+                    <strong style="font-size:0.9rem; color:#f8fafc;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</strong>
+                    <div style="font-size:0.75rem; color:#94a3b8;">11:30 PM Close</div>
+                </td>
+                <td style="font-weight:700; font-size:0.95rem; color:${pnlColor};">
+                    ${pnlText}
+                </td>
+                <td>
+                    ${outcomeBadge}
+                    <div style="font-size:0.72rem; color:#94a3b8; margin-top:4px; max-width:180px; line-height:1.3;">${outcome.summary || ''}</div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Automatically load advisory tracker on page init
+document.addEventListener('DOMContentLoaded', () => {
+    loadAdvisoryTracker();
+});
     </script>
     
     <!-- TradingView Lightweight Charts API -->
@@ -3306,14 +3600,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             <!-- Messages -->
             <div id="chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
-                <div style="align-self: flex-start; background: rgba(59, 130, 246, 0.2); padding: 10px 15px; border-radius: 12px 12px 12px 0; max-width: 80%; border: 1px solid rgba(59, 130, 246, 0.3);">
-                    <p style="margin: 0; color: #e2e8f0; font-size: 0.9rem;">Hi! I'm your Trading Assistant. Type <strong>"near"</strong> to see which stocks are approaching a Strong Buy/Sell state.</p>
+                <div style="align-self: flex-start; background: rgba(59, 130, 246, 0.2); padding: 10px 15px; border-radius: 12px 12px 12px 0; max-width: 85%; border: 1px solid rgba(59, 130, 246, 0.3);">
+                    <p style="margin: 0; color: #e2e8f0; font-size: 0.9rem;">Hi! I'm your Trading Assistant. Type <strong>"comm"</strong> for live MCX commodities status & 6 PM action advisory, or <strong>"near"</strong> for stock breakout setups.</p>
                 </div>
             </div>
             
             <!-- Input -->
             <div style="padding: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; background: rgba(0,0,0,0.2);">
-                <input type="text" id="chat-input" placeholder="Ask about near alerts..." style="flex: 1; padding: 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; outline: none;" onkeypress="if(event.key === 'Enter') handleChatInput()">
+                <input type="text" id="chat-input" placeholder="Type 'comm' for commodities or 'near' for stocks..." style="flex: 1; padding: 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; outline: none;" onkeypress="if(event.key === 'Enter') handleChatInput()">
                 <button onclick="handleChatInput()" style="background: #3b82f6; border: none; width: 40px; height: 40px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
@@ -3355,7 +3649,69 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById(typingId).remove();
                 
                 let reply = "";
-                if (text.includes("near") || text.includes("buy") || text.includes("sell") || text.includes("alert")) {
+                if (text.includes("comm") || text.includes("commodity") || text.includes("commodities")) {
+                    try {
+                        const response = await fetch('circuits_data.json?t=' + Date.now());
+                        if (response.ok) {
+                            const data = await response.json();
+                            const commodities = data.commodities || [];
+                            reply = "<p style='margin:0 0 8px 0; color:#38bdf8; font-weight:700;'><i class='fa-solid fa-bolt'></i> <strong>MCX Commodities Live Action Advisory</strong></p>";
+                            if (commodities.length > 0) {
+                                reply += "<div style='display:flex; flex-direction:column; gap:8px;'>";
+                                commodities.forEach(c => {
+                                    const chgColor = c.change_pct >= 0 ? '#4ade80' : '#fb7185';
+                                    let actionAdvice = "Safe trading range. No circuit halt threat; trade standard S1/R1 levels.";
+                                    let statusBadge = "<span style='color:#34d399; font-weight:600;'>Safe Range 🟢</span>";
+
+                                    if (c.status.includes('LOWER') || c.status.includes('LC')) {
+                                        statusBadge = "<span style='color:#fb7185; font-weight:700;'>Testing Floor ⚠️</span>";
+                                        if (c.symbol === 'SILVER') {
+                                            actionAdvice = "⚠️ <strong>Wait for 6:15 PM candle!</strong> 66.7% downward extension rate. Do not knife-catch.";
+                                        } else if (c.symbol === 'CRUDEOIL') {
+                                            actionAdvice = "🟢 <strong>Rebound Setup!</strong> 52.9% bounce rate. Buy if 6:15 PM rejection candle holds.";
+                                        } else {
+                                            actionAdvice = "Testing lower limit. Enforce 15-min rule at 6:15 PM before entering.";
+                                        }
+                                    } else if (c.status.includes('UPPER') || c.status.includes('UC')) {
+                                        statusBadge = "<span style='color:#f59e0b; font-weight:700;'>Testing Ceiling ⚠️</span>";
+                                        if (c.symbol === 'COPPER') {
+                                            actionAdvice = "🟢 <strong>Take Profit / Fade Spike!</strong> 50% pullback rate on US profit taking.";
+                                        } else {
+                                            actionAdvice = "Ceiling resistance test. Wait for 6:15 PM candle; do not chase highs.";
+                                        }
+                                    } else if (Math.abs(c.change_pct) >= 2.0) {
+                                        statusBadge = "<span style='color:#60a5fa; font-weight:600;'>Trending Session</span>";
+                                        actionAdvice = "High volatility expected at 6:00 PM US Pit Open. Trade strictly with defined stops.";
+                                    }
+
+                                    reply += `
+                                        <div style='background:rgba(255,255,255,0.04); padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); font-size:0.83rem;'>
+                                            <div style='display:flex; justify-content:space-between; align-items:center;'>
+                                                <strong style='color:#f1f5f9;'>${c.name}</strong>
+                                                <span style='color:${chgColor}; font-weight:600;'>₹${Number(c.current_price).toLocaleString('en-IN', {minimumFractionDigits:2})} (${c.change_pct >= 0 ? '+' : ''}${c.change_pct.toFixed(2)}%)</span>
+                                            </div>
+                                            <div style='display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8; margin:2px 0;'>
+                                                <span>Floor: ₹${c.lower_circuit ? Number(c.lower_circuit).toLocaleString('en-IN') : '--'}</span>
+                                                <span>Ceiling: ₹${c.upper_circuit ? Number(c.upper_circuit).toLocaleString('en-IN') : '--'}</span>
+                                            </div>
+                                            <div style='margin-top:4px; font-size:0.78rem; color:#cbd5e1;'>
+                                                ${statusBadge} • ${actionAdvice}
+                                            </div>
+                                        </div>
+                                    `;
+                                });
+                                reply += "</div>";
+                                reply += "<p style='margin:8px 0 0 0; font-size:0.75rem; color:#94a3b8;'>🛡️ <i>Daily advisory auto-executes in Paper Trading at 6 PM & exits at 11:30 PM.</i></p>";
+                            } else {
+                                reply = "<p style='margin:0; color:#a1a1aa;'>No commodities data available.</p>";
+                            }
+                        } else {
+                            reply = "I couldn't fetch the latest commodities data. Please refresh.";
+                        }
+                    } catch (e) {
+                        reply = "Error fetching commodity status: " + e.message;
+                    }
+                } else if (text.includes("near") || text.includes("buy") || text.includes("sell") || text.includes("alert")) {
                     try {
                         const response = await fetch('near_alerts.json?t=' + Date.now());
                         if (response.ok) {
@@ -3384,7 +3740,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         reply = "Error fetching near alerts. Please try again later.";
                     }
                 } else {
-                    reply = "I am a simple Trading Assistant. Type 'near' to see the latest near-alert setups!";
+                    reply = "I am your Trading Assistant. Type <strong>'comm'</strong> for live MCX commodities status & 6 PM action advice, or <strong>'near'</strong> for stock setups!";
                 }
                 
                 messages.innerHTML += `

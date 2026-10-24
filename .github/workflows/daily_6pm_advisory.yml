@@ -53,7 +53,7 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add web/alerts_state.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json
+          git add web/alerts_state.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json web/advisory_trades_tracker.json
           if ! git diff --staged --quiet; then
             git commit -m "Auto-record 6:00 PM IST advisory dispatch state"
             git pull --rebase origin main
