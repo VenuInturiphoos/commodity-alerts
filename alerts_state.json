@@ -61,21 +61,24 @@
   },
   "SILVER": {
     "symbol": "SILVER",
-    "alert_status": null,
-    "last_alert_date": "2026-10-23",
-    "last_alert_msg": "CIRCUIT WARNING: Within 1% of Lower Circuit (-4%)"
+    "last_alert_date": "2026-10-24",
+    "last_alert_msg": "CIRCUIT WARNING: Within 1% of Lower Circuit (-4%)",
+    "alert_status": "CIRCUIT WARNING: Within 1% of Lower Circuit (-4%)",
+    "last_updated": "2026-10-23T18:31:43.846658"
   },
   "CRUDEOIL": {
     "symbol": "CRUDEOIL",
-    "alert_status": null,
-    "last_alert_date": "2026-10-23",
-    "last_alert_msg": "CIRCUIT WARNING: Within 1% of Upper Circuit (+4%)"
+    "last_alert_date": "2026-10-24",
+    "last_alert_msg": "CIRCUIT WARNING: Within 1% of Upper Circuit (+4%)",
+    "alert_status": "CIRCUIT WARNING: Within 1% of Upper Circuit (+4%)",
+    "last_updated": "2026-10-23T18:31:44.080543"
   },
   "NATURALGAS": {
     "symbol": "NATURALGAS",
-    "alert_status": null,
-    "last_alert_date": "2026-10-19",
-    "last_alert_msg": "Commodity Drop"
+    "last_alert_date": "2026-10-24",
+    "last_alert_msg": "LOWER CIRCUIT HIT (-6%)",
+    "alert_status": "LOWER CIRCUIT HIT (-6%)",
+    "last_updated": "2026-10-23T18:31:44.791495"
   },
   "COPPER": {
     "symbol": "COPPER",
@@ -316,5 +319,10 @@
     "alert_status": null,
     "last_alert_date": "2026-10-16",
     "last_alert_msg": "testing Weekly High"
+  },
+  "DAILY_6PM_ADVISORY": {
+    "last_alert_date": "2026-10-23",
+    "last_alert_time": "23 Oct 2026, 06:01 PM IST",
+    "last_alert_msg": "\ud83c\udfaf [6 PM IST ADVISORY] MCX Commodity Action Playbook (Friday)"
   }
 }

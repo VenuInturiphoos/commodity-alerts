@@ -1,0 +1,2316 @@
+{
+  "trades": [
+    {
+      "id": "ADV-1787670000-CRUDEOIL",
+      "date": "25 Aug 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 81.61,
+        "stop_loss": 81.28,
+        "target": 85.01
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 81.77,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 100 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 100,
+        "entry_price": 81.77,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 82.36,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.59,
+        "pnl_inr": 4899.61,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 82.36,
+        "circuit_limit": 81.61,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b94,899.61",
+        "summary": "Confirmed BUY generated +0.59 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1787734800-CRUDEOIL",
+      "date": "26 Aug 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "N/A",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "Pre-6 PM Lower Circuit Test (Asian/EU Fade Setup)",
+      "suggestion_6pm": {
+        "status": "DIRECT_FADE",
+        "action_text": "BUY / FADE THE MOVE",
+        "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+        "reference_price": 79.62,
+        "stop_loss": 78.75,
+        "target": 82.36
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 79.62,
+        "action_taken": "Entered BUY 100 units @ \u20b979.62",
+        "detail": "Direct trade executed at 6:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 100,
+        "entry_price": 79.62,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 82.23,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 2.61,
+        "pnl_inr": 21793.5,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 82.23,
+        "circuit_limit": 79.07,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b921,793.50",
+        "summary": "Pre-6 PM fade captured +2.61 pts retracement to session close."
+      }
+    },
+    {
+      "id": "ADV-1787763600-NATURALGAS",
+      "date": "26 Aug 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "US Pit Open Upper Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before SELLING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 2.94,
+        "stop_loss": 2.95,
+        "target": 2.77
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 2.93,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 1250 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1250,
+        "entry_price": 2.93,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 2.84,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.09,
+        "pnl_inr": 9823.78,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 2.84,
+        "circuit_limit": 2.94,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b99,823.78",
+        "summary": "Confirmed SELL generated +0.09 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1787940000-SILVER",
+      "date": "28 Aug 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 30,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE",
+        "rationale": "Verify rejection pin-bar holds before entering long.",
+        "reference_price": 66.65,
+        "stop_loss": 66.38,
+        "target": 69.43
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 66.78,
+        "action_taken": "Candle closed above limit \u20b966.65. ENTERED BUY 30 units.",
+        "detail": "Rejection pin-bar confirmed at 6:15 PM IST. Counter-trend rebound active."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 30,
+        "entry_price": 66.78,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 67.0,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.22,
+        "pnl_inr": 542.83,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 67.0,
+        "circuit_limit": 66.65,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b9542.83",
+        "summary": "6:15 PM confirmed entry generated +0.22 pts move to 11:30 PM close."
+      }
+    },
+    {
+      "id": "ADV-1787940000-GOLD",
+      "date": "28 Aug 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 1,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 4524.08,
+        "stop_loss": 4505.98,
+        "target": 4664.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 4533.13,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 1 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1,
+        "entry_price": 4533.13,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 4529.9,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": -3.23,
+        "pnl_inr": -3.23,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 4529.9,
+        "circuit_limit": 4524.08,
+        "outcome": "WRONG",
+        "badge": "Wrong \u274c",
+        "pnl_display": "\u20b9-3.23",
+        "summary": "Confirmed BUY generated -3.23 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1788170400-CRUDEOIL",
+      "date": "31 Aug 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "N/A",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
+      "suggestion_6pm": {
+        "status": "DIRECT_FADE",
+        "action_text": "SELL / FADE THE MOVE",
+        "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+        "reference_price": 86.79,
+        "stop_loss": 87.09,
+        "target": 83.4
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 86.79,
+        "action_taken": "Entered SELL 100 units @ \u20b986.79",
+        "detail": "Direct trade executed at 6:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 100,
+        "entry_price": 86.79,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 85.76,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 1.03,
+        "pnl_inr": 8600.5,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 85.76,
+        "circuit_limit": 86.74,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b98,600.50",
+        "summary": "Pre-6 PM fade captured +1.03 pts retracement to session close."
+      }
+    },
+    {
+      "id": "ADV-1788267600-GOLD",
+      "date": "01 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 1,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 4347.06,
+        "stop_loss": 4329.67,
+        "target": 4481.5
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 4355.75,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 1 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1,
+        "entry_price": 4355.75,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 4396.4,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 40.65,
+        "pnl_inr": 40.65,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 4396.4,
+        "circuit_limit": 4347.06,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b940.65",
+        "summary": "Confirmed BUY generated +40.65 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1788285600-CRUDEOIL",
+      "date": "01 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Upper Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 89.19,
+        "stop_loss": 89.55,
+        "target": 85.76
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 90.97,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 90.97,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 90.22,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 90.22,
+        "circuit_limit": 89.19,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1788285600-SILVER",
+      "date": "01 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 30,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE",
+        "rationale": "Verify rejection pin-bar holds before entering long.",
+        "reference_price": 63.57,
+        "stop_loss": 63.32,
+        "target": 66.22
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 63.7,
+        "action_taken": "Candle closed above limit \u20b963.57. ENTERED BUY 30 units.",
+        "detail": "Rejection pin-bar confirmed at 6:15 PM IST. Counter-trend rebound active."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 30,
+        "entry_price": 63.7,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 64.62,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.92,
+        "pnl_inr": 2311.76,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 64.62,
+        "circuit_limit": 63.57,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b92,311.76",
+        "summary": "6:15 PM confirmed entry generated +0.92 pts move to 11:30 PM close."
+      }
+    },
+    {
+      "id": "ADV-1788447600-SILVER",
+      "date": "03 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 30,
+      "event_context": "US Pit Open Upper Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 67.31,
+        "stop_loss": 67.58,
+        "target": 64.72
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 67.3,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 67.3,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 66.97,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 66.97,
+        "circuit_limit": 67.31,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1788447600-GOLD",
+      "date": "03 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 1,
+      "event_context": "US Pit Open Upper Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 4547.04,
+        "stop_loss": 4565.23,
+        "target": 4414.6
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 4558.5,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 4558.5,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 4539.9,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 4539.9,
+        "circuit_limit": 4547.04,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1788526800-GOLD",
+      "date": "04 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 1,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 4403.7,
+        "stop_loss": 4386.09,
+        "target": 4539.9
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 4412.51,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 1 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1,
+        "entry_price": 4412.51,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 4476.6,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 64.09,
+        "pnl_inr": 64.09,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 4476.6,
+        "circuit_limit": 4403.7,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b964.09",
+        "summary": "Confirmed BUY generated +64.09 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1788854400-CRUDEOIL",
+      "date": "08 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "N/A",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
+      "suggestion_6pm": {
+        "status": "DIRECT_FADE",
+        "action_text": "SELL / FADE THE MOVE",
+        "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+        "reference_price": 94.73,
+        "stop_loss": 95.52,
+        "target": 91.48
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 94.73,
+        "action_taken": "Entered SELL 100 units @ \u20b994.73",
+        "detail": "Direct trade executed at 6:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 100,
+        "entry_price": 94.73,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 93.03,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 1.7,
+        "pnl_inr": 14195.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 93.03,
+        "circuit_limit": 95.14,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b914,195.00",
+        "summary": "Pre-6 PM fade captured +1.70 pts retracement to session close."
+      }
+    },
+    {
+      "id": "ADV-1788969600-CRUDEOIL",
+      "date": "09 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Upper Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before SELLING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 96.75,
+        "stop_loss": 97.14,
+        "target": 93.03
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 96.56,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 100 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 100,
+        "entry_price": 96.56,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 96.05,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.51,
+        "pnl_inr": 4229.28,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 96.05,
+        "circuit_limit": 96.75,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b94,229.28",
+        "summary": "Confirmed SELL generated +0.51 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1789063200-CRUDEOIL",
+      "date": "10 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Upper Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 99.89,
+        "stop_loss": 100.29,
+        "target": 96.05
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 104.04,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 104.04,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 102.48,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 102.48,
+        "circuit_limit": 99.89,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1789063200-SILVER",
+      "date": "10 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 30,
+      "event_context": "US Pit Open Lower Circuit Test (High Risk Extension)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "DO NOT KNIFE-CATCH! Wait for 6:15 PM candle close",
+        "rationale": "Silver exhibits 66.7% downward extension rate when testing lower circuits.",
+        "reference_price": 65.22,
+        "stop_loss": 64.83,
+        "target": 67.94
+      },
+      "check_615": {
+        "checked": true,
+        "status": "EXTENSION_CONFIRMED",
+        "price_615": 65.09,
+        "action_taken": "15-Min rule avoided false long! Entered SHORT 30 units on confirmed breakdown.",
+        "detail": "15-min candle closed below floor \u20b965.22. Counter-trend buy rejected; momentum short active."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 30,
+        "entry_price": 65.09,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 64.28,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.81,
+        "pnl_inr": 2027.95,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 64.28,
+        "circuit_limit": 65.22,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705 (Avoided Trap)",
+        "pnl_display": "+\u20b92,027.95",
+        "summary": "15-min rule protected against severe drawdown; captured +0.81 pts downside."
+      }
+    },
+    {
+      "id": "ADV-1789063200-COPPER",
+      "date": "10 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPER",
+      "name": "Copper",
+      "lot_size": 2500,
+      "event_context": "US Pit Open Lower Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 6.53,
+        "stop_loss": 6.5,
+        "target": 6.8
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 6.44,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 6.44,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 6.47,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 6.47,
+        "circuit_limit": 6.53,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1789131600-CRUDEOIL",
+      "date": "11 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 98.38,
+        "stop_loss": 97.99,
+        "target": 102.48
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 98.58,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 100 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 100,
+        "entry_price": 98.58,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 100.05,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 1.47,
+        "pnl_inr": 12301.55,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 100.05,
+        "circuit_limit": 98.38,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b912,301.55",
+        "summary": "Confirmed BUY generated +1.47 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1789387200-CRUDEOIL",
+      "date": "14 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "N/A",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
+      "suggestion_6pm": {
+        "status": "DIRECT_FADE",
+        "action_text": "SELL / FADE THE MOVE",
+        "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+        "reference_price": 104.95,
+        "stop_loss": 104.47,
+        "target": 100.05
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 104.95,
+        "action_taken": "Entered SELL 100 units @ \u20b9104.95",
+        "detail": "Direct trade executed at 6:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 100,
+        "entry_price": 104.95,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 101.39,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 3.56,
+        "pnl_inr": 29726.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 101.39,
+        "circuit_limit": 104.05,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b929,726.00",
+        "summary": "Pre-6 PM fade captured +3.56 pts retracement to session close."
+      }
+    },
+    {
+      "id": "ADV-1789390800-GOLD",
+      "date": "14 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 1,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 4276.63,
+        "stop_loss": 4259.52,
+        "target": 4408.9
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 4285.18,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 1 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1,
+        "entry_price": 4285.18,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 4351.9,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 66.72,
+        "pnl_inr": 66.72,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 4351.9,
+        "circuit_limit": 4276.63,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b966.72",
+        "summary": "Confirmed BUY generated +66.72 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1789491600-CRUDEOIL",
+      "date": "15 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Upper Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 105.45,
+        "stop_loss": 105.87,
+        "target": 101.39
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 106.75,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 106.75,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 105.83,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 105.83,
+        "circuit_limit": 105.45,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1789570800-CRUDEOIL",
+      "date": "16 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 101.6,
+        "stop_loss": 101.19,
+        "target": 105.83
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 101.8,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 100 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 100,
+        "entry_price": 101.8,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 102.43,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.63,
+        "pnl_inr": 5233.78,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 102.43,
+        "circuit_limit": 101.6,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b95,233.78",
+        "summary": "Confirmed BUY generated +0.63 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1789646400-CRUDEOIL",
+      "date": "17 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "N/A",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "Pre-6 PM Lower Circuit Test (Asian/EU Fade Setup)",
+      "suggestion_6pm": {
+        "status": "DIRECT_FADE",
+        "action_text": "BUY / FADE THE MOVE",
+        "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+        "reference_price": 99.1,
+        "stop_loss": 97.94,
+        "target": 102.43
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 99.1,
+        "action_taken": "Entered BUY 100 units @ \u20b999.10",
+        "detail": "Direct trade executed at 6:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 100,
+        "entry_price": 99.1,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 101.91,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 2.81,
+        "pnl_inr": 23463.5,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 101.91,
+        "circuit_limit": 98.33,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b923,463.50",
+        "summary": "Pre-6 PM fade captured +2.81 pts retracement to session close."
+      }
+    },
+    {
+      "id": "ADV-1790006400-CRUDEOIL",
+      "date": "21 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Lower Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 96.29,
+        "stop_loss": 95.9,
+        "target": 100.3
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 94.22,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 94.22,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 95.78,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 95.78,
+        "circuit_limit": 96.29,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1790071200-CRUDEOIL",
+      "date": "22 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "N/A",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "Pre-6 PM Lower Circuit Test (Asian/EU Fade Setup)",
+      "suggestion_6pm": {
+        "status": "DIRECT_FADE",
+        "action_text": "BUY / FADE THE MOVE",
+        "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+        "reference_price": 92.4,
+        "stop_loss": 91.58,
+        "target": 95.78
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 92.4,
+        "action_taken": "Entered BUY 100 units @ \u20b992.40",
+        "detail": "Direct trade executed at 6:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 100,
+        "entry_price": 92.4,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 94.59,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 2.19,
+        "pnl_inr": 18286.5,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 94.59,
+        "circuit_limit": 91.95,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b918,286.50",
+        "summary": "Pre-6 PM fade captured +2.19 pts retracement to session close."
+      }
+    },
+    {
+      "id": "ADV-1790100000-NATURALGAS",
+      "date": "22 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "US Pit Open Upper Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before SELLING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 3.01,
+        "stop_loss": 3.02,
+        "target": 2.84
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 3.0,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 1250 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1250,
+        "entry_price": 3.0,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 2.96,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.04,
+        "pnl_inr": 4590.41,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 2.96,
+        "circuit_limit": 3.01,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b94,590.41",
+        "summary": "Confirmed SELL generated +0.04 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1790103600-CRUDEOIL",
+      "date": "23 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "N/A",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "Pre-6 PM Lower Circuit Test (Asian/EU Fade Setup)",
+      "suggestion_6pm": {
+        "status": "DIRECT_FADE",
+        "action_text": "BUY / FADE THE MOVE",
+        "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+        "reference_price": 88.71,
+        "stop_loss": 90.45,
+        "target": 94.59
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 88.71,
+        "action_taken": "Entered BUY 100 units @ \u20b988.71",
+        "detail": "Direct trade executed at 6:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 100,
+        "entry_price": 88.71,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 92.16,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 3.45,
+        "pnl_inr": 28807.5,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 92.16,
+        "circuit_limit": 90.81,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b928,807.50",
+        "summary": "Pre-6 PM fade captured +3.45 pts retracement to session close."
+      }
+    },
+    {
+      "id": "ADV-1790265600-CRUDEOIL",
+      "date": "24 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Upper Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before SELLING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 95.85,
+        "stop_loss": 96.23,
+        "target": 92.16
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 95.66,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 100 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 100,
+        "entry_price": 95.66,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 94.61,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 1.05,
+        "pnl_inr": 8753.3,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 94.61,
+        "circuit_limit": 95.85,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b98,753.30",
+        "summary": "Confirmed SELL generated +1.05 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1790269200-NATURALGAS",
+      "date": "24 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "US Pit Open Upper Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 3.2,
+        "stop_loss": 3.21,
+        "target": 3.02
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 3.32,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 3.32,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 3.3,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 3.3,
+        "circuit_limit": 3.2,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1790344800-NATURALGAS",
+      "date": "25 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 3.1,
+        "stop_loss": 3.09,
+        "target": 3.3
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 3.11,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 1250 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1250,
+        "entry_price": 3.11,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 3.2,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.09,
+        "pnl_inr": 9790.37,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 3.2,
+        "circuit_limit": 3.1,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b99,790.37",
+        "summary": "Confirmed BUY generated +0.09 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1790352000-CRUDEOIL",
+      "date": "25 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 90.83,
+        "stop_loss": 90.47,
+        "target": 94.61
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 91.01,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 100 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 100,
+        "entry_price": 91.01,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 92.41,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 1.4,
+        "pnl_inr": 11676.14,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 92.41,
+        "circuit_limit": 90.83,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b911,676.14",
+        "summary": "Confirmed BUY generated +1.40 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1790593200-CRUDEOIL",
+      "date": "28 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "N/A",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
+      "suggestion_6pm": {
+        "status": "DIRECT_FADE",
+        "action_text": "SELL / FADE THE MOVE",
+        "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+        "reference_price": 96.54,
+        "stop_loss": 96.49,
+        "target": 92.41
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 96.54,
+        "action_taken": "Entered SELL 100 units @ \u20b996.54",
+        "detail": "Direct trade executed at 6:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 100,
+        "entry_price": 96.54,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 92.6,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 3.94,
+        "pnl_inr": 32899.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 92.6,
+        "circuit_limit": 96.11,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b932,899.00",
+        "summary": "Pre-6 PM fade captured +3.94 pts retracement to session close."
+      }
+    },
+    {
+      "id": "ADV-1790604000-SILVER",
+      "date": "28 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 30,
+      "event_context": "US Pit Open Lower Circuit Test (High Risk Extension)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "DO NOT KNIFE-CATCH! Wait for 6:15 PM candle close",
+        "rationale": "Silver exhibits 66.7% downward extension rate when testing lower circuits.",
+        "reference_price": 61.68,
+        "stop_loss": 61.31,
+        "target": 64.25
+      },
+      "check_615": {
+        "checked": true,
+        "status": "EXTENSION_CONFIRMED",
+        "price_615": 61.56,
+        "action_taken": "15-Min rule avoided false long! Entered SHORT 30 units on confirmed breakdown.",
+        "detail": "15-min candle closed below floor \u20b961.68. Counter-trend buy rejected; momentum short active."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 30,
+        "entry_price": 61.56,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 61.22,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.34,
+        "pnl_inr": 843.28,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 61.22,
+        "circuit_limit": 61.68,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705 (Avoided Trap)",
+        "pnl_display": "+\u20b9843.28",
+        "summary": "15-min rule protected against severe drawdown; captured +0.34 pts downside."
+      }
+    },
+    {
+      "id": "ADV-1790604000-GOLD",
+      "date": "28 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 1,
+      "event_context": "US Pit Open Lower Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 4191.56,
+        "stop_loss": 4174.79,
+        "target": 4321.2
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 4143.1,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 4143.1,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 4168.4,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 4168.4,
+        "circuit_limit": 4191.56,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1790618400-NATURALGAS",
+      "date": "28 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "US Pit Open Lower Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 3.0,
+        "stop_loss": 2.99,
+        "target": 3.2
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 2.97,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 2.97,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 3.0,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 3.0,
+        "circuit_limit": 3.0,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1790622000-NATURALGAS",
+      "date": "29 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "N/A",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
+      "suggestion_6pm": {
+        "status": "DIRECT_FADE",
+        "action_text": "SELL / FADE THE MOVE",
+        "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+        "reference_price": 3.16,
+        "stop_loss": 3.19,
+        "target": 3.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 3.16,
+        "action_taken": "Entered SELL 1250 units @ \u20b93.16",
+        "detail": "Direct trade executed at 6:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1250,
+        "entry_price": 3.16,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 3.01,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.15,
+        "pnl_inr": 15656.25,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 3.01,
+        "circuit_limit": 3.18,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b915,656.25",
+        "summary": "Pre-6 PM fade captured +0.15 pts retracement to session close."
+      }
+    },
+    {
+      "id": "ADV-1790704800-CRUDEOIL",
+      "date": "29 Sep 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 88.9,
+        "stop_loss": 88.54,
+        "target": 92.6
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 89.08,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 100 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 100,
+        "entry_price": 89.08,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 89.38,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.3,
+        "pnl_inr": 2523.37,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 89.38,
+        "circuit_limit": 88.9,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b92,523.37",
+        "summary": "Confirmed BUY generated +0.30 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1790874000-CRUDEOIL",
+      "date": "01 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Upper Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before SELLING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 94.04,
+        "stop_loss": 94.42,
+        "target": 90.42
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 93.85,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 100 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 100,
+        "entry_price": 93.85,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 92.87,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.98,
+        "pnl_inr": 8199.03,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 92.87,
+        "circuit_limit": 94.04,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b98,199.03",
+        "summary": "Confirmed SELL generated +0.98 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1790946000-CRUDEOIL",
+      "date": "02 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 89.16,
+        "stop_loss": 88.8,
+        "target": 92.87
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 89.34,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 100 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 100,
+        "entry_price": 89.34,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 91.11,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 1.77,
+        "pnl_inr": 14793.53,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 91.11,
+        "circuit_limit": 89.16,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b914,793.53",
+        "summary": "Confirmed BUY generated +1.77 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1791471600-CRUDEOIL",
+      "date": "08 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Upper Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before SELLING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 91.81,
+        "stop_loss": 92.18,
+        "target": 88.28
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 91.63,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 100 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 100,
+        "entry_price": 91.63,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 91.49,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.14,
+        "pnl_inr": 1138.77,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 91.49,
+        "circuit_limit": 91.81,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b91,138.77",
+        "summary": "Confirmed SELL generated +0.14 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1791914400-NATURALGAS",
+      "date": "13 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "US Pit Open Upper Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before SELLING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 3.36,
+        "stop_loss": 3.37,
+        "target": 3.17
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 3.35,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED SELL 1250 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1250,
+        "entry_price": 3.35,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 3.28,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.07,
+        "pnl_inr": 7648.6,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 3.28,
+        "circuit_limit": 3.36,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b97,648.60",
+        "summary": "Confirmed SELL generated +0.07 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1792000800-SILVER",
+      "date": "14 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 30,
+      "event_context": "US Pit Open Lower Circuit Test (High Risk Extension)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "DO NOT KNIFE-CATCH! Wait for 6:15 PM candle close",
+        "rationale": "Silver exhibits 66.7% downward extension rate when testing lower circuits.",
+        "reference_price": 56.79,
+        "stop_loss": 56.45,
+        "target": 59.16
+      },
+      "check_615": {
+        "checked": true,
+        "status": "EXTENSION_CONFIRMED",
+        "price_615": 56.68,
+        "action_taken": "15-Min rule avoided false long! Entered SHORT 30 units on confirmed breakdown.",
+        "detail": "15-min candle closed below floor \u20b956.79. Counter-trend buy rejected; momentum short active."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 30,
+        "entry_price": 56.68,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 55.55,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 1.13,
+        "pnl_inr": 2821.68,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 55.55,
+        "circuit_limit": 56.79,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705 (Avoided Trap)",
+        "pnl_display": "+\u20b92,821.68",
+        "summary": "15-min rule protected against severe drawdown; captured +1.13 pts downside."
+      }
+    },
+    {
+      "id": "ADV-1792080000-CRUDEOIL",
+      "date": "15 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Upper Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 98.89,
+        "stop_loss": 99.29,
+        "target": 95.09
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 98.32,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 98.32,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 97.97,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 97.97,
+        "circuit_limit": 98.89,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1792155600-NATURALGAS",
+      "date": "16 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 3.04,
+        "stop_loss": 3.03,
+        "target": 3.24
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 3.05,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 1250 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1250,
+        "entry_price": 3.05,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 3.12,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.07,
+        "pnl_inr": 7715.4,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 3.12,
+        "circuit_limit": 3.04,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b97,715.40",
+        "summary": "Confirmed BUY generated +0.07 pts into 11:30 PM settlement."
+      }
+    },
+    {
+      "id": "ADV-1792173600-CRUDEOIL",
+      "date": "16 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Upper Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 101.89,
+        "stop_loss": 102.3,
+        "target": 97.97
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 101.9,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 101.9,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 101.41,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 101.41,
+        "circuit_limit": 101.89,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1792494000-CRUDEOIL",
+      "date": "20 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "N/A",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
+      "suggestion_6pm": {
+        "status": "DIRECT_FADE",
+        "action_text": "SELL / FADE THE MOVE",
+        "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+        "reference_price": 110.48,
+        "stop_loss": 108.24,
+        "target": 103.66
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 110.48,
+        "action_taken": "Entered SELL 100 units @ \u20b9110.48",
+        "detail": "Direct trade executed at 6:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 100,
+        "entry_price": 110.48,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 101.79,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 8.69,
+        "pnl_inr": 72561.5,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 101.79,
+        "circuit_limit": 107.81,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b972,561.50",
+        "summary": "Pre-6 PM fade captured +8.69 pts retracement to session close."
+      }
+    },
+    {
+      "id": "ADV-1792598400-CRUDEOIL",
+      "date": "21 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "US Pit Open Lower Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 97.72,
+        "stop_loss": 97.33,
+        "target": 101.79
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 96.26,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 96.26,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 97.15,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 97.15,
+        "circuit_limit": 97.72,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1792605600-NATURALGAS",
+      "date": "21 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "US Pit Open Lower Limit Pressure",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "ENFORCE 15-MIN RULE. DO NOT FADE WITHOUT REJECTION",
+        "rationale": "Heavy institutional momentum at US open.",
+        "reference_price": 2.79,
+        "stop_loss": 2.78,
+        "target": 2.96
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_REVERSAL_STAND_ASIDE",
+        "price_615": 2.77,
+        "action_taken": "No rejection candle at 6:15 PM. STOOD ASIDE (Avoided False Fade).",
+        "detail": "Price remained pressed against limit. Counter-trend entry safely aborted."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 2.77,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 2.79,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 2.79,
+        "circuit_limit": 2.79,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Loss \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute rule successfully filtered out a losing counter-trend trade."
+      }
+    },
+    {
+      "id": "ADV-1792684800-SILVER",
+      "date": "22 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 30,
+      "event_context": "US Pit Open Lower Circuit Test (High Risk Extension)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "DO NOT KNIFE-CATCH! Wait for 6:15 PM candle close",
+        "rationale": "Silver exhibits 66.7% downward extension rate when testing lower circuits.",
+        "reference_price": 55.13,
+        "stop_loss": 54.8,
+        "target": 57.42
+      },
+      "check_615": {
+        "checked": true,
+        "status": "EXTENSION_CONFIRMED",
+        "price_615": 55.02,
+        "action_taken": "15-Min rule avoided false long! Entered SHORT 30 units on confirmed breakdown.",
+        "detail": "15-min candle closed below floor \u20b955.13. Counter-trend buy rejected; momentum short active."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 30,
+        "entry_price": 55.02,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 54.76,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.26,
+        "pnl_inr": 650.65,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 54.76,
+        "circuit_limit": 55.13,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705 (Avoided Trap)",
+        "pnl_display": "+\u20b9650.65",
+        "summary": "15-min rule protected against severe drawdown; captured +0.26 pts downside."
+      }
+    },
+    {
+      "id": "ADV-1792692000-GOLD",
+      "date": "22 Oct 2026",
+      "time_6pm": "06:00 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 1,
+      "event_context": "US Pit Open Lower Circuit Test",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "Wait for 6:15 PM candle before BUYING rebound",
+        "rationale": "High NYMEX/COMEX open volume. Verify limit holds.",
+        "reference_price": 4025.5,
+        "stop_loss": 4009.4,
+        "target": 4150.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "REVERSAL_CONFIRMED",
+        "price_615": 4033.55,
+        "action_taken": "Reversal confirmed at 6:15 PM. ENTERED BUY 1 units.",
+        "detail": "Limit barrier held on 15-min candle. Counter-trend position entered."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1,
+        "entry_price": 4033.55,
+        "entry_time": "06:15 PM IST",
+        "exit_price": 4060.4,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 26.85,
+        "pnl_inr": 26.85,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 4060.4,
+        "circuit_limit": 4025.5,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b926.85",
+        "summary": "Confirmed BUY generated +26.85 pts into 11:30 PM settlement."
+      }
+    }
+  ],
+  "last_updated": "24 Oct 2026, 09:06 AM IST",
+  "account_email": "venu.photos1@gmail.com",
+  "summary": {
+    "total_signals": 50,
+    "evaluated_count": 50,
+    "correct_count": 49,
+    "wrong_count": 1,
+    "win_rate_pct": 98.0,
+    "total_pnl_inr": 388699.4,
+    "avg_trade_pnl_inr": 7773.99,
+    "active_trades_count": 0
+  }
+}
