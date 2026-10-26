@@ -728,30 +728,213 @@ body.light-theme .market-table th {
         font-size: 0.825rem !important;
     }
     
-    /* Pin the first column (Commodity / Date) so it stays visible while scrolling horizontally */
+    /* Allow smooth table scroll without frozen column blocking half the screen */
     .market-table th:first-child,
     .market-table td:first-child {
-        position: sticky !important;
-        left: 0 !important;
-        z-index: 10 !important;
-        background: #0f172a !important;
-        box-shadow: 3px 0 10px rgba(0, 0, 0, 0.45);
+        position: static !important;
+        box-shadow: none !important;
+    }
+
+    /* Mobile Trading Cards Architecture */
+    .view-toggle-bar {
+        display: flex !important;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
     }
     
-    body.light-theme .market-table th:first-child,
-    body.light-theme .market-table td:first-child {
-        background: #ffffff !important;
-        box-shadow: 3px 0 10px rgba(0, 0, 0, 0.08);
+    .view-toggle-pill {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: var(--text-secondary);
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
     }
     
-    .market-table th:first-child {
-        z-index: 50 !important;
+    .view-toggle-pill.active {
+        background: rgba(99, 102, 241, 0.25) !important;
+        border-color: #818cf8 !important;
+        color: #f8fafc !important;
+    }
+
+    /* By default on mobile, hide the wide desktop tables and show native cards */
+    body:not(.force-table-view) .desktop-table-view {
+        display: none !important;
+    }
+    
+    body:not(.force-table-view) .mobile-cards-feed {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.85rem !important;
+    }
+
+    body.force-table-view .desktop-table-view {
+        display: block !important;
+    }
+    
+    body.force-table-view .mobile-cards-feed {
+        display: none !important;
+    }
+
+    .mobile-trading-card {
+        background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 14px !important;
+        padding: 0.95rem !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.7rem !important;
+    }
+
+    .mobile-card-top {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+    }
+
+    .mobile-card-title-group {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+    }
+
+    .mobile-card-asset-name {
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
+        color: #f8fafc !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .mobile-card-meta {
+        font-size: 0.75rem !important;
+        color: #94a3b8 !important;
+    }
+
+    .mobile-card-badges {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        gap: 4px !important;
+    }
+
+    .mobile-card-rec-box {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 8px !important;
+        padding: 0.55rem 0.7rem !important;
+    }
+
+    .mobile-card-rec-label {
+        font-size: 0.68rem !important;
+        text-transform: uppercase !important;
+        color: #94a3b8 !important;
+        font-weight: 700 !important;
+        margin-bottom: 2px !important;
+    }
+
+    .mobile-card-rec-action {
+        font-size: 0.92rem !important;
+        font-weight: 700 !important;
+        color: #f1f5f9 !important;
+    }
+
+    .mobile-card-grid-2 {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.5rem !important;
+    }
+
+    .mobile-card-grid-3 {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 0.45rem !important;
+    }
+
+    .mobile-cell-item {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+        background: rgba(0, 0, 0, 0.2) !important;
+        padding: 0.45rem 0.6rem !important;
+        border-radius: 6px !important;
+        border: 1px solid rgba(255, 255, 255, 0.04) !important;
+    }
+
+    .mobile-cell-label {
+        font-size: 0.65rem !important;
+        color: #94a3b8 !important;
+        text-transform: uppercase !important;
+        font-weight: 600 !important;
+    }
+
+    .mobile-cell-val {
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        color: #f8fafc !important;
+    }
+
+    .mobile-card-bottom {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding-top: 0.5rem !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .paper-net-worth-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.75rem !important;
+    }
+
+    .paper-net-worth-actions {
+        width: 100% !important;
+        display: flex !important;
+        gap: 0.5rem !important;
+    }
+
+    .paper-net-worth-actions button {
+        flex: 1 !important;
+        text-align: center !important;
+        justify-content: center !important;
+        padding: 8px 12px !important;
+    }
+
+    .paper-metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
     }
     
     #chat-widget-window {
         width: calc(100vw - 30px) !important;
         right: 0 !important;
         bottom: 70px !important;
+    }
+}
+
+/* Desktop Displays: Hide mobile cards, display tables */
+@media (min-width: 769px) {
+    .mobile-cards-feed {
+        display: none !important;
+    }
+    .desktop-table-view {
+        display: block !important;
+    }
+    .view-toggle-bar {
+        display: none !important;
     }
 }
 
