@@ -489,35 +489,50 @@ def generate_and_send_8pm_advisory(force=False):
 
         if 'LOCKED' in status or 'HIT' in status or 'NEAR' in status:
             direction = 'LOWER' if 'LOWER' in status else 'UPPER'
-            action = "BUY" if direction == 'LOWER' else "SELL"
+            action = "BUY / BOUNCE THE FLOOR" if direction == 'LOWER' else "SELL / SHORT THE CEILING"
             sl = round(lc_price * 0.996 if direction == 'LOWER' else uc_price * 1.004, 2)
             action_items.append(
-                f"⚠️ <b>{name.upper()} (Evening Circuit Pressure)</b>\n"
-                f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}% | Status: {status})\n"
-                f"  • Action: Enforce circuit discipline. Auto-exit before 11:30 PM settlement.\n"
-                f"  • Stop-Loss: ₹{sl:,.2f} | Anchor: ₹{p_close:,.2f}"
+                f"⚡ <b>{name.upper()} (Evening Circuit Band Test)</b>\n"
+                f"  • Live Price: ₹{cur_p:,.2f} ({chg_pct:+.2f}% | Status: {status})\n"
+                f"  • Recommended Action: <b>{action}</b>\n"
+                f"  • Strategy: Mean-reversion fade against the {direction.lower()} circuit limit.\n"
+                f"  • Strict Stop-Loss: ₹{sl:,.2f} | Profit Target: ₹{p_close:,.2f} (Settlement Anchor)\n"
+                f"  • Hard Exit: Auto-close before 11:30 PM IST MCX settlement."
             )
         elif abs(chg_pct) >= 1.5:
+            direction_bias = "LONG / BUY" if chg_pct > 0 else "SHORT / SELL"
             action_items.append(
                 f"🚀 <b>{name.upper()} (Evening Trend Runner: {chg_pct:+.2f}%)</b>\n"
-                f"  • Live: ₹{cur_p:,.2f}\n"
-                f"  • High US session volume active. Trail stop-loss at 50% of evening gain into 11:30 PM exit."
+                f"  • Live Price: ₹{cur_p:,.2f}\n"
+                f"  • Recommended Action: <b>RIDE MOMENTUM ({direction_bias})</b>\n"
+                f"  • Strategy: Trail stop-loss at 50% of evening gain into 11:30 PM exit. Do not hold overnight."
+            )
+        else:
+            action_items.append(
+                f"🛡️ <b>{name.upper()} (Normal Safe Range: {chg_pct:+.2f}%)</b>\n"
+                f"  • Live Price: ₹{cur_p:,.2f} (Floor: ₹{lc_price:,.2f} | Ceiling: ₹{uc_price:,.2f})\n"
+                f"  • Recommended Action: <b>STAND ASIDE / NO TRADE</b>\n"
+                f"  • Strategy: Zero statistical circuit edge; preserve 100% capital in virtual cash."
             )
 
     overview_lines = [f"• <b>{c['name']}</b>: ₹{c['current_price']:,.2f} ({c['change_pct']:+.2f}%) | {c['status_text']}" for c in commodities_list]
     overview_text = "\n".join(overview_lines)
-    action_text = "\n\n".join(action_items) if action_items else "🟢 All commodities trading in steady mid-day ranges. No high-deviation setups active."
+    action_text = "\n\n".join(action_items)
 
-    subject = f"🎯 [8:00 PM IST ADVISORY] US Evening & EIA Inventory Playbook ({day_name})"
+    is_eia_day = day_name in ['Wednesday', 'Thursday']
+    eia_context_note = "1. <b>Inventory Knee-Jerk Filter</b>: Never enter during the exact 8:00 PM second. Wait for 8:10 PM stabilization." if is_eia_day else "1. <b>US Mid-Day Momentum Rule</b>: Trade only confirmed breakout runners or circuit band tests. Avoid mid-range chop."
+    session_title = f"EIA Inventory Special & US Evening Playbook ({day_name})" if is_eia_day else f"US Evening Pit & Mid-Day Momentum Playbook ({day_name})"
+
+    subject = f"🎯 [8:00 PM IST ADVISORY] {session_title}"
     body = (
-        f"🎯 <b>DAILY 8:00 PM IST US EVENING & EIA ADVISORY</b>\n"
+        f"🎯 <b>DAILY 8:00 PM IST ACTION ADVISORY</b>\n"
         f"📅 <i>{today_time_ist}</i>\n\n"
         f"<b>📊 LIVE COMMODITY STATUS AT 8:00 PM IST:</b>\n"
         f"{overview_text}\n\n"
-        f"<b>⚡ HIGH-PROBABILITY ACTION PLAYBOOK:</b>\n"
+        f"<b>⚡ ACTION PLAYBOOK & RECOMMENDATIONS:</b>\n"
         f"{action_text}\n\n"
         f"<b>🛡️ RISK MANAGEMENT & EXECUTION RULES:</b>\n"
-        f"1. <b>Inventory Knee-Jerk Filter</b>: Never enter during the exact 8:00 PM second. Wait for 8:10 PM stabilization.\n"
+        f"{eia_context_note}\n"
         f"2. <b>Hard 11:30 PM Exit</b>: All intraday positions close at 11:30 PM IST before MCX settlement.\n\n"
         f"🌐 <b>Live Interactive Dashboard</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
     )
