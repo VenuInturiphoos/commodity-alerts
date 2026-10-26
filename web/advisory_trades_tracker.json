@@ -1,6 +1,55 @@
 {
   "trades": [
     {
+      "id": "ADV-27Oct2026-1800-NATURALGAS",
+      "date": "27 Oct 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "US Pit Open Lower Circuit Test (15-Min Rule Enforced)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering BUY",
+        "rationale": "High institutional volume at US open. Must confirm limit barrier holds.",
+        "reference_price": 248.4,
+        "stop_loss": 236.31,
+        "target": 252.4
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close verification...",
+        "detail": "Action will be triggered dynamically at 6:15 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1250,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "PENDING_615"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 237.26,
+        "outcome": "PENDING",
+        "badge": "Awaiting 6:15 PM \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "15-minute confirmation check scheduled for 6:15 PM IST."
+      }
+    },
+    {
       "id": "ADV-26Oct2026-2000-NATURALGAS",
       "date": "26 Oct 2026",
       "session_name": "Evening Pit Review (8:00 PM)",
@@ -289,11 +338,11 @@
       }
     }
   ],
-  "last_updated": "26 Oct 2026, 11:16 PM IST",
+  "last_updated": "27 Oct 2026, 01:35 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
-    "total_signals": 6,
+    "total_signals": 7,
     "executed_count": 5,
     "correct_count": 4,
     "wrong_count": 1,
@@ -301,7 +350,7 @@
     "win_rate_pct": 80.0,
     "total_pnl_inr": 20911.25,
     "avg_trade_pnl_inr": 4182.25,
-    "active_trades_count": 0,
+    "active_trades_count": 1,
     "starting_cash_inr": 1000000.0,
     "current_cash_inr": 1020911.25,
     "used_margin_inr": 0,
