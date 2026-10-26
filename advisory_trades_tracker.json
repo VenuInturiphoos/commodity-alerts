@@ -1,6 +1,251 @@
 {
   "trades": [
     {
+      "id": "ADV-27Oct2026-1800-NATURALGAS",
+      "date": "27 Oct 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "US Pit Open Lower Circuit Test (15-Min Rule Enforced)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering BUY",
+        "rationale": "High institutional volume at US open. Must confirm limit barrier holds.",
+        "reference_price": 248.4,
+        "stop_loss": 236.31,
+        "target": 252.4
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close verification...",
+        "detail": "Action will be triggered dynamically at 6:15 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1250,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "PENDING_615"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 237.26,
+        "outcome": "PENDING",
+        "badge": "Awaiting 6:15 PM \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "15-minute confirmation check scheduled for 6:15 PM IST."
+      }
+    },
+    {
+      "id": "ADV-26Oct2026-2000-NATURALGAS",
+      "date": "26 Oct 2026",
+      "session_name": "Evening Pit Review (8:00 PM)",
+      "time_trigger": "08:00 PM IST",
+      "time_6pm": "08:00 PM IST",
+      "time_validation": "08:15 PM IST",
+      "time_615": "08:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "US Evening Lower Circuit Band Test",
+      "suggestion_6pm": {
+        "status": "EVENING_CIRCUIT",
+        "action_text": "BUY / EVENING CIRCUIT PLAY",
+        "rationale": "High evening liquidity test against circuit boundary.",
+        "reference_price": 243.3,
+        "stop_loss": 236.31,
+        "target": 252.4
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 243.3,
+        "action_taken": "Entered BUY 1250 units @ \u20b9243.30",
+        "detail": "Entered at 8:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1250,
+        "entry_price": 243.3,
+        "entry_time": "08:00 PM IST",
+        "exit_price": 249.6,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 6.3,
+        "pnl_inr": 7875.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 249.6,
+        "circuit_limit": 237.26,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b97,875.00",
+        "summary": "11:30 PM session close exit. Entry: \u20b9243.30 -> Exit: \u20b9249.60 (+6.30 pts | +\u20b97,875.00)."
+      }
+    },
+    {
+      "id": "ADV-26Oct2026-1800-NATURALGAS",
+      "date": "26 Oct 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "N/A",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
+      "suggestion_6pm": {
+        "status": "DIRECT_FADE",
+        "action_text": "SELL / FADE THE MOVE",
+        "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+        "reference_price": 241.6,
+        "stop_loss": 268.61,
+        "target": 252.4
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 241.6,
+        "action_taken": "Entered SELL 1250 units @ \u20b9241.60",
+        "detail": "Direct trade executed at 6:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1250,
+        "entry_price": 241.6,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 249.6,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": -8.0,
+        "pnl_inr": -10000.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 249.6,
+        "circuit_limit": 267.54,
+        "outcome": "WRONG",
+        "badge": "Wrong \u274c",
+        "pnl_display": "\u20b9-10,000.00",
+        "summary": "11:30 PM session close exit. Entry: \u20b9241.60 -> Exit: \u20b9249.60 (-8.00 pts | \u20b9-10,000.00)."
+      }
+    },
+    {
+      "id": "ADV-26Oct2026-1330-GOLD",
+      "date": "26 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 10,
+      "event_context": "London / European Open Asian Range Breakout",
+      "suggestion_6pm": {
+        "status": "LONDON_BREAKOUT",
+        "action_text": "BUY / LONDON BREAKOUT",
+        "rationale": "European open volume breaking above morning Asian range [\u20b9142,132.00 \u2013 \u20b9142,888.00].",
+        "reference_price": 142734.0,
+        "stop_loss": 142510.0,
+        "target": 143795.2
+      },
+      "check_615": {
+        "checked": true,
+        "status": "BREAKOUT_ENTERED",
+        "price_615": 142734.0,
+        "action_taken": "Entered BUY 10 units @ \u20b9142,734.00",
+        "detail": "London breakout confirmed outside Asian morning range."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 10,
+        "entry_price": 142734.0,
+        "entry_time": "01:30 PM IST",
+        "exit_price": 143002.0,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 268.0,
+        "pnl_inr": 2680.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 143002.0,
+        "circuit_limit": null,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b92,680.00",
+        "summary": "11:30 PM session close exit. Entry: \u20b9142,734.00 -> Exit: \u20b9143,002.00 (+268.00 pts | +\u20b92,680.00)."
+      }
+    },
+    {
+      "id": "ADV-26Oct2026-1330-COPPER",
+      "date": "26 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPER",
+      "name": "Copper",
+      "lot_size": 2500,
+      "event_context": "London / European Open Asian Range Breakout",
+      "suggestion_6pm": {
+        "status": "LONDON_BREAKOUT",
+        "action_text": "BUY / LONDON BREAKOUT",
+        "rationale": "European open volume breaking above morning Asian range [\u20b91,377.50 \u2013 \u20b91,389.45].",
+        "reference_price": 1389.25,
+        "stop_loss": 1383.47,
+        "target": 1403.79
+      },
+      "check_615": {
+        "checked": true,
+        "status": "BREAKOUT_ENTERED",
+        "price_615": 1389.25,
+        "action_taken": "Entered BUY 2500 units @ \u20b91,389.25",
+        "detail": "London breakout confirmed outside Asian morning range."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 2500,
+        "entry_price": 1389.25,
+        "entry_time": "01:30 PM IST",
+        "exit_price": 1392.8,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 3.55,
+        "pnl_inr": 8875.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": 1392.8,
+        "circuit_limit": null,
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b98,875.00",
+        "summary": "11:30 PM session close exit. Entry: \u20b91,389.25 -> Exit: \u20b91,392.80 (+3.55 pts | +\u20b98,875.00)."
+      }
+    },
+    {
       "id": "ADV-20261023-NATURALGAS",
       "date": "23 Oct 2026",
       "time_6pm": "06:00 PM IST",
@@ -93,23 +338,23 @@
       }
     }
   ],
-  "last_updated": "26 Oct 2026, 10:35 AM IST",
+  "last_updated": "27 Oct 2026, 01:35 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
-    "total_signals": 2,
-    "executed_count": 1,
-    "correct_count": 1,
-    "wrong_count": 0,
+    "total_signals": 7,
+    "executed_count": 5,
+    "correct_count": 4,
+    "wrong_count": 1,
     "protected_count": 1,
-    "win_rate_pct": 100.0,
-    "total_pnl_inr": 11481.25,
-    "avg_trade_pnl_inr": 11481.25,
-    "active_trades_count": 0,
+    "win_rate_pct": 80.0,
+    "total_pnl_inr": 20911.25,
+    "avg_trade_pnl_inr": 4182.25,
+    "active_trades_count": 1,
     "starting_cash_inr": 1000000.0,
-    "current_cash_inr": 1011481.25,
+    "current_cash_inr": 1020911.25,
     "used_margin_inr": 0,
-    "available_cash_inr": 1011481.25,
-    "net_worth_inr": 1011481.25
+    "available_cash_inr": 1020911.25,
+    "net_worth_inr": 1020911.25
   }
 }
