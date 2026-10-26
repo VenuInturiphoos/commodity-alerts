@@ -3339,8 +3339,16 @@ async function loadAdvisoryTracker() {
     if (timeEl) timeEl.textContent = 'Syncing...';
 
     try {
-        const res = await fetch('advisory_trades_tracker.json?t=' + Date.now());
-        if (!res.ok) throw new Error("Status " + res.status);
+        let res = null;
+        const rawUrl = 'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_tracker.json?t=' + Date.now();
+        try {
+            res = await fetch(rawUrl, { cache: 'no-store' });
+            if (!res.ok) throw new Error("Raw fetch returned " + res.status);
+        } catch (rawErr) {
+            console.log("Falling back to local tracker URL:", rawErr.message);
+            res = await fetch('advisory_trades_tracker.json?t=' + Date.now(), { cache: 'no-store' });
+        }
+        if (!res || !res.ok) throw new Error("Status " + (res ? res.status : 'failed'));
         advisoryTrackerData = await res.json();
         
         // Update summary KPI cards
