@@ -617,8 +617,14 @@
                         </div>
                     </div>
 
-                    <!-- Tracker Table -->
-                    <div class="table-container glass-card full-width" style="margin-bottom: 0.5rem; overflow-x: auto;">
+                    <!-- Mobile View Switcher (Cards vs Table) -->
+                    <div class="view-toggle-bar">
+                        <button class="view-toggle-pill active" data-mode="cards" onclick="setMobileViewMode('cards')"><i class="fa-solid fa-mobile-screen"></i> Cards View</button>
+                        <button class="view-toggle-pill" data-mode="table" onclick="setMobileViewMode('table')"><i class="fa-solid fa-table"></i> Table</button>
+                    </div>
+
+                    <!-- Tracker Table (Desktop) -->
+                    <div class="table-container glass-card full-width desktop-table-view" style="margin-bottom: 0.5rem; overflow-x: auto;">
                         <table class="market-table">
                             <thead>
                                 <tr>
@@ -637,6 +643,11 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Dedicated Native Mobile Cards Feed (Mobile View) -->
+                    <div id="advisory-cards-feed" class="mobile-cards-feed" style="margin-bottom: 1.5rem;">
+                        <div class="loading" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading advisory cards...</div>
+                    </div>
                 </div>
             </div>
 
@@ -649,12 +660,12 @@
                 <div id="trade-dashboard-content" style="display: none; width: 100%;">
                     <!-- Paper Trading Dashboard -->
                     <div class="glass-card full-width" style="margin-bottom: 2rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div class="paper-net-worth-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div>
                                 <h3 style="margin: 0; color: var(--text-secondary); font-size: 1rem;">Net Worth</h3>
                                 <h1 id="virtual-net-worth" style="margin: 0.5rem 0 0 0; font-size: 2.5rem; color: #4ade80;">₹...</h1>
                             </div>
-                            <div style="display: flex; gap: 1rem;">
+                            <div class="paper-net-worth-actions" style="display: flex; gap: 1rem;">
                                 <button onclick="editVirtualBalance()" style="background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.3); color: var(--text-primary); padding: 6px 12px; border-radius: 4px; cursor: pointer;">
                                     <i class="fa-solid fa-pen-to-square"></i> Edit Cash
                                 </button>
@@ -664,7 +675,7 @@
                             </div>
                         </div>
                         
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                        <div class="paper-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                             <div>
                                 <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Available Margin</h4>
                                 <p id="virtual-available-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
@@ -686,102 +697,137 @@
 
                     <!-- Portfolio Holdings -->
                     <div style="margin-bottom: 2rem;">
-                        <h2 style="margin-bottom: 1rem;">Your Portfolio</h2>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h2 style="margin: 0;">Your Portfolio</h2>
+                            <div class="view-toggle-bar" style="margin-bottom: 0;">
+                                <button class="view-toggle-pill active" data-mode="cards" onclick="setMobileViewMode('cards')"><i class="fa-solid fa-mobile-screen"></i> Cards</button>
+                                <button class="view-toggle-pill" data-mode="table" onclick="setMobileViewMode('table')"><i class="fa-solid fa-table"></i> Table</button>
+                            </div>
+                        </div>
+
+                        <!-- Stocks Portfolio -->
                         <div class="table-container glass-card full-width" style="margin-bottom: 1rem;">
-                            <h3 style="color: var(--text-secondary); font-size: 1.1rem;"><i class="fa-solid fa-chart-line" style="color:#60a5fa; margin-right:8px;"></i> Stocks</h3>
-                            <table class="market-table">
-                                <thead>
-                                    <tr>
-                                        <th>Asset</th>
-                                        <th>Shares</th>
-                                        <th>Avg Price</th>
-                                        <th>Current Price</th>
-                                        <th>Total Value</th>
-                                        <th>P&L</th>
-                                        <th style="text-align: right;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="portfolio-stocks-body">
-                                    <tr><td colspan="6" class="loading">Loading portfolio...</td></tr>
-                                </tbody>
-                            </table>
+                            <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-chart-line" style="color:#60a5fa; margin-right:8px;"></i> Stocks</h3>
+                            <div class="desktop-table-view">
+                                <table class="market-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Asset</th>
+                                            <th>Shares</th>
+                                            <th>Avg Price</th>
+                                            <th>Current Price</th>
+                                            <th>Total Value</th>
+                                            <th>P&L</th>
+                                            <th style="text-align: right;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="portfolio-stocks-body">
+                                        <tr><td colspan="7" class="loading">Loading portfolio...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="portfolio-stocks-cards" class="mobile-cards-feed">
+                                <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">No active stock holdings.</div>
+                            </div>
                         </div>
                         
+                        <!-- Commodities Portfolio -->
                         <div class="table-container glass-card full-width">
-                            <h3 style="color: var(--text-secondary); font-size: 1.1rem;"><i class="fa-solid fa-oil-well" style="color:#f59e0b; margin-right:8px;"></i> Commodities</h3>
-                            <table class="market-table">
-                                <thead>
-                                    <tr>
-                                        <th>Asset</th>
-                                        <th>Quantity</th>
-                                        <th>Avg Price</th>
-                                        <th>Current Price</th>
-                                        <th>Total Value</th>
-                                        <th>P&L</th>
-                                        <th style="text-align: right;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="portfolio-commodities-body">
-                                    <tr><td colspan="6" class="loading">Loading portfolio...</td></tr>
-                                </tbody>
-                            </table>
+                            <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-oil-well" style="color:#f59e0b; margin-right:8px;"></i> Commodities</h3>
+                            <div class="desktop-table-view">
+                                <table class="market-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Asset</th>
+                                            <th>Quantity</th>
+                                            <th>Avg Price</th>
+                                            <th>Current Price</th>
+                                            <th>Total Value</th>
+                                            <th>P&L</th>
+                                            <th style="text-align: right;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="portfolio-commodities-body">
+                                        <tr><td colspan="7" class="loading">Loading portfolio...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="portfolio-commodities-cards" class="mobile-cards-feed">
+                                <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">No active commodity holdings.</div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Pending Orders -->
                     <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--text-secondary); font-size: 1.1rem;"><i class="fa-solid fa-clock" style="color:#a855f7; margin-right:8px;"></i> Pending Limit Orders</h3>
-                        <table class="market-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Asset</th>
-                                    <th>Type</th>
-                                    <th>Quantity</th>
-                                    <th>Limit Price</th>
-                                    <th>Total Value</th>
-                                    <th style="text-align: right;">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pending-orders-body">
-                                <tr><td colspan="7" class="loading">Loading pending orders...</td></tr>
-                            </tbody>
-                        </table>
+                        <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-clock" style="color:#a855f7; margin-right:8px;"></i> Pending Limit Orders</h3>
+                        <div class="desktop-table-view">
+                            <table class="market-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Asset</th>
+                                        <th>Type</th>
+                                        <th>Quantity</th>
+                                        <th>Limit Price</th>
+                                        <th>Total Value</th>
+                                        <th style="text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pending-orders-body">
+                                    <tr><td colspan="7" class="loading">Loading pending orders...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="pending-orders-cards" class="mobile-cards-feed">
+                            <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">No pending limit or stop orders.</div>
+                        </div>
                     </div>
+
                     <!-- Trading Terminal -->
                     <div style="margin-bottom: 2rem;">
                         <h2 style="margin-bottom: 1rem;">Trade Assets</h2>
                         <div class="table-container glass-card full-width" style="margin-bottom: 1rem;">
-                            <h3 style="color: var(--text-secondary); font-size: 1.1rem;"><i class="fa-solid fa-chart-line" style="color:#60a5fa; margin-right:8px;"></i> Stocks</h3>
-                            <table class="market-table">
-                                <thead>
-                                    <tr>
-                                        <th>Asset</th>
-                                        <th>Type</th>
-                                        <th>Live Price</th>
-                                        <th style="text-align: right;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="trade-market-stocks-body">
-                                    <tr><td colspan="4" class="loading">Loading market data...</td></tr>
-                                </tbody>
-                            </table>
+                            <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-chart-line" style="color:#60a5fa; margin-right:8px;"></i> Stocks</h3>
+                            <div class="desktop-table-view">
+                                <table class="market-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Asset</th>
+                                            <th>Type</th>
+                                            <th>Live Price</th>
+                                            <th style="text-align: right;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="trade-market-stocks-body">
+                                        <tr><td colspan="4" class="loading">Loading market data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="trade-market-stocks-cards" class="mobile-cards-feed">
+                                <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">Loading market stocks...</div>
+                            </div>
                         </div>
                         <div class="table-container glass-card full-width">
-                            <h3 style="color: var(--text-secondary); font-size: 1.1rem;"><i class="fa-solid fa-oil-well" style="color:#f59e0b; margin-right:8px;"></i> Commodities</h3>
-                            <table class="market-table">
-                                <thead>
-                                    <tr>
-                                        <th>Asset</th>
-                                        <th>Type</th>
-                                        <th>Live Price</th>
-                                        <th style="text-align: right;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="trade-market-commodities-body">
-                                    <tr><td colspan="4" class="loading">Loading market data...</td></tr>
-                                </tbody>
-                            </table>
+                            <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-oil-well" style="color:#f59e0b; margin-right:8px;"></i> Commodities</h3>
+                            <div class="desktop-table-view">
+                                <table class="market-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Asset</th>
+                                            <th>Type</th>
+                                            <th>Live Price</th>
+                                            <th style="text-align: right;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="trade-market-commodities-body">
+                                        <tr><td colspan="4" class="loading">Loading market data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="trade-market-commodities-cards" class="mobile-cards-feed">
+                                <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">Loading market commodities...</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2623,6 +2669,8 @@ async function fetchPaperTradingData(user) {
 function renderPortfolio() {
     const tbodyStocks = document.getElementById('portfolio-stocks-body');
     const tbodyCommodities = document.getElementById('portfolio-commodities-body');
+    const cardsStocks = document.getElementById('portfolio-stocks-cards');
+    const cardsCommodities = document.getElementById('portfolio-commodities-cards');
     if (!tbodyStocks || !tbodyCommodities) return;
     
     let totalInvested = 0;
@@ -2631,6 +2679,8 @@ function renderPortfolio() {
     
     const stockRows = [];
     const commodityRows = [];
+    const stockCards = [];
+    const commodityCards = [];
     
     for (const [symbol, data] of Object.entries(userPortfolio)) {
         if (data.shares === 0) continue;
@@ -2671,10 +2721,52 @@ function renderPortfolio() {
             </tr>
         `;
 
-        if (marketItem && marketItem.asset_type.includes('Commodity')) {
+        const isCommodity = marketItem && marketItem.asset_type && marketItem.asset_type.includes('Commodity');
+        const cardHtml = `
+            <div class="mobile-trading-card">
+                <div class="mobile-card-top">
+                    <div class="mobile-card-title-group">
+                        <div class="mobile-card-asset-name">
+                            <span>${marketItem ? marketItem.name : symbol}</span>
+                            <span style="font-size:0.75rem; color:#94a3b8; font-weight:400;">(${symbol})</span>
+                        </div>
+                        <div class="mobile-card-meta">${isLong ? '<span style="color:#4ade80; font-weight:700;">🟢 LONG</span>' : '<span style="color:#fb7185; font-weight:700;">🔴 SHORT</span>'} · ${absShares} ${isCommodity ? 'Lots/Units' : 'Shares'}</div>
+                    </div>
+                    <div>
+                        <button class="trade-btn sell-btn btn-small" onclick="exitPosition('${symbol}', '${marketItem ? marketItem.name : symbol}', ${currentPrice}, ${absShares}, ${isLong})" style="padding: 6px 14px; font-size: 0.82rem;">Exit</button>
+                    </div>
+                </div>
+
+                <div class="mobile-card-grid-3">
+                    <div class="mobile-cell-item">
+                        <span class="mobile-cell-label">Avg Price</span>
+                        <span class="mobile-cell-val">₹${avgPrice.toFixed(2)}</span>
+                    </div>
+                    <div class="mobile-cell-item">
+                        <span class="mobile-cell-label">Live Price</span>
+                        <span class="mobile-cell-val">₹${currentPrice.toFixed(2)}</span>
+                    </div>
+                    <div class="mobile-cell-item">
+                        <span class="mobile-cell-label">Total Value</span>
+                        <span class="mobile-cell-val">₹${currentValue.toLocaleString('en-IN', {maximumFractionDigits:0})}</span>
+                    </div>
+                </div>
+
+                <div class="mobile-card-bottom" style="margin-top: 2px;">
+                    <span style="font-size:0.75rem; color:#94a3b8; font-weight:600;">Unrealized P&L:</span>
+                    <span style="color:${color}; font-weight:800; font-size:1rem;">
+                        ${sign}₹${pl.toFixed(2)} <span style="font-size:0.8rem; font-weight:600;">(${sign}${plPercent.toFixed(2)}%)</span>
+                    </span>
+                </div>
+            </div>
+        `;
+
+        if (isCommodity) {
             commodityRows.push(rowHtml);
+            commodityCards.push(cardHtml);
         } else {
             stockRows.push(rowHtml);
+            stockCards.push(cardHtml);
         }
     }
     
@@ -2685,6 +2777,17 @@ function renderPortfolio() {
     tbodyCommodities.innerHTML = commodityRows.length > 0 
         ? commodityRows.join('') 
         : `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No active commodity holdings.</td></tr>`;
+
+    if (cardsStocks) {
+        cardsStocks.innerHTML = stockCards.length > 0
+            ? stockCards.join('')
+            : `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No active stock holdings.</div>`;
+    }
+    if (cardsCommodities) {
+        cardsCommodities.innerHTML = commodityCards.length > 0
+            ? commodityCards.join('')
+            : `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No active commodity holdings.</div>`;
+    }
 
     // Update Summary Dashboard (Asset-specific F&O Margin Logic)
     let pendingMarginLocked = 0;
@@ -2746,12 +2849,14 @@ window.cancelPendingOrder = async function(orderId) {
 
 function renderPendingOrders(orders) {
     const tbody = document.getElementById('pending-orders-body');
+    const cardsFeed = document.getElementById('pending-orders-cards');
     if (!tbody) return;
     
     const activeOrders = (orders || []).filter(o => o.status === 'PENDING' || o.status === 'PENDING_STOP');
 
     if (activeOrders.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No pending limit or stop orders.</td></tr>`;
+        if (cardsFeed) cardsFeed.innerHTML = `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No pending limit or stop orders.</div>`;
         return;
     }
 
@@ -2783,6 +2888,55 @@ function renderPendingOrders(orders) {
             </tr>
         `;
     }).join('');
+
+    if (cardsFeed) {
+        cardsFeed.innerHTML = activeOrders.map(tx => {
+            const date = new Date(tx.created_at).toLocaleString('en-IN', { 
+                month: 'short', day: 'numeric', 
+                hour: '2-digit', minute:'2-digit' 
+            });
+            const marketItem = marketData.find(item => item.symbol === tx.symbol);
+            const name = marketItem ? marketItem.name : tx.symbol;
+            const totalValue = tx.quantity * tx.limit_price;
+            const color = tx.transaction_type === 'BUY' ? '#4ade80' : '#fb7185';
+            const orderTypeLabel = tx.status === 'PENDING_STOP' ? `Stop Loss (${tx.transaction_type})` : `Limit (${tx.transaction_type})`;
+
+            return `
+                <div class="mobile-trading-card">
+                    <div class="mobile-card-top">
+                        <div class="mobile-card-title-group">
+                            <div class="mobile-card-asset-name">
+                                <span>${name}</span>
+                                <span style="font-size:0.75rem; color:#94a3b8; font-weight:400;">(${tx.symbol})</span>
+                            </div>
+                            <div class="mobile-card-meta">${date}</div>
+                        </div>
+                        <span style="font-size:0.78rem; font-weight:700; color:${color}; border:1px solid ${color}; padding:2px 8px; border-radius:6px; background:${tx.transaction_type === 'BUY' ? 'rgba(74,222,128,0.1)' : 'rgba(251,113,133,0.1)'};">${orderTypeLabel}</span>
+                    </div>
+
+                    <div class="mobile-card-grid-3">
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Qty</span>
+                            <span class="mobile-cell-val">${tx.quantity.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Limit Price</span>
+                            <span class="mobile-cell-val">₹${parseFloat(tx.limit_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        </div>
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Total Value</span>
+                            <span class="mobile-cell-val">₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        </div>
+                    </div>
+
+                    <div class="mobile-card-bottom">
+                        <span style="font-size:0.75rem; color:#94a3b8;">Status: <strong style="color:#fbbf24;">Pending Order</strong></span>
+                        <button onclick="cancelPendingOrder('${tx.id}')" class="trade-btn sell-btn btn-small" style="background: rgba(239, 68, 68, 0.15) !important; color: #fb7185 !important; border: 1px solid rgba(239, 68, 68, 0.3) !important; padding: 4px 12px; font-size: 0.8rem;">Cancel Order</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
 }
 
 function renderOrderHistory(txData) {
@@ -2824,16 +2978,22 @@ function renderOrderHistory(txData) {
 function renderTradeMarket() {
     const tbodyStocks = document.getElementById('trade-market-stocks-body');
     const tbodyCommodities = document.getElementById('trade-market-commodities-body');
+    const cardsStocks = document.getElementById('trade-market-stocks-cards');
+    const cardsCommodities = document.getElementById('trade-market-commodities-cards');
     if (!tbodyStocks || !tbodyCommodities) return;
     
     if (marketData.length === 0) {
         tbodyStocks.innerHTML = `<tr><td colspan="4" class="loading">No market data available to trade.</td></tr>`;
         tbodyCommodities.innerHTML = `<tr><td colspan="4" class="loading">No market data available to trade.</td></tr>`;
+        if (cardsStocks) cardsStocks.innerHTML = `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary);">No market data available.</div>`;
+        if (cardsCommodities) cardsCommodities.innerHTML = `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary);">No market data available.</div>`;
         return;
     }
     
     const stockRows = [];
     const commodityRows = [];
+    const stockCards = [];
+    const commodityCards = [];
 
     marketData.forEach(item => {
         if (item.asset_type === 'Commodity' || item.asset_type === 'Stock') return;
@@ -2854,10 +3014,30 @@ function renderTradeMarket() {
             </tr>
         `;
 
+        const cardHtml = `
+            <div class="mobile-trading-card" style="padding: 0.75rem 0.9rem;">
+                <div class="mobile-card-top" style="align-items: center;">
+                    <div class="mobile-card-title-group">
+                        <div class="mobile-card-asset-name" style="font-size: 0.95rem;">
+                            <span>${item.name}</span>
+                            <span style="font-size:0.72rem; color:#94a3b8; font-weight:400;">(${item.symbol})</span>
+                        </div>
+                        <div class="mobile-card-meta"><span class="type-badge ${badgeClass}" style="font-size:0.65rem; padding:1px 6px;">${item.asset_type.toUpperCase()}</span></div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-size: 0.95rem; font-weight: 700; color: #f8fafc;">₹${parseFloat(item.current_price).toFixed(2)}</span>
+                        <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${item.current_price})" style="padding: 5px 14px; font-size: 0.82rem;">Trade</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
         if (item.asset_type.includes('Commodity')) {
             commodityRows.push(rowHtml);
+            commodityCards.push(cardHtml);
         } else {
             stockRows.push(rowHtml);
+            stockCards.push(cardHtml);
         }
     });
 
@@ -2868,6 +3048,17 @@ function renderTradeMarket() {
     tbodyCommodities.innerHTML = commodityRows.length > 0 
         ? commodityRows.join('') 
         : `<tr><td colspan="4" class="loading">No commodities available.</td></tr>`;
+
+    if (cardsStocks) {
+        cardsStocks.innerHTML = stockCards.length > 0 
+            ? stockCards.join('') 
+            : `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No stocks available.</div>`;
+    }
+    if (cardsCommodities) {
+        cardsCommodities.innerHTML = commodityCards.length > 0 
+            ? commodityCards.join('') 
+            : `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No commodities available.</div>`;
+    }
 }
 
 const LOT_SIZES = {
@@ -3452,6 +3643,8 @@ function renderAdvisoryTradesTable() {
 
     if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--text-secondary);">No advisory signals match the selected filter.</td></tr>`;
+        const cardsFeed = document.getElementById('advisory-cards-feed');
+        if (cardsFeed) cardsFeed.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No advisory signals match the selected filter.</div>`;
         return;
     }
 
@@ -3559,7 +3752,143 @@ function renderAdvisoryTradesTable() {
             </tr>
         `;
     }).join('');
+
+    // Dedicated Native Mobile Cards Rendering
+    const cardsFeed = document.getElementById('advisory-cards-feed');
+    if (cardsFeed) {
+        cardsFeed.innerHTML = filtered.map(t => {
+            const pt = t.paper_trade || {};
+            const s6 = t.suggestion_6pm || {};
+            const c15 = t.check_615 || {};
+            const outcome = t.eod_outcome || {};
+
+            let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
+            if (outcome.outcome === 'WRONG') {
+                outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
+            } else if (outcome.outcome === 'PROTECTED') {
+                outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${outcome.badge || 'Avoided Trap 🛡️'}</span>`;
+            } else if (outcome.outcome === 'PENDING' || pt.status === 'ACTIVE' || pt.status === 'PENDING_615') {
+                outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
+            }
+
+            let pnlColor = '#cbd5e1';
+            let pnlText = outcome.pnl_display || '₹0.00';
+            if (pt.pnl_inr > 0) pnlColor = '#4ade80';
+            else if (pt.pnl_inr < 0) pnlColor = '#fb7185';
+
+            let actionColor = '#94a3b8';
+            if (s6.action_text?.includes('BUY')) actionColor = '#4ade80';
+            else if (s6.action_text?.includes('SELL')) actionColor = '#fb7185';
+
+            let checkLabel = 'Direct Entry';
+            if (c15.status === 'REVERSAL_CONFIRMED') checkLabel = 'Reversal Confirmed';
+            else if (c15.status === 'BREAKOUT_ENTERED') checkLabel = 'London Breakout';
+            else if (c15.status === 'BREAKDOWN_ENTERED') checkLabel = 'London Breakdown';
+            else if (c15.status === 'EXTENSION_CONFIRMED') checkLabel = 'Limit Broken (Stood Aside)';
+            else if (c15.status === 'PENDING_615') checkLabel = 'Awaiting Confirmation';
+            else if (c15.status === 'NO_REVERSAL_STAND_ASIDE') checkLabel = 'No Rejection (Stood Aside)';
+
+            const executedText = pt.action && pt.action !== 'STAND_ASIDE' 
+                ? `${pt.action} ${pt.quantity} qty @ ₹${pt.entry_price ? Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}`
+                : 'Stood Aside';
+
+            return `
+                <div class="mobile-trading-card">
+                    <div class="mobile-card-top">
+                        <div class="mobile-card-title-group">
+                            <div class="mobile-card-asset-name">
+                                <span>${t.name}</span>
+                                <span style="font-size:0.75rem; color:#818cf8; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.35); padding:1px 6px; border-radius:4px; font-weight:700;">
+                                    ${t.session_name || t.time_trigger || '06:00 PM'}
+                                </span>
+                            </div>
+                            <div class="mobile-card-meta">${t.date} · ${t.symbol} ${t.event_context ? '· ' + t.event_context : ''}</div>
+                        </div>
+                        <div class="mobile-card-badges">
+                            ${outcomeBadge}
+                        </div>
+                    </div>
+
+                    <div class="mobile-card-rec-box">
+                        <div class="mobile-card-rec-label">Advisory Signal (${t.session_name || 'Trigger'})</div>
+                        <div class="mobile-card-rec-action" style="color:${actionColor};">${s6.action_text || '--'}</div>
+                        <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Ref: ₹${s6.reference_price ? Number(s6.reference_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
+                    </div>
+
+                    <div class="mobile-card-grid-3">
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Validation</span>
+                            <span class="mobile-cell-val" style="font-size:0.75rem;">${checkLabel}</span>
+                        </div>
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Stop Loss</span>
+                            <span class="mobile-cell-val" style="color:#fb7185;">₹${s6.stop_loss ? Number(s6.stop_loss).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</span>
+                        </div>
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Target</span>
+                            <span class="mobile-cell-val" style="color:#4ade80;">₹${s6.target ? Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</span>
+                        </div>
+                    </div>
+
+                    <div class="mobile-card-grid-2">
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Executed Trade</span>
+                            <span class="mobile-cell-val" style="font-size:0.8rem;">${executedText}</span>
+                        </div>
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Exit (EOD)</span>
+                            <span class="mobile-cell-val" style="font-size:0.8rem;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</span>
+                        </div>
+                    </div>
+
+                    <div class="mobile-card-bottom">
+                        <div style="font-size:0.74rem; color:#94a3b8; max-width:60%; line-height:1.3;">
+                            ${outcome.summary || ''}
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:0.68rem; color:#94a3b8; text-transform:uppercase; font-weight:600;">Net P&L</div>
+                            <div style="font-weight:800; font-size:1.05rem; color:${pnlColor};">${pnlText}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
 }
+
+// Global View Mode Toggle (Cards View vs Table View)
+window.setMobileViewMode = function(mode) {
+    if (mode === 'table') {
+        document.body.classList.add('force-table-view');
+        try { localStorage.setItem('preferredMobileView', 'table'); } catch(e){}
+    } else {
+        document.body.classList.remove('force-table-view');
+        try { localStorage.setItem('preferredMobileView', 'cards'); } catch(e){}
+    }
+    document.querySelectorAll('.view-toggle-pill').forEach(btn => {
+        if (btn.getAttribute('data-mode') === mode) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+};
+
+// Restore saved mobile view preference
+(function() {
+    try {
+        const saved = localStorage.getItem('preferredMobileView');
+        if (saved === 'table') {
+            document.body.classList.add('force-table-view');
+            setTimeout(() => {
+                document.querySelectorAll('.view-toggle-pill').forEach(btn => {
+                    if (btn.getAttribute('data-mode') === 'table') btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+            }, 100);
+        }
+    } catch(e){}
+})();
 
 // Automatically load advisory tracker on page init
 document.addEventListener('DOMContentLoaded', () => {
