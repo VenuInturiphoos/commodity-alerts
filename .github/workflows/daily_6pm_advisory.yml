@@ -6,6 +6,8 @@ on:
     - cron: '00 08 * * 1-5'
     # 12:30 UTC = 18:00 (6:00 PM) IST, Monday to Friday (US Pit Open Advisory)
     - cron: '30 12 * * 1-5'
+    # 12:45 UTC = 18:15 (6:15 PM) IST, Monday to Friday (6:15 PM Confirmation & Stand Aside Playbook)
+    - cron: '45 12 * * 1-5'
     # 14:30 UTC = 20:00 (8:00 PM) IST, Monday to Friday (EIA Inventory & US Evening)
     - cron: '30 14 * * 1-5'
     # 18:00 UTC = 23:30 (11:30 PM) IST, Monday to Friday (EOD Settlement & Square-off)
@@ -86,8 +88,13 @@ jobs:
             UTC_H=$(date -u +%H)
             if [ "$UTC_H" -ge 7 ] && [ "$UTC_H" -le 9 ]; then
               python daily_6pm_advisory.py --130pm
-            elif [ "$UTC_H" -ge 12 ] && [ "$UTC_H" -le 13 ]; then
-              python daily_6pm_advisory.py --6pm
+            elif [ "$UTC_H" -eq 12 ]; then
+              UTC_M=$(date -u +%M)
+              if [ "$UTC_M" -ge 40 ]; then
+                python daily_6pm_advisory.py --check-615
+              else
+                python daily_6pm_advisory.py --6pm
+              fi
             elif [ "$UTC_H" -ge 14 ] && [ "$UTC_H" -le 15 ]; then
               python daily_6pm_advisory.py --8pm
             elif [ "$UTC_H" -ge 17 ] && [ "$UTC_H" -le 19 ]; then

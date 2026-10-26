@@ -528,12 +528,12 @@
                     </button>
                     <button class="circuit-subnav-btn" id="btn-subnav-trade-advisory" onclick="switchPaperTradingSubView('advisory')">
                         <i class="fa-solid fa-crosshairs"></i>
-                        <span>6:00 PM IST Advisory Signals</span>
-                        <span class="subnav-badge" id="advisory-badge-count">52 Signals</span>
+                        <span>Advisory Signals (1:30 PM & 6:00 PM)</span>
+                        <span class="subnav-badge" id="advisory-badge-count">Signals</span>
                     </button>
                 </div>
 
-                <!-- 6:00 PM IST Advisory Signals & Tracker Subview -->
+                <!-- Advisory Signals & Multi-Session Tracker Subview -->
                 <div id="trade-view-advisory" style="display: none;">
                     <!-- 🎯 6:00 PM IST Advisory Signals & Paper Trade Tracker -->
                     <div id="advisory-tracker-section" class="glass-card full-width" style="margin-bottom: 2.5rem; border: 1px solid rgba(99, 102, 241, 0.35); background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));">
@@ -2686,7 +2686,7 @@ function renderPortfolio() {
         ? commodityRows.join('') 
         : `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No active commodity holdings.</td></tr>`;
 
-    // Update Summary Dashboard (Margin Logic)
+    // Update Summary Dashboard (Asset-specific F&O Margin Logic)
     let pendingMarginLocked = 0;
     if (typeof pendingOrders !== 'undefined') {
         for (const po of pendingOrders) {
@@ -2694,15 +2694,25 @@ function renderPortfolio() {
                 const curShares = userPortfolio[po.symbol]?.shares || 0;
                 const isOpeningPO = po.transaction_type === 'BUY' ? (curShares >= 0) : (curShares <= 0);
                 if (isOpeningPO) {
-                    pendingMarginLocked += (po.quantity * po.limit_price) * 0.15;
+                    const mRate = getAssetMarginRate(po.symbol);
+                    pendingMarginLocked += (po.quantity * po.limit_price) * mRate;
                 }
             }
         }
     }
 
-    const netWorth = userBalance + totalInvested + totalPl;
-    const usedMargin = (totalInvested * 0.15) + pendingMarginLocked; // 15% margin requirement for F&O + pending orders
-    const availableMargin = netWorth - usedMargin;
+    let activePositionsMargin = 0;
+    for (const [sym, pos] of Object.entries(userPortfolio)) {
+        if (pos.shares !== 0) {
+            const mRate = getAssetMarginRate(sym);
+            activePositionsMargin += Math.abs(pos.shares) * pos.avgPrice * mRate;
+        }
+    }
+
+    // Net Worth = Cash Balance + Blocked Margin + Unrealized P&L
+    const netWorth = userBalance + activePositionsMargin + totalPl;
+    const usedMargin = activePositionsMargin + pendingMarginLocked;
+    const availableMargin = Math.max(0, userBalance - pendingMarginLocked);
 
     const netWorthEl = document.getElementById('virtual-net-worth');
     if (netWorthEl) netWorthEl.textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -2925,9 +2935,27 @@ function getLotSize(symbol) {
     return LOT_SIZES[base] || 1;
 }
 
+const COMMODITY_MARGIN_RATES = {
+    'CRUDEOIL': 0.20,
+    'NATURALGAS': 0.20,
+    'SILVER': 0.12,
+    'COPPER': 0.15,
+    'GOLD': 0.10,
+    'NIFTY': 0.10,
+    'BANKNIFTY': 0.10
+};
+
+function getAssetMarginRate(symbol) {
+    const base = symbol.replace('-FUT', '').replace('.NS', '');
+    if (COMMODITY_MARGIN_RATES[base]) return COMMODITY_MARGIN_RATES[base];
+    if (COMMODITY_MARGIN_RATES[symbol]) return COMMODITY_MARGIN_RATES[symbol];
+    return 0.15; // default 15% for F&O
+}
+
 function openTradeModal(symbol, name, price) {
     const lotSize = getLotSize(symbol);
-    activeTradeAsset = { symbol, name, price: parseFloat(price), lotSize };
+    const marginRate = getAssetMarginRate(symbol);
+    activeTradeAsset = { symbol, name, price: parseFloat(price), lotSize, marginRate };
     
     document.getElementById('trade-modal-title').textContent = `Trade ${name} (Lot Size: ${lotSize})`;
     document.getElementById('trade-modal-price').textContent = `₹${activeTradeAsset.price.toFixed(2)}`;
@@ -2938,8 +2966,9 @@ function openTradeModal(symbol, name, price) {
     qtyInput.min = lotSize;
     
     const totalValue = activeTradeAsset.price * lotSize;
+    const requiredMargin = totalValue * marginRate;
     document.getElementById('trade-total-value').textContent = `₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-    document.getElementById('trade-margin-value').textContent = `₹${(totalValue * 0.15).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    document.getElementById('trade-margin-value').textContent = `₹${requiredMargin.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})} (${(marginRate * 100).toFixed(0)}% Margin)`;
     document.getElementById('trade-status-msg').textContent = '';
     
     document.getElementById('trade-modal').classList.remove('hidden');
@@ -2985,48 +3014,82 @@ window.resetPaperTradingAccount = async function() {
     }
 }
 
+function calculateBalanceDelta(symbol, type, qty, price, currentPosition) {
+    const marginRate = getAssetMarginRate(symbol);
+    const curShares = currentPosition ? currentPosition.shares : 0;
+    const avgPrice = currentPosition ? currentPosition.avgPrice : 0;
+    
+    let delta = 0;
+    
+    if (type === 'BUY') {
+        if (curShares >= 0) {
+            // Opening or adding to long: debit required margin from available cash
+            delta = -(qty * price * marginRate);
+        } else {
+            // Covering a short position
+            const shortShares = Math.abs(curShares);
+            const closeQty = Math.min(qty, shortShares);
+            const openLongQty = Math.max(0, qty - shortShares);
+            
+            // Return margin held on the closed portion:
+            const marginReleased = closeQty * avgPrice * marginRate;
+            // Short Realized P&L: (entry - exit) * qty
+            const realizedPl = closeQty * (avgPrice - price);
+            delta += (marginReleased + realizedPl);
+            
+            // If flipped to long, debit margin for new long position:
+            if (openLongQty > 0) {
+                delta -= (openLongQty * price * marginRate);
+            }
+        }
+    } else if (type === 'SELL') {
+        if (curShares <= 0) {
+            // Opening or adding to short: debit required margin from available cash
+            delta = -(qty * price * marginRate);
+        } else {
+            // Closing a long position
+            const longShares = curShares;
+            const closeQty = Math.min(qty, longShares);
+            const openShortQty = Math.max(0, qty - longShares);
+            
+            // Return margin held on the closed portion:
+            const marginReleased = closeQty * avgPrice * marginRate;
+            // Long Realized P&L: (exit - entry) * qty
+            const realizedPl = closeQty * (price - avgPrice);
+            delta += (marginReleased + realizedPl);
+            
+            // If flipped to short, debit margin for new short position:
+            if (openShortQty > 0) {
+                delta -= (openShortQty * price * marginRate);
+            }
+        }
+    }
+    return delta;
+}
+
 window.executeTrade = async function(symbol, type, qty, price, orderType = 'MARKET') {
     if (!currentUser) throw new Error("Not logged in");
     const totalValue = qty * price;
+    const marginRate = getAssetMarginRate(symbol);
     
-    // Margin check
-    const currentShares = userPortfolio[symbol]?.shares || 0;
-    const isOpening = type === 'BUY' ? (currentShares >= 0) : (currentShares <= 0);
+    const currentPosition = userPortfolio[symbol] || { shares: 0, avgPrice: 0 };
+    const curShares = currentPosition.shares;
+    const isOpening = type === 'BUY' ? (curShares >= 0) : (curShares <= 0);
     
+    // Check margin required if opening or flipping position
+    let marginRequiredForTrade = 0;
     if (isOpening) {
-        // Calculate current available margin
-        let totalInvested = 0;
-        let totalPl = 0;
-        for (const [sym, data] of Object.entries(userPortfolio)) {
-            if (data.shares === 0) continue;
-            const mItem = marketData.find(item => item.symbol === sym);
-            const currPrice = mItem ? parseFloat(mItem.current_price) : 0;
-            const costBasis = Math.abs(data.shares) * data.avgPrice;
-            const currentValue = Math.abs(data.shares) * currPrice;
-            const pl = data.shares > 0 ? (currentValue - costBasis) : (costBasis - currentValue);
-            totalInvested += costBasis;
-            totalPl += pl;
+        marginRequiredForTrade = totalValue * marginRate;
+    } else {
+        const curAbsShares = Math.abs(curShares);
+        if (qty > curAbsShares) {
+            const flippedQty = qty - curAbsShares;
+            marginRequiredForTrade = flippedQty * price * marginRate;
         }
-        
-        let pendingMarginLocked = 0;
-        for (const po of pendingOrders) {
-            if (po.status === 'PENDING' || po.status === 'PENDING_STOP') {
-                const curShares = userPortfolio[po.symbol]?.shares || 0;
-                const isOpeningPO = po.transaction_type === 'BUY' ? (curShares >= 0) : (curShares <= 0);
-                if (isOpeningPO) {
-                    pendingMarginLocked += (po.quantity * po.limit_price) * 0.15;
-                }
-            }
-        }
-        
-        const netWorth = userBalance + totalInvested + totalPl;
-        const usedMargin = (totalInvested * 0.15) + pendingMarginLocked;
-        const availableMargin = netWorth - usedMargin;
-        
-        const marginRequiredForTrade = totalValue * 0.15;
-        if (marginRequiredForTrade > availableMargin) {
-            throw new Error(`Insufficient Available Margin. Required: ₹${marginRequiredForTrade.toLocaleString('en-IN', {maximumFractionDigits:0})}, Available: ₹${availableMargin.toLocaleString('en-IN', {maximumFractionDigits:0})}`);
-        }
+    }
+    
+    if (marginRequiredForTrade > userBalance) {
+        throw new Error(`Insufficient Available Cash for Margin. Required: ₹${marginRequiredForTrade.toLocaleString('en-IN', {maximumFractionDigits:0})}, Available Cash: ₹${userBalance.toLocaleString('en-IN', {maximumFractionDigits:0})}`);
     }
     
     if (orderType === 'LIMIT' || orderType === 'STOP') {
@@ -3053,8 +3116,9 @@ window.executeTrade = async function(symbol, type, qty, price, orderType = 'MARK
     
     if (txError) throw txError;
     
-    // 2. Update Profile Balance (Market Order)
-    const newBalance = type === 'BUY' ? (userBalance - totalValue) : (userBalance + totalValue);
+    // 2. Update Profile Balance (F&O Margin Debit / Release + Realized P&L Settled into Cash)
+    const balanceDelta = calculateBalanceDelta(symbol, type, qty, price, currentPosition);
+    const newBalance = Math.max(0, userBalance + balanceDelta);
     const { error: profileError } = await supabaseClient.from('profiles')
         .update({ balance: newBalance })
         .eq('id', currentUser.id);
@@ -3162,9 +3226,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!activeTradeAsset) return;
             const qty = parseInt(qtyInput.value) || 0;
             const price = orderTypeSelect.value === 'LIMIT' ? (parseFloat(limitPriceInput.value) || activeTradeAsset.price) : activeTradeAsset.price;
-            const total = qty * price;
+            const mRate = activeTradeAsset.marginRate || getAssetMarginRate(activeTradeAsset.symbol);
             document.getElementById('trade-total-value').textContent = `₹${total.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-            document.getElementById('trade-margin-value').textContent = `₹${(total * 0.15).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            document.getElementById('trade-margin-value').textContent = `₹${(total * mRate).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})} (${(mRate * 100).toFixed(0)}% Margin)`;
         };
         qtyInput.addEventListener('input', updateTradeValue);
         limitPriceInput.addEventListener('input', updateTradeValue);

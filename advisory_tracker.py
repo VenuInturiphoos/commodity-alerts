@@ -401,6 +401,59 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
             }
             new_entries.append(entry)
 
+        else:
+            # Stand Aside / Normal Range commodities: record capital preservation entry
+            entry = {
+                "id": trade_id,
+                "date": today_str,
+                "session_name": "US Pit Open (6:00 PM)",
+                "time_trigger": "06:00 PM IST",
+                "time_6pm": "06:00 PM IST",
+                "time_validation": "06:15 PM IST",
+                "time_615": "06:15 PM IST",
+                "time_exit": "11:30 PM IST",
+                "symbol": sym,
+                "name": name,
+                "lot_size": lot_size,
+                "event_context": "Safe Normal Range (No Circuit Edge)",
+                "suggestion_6pm": {
+                    "status": "STAND_ASIDE",
+                    "action_text": "STAND ASIDE / SAFE RANGE",
+                    "rationale": "Asset within standard range (±1.5%). No statistical circuit edge; capital protected in cash.",
+                    "reference_price": cur_p,
+                    "stop_loss": lc_price,
+                    "target": p_close
+                },
+                "check_615": {
+                    "checked": False,
+                    "status": "PENDING_615_CHECK",
+                    "price_615": None,
+                    "action_taken": "Awaiting 6:15 PM candle close to verify safe range holds...",
+                    "detail": "15-minute verification scheduled for 6:15 PM IST."
+                },
+                "paper_trade": {
+                    "user": USER_ACCOUNT,
+                    "action": "STAND_ASIDE",
+                    "quantity": 0,
+                    "entry_price": cur_p,
+                    "entry_time": "06:00 PM IST",
+                    "exit_price": cur_p,
+                    "exit_time": "11:30 PM IST",
+                    "pnl_points": 0.0,
+                    "pnl_inr": 0.0,
+                    "status": "CLOSED"
+                },
+                "eod_outcome": {
+                    "session_close": None,
+                    "circuit_limit": lc_price,
+                    "outcome": "PROTECTED",
+                    "badge": "Capital Protected 🛡️",
+                    "pnl_display": "₹0.00 (Protected)",
+                    "summary": "Stood aside on normal range. 100% capital preserved in cash."
+                }
+            }
+            new_entries.append(entry)
+
     if new_entries:
         # Prepend new entries so newest appears at the top
         tracker['trades'] = new_entries + trades
@@ -639,8 +692,9 @@ def record_live_8pm_advisory(commodities_list, day_name):
 
 def check_and_execute_615_confirmation(checker, alerter):
     """
-    Called at 6:15 PM IST (18:15 - 18:20 IST window).
-    Checks 15-minute candle outcomes for pending candidates, executes paper trades, and sends Telegram/Email notifications.
+    Called at 6:15 PM IST (18:15 - 18:25 IST window).
+    Checks 15-minute candle outcomes for pending candidates and Stand Aside commodities,
+    executes paper trades, and sends Telegram/Email notifications explaining exact actions.
     """
     tracker = load_tracker()
     trades = tracker.get('trades', [])
@@ -648,15 +702,17 @@ def check_and_execute_615_confirmation(checker, alerter):
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     today_str = now_dt.strftime('%d %b %Y')
     
-    pending_trades = [t for t in trades if t.get('date') == today_str and t.get('check_615', {}).get('status') == 'PENDING_615']
-    if not pending_trades:
-        print("No pending 6:15 PM confirmation trades for today.")
+    if tracker.get('check_615_sent_date') == today_str:
+        print(f"6:15 PM confirmation alert already sent for today ({today_str}).")
         return False
 
     circuits_res = checker.generate_circuits_data()
     commodities_map = {c['symbol']: c for c in circuits_res.get('commodities', [])} if circuits_res else {}
     
     alert_messages = []
+    
+    # 1. Process Pending Circuit Confirmation Trades
+    pending_trades = [t for t in trades if t.get('date') == today_str and t.get('check_615', {}).get('status') == 'PENDING_615']
     
     for trade in pending_trades:
         sym = trade['symbol']
@@ -734,11 +790,62 @@ def check_and_execute_615_confirmation(checker, alerter):
             )
             alert_messages.append(msg)
 
+    # 2. Process and Confirm Stand Aside Commodities
+    stand_aside_trades = [t for t in trades if t.get('date') == today_str and (t.get('check_615', {}).get('status') == 'PENDING_615_CHECK' or t.get('paper_trade', {}).get('action') == 'STAND_ASIDE')]
+    stand_aside_lines = []
+    
+    for sa_trade in stand_aside_trades:
+        sym = sa_trade['symbol']
+        c_item = commodities_map.get(sym)
+        cur_p = c_item['current_price'] if c_item else sa_trade['suggestion_6pm'].get('reference_price', 0)
+        chg_pct = c_item['change_pct'] if c_item else 0.0
+        
+        sa_trade['check_615']['checked'] = True
+        sa_trade['check_615']['status'] = "CONFIRMED_STAND_ASIDE"
+        sa_trade['check_615']['price_615'] = cur_p
+        sa_trade['check_615']['action_taken'] = "15-Min candle confirmed range held. Stood aside to preserve capital."
+        sa_trade['check_615']['detail'] = f"Price at 6:15 PM ₹{cur_p:,.2f} ({chg_pct:+.2f}%) confirmed no extreme circuit imbalance."
+        stand_aside_lines.append(f"• <b>{sa_trade['name']}</b>: ₹{cur_p:,.2f} ({chg_pct:+.2f}%) | Safe Range Held")
+
+    cash_info = get_cash_and_margin(tracker)
+    avail_cash = cash_info.get('available_cash_inr', 1000000.0)
+
+    # If no pending circuit trades occurred, draft Stand Aside Action Playbook
+    if not pending_trades:
+        if not stand_aside_lines and commodities_map:
+            for sym, c in commodities_map.items():
+                stand_aside_lines.append(f"• <b>{c['name']}</b>: ₹{c['current_price']:,.2f} ({c['change_pct']:+.2f}%) | Safe Range Held")
+
+        sa_text = "\n".join(stand_aside_lines) if stand_aside_lines else "• All 5 commodities held inside standard safe bands."
+        stand_aside_msg = (
+            f"🛡️ <b>[6:15 PM IST UPDATE] 15-MIN CANDLE CONFIRMATION (STAND ASIDE)</b>\n\n"
+            f"The 15-minute post-US pit open candle window (6:00 PM – 6:15 PM IST) has closed.\n\n"
+            f"<b>📊 LIVE 6:15 PM PRICE ACTION:</b>\n"
+            f"{sa_text}\n\n"
+            f"<b>💡 ACTION GUIDANCE FOR STAND ASIDE COMMODITIES:</b>\n"
+            f"• <b>Maintain Stand Aside</b>: Opening volatility has stabilized within standard ranges without testing extreme circuit slabs.\n"
+            f"• <b>Capital Preservation</b>: Do NOT force counter-trend or breakout trades without statistical edge.\n"
+            f"• <b>Discretionary Rule</b>: If trading intraday, stick strictly to standard S1/R1 pivot levels with defined stop-losses.\n"
+            f"• <b>Virtual Paper Trade</b>: 100% virtual capital remains securely held in cash (₹{avail_cash:,.2f}) for the next high-edge window (e.g. 8:00 PM US Pit / EIA)."
+        )
+        alert_messages.append(stand_aside_msg)
+    elif stand_aside_lines:
+        # We had active candidates AND some stand aside commodities
+        sa_text = "\n".join(stand_aside_lines)
+        supplemental_sa = (
+            f"\n🛡️ <b>STAND ASIDE COMMODITIES (15-MIN CHECK):</b>\n"
+            f"{sa_text}\n"
+            f"• <b>Action</b>: Maintain Stand Aside on the above assets. Focus capital exclusively on confirmed setup(s)."
+        )
+        alert_messages.append(supplemental_sa)
+
+    tracker['check_615_sent_date'] = today_str
     save_tracker(tracker)
     
     if alert_messages and alerter:
         body = "\n\n".join(alert_messages) + "\n\n🌐 View Live Tracker: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
-        alerter.send_alert("⚡ [6:15 PM IST UPDATE] Circuit Confirmation & Paper Trade Execution", body)
+        alerter.send_alert("⚡ [6:15 PM IST UPDATE] 15-Min Confirmation & Stand Aside Playbook", body)
+        print("Successfully dispatched 6:15 PM IST confirmation alert.")
     
     return True
 

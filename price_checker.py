@@ -1316,12 +1316,63 @@ class PriceChecker:
                     requests.post("https://cohupetijvykzmeliubg.supabase.co/rest/v1/transactions", 
                                   headers=headers, json=tx_payload)
                                   
-                    # 3. Update profile balance
+                    # 3. Update profile balance (F&O Margin Debit / Release + Realized P&L)
                     prof_resp = requests.get(f"https://cohupetijvykzmeliubg.supabase.co/rest/v1/profiles?id=eq.{user_id}&select=balance", headers=headers)
                     if prof_resp.status_code == 200 and prof_resp.json():
                         current_bal = float(prof_resp.json()[0]['balance'])
-                        total_val = qty * limit_price
-                        new_bal = current_bal - total_val if tx_type == 'BUY' else current_bal + total_val
+                        
+                        margin_rates = {
+                            'CRUDEOIL': 0.20, 'NATURALGAS': 0.20, 'SILVER': 0.12,
+                            'COPPER': 0.15, 'GOLD': 0.10, 'NIFTY': 0.10, 'BANKNIFTY': 0.10
+                        }
+                        base_sym = symbol.replace('-FUT', '').replace('.NS', '')
+                        m_rate = margin_rates.get(base_sym, margin_rates.get(symbol, 0.15))
+                        
+                        # Fetch prior transactions (excluding the one just inserted) to compute existing position
+                        user_tx_resp = requests.get(f"https://cohupetijvykzmeliubg.supabase.co/rest/v1/transactions?user_id=eq.{user_id}&symbol=eq.{symbol}&select=*&order=timestamp.asc", headers=headers)
+                        cur_shares = 0
+                        avg_p = 0.0
+                        if user_tx_resp.status_code == 200:
+                            all_txs = user_tx_resp.json()[:-1] # exclude newly added tx
+                            for tx in all_txs:
+                                t_qty = tx['quantity']
+                                t_pr = tx['price']
+                                if tx['transaction_type'] == 'BUY':
+                                    if cur_shares >= 0:
+                                        avg_p = ((cur_shares * avg_p) + (t_qty * t_pr)) / (cur_shares + t_qty) if (cur_shares + t_qty) > 0 else 0
+                                        cur_shares += t_qty
+                                    else:
+                                        cur_shares += t_qty
+                                else:
+                                    if cur_shares <= 0:
+                                        avg_p = ((abs(cur_shares) * avg_p) + (t_qty * t_pr)) / (abs(cur_shares) + t_qty) if (abs(cur_shares) + t_qty) > 0 else 0
+                                        cur_shares -= t_qty
+                                    else:
+                                        cur_shares -= t_qty
+
+                        delta = 0.0
+                        if tx_type == 'BUY':
+                            if cur_shares >= 0:
+                                delta = -(qty * limit_price * m_rate)
+                            else:
+                                short_sh = abs(cur_shares)
+                                cl_qty = min(qty, short_sh)
+                                op_qty = max(0, qty - short_sh)
+                                delta += (cl_qty * avg_p * m_rate) + (cl_qty * (avg_p - limit_price))
+                                if op_qty > 0:
+                                    delta -= (op_qty * limit_price * m_rate)
+                        else:
+                            if cur_shares <= 0:
+                                delta = -(qty * limit_price * m_rate)
+                            else:
+                                long_sh = cur_shares
+                                cl_qty = min(qty, long_sh)
+                                op_qty = max(0, qty - long_sh)
+                                delta += (cl_qty * avg_p * m_rate) + (cl_qty * (limit_price - avg_p))
+                                if op_qty > 0:
+                                    delta -= (op_qty * limit_price * m_rate)
+
+                        new_bal = max(0.0, current_bal + delta)
                         requests.patch(f"https://cohupetijvykzmeliubg.supabase.co/rest/v1/profiles?id=eq.{user_id}", 
                                        headers=headers, json={"balance": new_bal})
                                        
