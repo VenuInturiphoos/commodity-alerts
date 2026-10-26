@@ -9,10 +9,49 @@ USER_ACCOUNT = "venu.photos1@gmail.com"
 LOT_SIZES = {
     'CRUDEOIL': 50,     # 50 bbl / units
     'NATURALGAS': 1250, # 1250 mmBtu
-    'SILVER': 30,       # 30 kg
+    'SILVER': 5,        # 5 units (Silver Mini / 5 kg)
     'COPPER': 2500,     # 2500 kg
-    'GOLD': 1           # 1 contract
+    'GOLD': 10          # 10 units (Gold Mini / 10 grams)
 }
+
+# MCX Standard Initial Margin Requirements (SPAN + Exposure Margin)
+MARGIN_RATES = {
+    'CRUDEOIL': 0.20,    # 20% margin
+    'NATURALGAS': 0.20,  # 20% margin
+    'SILVER': 0.12,      # 12% margin (Mini)
+    'COPPER': 0.15,      # 15% margin
+    'GOLD': 0.10         # 10% margin (Mini)
+}
+
+DEFAULT_STARTING_CASH = 1000000.0  # ₹10,00,000 (10 Lakhs Virtual Cash)
+
+def get_cash_and_margin(tracker_data):
+    """
+    Computes available cash, currently blocked margin, and total account net worth.
+    Margin is deducted from available cash when a trade is ACTIVE.
+    When a trade is CLOSED, margin is released and realized P&L is settled into cash.
+    """
+    starting_cash = tracker_data.get('starting_cash_inr', DEFAULT_STARTING_CASH)
+    trades = tracker_data.get('trades', [])
+    
+    # Realized P&L from closed trades
+    closed_pnl = sum(t.get('paper_trade', {}).get('pnl_inr', 0.0) for t in trades if t.get('paper_trade', {}).get('status') == 'CLOSED')
+    current_cash = starting_cash + closed_pnl
+    
+    # Used margin from currently active trades
+    active_trades = [t for t in trades if t.get('paper_trade', {}).get('status') == 'ACTIVE']
+    used_margin = sum(t.get('paper_trade', {}).get('margin_required_inr', 0.0) for t in active_trades)
+    
+    available_cash = max(0.0, current_cash - used_margin)
+    net_worth = current_cash
+    
+    return {
+        'starting_cash': round(starting_cash, 2),
+        'current_cash': round(current_cash, 2),
+        'used_margin': round(used_margin, 2),
+        'available_cash': round(available_cash, 2),
+        'net_worth': round(net_worth, 2)
+    }
 
 def load_tracker():
     if os.path.exists(TRACKER_FILE):
@@ -37,9 +76,11 @@ def save_tracker(tracker_data):
     total_pnl = sum(t.get('paper_trade', {}).get('pnl_inr', 0.0) for t in trades if t.get('paper_trade', {}).get('status') == 'CLOSED')
     active_count = sum(1 for t in trades if t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_615'])
     
+    cash_info = get_cash_and_margin(tracker_data)
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     tracker_data['last_updated'] = now_dt.strftime('%d %b %Y, %I:%M %p IST')
     tracker_data['account_email'] = USER_ACCOUNT
+    tracker_data['starting_cash_inr'] = cash_info['starting_cash']
     tracker_data['summary'] = {
         'total_signals': len(trades),
         'executed_count': total_executed,
@@ -49,7 +90,12 @@ def save_tracker(tracker_data):
         'win_rate_pct': win_rate,
         'total_pnl_inr': round(total_pnl, 2),
         'avg_trade_pnl_inr': round(total_pnl / total_executed, 2) if total_executed > 0 else 0.0,
-        'active_trades_count': active_count
+        'active_trades_count': active_count,
+        'starting_cash_inr': cash_info['starting_cash'],
+        'current_cash_inr': cash_info['current_cash'],
+        'used_margin_inr': cash_info['used_margin'],
+        'available_cash_inr': cash_info['available_cash'],
+        'net_worth_inr': cash_info['net_worth']
     }
     
     try:
@@ -827,7 +873,7 @@ def init_clean_live_tracker():
             "time_exit": "11:30 PM IST",
             "symbol": "SILVER",
             "name": "Silver",
-            "lot_size": 30,
+            "lot_size": 5,
             "event_context": "US Pit Open Lower Band Test (Knife-Catch Warning)",
             "suggestion_6pm": {
                 "status": "WAIT_615",
