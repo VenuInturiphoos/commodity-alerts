@@ -592,13 +592,13 @@
 
                         <div class="circuit-kpi-card">
                             <div class="circuit-kpi-header">
-                                <span>Automated Account</span>
+                                <span>Available Cash & Margin</span>
                                 <div class="circuit-kpi-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
-                                    <i class="fa-solid fa-user-check"></i>
+                                    <i class="fa-solid fa-wallet"></i>
                                 </div>
                             </div>
-                            <div class="circuit-kpi-value" style="font-size: 1.05rem; color: #93c5fd; word-break: break-all;">venu.photos1@gmail.com</div>
-                            <div class="circuit-kpi-sub">Auto-exited daily at 11:30 PM IST</div>
+                            <div class="circuit-kpi-value" id="kpi-adv-cash" style="color: #60a5fa; font-size: 1.35rem;">₹10,00,000.00</div>
+                            <div class="circuit-kpi-sub" id="kpi-adv-margin-sub">Used Margin: ₹0.00 | venu.photos1@gmail.com</div>
                         </div>
                     </div>
 
@@ -2861,8 +2861,8 @@ function renderTradeMarket() {
 }
 
 const LOT_SIZES = {
-    'GOLD': 1,
-    'SILVER': 30,
+    'GOLD': 10,
+    'SILVER': 5,
     'CRUDEOIL': 50,
     'NATURALGAS': 1250,
     'COPPER': 2500,
@@ -3298,6 +3298,17 @@ async function loadAdvisoryTracker() {
             const pnl = summary.total_pnl_inr || 0;
             pnlEl.textContent = (pnl >= 0 ? '+₹' : '-₹') + Math.abs(pnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             pnlEl.style.color = pnl >= 0 ? '#4ade80' : '#fb7185';
+        }
+        
+        const cashEl = document.getElementById('kpi-adv-cash');
+        const marginSubEl = document.getElementById('kpi-adv-margin-sub');
+        if (cashEl) {
+            const availCash = summary.available_cash_inr ?? 1000000;
+            cashEl.textContent = '₹' + Number(availCash).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        if (marginSubEl) {
+            const usedMargin = summary.used_margin_inr || 0;
+            marginSubEl.textContent = `Used Margin: ₹${Number(usedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | venu.photos1@gmail.com`;
         }
         
         if (timeEl) timeEl.textContent = 'Updated: ' + (advisoryTrackerData.last_updated || 'Just now');
