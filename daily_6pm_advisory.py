@@ -229,8 +229,305 @@ def generate_and_send_6pm_advisory(force=False):
         print("Failed to dispatch 6 PM advisory.")
         return False
 
+def generate_and_send_130pm_advisory(force=False):
+    """
+    Scans live market data at 1:30 PM IST (London/European session open),
+    evaluates Asian morning session (09:00 AM - 01:15 PM IST) High/Low breakout probabilities,
+    constructs an actionable trade advisory, and sends it via Telegram & Email.
+    """
+    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+    today_ist = now_dt.strftime('%Y-%m-%d')
+    today_time_ist = now_dt.strftime('%d %b %Y, %I:%M %p IST')
+    day_name = now_dt.strftime('%A')
+    
+    state_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
+    state = {}
+    if os.path.exists(state_file):
+        try:
+            with open(state_file, 'r') as f:
+                state = json.load(f)
+        except Exception:
+            state = {}
+            
+    last_130_date = state.get('DAILY_130PM_ADVISORY', {}).get('last_alert_date')
+    if not force and last_130_date == today_ist:
+        print(f"Daily 1:30 PM advisory already dispatched for today ({today_ist}). Skipping.")
+        return False
+
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+
+    checker = PriceChecker(config)
+    alerter = EmailAlerter(config)
+
+    circuits_res = checker.generate_circuits_data()
+    commodities_list = circuits_res.get('commodities', []) if circuits_res else []
+    
+    if not commodities_list:
+        print("Could not fetch commodities data for 1:30 PM advisory.")
+        return False
+
+    action_items = []
+    has_active_breakouts = False
+
+    for item in commodities_list:
+        sym = item['symbol']
+        name = item['name']
+        cur_p = item['current_price']
+        day_h = item.get('day_high', cur_p)
+        day_l = item.get('day_low', cur_p)
+        chg_pct = item['change_pct']
+        
+        range_pts = day_h - day_l
+        mid_p = round((day_h + day_l) / 2.0, 2)
+        
+        # Bullish Breakout: Current price is at or within 0.15% of day high
+        if cur_p >= day_h * 0.9985 and range_pts > 0:
+            has_active_breakouts = True
+            tgt = round(day_h + (range_pts * 1.2), 2)
+            sl = mid_p
+            action_items.append(
+                f"🟢 <b>{name.upper()} (London Bullish Breakout)</b>\n"
+                f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}%) | Morning High: ₹{day_h:,.2f}\n"
+                f"  • Setup: European open volume breaking above morning Asian range [₹{day_l:,.2f} – ₹{day_h:,.2f}].\n"
+                f"  • Recommended Action: <b>BUY / RIDE BREAKOUT</b>\n"
+                f"  • Entry: Around current levels (₹{cur_p:,.2f})\n"
+                f"  • Stop-Loss: ₹{sl:,.2f} (Asian session mid-anchor)\n"
+                f"  • Target: ₹{tgt:,.2f} (1.2x range extension into London session)"
+            )
+        # Bearish Breakdown: Current price is at or within 0.15% of day low
+        elif cur_p <= day_l * 1.0015 and range_pts > 0:
+            has_active_breakouts = True
+            tgt = round(day_l - (range_pts * 1.2), 2)
+            sl = mid_p
+            action_items.append(
+                f"🔴 <b>{name.upper()} (London Bearish Breakdown)</b>\n"
+                f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}%) | Morning Low: ₹{day_l:,.2f}\n"
+                f"  • Setup: European open volume breaking below morning Asian range [₹{day_l:,.2f} – ₹{day_h:,.2f}].\n"
+                f"  • Recommended Action: <b>SELL / SHORT BREAKDOWN</b>\n"
+                f"  • Entry: Around current levels (₹{cur_p:,.2f})\n"
+                f"  • Stop-Loss: ₹{sl:,.2f} (Asian session mid-anchor)\n"
+                f"  • Target: ₹{tgt:,.2f} (1.2x range extension into London session)"
+            )
+        else:
+            action_items.append(
+                f"ℹ️ <b>{name.upper()} (Range-Bound Asian Session)</b>\n"
+                f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}%)\n"
+                f"  • Morning Range: ₹{day_l:,.2f} – ₹{day_h:,.2f} (Mid: ₹{mid_p:,.2f})\n"
+                f"  • Standing aside. Awaiting European range breakout before deploying capital."
+            )
+
+    overview_lines = [f"• <b>{c['name']}</b>: ₹{c['current_price']:,.2f} ({c['change_pct']:+.2f}%) | Range: ₹{c.get('day_low', c['current_price']):,.2f} - ₹{c.get('day_high', c['current_price']):,.2f}" for c in commodities_list]
+    overview_text = "\n".join(overview_lines)
+    action_text = "\n\n".join(action_items)
+
+    subject = f"🎯 [1:30 PM IST ADVISORY] London / European Open Breakout Playbook ({day_name})"
+    body = (
+        f"🎯 <b>DAILY 1:30 PM IST LONDON BREAKOUT ADVISORY</b>\n"
+        f"📅 <i>{today_time_ist}</i>\n\n"
+        f"<b>📊 ASIAN MORNING RANGE OVERVIEW (09:00 AM – 01:15 PM IST):</b>\n"
+        f"{overview_text}\n\n"
+        f"<b>⚡ HIGH-PROBABILITY ACTION PLAYBOOK:</b>\n"
+        f"{action_text}\n\n"
+        f"<b>🛡️ RISK MANAGEMENT & EXECUTION RULES:</b>\n"
+        f"1. <b>London Open Follow-Through</b>: Enter only when the 1:30 PM 15-minute candle closes outside morning Asian range.\n"
+        f"2. <b>Mid-Point Anchor Stop</b>: If price falls back across Asian mid-point, exit immediately (false breakout protection).\n"
+        f"3. <b>Hard EOD Exit</b>: All intraday breakout positions auto-square-off at 11:30 PM IST.\n\n"
+        f"🌐 <b>Live Interactive Dashboard</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+    )
+
+    # Record in paper trading advisory tracker
+    try:
+        from advisory_tracker import record_live_130pm_advisory
+        record_live_130pm_advisory(commodities_list)
+    except Exception as e:
+        print(f"Error recording live 1:30 PM advisory in paper trading tracker: {e}")
+
+    alert_payload = [{
+        'symbol': 'DAILY_130PM_ADVISORY',
+        'name': 'Daily 1:30 PM Action Advisory',
+        'event_type': 'DAILY_130PM_ADVISORY',
+        'today_ist': today_ist,
+        'subject': subject,
+        'body': body
+    }]
+
+    print(f"Dispatching 1:30 PM IST Daily Action Advisory for {today_ist}...")
+    success, sent_alerts = alerter.send_alerts(alert_payload)
+    
+    if success:
+        state['DAILY_130PM_ADVISORY'] = {
+            'last_alert_date': today_ist,
+            'last_alert_time': today_time_ist,
+            'last_alert_msg': subject
+        }
+        try:
+            with open(state_file, 'w') as f:
+                json.dump(state, f, indent=2)
+            print("Successfully recorded Daily 1:30 PM advisory dispatch in alerts_state.json")
+        except Exception as e:
+            print(f"Error saving alerts_state.json: {e}")
+        return True
+    return False
+
+def generate_and_send_8pm_advisory(force=False):
+    """
+    Scans live market data at 8:00 PM IST (EIA Inventory & US Evening Trend),
+    evaluates Wednesday Crude Oil EIA Inventory / Thursday Natural Gas Storage / US mid-day momentum,
+    constructs an actionable trade advisory, and sends it via Telegram & Email.
+    """
+    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+    today_ist = now_dt.strftime('%Y-%m-%d')
+    today_time_ist = now_dt.strftime('%d %b %Y, %I:%M %p IST')
+    day_name = now_dt.strftime('%A')
+    
+    state_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
+    state = {}
+    if os.path.exists(state_file):
+        try:
+            with open(state_file, 'r') as f:
+                state = json.load(f)
+        except Exception:
+            state = {}
+            
+    last_8pm_date = state.get('DAILY_8PM_ADVISORY', {}).get('last_alert_date')
+    if not force and last_8pm_date == today_ist:
+        print(f"Daily 8:00 PM advisory already dispatched for today ({today_ist}). Skipping.")
+        return False
+
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+
+    checker = PriceChecker(config)
+    alerter = EmailAlerter(config)
+
+    circuits_res = checker.generate_circuits_data()
+    commodities_list = circuits_res.get('commodities', []) if circuits_res else []
+    
+    if not commodities_list:
+        print("Could not fetch commodities data for 8:00 PM advisory.")
+        return False
+
+    action_items = []
+
+    # Wednesday: Crude Oil EIA Special
+    # Thursday: Natural Gas EIA Special
+    if day_name == 'Wednesday':
+        crude = next((c for c in commodities_list if c['symbol'] == 'CRUDEOIL'), None)
+        if crude:
+            c_p = crude['current_price']
+            p_close = crude['prev_close']
+            chg = crude['change_pct']
+            lc = crude['lower_circuit']
+            uc = crude['upper_circuit']
+            
+            action_items.append(
+                f"🛢️ <b>CRUDE OIL EIA PETROLEUM INVENTORY SPECIAL (Wednesday 8:00 PM IST)</b>\n"
+                f"  • Live: ₹{c_p:,.2f} ({chg:+.2f}% | UC: ₹{uc:,.2f} | LC: ₹{lc:,.2f})\n"
+                f"  • Event: Weekly US EIA Crude & Gasoline Inventories released at 8:00 PM IST.\n"
+                f"  • Strategy: <b>10-Minute Spike Retracement / Fade Filter</b>\n"
+                f"  • Rule: Wait for the 8:00 PM - 8:10 PM knee-jerk reaction to settle. If price tests circuit limit or moves > 1.5% without locking, fade back towards pre-report anchor (₹{p_close:,.2f})."
+            )
+    elif day_name == 'Thursday':
+        natgas = next((c for c in commodities_list if c['symbol'] == 'NATURALGAS'), None)
+        if natgas:
+            ng_p = natgas['current_price']
+            p_close = natgas['prev_close']
+            chg = natgas['change_pct']
+            lc = natgas['lower_circuit']
+            uc = natgas['upper_circuit']
+            
+            action_items.append(
+                f"🔥 <b>NATURAL GAS EIA STORAGE SPECIAL (Thursday 8:00 PM IST)</b>\n"
+                f"  • Live: ₹{ng_p:,.2f} ({chg:+.2f}% | UC: ₹{uc:,.2f} | LC: ₹{lc:,.2f})\n"
+                f"  • Event: Weekly US EIA Underground Storage Report released at 8:00 PM IST.\n"
+                f"  • Strategy: <b>Deviation Fade or Extended Momentum Ride</b>\n"
+                f"  • Rule: Watch the 8:00 PM - 8:15 PM candle close. If inventory surprise pushes into limit slab, ride momentum; if spike rejects at band, fade to anchor (₹{p_close:,.2f})."
+            )
+
+    # General US Evening Action for other commodities
+    for item in commodities_list:
+        sym = item['symbol']
+        if (day_name == 'Wednesday' and sym == 'CRUDEOIL') or (day_name == 'Thursday' and sym == 'NATURALGAS'):
+            continue
+        name = item['name']
+        cur_p = item['current_price']
+        chg_pct = item['change_pct']
+        status = item['status']
+        lc_price = item['lower_circuit']
+        uc_price = item['upper_circuit']
+        p_close = item['prev_close']
+
+        if 'LOCKED' in status or 'HIT' in status or 'NEAR' in status:
+            direction = 'LOWER' if 'LOWER' in status else 'UPPER'
+            action = "BUY" if direction == 'LOWER' else "SELL"
+            sl = round(lc_price * 0.996 if direction == 'LOWER' else uc_price * 1.004, 2)
+            action_items.append(
+                f"⚠️ <b>{name.upper()} (Evening Circuit Pressure)</b>\n"
+                f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}% | Status: {status})\n"
+                f"  • Action: Enforce circuit discipline. Auto-exit before 11:30 PM settlement.\n"
+                f"  • Stop-Loss: ₹{sl:,.2f} | Anchor: ₹{p_close:,.2f}"
+            )
+        elif abs(chg_pct) >= 1.5:
+            action_items.append(
+                f"🚀 <b>{name.upper()} (Evening Trend Runner: {chg_pct:+.2f}%)</b>\n"
+                f"  • Live: ₹{cur_p:,.2f}\n"
+                f"  • High US session volume active. Trail stop-loss at 50% of evening gain into 11:30 PM exit."
+            )
+
+    overview_lines = [f"• <b>{c['name']}</b>: ₹{c['current_price']:,.2f} ({c['change_pct']:+.2f}%) | {c['status_text']}" for c in commodities_list]
+    overview_text = "\n".join(overview_lines)
+    action_text = "\n\n".join(action_items) if action_items else "🟢 All commodities trading in steady mid-day ranges. No high-deviation setups active."
+
+    subject = f"🎯 [8:00 PM IST ADVISORY] US Evening & EIA Inventory Playbook ({day_name})"
+    body = (
+        f"🎯 <b>DAILY 8:00 PM IST US EVENING & EIA ADVISORY</b>\n"
+        f"📅 <i>{today_time_ist}</i>\n\n"
+        f"<b>📊 LIVE COMMODITY STATUS AT 8:00 PM IST:</b>\n"
+        f"{overview_text}\n\n"
+        f"<b>⚡ HIGH-PROBABILITY ACTION PLAYBOOK:</b>\n"
+        f"{action_text}\n\n"
+        f"<b>🛡️ RISK MANAGEMENT & EXECUTION RULES:</b>\n"
+        f"1. <b>Inventory Knee-Jerk Filter</b>: Never enter during the exact 8:00 PM second. Wait for 8:10 PM stabilization.\n"
+        f"2. <b>Hard 11:30 PM Exit</b>: All intraday positions close at 11:30 PM IST before MCX settlement.\n\n"
+        f"🌐 <b>Live Interactive Dashboard</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+    )
+
+    try:
+        from advisory_tracker import record_live_8pm_advisory
+        record_live_8pm_advisory(commodities_list, day_name)
+    except Exception as e:
+        print(f"Error recording live 8:00 PM advisory in paper trading tracker: {e}")
+
+    alert_payload = [{
+        'symbol': 'DAILY_8PM_ADVISORY',
+        'name': 'Daily 8 PM Action Advisory',
+        'event_type': 'DAILY_8PM_ADVISORY',
+        'today_ist': today_ist,
+        'subject': subject,
+        'body': body
+    }]
+
+    print(f"Dispatching 8:00 PM IST Daily Action Advisory for {today_ist}...")
+    success, sent_alerts = alerter.send_alerts(alert_payload)
+    if success:
+        state['DAILY_8PM_ADVISORY'] = {
+            'last_alert_date': today_ist,
+            'last_alert_time': today_time_ist,
+            'last_alert_msg': subject
+        }
+        try:
+            with open(state_file, 'w') as f:
+                json.dump(state, f, indent=2)
+            print("Successfully recorded Daily 8 PM advisory dispatch in alerts_state.json")
+        except Exception as e:
+            print(f"Error saving alerts_state.json: {e}")
+        return True
+    return False
+
 if __name__ == "__main__":
     import sys
+    force_run = '--force' in sys.argv
     if '--check-615' in sys.argv:
         with open('config.json', 'r') as f:
             cfg = json.load(f)
@@ -245,6 +542,12 @@ if __name__ == "__main__":
         alt = EmailAlerter(cfg)
         from advisory_tracker import exit_and_evaluate_eod_trades
         exit_and_evaluate_eod_trades(chk, alt)
+    elif '--session' in sys.argv or any(s in sys.argv for s in ['--130pm', '--8pm', '--6pm']):
+        if '--130pm' in sys.argv or ('--session' in sys.argv and '130' in sys.argv):
+            generate_and_send_130pm_advisory(force=force_run)
+        elif '--8pm' in sys.argv or ('--session' in sys.argv and '800' in sys.argv or '8pm' in sys.argv):
+            generate_and_send_8pm_advisory(force=force_run)
+        else:
+            generate_and_send_6pm_advisory(force=force_run)
     else:
-        force_run = '--force' in sys.argv
         generate_and_send_6pm_advisory(force=force_run)

@@ -542,9 +542,9 @@
                             <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 0.5rem; text-transform: uppercase;">
                                 <i class="fa-solid fa-crosshairs"></i> Empirical Trade Execution
                             </div>
-                            <h2 style="margin: 0; font-size: 1.35rem; color: #f8fafc;">🎯 6:00 PM IST Advisory Signals & Paper Trade Tracker</h2>
+                            <h2 style="margin: 0; font-size: 1.35rem; color: #f8fafc;">🎯 MCX Multi-Session Advisory Signals & Paper Trade Tracker</h2>
                             <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">
-                                Tracking every 6:00 PM suggestion, 6:15 PM 15-minute confirmation check, and 11:30 PM session close outcome for <strong>venu.photos1@gmail.com</strong>.
+                                Tracking live recommendations across high-probability sessions (1:30 PM London Breakout, 6:00 PM Pit Open, 8:00 PM EIA Inventory) and 11:30 PM settlement for <strong>venu.photos1@gmail.com</strong>.
                             </p>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -613,7 +613,7 @@
                         </div>
                         <div class="circuit-search-box">
                             <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="adv-search-input" placeholder="Search commodity or date..." onkeyup="renderAdvisoryTradesTable()">
+                            <input type="text" id="adv-search-input" placeholder="Search commodity, session or date..." onkeyup="renderAdvisoryTradesTable()">
                         </div>
                     </div>
 
@@ -622,9 +622,9 @@
                         <table class="market-table">
                             <thead>
                                 <tr>
-                                    <th>Date & Commodity</th>
-                                    <th>6:00 PM Suggestion</th>
-                                    <th>6:15 PM Confirmation Check</th>
+                                    <th>Date, Session & Asset</th>
+                                    <th>Advisory Suggestion</th>
+                                    <th>Validation / Trigger Check</th>
                                     <th>Paper Trade Entry</th>
                                     <th>Stop-Loss / Target</th>
                                     <th>11:30 PM Exit Price</th>
@@ -633,7 +633,7 @@
                                 </tr>
                             </thead>
                             <tbody id="advisory-tracker-body">
-                                <tr><td colspan="8" class="loading">Loading 6 PM advisory tracker data...</td></tr>
+                                <tr><td colspan="8" class="loading">Loading multi-session advisory tracker data...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -3392,13 +3392,27 @@ function renderAdvisoryTradesTable() {
         if (pt.pnl_inr > 0) pnlColor = '#4ade80';
         else if (pt.pnl_inr < 0) pnlColor = '#fb7185';
 
-        // 6:15 check cell
-        let check615Html = `<span style="color:#94a3b8; font-size:0.8rem;">Direct Entry at 6 PM</span>`;
+        // Validation check cell
+        let check615Html = `<span style="color:#94a3b8; font-size:0.8rem;">Direct Entry</span>`;
         if (c15.status === 'REVERSAL_CONFIRMED') {
             check615Html = `
                 <div>
                     <span style="color:#4ade80; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-circle-check"></i> Reversal Confirmed</span>
                     <div style="font-size:0.75rem; color:#cbd5e1;">Held at ₹${c15.price_615?.toLocaleString('en-IN', {minimumFractionDigits:2}) || '--'}</div>
+                </div>
+            `;
+        } else if (c15.status === 'BREAKOUT_ENTERED') {
+            check615Html = `
+                <div>
+                    <span style="color:#4ade80; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-bolt"></i> London Breakout</span>
+                    <div style="font-size:0.75rem; color:#cbd5e1;">Range break confirmed</div>
+                </div>
+            `;
+        } else if (c15.status === 'BREAKDOWN_ENTERED') {
+            check615Html = `
+                <div>
+                    <span style="color:#fb7185; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-arrow-trend-down"></i> London Breakdown</span>
+                    <div style="font-size:0.75rem; color:#cbd5e1;">Range breakdown confirmed</div>
                 </div>
             `;
         } else if (c15.status === 'EXTENSION_CONFIRMED') {
@@ -3409,7 +3423,7 @@ function renderAdvisoryTradesTable() {
                 </div>
             `;
         } else if (c15.status === 'PENDING_615') {
-            check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-hourglass-half"></i> Waiting for 6:15 PM</span>`;
+            check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Confirmation</span>`;
         } else if (c15.status === 'NO_REVERSAL_STAND_ASIDE') {
             check615Html = `<span style="color:#60a5fa; font-size:0.8rem;"><i class="fa-solid fa-ban"></i> No rejection (Stood Aside)</span>`;
         }
@@ -3421,7 +3435,7 @@ function renderAdvisoryTradesTable() {
                 <div>
                     <span class="adv-action-tag ${actColor}">${pt.action}</span>
                     <strong style="color:#f8fafc; font-size:0.85rem; margin-left:4px;">${pt.quantity} units</strong>
-                    <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${pt.entry_price ? Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} (${pt.entry_time || '6:15 PM'})</div>
+                    <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${pt.entry_price ? Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} (${pt.entry_time || 'Trigger'})</div>
                 </div>
             `;
         }
@@ -3429,8 +3443,13 @@ function renderAdvisoryTradesTable() {
         return `
             <tr>
                 <td>
-                    <div style="font-weight:700; color:#f8fafc; font-size:0.9rem;">${t.name}</div>
-                    <div style="font-size:0.75rem; color:#94a3b8;">${t.date} | ${t.symbol}</div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                        <span style="font-weight:700; color:#f8fafc; font-size:0.9rem;">${t.name}</span>
+                        <span style="font-size:0.68rem; font-weight:700; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:2px 6px; border-radius:4px;">
+                            ${t.session_name || t.time_trigger || t.time_6pm || '06:00 PM IST'}
+                        </span>
+                    </div>
+                    <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${t.date} | ${t.symbol}</div>
                     <div style="font-size:0.7rem; color:#818cf8; margin-top:2px;">${t.event_context || ''}</div>
                 </td>
                 <td>

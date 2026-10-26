@@ -1,20 +1,39 @@
-name: Daily 6 PM IST Commodity Advisory
+name: Daily MCX Commodity Advisories & Settlements
 
 on:
   schedule:
-    # 12:30 UTC = 18:00 (6:00 PM) IST, Monday to Friday
+    # 08:00 UTC = 13:30 (1:30 PM) IST, Monday to Friday (London Breakout)
+    - cron: '00 08 * * 1-5'
+    # 12:30 UTC = 18:00 (6:00 PM) IST, Monday to Friday (US Pit Open Advisory)
     - cron: '30 12 * * 1-5'
-  workflow_dispatch: # Allows manual one-click trigger from GitHub Actions UI anytime
+    # 14:30 UTC = 20:00 (8:00 PM) IST, Monday to Friday (EIA Inventory & US Evening)
+    - cron: '30 14 * * 1-5'
+    # 18:00 UTC = 23:30 (11:30 PM) IST, Monday to Friday (EOD Settlement & Square-off)
+    - cron: '00 18 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      session:
+        description: 'Session Advisory / Action to Run'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - 'auto'
+          - '130pm'
+          - '6pm'
+          - '8pm'
+          - 'check615'
+          - 'exit1130pm'
 
 permissions:
   contents: write
 
 concurrency:
-  group: daily-6pm-advisory
+  group: daily-commodity-advisories
   cancel-in-progress: false
 
 jobs:
-  send-6pm-advisory:
+  run-commodity-advisory:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,7 +50,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run 6 PM Advisory Script
+      - name: Run Session Advisory Script
         env:
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
@@ -42,11 +61,40 @@ jobs:
           ANGEL_PASSWORD: ${{ secrets.ANGEL_PASSWORD }}
           ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
         run: |
-          # If triggered manually via workflow_dispatch, pass --force to bypass date deduplication
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            python daily_6pm_advisory.py --force
+            case "${{ inputs.session }}" in
+              130pm)
+                python daily_6pm_advisory.py --130pm --force
+                ;;
+              6pm)
+                python daily_6pm_advisory.py --6pm --force
+                ;;
+              8pm)
+                python daily_6pm_advisory.py --8pm --force
+                ;;
+              check615)
+                python daily_6pm_advisory.py --check-615
+                ;;
+              exit1130pm)
+                python daily_6pm_advisory.py --exit-eod
+                ;;
+              *)
+                python daily_6pm_advisory.py --force
+                ;;
+            esac
           else
-            python daily_6pm_advisory.py
+            UTC_H=$(date -u +%H)
+            if [ "$UTC_H" -ge 7 ] && [ "$UTC_H" -le 9 ]; then
+              python daily_6pm_advisory.py --130pm
+            elif [ "$UTC_H" -ge 12 ] && [ "$UTC_H" -le 13 ]; then
+              python daily_6pm_advisory.py --6pm
+            elif [ "$UTC_H" -ge 14 ] && [ "$UTC_H" -le 15 ]; then
+              python daily_6pm_advisory.py --8pm
+            elif [ "$UTC_H" -ge 17 ] && [ "$UTC_H" -le 19 ]; then
+              python daily_6pm_advisory.py --exit-eod
+            else
+              python daily_6pm_advisory.py
+            fi
           fi
 
       - name: Commit State & Web Data
@@ -55,7 +103,7 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add web/alerts_state.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json web/advisory_trades_tracker.json
           if ! git diff --staged --quiet; then
-            git commit -m "Auto-record 6:00 PM IST advisory dispatch state"
+            git commit -m "Auto-record commodity advisory dispatch state"
             git pull --rebase origin main
             git push origin HEAD:main
           else

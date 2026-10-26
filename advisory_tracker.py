@@ -60,6 +60,157 @@ def save_tracker(tracker_data):
         print(f"Error saving tracker file: {e}")
         return False
 
+def record_live_130pm_advisory(commodities_list):
+    """
+    Called at 1:30 PM IST by generate_and_send_130pm_advisory.
+    Evaluates Asian range breakout/breakdown, creates paper trades for venu.photos1@gmail.com,
+    and logs entries in the advisory tracker.
+    """
+    tracker = load_tracker()
+    trades = tracker.get('trades', [])
+    
+    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+    today_str = now_dt.strftime('%d %b %Y')
+    
+    existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str}
+    new_entries = []
+
+    for item in commodities_list:
+        sym = item['symbol']
+        name = item['name']
+        cur_p = item['current_price']
+        day_h = item.get('day_high', cur_p)
+        day_l = item.get('day_low', cur_p)
+        p_close = item['prev_close']
+        chg_pct = item['change_pct']
+        lot_size = LOT_SIZES.get(sym, 1)
+
+        trade_id = f"ADV-{today_str.replace(' ', '')}-1330-{sym}"
+        if trade_id in existing_today_ids:
+            continue
+
+        range_pts = day_h - day_l
+        mid_p = round((day_h + day_l) / 2.0, 2)
+
+        # Bullish Breakout: Current price breaking above morning Asian range
+        if cur_p >= day_h * 0.9985 and range_pts > 0:
+            action = "BUY"
+            tgt = round(day_h + (range_pts * 1.2), 2)
+            sl = mid_p
+            entry = {
+                "id": trade_id,
+                "date": today_str,
+                "session_name": "London Breakout (1:30 PM)",
+                "time_trigger": "01:30 PM IST",
+                "time_6pm": "01:30 PM IST",
+                "time_validation": "01:45 PM IST",
+                "time_615": "01:45 PM IST",
+                "time_exit": "11:30 PM IST",
+                "symbol": sym,
+                "name": name,
+                "lot_size": lot_size,
+                "event_context": "London / European Open Asian Range Breakout",
+                "suggestion_6pm": {
+                    "status": "LONDON_BREAKOUT",
+                    "action_text": "BUY / LONDON BREAKOUT",
+                    "rationale": f"European open volume breaking above morning Asian range [₹{day_l:,.2f} – ₹{day_h:,.2f}].",
+                    "reference_price": cur_p,
+                    "stop_loss": sl,
+                    "target": tgt
+                },
+                "check_615": {
+                    "checked": True,
+                    "status": "BREAKOUT_ENTERED",
+                    "price_615": cur_p,
+                    "action_taken": f"Entered BUY {lot_size} units @ ₹{cur_p:,.2f}",
+                    "detail": "London breakout confirmed outside Asian morning range."
+                },
+                "paper_trade": {
+                    "user": USER_ACCOUNT,
+                    "action": "BUY",
+                    "quantity": lot_size,
+                    "entry_price": cur_p,
+                    "entry_time": "01:30 PM IST",
+                    "exit_price": None,
+                    "exit_time": None,
+                    "pnl_points": 0.0,
+                    "pnl_inr": 0.0,
+                    "status": "ACTIVE"
+                },
+                "eod_outcome": {
+                    "session_close": None,
+                    "circuit_limit": None,
+                    "outcome": "PENDING",
+                    "badge": "Active Trade ⚡",
+                    "pnl_display": "Ticking Live...",
+                    "summary": f"Active BUY position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                }
+            }
+            new_entries.append(entry)
+
+        # Bearish Breakdown: Current price breaking below morning Asian range
+        elif cur_p <= day_l * 1.0015 and range_pts > 0:
+            action = "SELL"
+            tgt = round(day_l - (range_pts * 1.2), 2)
+            sl = mid_p
+            entry = {
+                "id": trade_id,
+                "date": today_str,
+                "session_name": "London Breakout (1:30 PM)",
+                "time_trigger": "01:30 PM IST",
+                "time_6pm": "01:30 PM IST",
+                "time_validation": "01:45 PM IST",
+                "time_615": "01:45 PM IST",
+                "time_exit": "11:30 PM IST",
+                "symbol": sym,
+                "name": name,
+                "lot_size": lot_size,
+                "event_context": "London / European Open Asian Range Breakdown",
+                "suggestion_6pm": {
+                    "status": "LONDON_BREAKDOWN",
+                    "action_text": "SELL / LONDON BREAKDOWN",
+                    "rationale": f"European open volume breaking below morning Asian range [₹{day_l:,.2f} – ₹{day_h:,.2f}].",
+                    "reference_price": cur_p,
+                    "stop_loss": sl,
+                    "target": tgt
+                },
+                "check_615": {
+                    "checked": True,
+                    "status": "BREAKDOWN_ENTERED",
+                    "price_615": cur_p,
+                    "action_taken": f"Entered SELL {lot_size} units @ ₹{cur_p:,.2f}",
+                    "detail": "London breakdown confirmed outside Asian morning range."
+                },
+                "paper_trade": {
+                    "user": USER_ACCOUNT,
+                    "action": "SELL",
+                    "quantity": lot_size,
+                    "entry_price": cur_p,
+                    "entry_time": "01:30 PM IST",
+                    "exit_price": None,
+                    "exit_time": None,
+                    "pnl_points": 0.0,
+                    "pnl_inr": 0.0,
+                    "status": "ACTIVE"
+                },
+                "eod_outcome": {
+                    "session_close": None,
+                    "circuit_limit": None,
+                    "outcome": "PENDING",
+                    "badge": "Active Trade ⚡",
+                    "pnl_display": "Ticking Live...",
+                    "summary": f"Active SELL position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                }
+            }
+            new_entries.append(entry)
+
+    if new_entries:
+        tracker['trades'] = new_entries + trades
+        save_tracker(tracker)
+        print(f"Recorded {len(new_entries)} live 1:30 PM London breakout trades for today.")
+    else:
+        print("No London range breakout triggered today at 1:30 PM (commodities inside Asian range).")
+
 def record_live_6pm_advisory(commodities_list, pre_6pm_events):
     """
     Called at 6:00 PM IST by daily_6pm_advisory.py.
@@ -70,10 +221,9 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
     
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     today_str = now_dt.strftime('%d %b %Y')
-    timestamp = int(now_dt.timestamp())
     
     # Check if trades for today already exist
-    existing_today_syms = {t['symbol'] for t in trades if t.get('date') == today_str}
+    existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str}
     new_entries = []
 
     for item in commodities_list:
@@ -87,11 +237,12 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
         uc_price = item['upper_circuit']
         lot_size = LOT_SIZES.get(sym, 1)
 
-        if sym in existing_today_syms:
+        trade_id = f"ADV-{today_str.replace(' ', '')}-1800-{sym}"
+        trade_id_alt = f"ADV-{today_str.replace(' ', '')}-{sym}"
+        if trade_id in existing_today_ids or trade_id_alt in existing_today_ids:
             continue
 
         pre_ev = next((e for e in pre_6pm_events if e.get('symbol') == sym), None)
-        trade_id = f"ADV-{today_str.replace(' ', '')}-{sym}"
 
         if pre_ev:
             direction = pre_ev.get('direction', 'LOWER')
@@ -100,7 +251,10 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
             entry = {
                 "id": trade_id,
                 "date": today_str,
+                "session_name": "US Pit Open (6:00 PM)",
+                "time_trigger": "06:00 PM IST",
                 "time_6pm": "06:00 PM IST",
+                "time_validation": "06:15 PM IST",
                 "time_615": "N/A",
                 "time_exit": "11:30 PM IST",
                 "symbol": sym,
@@ -153,7 +307,10 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
             entry = {
                 "id": trade_id,
                 "date": today_str,
+                "session_name": "US Pit Open (6:00 PM)",
+                "time_trigger": "06:00 PM IST",
                 "time_6pm": "06:00 PM IST",
+                "time_validation": "06:15 PM IST",
                 "time_615": "06:15 PM IST",
                 "time_exit": "11:30 PM IST",
                 "symbol": sym,
@@ -205,6 +362,234 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
         print(f"Recorded {len(new_entries)} live 6 PM advisory trades for today.")
     else:
         print("No new circuit limit trades triggered today at 6 PM.")
+
+def record_live_8pm_advisory(commodities_list, day_name):
+    """
+    Called at 8:00 PM IST by generate_and_send_8pm_advisory.
+    Evaluates EIA inventory setups (Wed Crude, Thu NatGas) and evening momentum,
+    creates paper trades for venu.photos1@gmail.com, and logs entries in the advisory tracker.
+    """
+    tracker = load_tracker()
+    trades = tracker.get('trades', [])
+    
+    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+    today_str = now_dt.strftime('%d %b %Y')
+    
+    existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str}
+    new_entries = []
+
+    # Priority 1: Wednesday EIA Crude Oil Special
+    if day_name == 'Wednesday':
+        crude = next((c for c in commodities_list if c['symbol'] == 'CRUDEOIL'), None)
+        if crude:
+            trade_id = f"ADV-{today_str.replace(' ', '')}-2000-CRUDEOIL"
+            if trade_id not in existing_today_ids:
+                cur_p = crude['current_price']
+                p_close = crude['prev_close']
+                chg = crude['change_pct']
+                lc = crude['lower_circuit']
+                uc = crude['upper_circuit']
+                lot_size = LOT_SIZES.get('CRUDEOIL', 50)
+
+                # Fade overreaction if near circuit or spike > 1.2%
+                if 'NEAR' in crude['status'] or 'HIT' in crude['status'] or abs(chg) >= 1.5:
+                    action = "BUY" if chg < 0 else "SELL"
+                    sl = round(lc * 0.996 if action == "BUY" else uc * 1.004, 2)
+                    tgt = p_close
+                    entry = {
+                        "id": trade_id,
+                        "date": today_str,
+                        "session_name": "EIA Crude Inventory (8:00 PM)",
+                        "time_trigger": "08:00 PM IST",
+                        "time_6pm": "08:00 PM IST",
+                        "time_validation": "08:15 PM IST",
+                        "time_615": "08:15 PM IST",
+                        "time_exit": "11:30 PM IST",
+                        "symbol": "CRUDEOIL",
+                        "name": "Crude Oil",
+                        "lot_size": lot_size,
+                        "event_context": "Wednesday EIA Petroleum Inventory Spike Fade",
+                        "suggestion_6pm": {
+                            "status": "EIA_FADE",
+                            "action_text": f"{action} / FADE EIA INVENTORY OVERREACTION",
+                            "rationale": "Historical EIA inventory spikes show 60%+ mean-reversion rate back toward anchor.",
+                            "reference_price": cur_p,
+                            "stop_loss": sl,
+                            "target": tgt
+                        },
+                        "check_615": {
+                            "checked": True,
+                            "status": "DIRECT_ENTRY",
+                            "price_615": cur_p,
+                            "action_taken": f"Entered {action} {lot_size} units @ ₹{cur_p:,.2f}",
+                            "detail": "EIA Inventory setup entered at 8:00 PM IST."
+                        },
+                        "paper_trade": {
+                            "user": USER_ACCOUNT,
+                            "action": action,
+                            "quantity": lot_size,
+                            "entry_price": cur_p,
+                            "entry_time": "08:00 PM IST",
+                            "exit_price": None,
+                            "exit_time": None,
+                            "pnl_points": 0.0,
+                            "pnl_inr": 0.0,
+                            "status": "ACTIVE"
+                        },
+                        "eod_outcome": {
+                            "session_close": None,
+                            "circuit_limit": lc if action == "BUY" else uc,
+                            "outcome": "PENDING",
+                            "badge": "Active Trade ⚡",
+                            "pnl_display": "Ticking Live...",
+                            "summary": f"Active {action} position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                        }
+                    }
+                    new_entries.append(entry)
+
+    # Priority 2: Thursday EIA Natural Gas Special
+    elif day_name == 'Thursday':
+        natgas = next((c for c in commodities_list if c['symbol'] == 'NATURALGAS'), None)
+        if natgas:
+            trade_id = f"ADV-{today_str.replace(' ', '')}-2000-NATURALGAS"
+            if trade_id not in existing_today_ids:
+                cur_p = natgas['current_price']
+                p_close = natgas['prev_close']
+                chg = natgas['change_pct']
+                lc = natgas['lower_circuit']
+                uc = natgas['upper_circuit']
+                lot_size = LOT_SIZES.get('NATURALGAS', 1250)
+
+                if 'NEAR' in natgas['status'] or 'HIT' in natgas['status'] or abs(chg) >= 2.0:
+                    action = "BUY" if chg < 0 else "SELL"
+                    sl = round(lc * 0.996 if action == "BUY" else uc * 1.004, 2)
+                    tgt = p_close
+                    entry = {
+                        "id": trade_id,
+                        "date": today_str,
+                        "session_name": "EIA NatGas Storage (8:00 PM)",
+                        "time_trigger": "08:00 PM IST",
+                        "time_6pm": "08:00 PM IST",
+                        "time_validation": "08:15 PM IST",
+                        "time_615": "08:15 PM IST",
+                        "time_exit": "11:30 PM IST",
+                        "symbol": "NATURALGAS",
+                        "name": "Natural Gas",
+                        "lot_size": lot_size,
+                        "event_context": "Thursday EIA Storage Report Spike Fade",
+                        "suggestion_6pm": {
+                            "status": "EIA_FADE",
+                            "action_text": f"{action} / FADE STORAGE REPORT SPIKE",
+                            "rationale": "High-probability retracement of EIA inventory knee-jerk spike.",
+                            "reference_price": cur_p,
+                            "stop_loss": sl,
+                            "target": tgt
+                        },
+                        "check_615": {
+                            "checked": True,
+                            "status": "DIRECT_ENTRY",
+                            "price_615": cur_p,
+                            "action_taken": f"Entered {action} {lot_size} units @ ₹{cur_p:,.2f}",
+                            "detail": "EIA Natural Gas setup entered at 8:00 PM IST."
+                        },
+                        "paper_trade": {
+                            "user": USER_ACCOUNT,
+                            "action": action,
+                            "quantity": lot_size,
+                            "entry_price": cur_p,
+                            "entry_time": "08:00 PM IST",
+                            "exit_price": None,
+                            "exit_time": None,
+                            "pnl_points": 0.0,
+                            "pnl_inr": 0.0,
+                            "status": "ACTIVE"
+                        },
+                        "eod_outcome": {
+                            "session_close": None,
+                            "circuit_limit": lc if action == "BUY" else uc,
+                            "outcome": "PENDING",
+                            "badge": "Active Trade ⚡",
+                            "pnl_display": "Ticking Live...",
+                            "summary": f"Active {action} position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                        }
+                    }
+                    new_entries.append(entry)
+
+    # General US Evening Follow-through for other commodities
+    for item in commodities_list:
+        sym = item['symbol']
+        if (day_name == 'Wednesday' and sym == 'CRUDEOIL') or (day_name == 'Thursday' and sym == 'NATURALGAS'):
+            continue
+        trade_id = f"ADV-{today_str.replace(' ', '')}-2000-{sym}"
+        if trade_id in existing_today_ids:
+            continue
+
+        status = item['status']
+        if 'LOCKED' in status or 'HIT' in status or 'NEAR' in status:
+            direction = 'LOWER' if 'LOWER' in status else 'UPPER'
+            action = "BUY" if direction == 'LOWER' else "SELL"
+            cur_p = item['current_price']
+            lc_price = item['lower_circuit']
+            uc_price = item['upper_circuit']
+            lot_size = LOT_SIZES.get(sym, 1)
+            sl = round(lc_price * 0.996 if direction == 'LOWER' else uc_price * 1.004, 2)
+            entry = {
+                "id": trade_id,
+                "date": today_str,
+                "session_name": "Evening Pit Review (8:00 PM)",
+                "time_trigger": "08:00 PM IST",
+                "time_6pm": "08:00 PM IST",
+                "time_validation": "08:15 PM IST",
+                "time_615": "08:15 PM IST",
+                "time_exit": "11:30 PM IST",
+                "symbol": sym,
+                "name": item['name'],
+                "lot_size": lot_size,
+                "event_context": f"US Evening {direction.title()} Circuit Band Test",
+                "suggestion_6pm": {
+                    "status": "EVENING_CIRCUIT",
+                    "action_text": f"{action} / EVENING CIRCUIT PLAY",
+                    "rationale": "High evening liquidity test against circuit boundary.",
+                    "reference_price": cur_p,
+                    "stop_loss": sl,
+                    "target": item['prev_close']
+                },
+                "check_615": {
+                    "checked": True,
+                    "status": "DIRECT_ENTRY",
+                    "price_615": cur_p,
+                    "action_taken": f"Entered {action} {lot_size} units @ ₹{cur_p:,.2f}",
+                    "detail": "Entered at 8:00 PM IST."
+                },
+                "paper_trade": {
+                    "user": USER_ACCOUNT,
+                    "action": action,
+                    "quantity": lot_size,
+                    "entry_price": cur_p,
+                    "entry_time": "08:00 PM IST",
+                    "exit_price": None,
+                    "exit_time": None,
+                    "pnl_points": 0.0,
+                    "pnl_inr": 0.0,
+                    "status": "ACTIVE"
+                },
+                "eod_outcome": {
+                    "session_close": None,
+                    "circuit_limit": lc_price if direction == 'LOWER' else uc_price,
+                    "outcome": "PENDING",
+                    "badge": "Active Trade ⚡",
+                    "pnl_display": "Ticking Live...",
+                    "summary": f"Active {action} position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                }
+            }
+            new_entries.append(entry)
+
+    if new_entries:
+        tracker['trades'] = new_entries + trades
+        save_tracker(tracker)
+        print(f"Recorded {len(new_entries)} live 8:00 PM evening advisory trades for today.")
+    else:
+        print("No new 8:00 PM evening advisory trades triggered today.")
 
 def check_and_execute_615_confirmation(checker, alerter):
     """

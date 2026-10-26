@@ -85,6 +85,16 @@ def main():
     except Exception as e:
         print(f"Error generating circuits data & history: {e}")
 
+    # Check and trigger 1:30 PM IST London/European Session Breakout Advisory (Mon - Fri)
+    try:
+        now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
+        if now_ist.weekday() < 5 and (now_ist.hour == 13 and 28 <= now_ist.minute <= 42):
+            print("\n--- Checking 1:30 PM IST London Breakout Advisory ---")
+            from daily_6pm_advisory import generate_and_send_130pm_advisory
+            generate_and_send_130pm_advisory()
+    except Exception as e:
+        print(f"Error checking 1:30 PM advisory: {e}")
+
     # Check and trigger Daily 6:00 PM IST Action Advisory (Monday - Friday)
     try:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
@@ -104,6 +114,16 @@ def main():
             check_and_execute_615_confirmation(checker, alerter)
     except Exception as e:
         print(f"Error checking 6:15 PM confirmation: {e}")
+
+    # Check and trigger 8:00 PM IST EIA Inventory & US Evening Advisory (Mon - Fri)
+    try:
+        now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
+        if now_ist.weekday() < 5 and (now_ist.hour == 20 and now_ist.minute <= 12):
+            print("\n--- Checking 8:00 PM IST US Evening & EIA Inventory Advisory ---")
+            from daily_6pm_advisory import generate_and_send_8pm_advisory
+            generate_and_send_8pm_advisory()
+    except Exception as e:
+        print(f"Error checking 8:00 PM advisory: {e}")
 
     # Check and trigger 11:30 PM IST Session Close Exit & Evaluation (Monday - Friday)
     try:
