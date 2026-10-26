@@ -1,6 +1,104 @@
 {
   "trades": [
     {
+      "id": "ADV-26Oct2026-1330-GOLD",
+      "date": "26 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 10,
+      "event_context": "London / European Open Asian Range Breakout",
+      "suggestion_6pm": {
+        "status": "LONDON_BREAKOUT",
+        "action_text": "BUY / LONDON BREAKOUT",
+        "rationale": "European open volume breaking above morning Asian range [\u20b9142,132.00 \u2013 \u20b9142,888.00].",
+        "reference_price": 142734.0,
+        "stop_loss": 142510.0,
+        "target": 143795.2
+      },
+      "check_615": {
+        "checked": true,
+        "status": "BREAKOUT_ENTERED",
+        "price_615": 142734.0,
+        "action_taken": "Entered BUY 10 units @ \u20b9142,734.00",
+        "detail": "London breakout confirmed outside Asian morning range."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 10,
+        "entry_price": 142734.0,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
+      "id": "ADV-26Oct2026-1330-COPPER",
+      "date": "26 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPER",
+      "name": "Copper",
+      "lot_size": 2500,
+      "event_context": "London / European Open Asian Range Breakout",
+      "suggestion_6pm": {
+        "status": "LONDON_BREAKOUT",
+        "action_text": "BUY / LONDON BREAKOUT",
+        "rationale": "European open volume breaking above morning Asian range [\u20b91,377.50 \u2013 \u20b91,389.45].",
+        "reference_price": 1389.25,
+        "stop_loss": 1383.47,
+        "target": 1403.79
+      },
+      "check_615": {
+        "checked": true,
+        "status": "BREAKOUT_ENTERED",
+        "price_615": 1389.25,
+        "action_taken": "Entered BUY 2500 units @ \u20b91,389.25",
+        "detail": "London breakout confirmed outside Asian morning range."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 2500,
+        "entry_price": 1389.25,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
       "id": "ADV-20261023-NATURALGAS",
       "date": "23 Oct 2026",
       "time_6pm": "06:00 PM IST",
@@ -93,11 +191,11 @@
       }
     }
   ],
-  "last_updated": "26 Oct 2026, 10:35 AM IST",
+  "last_updated": "26 Oct 2026, 01:31 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
-    "total_signals": 2,
+    "total_signals": 4,
     "executed_count": 1,
     "correct_count": 1,
     "wrong_count": 0,
@@ -105,10 +203,10 @@
     "win_rate_pct": 100.0,
     "total_pnl_inr": 11481.25,
     "avg_trade_pnl_inr": 11481.25,
-    "active_trades_count": 0,
+    "active_trades_count": 2,
     "starting_cash_inr": 1000000.0,
     "current_cash_inr": 1011481.25,
-    "used_margin_inr": 0,
+    "used_margin_inr": 0.0,
     "available_cash_inr": 1011481.25,
     "net_worth_inr": 1011481.25
   }
