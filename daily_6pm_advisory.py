@@ -302,6 +302,18 @@ def generate_and_send_130pm_advisory(force=False):
         print("Could not fetch commodities data for 1:30 PM advisory.")
         return False
 
+    # Record and evaluate intelligent advisory trades first
+    records_map = {}
+    try:
+        from advisory_tracker import record_live_130pm_advisory, load_tracker
+        new_records = record_live_130pm_advisory(commodities_list)
+        tracker_data = load_tracker()
+        today_str = now_dt.strftime('%d %b %Y')
+        all_today_london = [t for t in tracker_data.get('trades', []) if t.get('date') == today_str and '1:30 PM' in t.get('session_name', '')]
+        records_map = {t['symbol']: t for t in all_today_london}
+    except Exception as e:
+        print(f"Error recording live 1:30 PM advisory in paper trading tracker: {e}")
+
     action_items = []
     has_active_breakouts = False
 
@@ -312,38 +324,79 @@ def generate_and_send_130pm_advisory(force=False):
         day_h = item.get('day_high', cur_p)
         day_l = item.get('day_low', cur_p)
         chg_pct = item['change_pct']
-        
-        range_pts = day_h - day_l
         mid_p = round((day_h + day_l) / 2.0, 2)
         
-        # Bullish Breakout: Current price is at or within 0.15% of day high
-        if cur_p >= day_h * 0.9985 and range_pts > 0:
-            has_active_breakouts = True
-            tgt = round(day_h + (range_pts * 1.2), 2)
-            sl = mid_p
-            action_items.append(
-                f"🟢 <b>{name.upper()} (London Bullish Breakout)</b>\n"
-                f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}%) | Morning High: ₹{day_h:,.2f}\n"
-                f"  • Setup: European open volume breaking above morning Asian range [₹{day_l:,.2f} – ₹{day_h:,.2f}].\n"
-                f"  • Recommended Action: <b>BUY / RIDE BREAKOUT</b>\n"
-                f"  • Entry: Around current levels (₹{cur_p:,.2f})\n"
-                f"  • Stop-Loss: ₹{sl:,.2f} (Asian session mid-anchor)\n"
-                f"  • Target: ₹{tgt:,.2f} (1.2x range extension into London session)"
-            )
-        # Bearish Breakdown: Current price is at or within 0.15% of day low
-        elif cur_p <= day_l * 1.0015 and range_pts > 0:
-            has_active_breakouts = True
-            tgt = round(day_l - (range_pts * 1.2), 2)
-            sl = mid_p
-            action_items.append(
-                f"🔴 <b>{name.upper()} (London Bearish Breakdown)</b>\n"
-                f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}%) | Morning Low: ₹{day_l:,.2f}\n"
-                f"  • Setup: European open volume breaking below morning Asian range [₹{day_l:,.2f} – ₹{day_h:,.2f}].\n"
-                f"  • Recommended Action: <b>SELL / SHORT BREAKDOWN</b>\n"
-                f"  • Entry: Around current levels (₹{cur_p:,.2f})\n"
-                f"  • Stop-Loss: ₹{sl:,.2f} (Asian session mid-anchor)\n"
-                f"  • Target: ₹{tgt:,.2f} (1.2x range extension into London session)"
-            )
+        rec = records_map.get(sym)
+        if rec:
+            pt = rec.get('paper_trade', {})
+            act = pt.get('action', 'STAND_ASIDE')
+            st = pt.get('status', 'STAND_ASIDE')
+            s6 = rec.get('suggestion_6pm', {})
+            ctx = rec.get('event_context', '')
+            ep = pt.get('entry_price', cur_p)
+            sl = s6.get('stop_loss')
+            tgt = s6.get('target')
+            rationale = s6.get('rationale', '')
+
+            if act == 'BUY' and st in ['ACTIVE', 'PENDING_LIMIT']:
+                has_active_breakouts = True
+                action_items.append(
+                    f"🟢 <b>{name.upper()} (London Bullish Breakout)</b>\n"
+                    f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}%) | Retest Support: ₹{ep:,.2f}\n"
+                    f"  • Setup: {ctx}\n"
+                    f"  • Recommended Action: <b>BUY @ SUPPORT RETEST (₹{ep:,.2f})</b>\n"
+                    f"  • Stop-Loss: ₹{sl:,.2f} (Tight Risk Stop) | Target: ₹{tgt:,.2f} (1.2x Range Expansion)\n"
+                    f"  • Execution: Retest limit order queued with auto-trailing stop to breakeven."
+                )
+            elif act == 'SELL' and st in ['ACTIVE', 'PENDING_LIMIT']:
+                has_active_breakouts = True
+                action_items.append(
+                    f"🔴 <b>{name.upper()} (London Bearish Breakdown)</b>\n"
+                    f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}%) | Retest Resistance: ₹{ep:,.2f}\n"
+                    f"  • Setup: {ctx}\n"
+                    f"  • Recommended Action: <b>SELL @ RESISTANCE RETEST (₹{ep:,.2f})</b>\n"
+                    f"  • Stop-Loss: ₹{sl:,.2f} (Tight Risk Stop) | Target: ₹{tgt:,.2f} (1.2x Range Expansion)\n"
+                    f"  • Execution: Retest limit order queued with auto-trailing stop to breakeven."
+                )
+            elif 'Liquidity Sweep' in ctx or 'LIQUIDITY_SWEEP' in rec.get('check_615', {}).get('status', ''):
+                action_items.append(
+                    f"🛡️ <b>{name.upper()} (Trap Avoided: Asian Liquidity Sweep)</b>\n"
+                    f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}%) | Morning Low: ₹{day_l:,.2f}\n"
+                    f"  • Rationale: {rationale}\n"
+                    f"  • Action: <b>STAND ASIDE (Capital Protected)</b>\n"
+                    f"  • Risk Protection: Blocked false counter-trend breakdown in an active macro bull trend."
+                )
+            elif 'Bull Trap' in ctx or 'BULL_TRAP' in rec.get('check_615', {}).get('status', ''):
+                action_items.append(
+                    f"🛡️ <b>{name.upper()} (Trap Avoided: Counter-Trend Bull Trap)</b>\n"
+                    f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}%) | Morning High: ₹{day_h:,.2f}\n"
+                    f"  • Rationale: {rationale}\n"
+                    f"  • Action: <b>STAND ASIDE (Capital Protected)</b>\n"
+                    f"  • Risk Protection: Blocked false counter-trend breakout in an active macro bear trend."
+                )
+            elif 'Sector Correlation Guard' in ctx or 'SECTOR_GUARD' in rec.get('check_615', {}).get('status', ''):
+                action_items.append(
+                    f"🛡️ <b>{name.upper()} (Sector Correlation Guard)</b>\n"
+                    f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}%)\n"
+                    f"  • Rationale: {rationale}\n"
+                    f"  • Action: <b>STAND ASIDE (Correlated Exposure Capped)</b>\n"
+                    f"  • Risk Protection: Eliminated double-drawdown risk across correlated commodity baskets."
+                )
+            elif 'Portfolio Circuit Breaker' in ctx:
+                action_items.append(
+                    f"🛑 <b>{name.upper()} (Portfolio Circuit Breaker Triggered)</b>\n"
+                    f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}%)\n"
+                    f"  • Rationale: {rationale}\n"
+                    f"  • Action: <b>STAND ASIDE (Portfolio Risk Halted)</b>\n"
+                    f"  • Risk Protection: Trading halted to enforce ₹15,000 maximum daily portfolio loss cap."
+                )
+            else:
+                action_items.append(
+                    f"ℹ️ <b>{name.upper()} (Range-Bound Asian Session)</b>\n"
+                    f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}%)\n"
+                    f"  • Morning Range: ₹{day_l:,.2f} – ₹{day_h:,.2f} (Mid: ₹{mid_p:,.2f})\n"
+                    f"  • Standing aside. Awaiting European range breakout before deploying capital."
+                )
         else:
             action_items.append(
                 f"ℹ️ <b>{name.upper()} (Range-Bound Asian Session)</b>\n"
@@ -365,18 +418,13 @@ def generate_and_send_130pm_advisory(force=False):
         f"<b>⚡ HIGH-PROBABILITY ACTION PLAYBOOK:</b>\n"
         f"{action_text}\n\n"
         f"<b>🛡️ RISK MANAGEMENT & EXECUTION RULES:</b>\n"
-        f"1. <b>London Open Follow-Through</b>: Enter only when the 1:30 PM 15-minute candle closes outside morning Asian range.\n"
-        f"2. <b>Mid-Point Anchor Stop</b>: If price falls back across Asian mid-point, exit immediately (false breakout protection).\n"
-        f"3. <b>Hard EOD Exit</b>: All intraday breakout positions auto-square-off at 11:30 PM IST.\n\n"
+        f"1. <b>Daily CPR Macro Trend Filter</b>: Counter-trend Asian low breakdowns during macro bull days (and high breakouts during macro bear days) are automatically blocked as institutional liquidity sweep traps.\n"
+        f"2. <b>Support & Resistance Retest Execution</b>: Entries are executed on retests of broken key levels with tight risk-managed stop-losses (-0.25% to -0.30%) rather than chasing market momentum.\n"
+        f"3. <b>Trailing Stop to Breakeven</b>: Once an active trade achieves +50% of its target distance, stop-loss automatically trails to entry price for a guaranteed risk-free run.\n"
+        f"4. <b>Sector Correlation Guard & Circuit Breaker</b>: Maximum 1 position permitted per commodity basket (Bullion, Base Metals, Energy); trading halts if daily loss reaches ₹15,000.\n"
+        f"5. <b>Hard EOD Exit</b>: All intraday breakout positions auto-square-off at 11:30 PM IST.\n\n"
         f"🌐 <b>Live Interactive Dashboard</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
     )
-
-    # Record in paper trading advisory tracker
-    try:
-        from advisory_tracker import record_live_130pm_advisory
-        record_live_130pm_advisory(commodities_list)
-    except Exception as e:
-        print(f"Error recording live 1:30 PM advisory in paper trading tracker: {e}")
 
     alert_payload = [{
         'symbol': 'DAILY_130PM_ADVISORY',

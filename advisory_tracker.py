@@ -387,134 +387,188 @@ def record_live_130pm_advisory(commodities_list):
         range_pts = day_h - day_l
         mid_p = round((day_h + day_l) / 2.0, 2)
 
-        # Bullish Breakout: Enter on Retest of Broken Asian High (Support Level)
+        # 1. Daily Pivot & Central Pivot Range (CPR) Math for Macro Trend Alignment
+        pivot = round((day_h + day_l + p_close) / 3.0, 2)
+        bc = round((day_h + day_l) / 2.0, 2)
+        tc = round((pivot - bc) + pivot, 2)
+        cpr_top = max(tc, bc)
+        cpr_bot = min(tc, bc)
+
+        # Macro Trend Alignment Rules:
+        # Bullish if above CPR or day change is positive (>= +0.15%)
+        # Bearish if below CPR or day change is negative (<= -0.15%)
+        is_macro_bullish = (cur_p >= cpr_top) or (chg_pct >= 0.15)
+        is_macro_bearish = (cur_p <= cpr_bot) or (chg_pct <= -0.15)
+
+        # Sector mapping for Correlation Guard
+        SECTORS = {
+            'GOLD': 'BULLION',
+            'SILVER': 'BULLION',
+            'COPPER': 'BASE_METALS',
+            'CRUDEOIL': 'ENERGY',
+            'NATURALGAS': 'ENERGY'
+        }
+        item_sector = SECTORS.get(sym, 'OTHER')
+        already_called_sectors = {SECTORS.get(e.get('symbol')) for e in new_entries if e.get('paper_trade', {}).get('action') in ['BUY', 'SELL']}
+
+        # Check Portfolio Circuit Breaker (Max Daily Loss Limit = ₹15,000)
+        today_realized_loss = sum(abs(t.get('paper_trade', {}).get('pnl_inr', 0.0)) for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('pnl_inr', 0.0) < 0)
+        portfolio_halted = today_realized_loss >= 15000.0
+
+        # Bullish Breakout: Current price breaking above morning Asian range
         if cur_p >= day_h * 0.9985 and range_pts > 0:
-            action = "BUY"
-            support_entry = day_h
-            tight_sl = round(day_h - max(range_pts * 0.25, day_h * 0.003), 2)
-            tgt = round(day_h + (range_pts * 1.2), 2)
-            
-            # If price is right at support (within 0.2%), enter ACTIVE; otherwise set PENDING_LIMIT
-            is_at_support = abs(cur_p - support_entry) / support_entry <= 0.002
-            entry_p = cur_p if is_at_support else support_entry
-            trade_status = "ACTIVE" if is_at_support else "PENDING_LIMIT"
-            
-            entry = {
-                "id": trade_id,
-                "date": today_str,
-                "session_name": "London Breakout (1:30 PM)",
-                "time_trigger": "01:30 PM IST",
-                "time_6pm": "01:30 PM IST",
-                "time_validation": "01:45 PM IST",
-                "time_615": "01:45 PM IST",
-                "time_exit": "11:30 PM IST",
-                "symbol": sym,
-                "name": name,
-                "lot_size": lot_size,
-                "event_context": f"London / European Breakout (Support Retest @ ₹{support_entry:,.2f})",
-                "suggestion_6pm": {
-                    "status": "LONDON_BREAKOUT",
-                    "action_text": f"BUY @ SUPPORT ₹{support_entry:,.2f}",
-                    "rationale": f"European open breakout. Entering at Key Support (broken Asian High ₹{day_h:,.2f}) with tight risk-defined SL.",
-                    "reference_price": support_entry,
-                    "stop_loss": tight_sl,
-                    "target": tgt
-                },
-                "check_615": {
-                    "checked": True,
-                    "status": "BREAKOUT_ENTERED" if is_at_support else "RETEST_PENDING",
-                    "price_615": entry_p,
-                    "action_taken": f"BUY {lot_size} units @ Support ₹{entry_p:,.2f}" if is_at_support else f"Awaiting Support Retest @ ₹{support_entry:,.2f}",
-                    "detail": f"Support Retest order at Asian High ₹{support_entry:,.2f} with SL ₹{tight_sl:,.2f}."
-                },
-                "paper_trade": {
-                    "user": USER_ACCOUNT,
-                    "action": "BUY",
-                    "quantity": lot_size,
-                    "entry_price": entry_p,
-                    "entry_time": "01:30 PM IST",
-                    "exit_price": None,
-                    "exit_time": None,
-                    "pnl_points": 0.0,
-                    "pnl_inr": 0.0,
-                    "status": trade_status,
-                    "target": tgt,
-                    "stop_loss": tight_sl
-                },
-                "eod_outcome": {
-                    "session_close": None,
-                    "circuit_limit": None,
-                    "outcome": "PENDING",
-                    "badge": "Active Trade ⚡" if trade_status == "ACTIVE" else "Limit at Support ⏳",
-                    "pnl_display": "Ticking Live..." if trade_status == "ACTIVE" else "Awaiting Retest",
-                    "summary": f"Support retest entry @ ₹{support_entry:,.2f} with tight SL ₹{tight_sl:,.2f} and TGT ₹{tgt:,.2f}."
+            if portfolio_halted:
+                # Halt Rule
+                entry = {
+                    "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                    "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "lot_size": lot_size, "event_context": "Portfolio Circuit Breaker Triggered (Max Daily Loss Hit)",
+                    "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / PORTFOLIO HALT", "rationale": f"Daily loss limit (₹15,000) reached. System halted to preserve capital.", "reference_price": cur_p, "stop_loss": None, "target": None },
+                    "check_615": { "checked": True, "status": "CIRCUIT_BREAKER_HALT", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": "Daily risk cap preserved." },
+                    "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                    "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Capital Protected 🛡️", "pnl_display": "₹0.00", "summary": "Halted by Portfolio Risk Circuit Breaker." }
                 }
-            }
+            elif is_macro_bearish:
+                # Trend Alignment Filter: Counter-Trend Bull Trap Avoidance
+                entry = {
+                    "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                    "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "lot_size": lot_size, "event_context": f"Counter-Trend Bull Trap Avoided (Daily Bearish: {chg_pct:+.2f}%)",
+                    "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / COUNTER-TREND TRAP", "rationale": f"Macro trend is Bearish (below CPR ₹{cpr_bot:,.2f} | {chg_pct:+.2f}%). High Asian range breakout is a classic Bull Trap. Avoided.", "reference_price": cur_p, "stop_loss": None, "target": None },
+                    "check_615": { "checked": True, "status": "BULL_TRAP_AVOIDED", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": f"Counter-trend BUY blocked by Macro CPR Filter." },
+                    "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                    "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Avoided Trap 🛡️", "pnl_display": "₹0.00", "summary": f"Counter-trend BUY blocked by Daily CPR Trend Filter. Capital protected." }
+                }
+            elif item_sector in already_called_sectors:
+                # Sector Correlation Guard
+                entry = {
+                    "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                    "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "lot_size": lot_size, "event_context": f"Sector Correlation Guard ({item_sector} Exposure Capped)",
+                    "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / SECTOR CAP", "rationale": f"{item_sector} sector risk already allocated. Stood aside to eliminate double correlated risk.", "reference_price": cur_p, "stop_loss": None, "target": None },
+                    "check_615": { "checked": True, "status": "SECTOR_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": f"{item_sector} exposure already active." },
+                    "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                    "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Sector Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside via Sector Correlation Guard." }
+                }
+            else:
+                # Valid Trend-Aligned Breakout: Enter on Retest of Broken Asian High (Support)
+                support_entry = day_h
+                tight_sl = round(day_h - max(range_pts * 0.25, day_h * 0.003), 2)
+                tgt = round(day_h + (range_pts * 1.2), 2)
+                is_at_support = abs(cur_p - support_entry) / support_entry <= 0.002
+                entry_p = cur_p if is_at_support else support_entry
+                trade_status = "ACTIVE" if is_at_support else "PENDING_LIMIT"
+                
+                entry = {
+                    "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                    "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "lot_size": lot_size, "event_context": f"London Bullish Breakout (Trend Aligned: CPR Top ₹{cpr_top:,.2f})",
+                    "suggestion_6pm": {
+                        "status": "LONDON_BREAKOUT",
+                        "action_text": f"BUY @ SUPPORT ₹{support_entry:,.2f}",
+                        "rationale": f"Trend-aligned European breakout (Macro Bullish above CPR). Entering at Support ₹{support_entry:,.2f} with tight SL.",
+                        "reference_price": support_entry, "stop_loss": tight_sl, "target": tgt
+                    },
+                    "check_615": {
+                        "checked": True, "status": "BREAKOUT_ENTERED" if is_at_support else "RETEST_PENDING",
+                        "price_615": entry_p,
+                        "action_taken": f"BUY {lot_size} units @ Support ₹{entry_p:,.2f}" if is_at_support else f"Awaiting Support Retest @ ₹{support_entry:,.2f}",
+                        "detail": f"Support Retest order at Asian High ₹{support_entry:,.2f} with tight SL ₹{tight_sl:,.2f}."
+                    },
+                    "paper_trade": {
+                        "user": USER_ACCOUNT, "action": "BUY", "quantity": lot_size,
+                        "entry_price": entry_p, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None,
+                        "pnl_points": 0.0, "pnl_inr": 0.0, "status": trade_status, "target": tgt, "stop_loss": tight_sl
+                    },
+                    "eod_outcome": {
+                        "session_close": None, "circuit_limit": None, "outcome": "PENDING",
+                        "badge": "Active Trade ⚡" if trade_status == "ACTIVE" else "Limit at Support ⏳",
+                        "pnl_display": "Ticking Live..." if trade_status == "ACTIVE" else "Awaiting Retest",
+                        "summary": f"Support retest entry @ ₹{support_entry:,.2f} (SL: ₹{tight_sl:,.2f}, TGT: ₹{tgt:,.2f})."
+                    }
+                }
             new_entries.append(entry)
 
-        # Bearish Breakdown: Enter on Bounce to Broken Asian Low (Resistance Level)
+        # Bearish Breakdown: Current price breaking below morning Asian range
         elif cur_p <= day_l * 1.0015 and range_pts > 0:
-            action = "SELL"
-            resistance_entry = day_l
-            tight_sl = round(day_l + max(range_pts * 0.25, day_l * 0.003), 2)
-            tgt = round(day_l - (range_pts * 1.2), 2)
-            
-            # If price is right at resistance (within 0.2%), enter ACTIVE; otherwise set PENDING_LIMIT
-            is_at_res = abs(cur_p - resistance_entry) / resistance_entry <= 0.002
-            entry_p = cur_p if is_at_res else resistance_entry
-            trade_status = "ACTIVE" if is_at_res else "PENDING_LIMIT"
-            
-            entry = {
-                "id": trade_id,
-                "date": today_str,
-                "session_name": "London Breakout (1:30 PM)",
-                "time_trigger": "01:30 PM IST",
-                "time_6pm": "01:30 PM IST",
-                "time_validation": "01:45 PM IST",
-                "time_615": "01:45 PM IST",
-                "time_exit": "11:30 PM IST",
-                "symbol": sym,
-                "name": name,
-                "lot_size": lot_size,
-                "event_context": f"London / European Breakdown (Resistance Retest @ ₹{resistance_entry:,.2f})",
-                "suggestion_6pm": {
-                    "status": "LONDON_BREAKDOWN",
-                    "action_text": f"SELL @ RESISTANCE ₹{resistance_entry:,.2f}",
-                    "rationale": f"European open breakdown. Entering on bounce to Key Resistance (broken Asian Low ₹{day_l:,.2f}) with tight risk-defined SL.",
-                    "reference_price": resistance_entry,
-                    "stop_loss": tight_sl,
-                    "target": tgt
-                },
-                "check_615": {
-                    "checked": True,
-                    "status": "BREAKDOWN_ENTERED" if is_at_res else "RETEST_PENDING",
-                    "price_615": entry_p,
-                    "action_taken": f"SELL {lot_size} units @ Resistance ₹{entry_p:,.2f}" if is_at_res else f"Awaiting Resistance Retest @ ₹{resistance_entry:,.2f}",
-                    "detail": f"Resistance Retest order at Asian Low ₹{resistance_entry:,.2f} with SL ₹{tight_sl:,.2f}."
-                },
-                "paper_trade": {
-                    "user": USER_ACCOUNT,
-                    "action": "SELL",
-                    "quantity": lot_size,
-                    "entry_price": entry_p,
-                    "entry_time": "01:30 PM IST",
-                    "exit_price": None,
-                    "exit_time": None,
-                    "pnl_points": 0.0,
-                    "pnl_inr": 0.0,
-                    "status": trade_status,
-                    "target": tgt,
-                    "stop_loss": tight_sl
-                },
-                "eod_outcome": {
-                    "session_close": None,
-                    "circuit_limit": None,
-                    "outcome": "PENDING",
-                    "badge": "Active Trade ⚡" if trade_status == "ACTIVE" else "Limit at Resistance ⏳",
-                    "pnl_display": "Ticking Live..." if trade_status == "ACTIVE" else "Awaiting Retest",
-                    "summary": f"Resistance retest entry @ ₹{resistance_entry:,.2f} with tight SL ₹{tight_sl:,.2f} and TGT ₹{tgt:,.2f}."
+            if portfolio_halted:
+                # Halt Rule
+                entry = {
+                    "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                    "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "lot_size": lot_size, "event_context": "Portfolio Circuit Breaker Triggered (Max Daily Loss Hit)",
+                    "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / PORTFOLIO HALT", "rationale": f"Daily loss limit (₹15,000) reached. System halted to preserve capital.", "reference_price": cur_p, "stop_loss": None, "target": None },
+                    "check_615": { "checked": True, "status": "CIRCUIT_BREAKER_HALT", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": "Daily risk cap preserved." },
+                    "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                    "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Capital Protected 🛡️", "pnl_display": "₹0.00", "summary": "Halted by Portfolio Risk Circuit Breaker." }
                 }
-            }
+            elif is_macro_bullish:
+                # Trend Alignment Filter: Counter-Trend Asian Liquidity Sweep Avoidance (EXACT FIX FOR TODAY!)
+                entry = {
+                    "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                    "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "lot_size": lot_size, "event_context": f"Asian Liquidity Sweep Trap Avoided (Daily Bullish: {chg_pct:+.2f}%)",
+                    "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / LIQUIDITY SWEEP TRAP", "rationale": f"Macro trend is Bullish (above CPR ₹{cpr_top:,.2f} | {chg_pct:+.2f}%). Low Asian range breakdown is a classic institutional Liquidity Sweep. Avoided.", "reference_price": cur_p, "stop_loss": None, "target": None },
+                    "check_615": { "checked": True, "status": "LIQUIDITY_SWEEP_AVOIDED", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": f"Counter-trend SELL blocked by Macro CPR Filter." },
+                    "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                    "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Avoided Trap 🛡️", "pnl_display": "₹0.00", "summary": f"Counter-trend SELL blocked by Daily CPR Trend Filter. Capital protected." }
+                }
+            elif item_sector in already_called_sectors:
+                # Sector Correlation Guard
+                entry = {
+                    "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                    "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "lot_size": lot_size, "event_context": f"Sector Correlation Guard ({item_sector} Exposure Capped)",
+                    "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / SECTOR CAP", "rationale": f"{item_sector} sector risk already allocated. Stood aside to eliminate double correlated risk.", "reference_price": cur_p, "stop_loss": None, "target": None },
+                    "check_615": { "checked": True, "status": "SECTOR_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": f"{item_sector} exposure already active." },
+                    "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                    "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Sector Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside via Sector Correlation Guard." }
+                }
+            else:
+                # Valid Trend-Aligned Breakdown: Enter on Bounce to Broken Asian Low (Resistance)
+                resistance_entry = day_l
+                tight_sl = round(day_l + max(range_pts * 0.25, day_l * 0.003), 2)
+                tgt = round(day_l - (range_pts * 1.2), 2)
+                is_at_res = abs(cur_p - resistance_entry) / resistance_entry <= 0.002
+                entry_p = cur_p if is_at_res else resistance_entry
+                trade_status = "ACTIVE" if is_at_res else "PENDING_LIMIT"
+                
+                entry = {
+                    "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                    "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "lot_size": lot_size, "event_context": f"London Bearish Breakdown (Trend Aligned: CPR Bot ₹{cpr_bot:,.2f})",
+                    "suggestion_6pm": {
+                        "status": "LONDON_BREAKDOWN",
+                        "action_text": f"SELL @ RESISTANCE ₹{resistance_entry:,.2f}",
+                        "rationale": f"Trend-aligned European breakdown (Macro Bearish below CPR). Entering at Resistance ₹{resistance_entry:,.2f} with tight SL.",
+                        "reference_price": resistance_entry, "stop_loss": tight_sl, "target": tgt
+                    },
+                    "check_615": {
+                        "checked": True, "status": "BREAKDOWN_ENTERED" if is_at_res else "RETEST_PENDING",
+                        "price_615": entry_p,
+                        "action_taken": f"SELL {lot_size} units @ Resistance ₹{entry_p:,.2f}" if is_at_res else f"Awaiting Resistance Retest @ ₹{resistance_entry:,.2f}",
+                        "detail": f"Resistance Retest order at Asian Low ₹{resistance_entry:,.2f} with tight SL ₹{tight_sl:,.2f}."
+                    },
+                    "paper_trade": {
+                        "user": USER_ACCOUNT, "action": "SELL", "quantity": lot_size,
+                        "entry_price": entry_p, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None,
+                        "pnl_points": 0.0, "pnl_inr": 0.0, "status": trade_status, "target": tgt, "stop_loss": tight_sl
+                    },
+                    "eod_outcome": {
+                        "session_close": None, "circuit_limit": None, "outcome": "PENDING",
+                        "badge": "Active Trade ⚡" if trade_status == "ACTIVE" else "Limit at Resistance ⏳",
+                        "pnl_display": "Ticking Live..." if trade_status == "ACTIVE" else "Awaiting Retest",
+                        "summary": f"Resistance retest entry @ ₹{resistance_entry:,.2f} (SL: ₹{tight_sl:,.2f}, TGT: ₹{tgt:,.2f})."
+                    }
+                }
             new_entries.append(entry)
         else:
             entry = {
@@ -572,6 +626,7 @@ def record_live_130pm_advisory(commodities_list):
         tracker['trades'] = new_entries + trades
         save_tracker(tracker)
         print(f"Recorded {len(new_entries)} live 1:30 PM London breakout session records for today.")
+    return new_entries
 
 def record_live_6pm_advisory(commodities_list, pre_6pm_events):
     """
@@ -1167,10 +1222,11 @@ def check_and_execute_615_confirmation(checker, alerter):
 
 def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
     """
-    Called periodically during market hours (every 3 minutes).
-    Checks all ACTIVE advisory paper trades against live high/low/current prices.
-    If Target or Stop-Loss is hit, automatically closes the trade at target/SL,
-    updates P&L and outcome, and sends an immediate alert notification.
+    Called periodically during market hours (every minute via cron/continuous loop).
+    Checks all ACTIVE and PENDING_LIMIT advisory paper trades against live high/low/current prices.
+    - Fills PENDING_LIMIT trades on Support/Resistance retest.
+    - Trails Stop-Loss to Breakeven once price moves 50% towards target (risk-free trade).
+    - Executes Target and Stop-Loss auto-exits with instant alert notifications.
     """
     tracker = load_tracker()
     trades = tracker.get('trades', [])
@@ -1179,8 +1235,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
     today_str = now_dt.strftime('%d %b %Y')
     now_time_str = now_dt.strftime('%I:%M %p IST')
     
-    active_trades = [t for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('status') == 'ACTIVE']
-    if not active_trades:
+    relevant_trades = [t for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']]
+    if not relevant_trades:
         return False
 
     circuits_res = checker.generate_circuits_data()
@@ -1191,29 +1247,108 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
     updated_any = False
     alerts_to_send = []
 
-    for trade in active_trades:
+    for trade in relevant_trades:
         sym = trade['symbol']
         c_item = commodities_map.get(sym)
         if not c_item:
             continue
 
         cur_p = float(c_item['current_price'])
+        day_h = float(c_item.get('day_high', cur_p))
+        day_l = float(c_item.get('day_low', cur_p))
         
         pt = trade['paper_trade']
         action = pt['action']
-        entry_p = float(pt['entry_price'])
         lot_size = trade.get('lot_size', 1)
+        trade_status = pt.get('status')
         
         s6 = trade.get('suggestion_6pm', {})
-        target = float(s6.get('target')) if s6.get('target') is not None else pt.get('target')
-        stop_loss = float(s6.get('stop_loss')) if s6.get('stop_loss') is not None else pt.get('stop_loss')
-        
+        target = float(s6.get('target')) if s6.get('target') is not None else (float(pt.get('target')) if pt.get('target') is not None else None)
+        stop_loss = float(s6.get('stop_loss')) if s6.get('stop_loss') is not None else (float(pt.get('stop_loss')) if pt.get('stop_loss') is not None else None)
+        entry_p = float(pt.get('entry_price')) if pt.get('entry_price') is not None else float(s6.get('reference_price', cur_p))
+
+        # 1. Check PENDING_LIMIT orders (Support / Resistance Retests)
+        if trade_status == 'PENDING_LIMIT':
+            filled = False
+            if action == 'BUY':
+                # BUY @ Support: Price pulls back to Support level (day_h or reference_price)
+                if cur_p <= entry_p * 1.001 or day_l <= entry_p:
+                    filled = True
+            elif action == 'SELL':
+                # SELL @ Resistance: Price bounces up to Resistance level (day_l or reference_price)
+                if cur_p >= entry_p * 0.999 or day_h >= entry_p:
+                    filled = True
+            
+            if filled:
+                pt['status'] = 'ACTIVE'
+                pt['entry_time'] = now_time_str
+                pt['entry_price'] = entry_p
+                trade['eod_outcome']['badge'] = "Active Trade ⚡"
+                trade['eod_outcome']['pnl_display'] = "Ticking Live..."
+                retest_type = "Support" if action == "BUY" else "Resistance"
+                trade['eod_outcome']['summary'] = f"Limit order filled on {retest_type} Retest @ ₹{entry_p:,.2f}. Position active."
+                updated_any = True
+                
+                subject = f"⚡ [LIMIT ORDER FILLED] {trade['name']} {action} @ ₹{entry_p:,.2f} ({now_time_str})"
+                body = (
+                    f"⚡ <b>LIMIT ORDER FILLED ON RETEST</b>\n"
+                    f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                    f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                    f"• <b>Asset</b>: {trade['name']} ({sym})\n"
+                    f"• <b>Action</b>: {action} {lot_size} units\n"
+                    f"• <b>Fill Price</b>: ₹{entry_p:,.2f} ({retest_type} Retest Filled)\n"
+                    f"• <b>Target</b>: ₹{target:,.2f} | <b>Stop-Loss</b>: ₹{stop_loss:,.2f}\n"
+                    f"• <b>Status</b>: Active paper trade running. Auto-trailing SL and 11:30 PM settlement enabled.\n\n"
+                    f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                )
+                alerts_to_send.append({'subject': subject, 'body': body})
+            continue
+
+        # 2. Check ACTIVE Trades: Trailing Stop-Loss to Breakeven (+50% to Target)
+        if trade_status == 'ACTIVE' and target is not None and stop_loss is not None:
+            if not pt.get('trailing_sl_active'):
+                trail_triggered = False
+                if action == 'BUY':
+                    target_dist = target - entry_p
+                    if target_dist > 0 and cur_p >= entry_p + (target_dist * 0.5):
+                        trail_triggered = True
+                elif action == 'SELL':
+                    target_dist = entry_p - target
+                    if target_dist > 0 and cur_p <= entry_p - (target_dist * 0.5):
+                        trail_triggered = True
+                
+                if trail_triggered:
+                    pt['trailing_sl_active'] = True
+                    pt['original_sl'] = stop_loss
+                    pt['stop_loss'] = entry_p
+                    stop_loss = entry_p
+                    if s6:
+                        s6['stop_loss'] = entry_p
+                    updated_any = True
+                    
+                    subject = f"🛡️ [TRAILING STOP TO BREAKEVEN] {trade['name']} Crossed 50% Target Distance"
+                    body = (
+                        f"🛡️ <b>TRAILING STOP TO BREAKEVEN ACTIVATED</b>\n"
+                        f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                        f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                        f"• <b>Asset</b>: {trade['name']} ({sym})\n"
+                        f"• <b>Action</b>: {action} {lot_size} units\n"
+                        f"• <b>Current Price</b>: ₹{cur_p:,.2f}\n"
+                        f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
+                        f"• <b>Target</b>: ₹{target:,.2f}\n"
+                        f"• <b>New Stop-Loss</b>: <b>₹{entry_p:,.2f} (Risk-Free Breakeven)</b>\n\n"
+                        f"Position is now completely risk-free! Winning trade cannot turn into a loss.\n\n"
+                        f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                    )
+                    alerts_to_send.append({'subject': subject, 'body': body})
+
         # Ensure paper_trade object has target and stop_loss stored
         if target is not None:
             pt['target'] = target
         if stop_loss is not None:
             pt['stop_loss'] = stop_loss
 
+        # 3. Check Target & Stop-Loss Triggers
         hit_target = False
         hit_sl = False
         exit_p = cur_p
@@ -1227,7 +1362,7 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             elif stop_loss and cur_p <= stop_loss:
                 hit_sl = True
                 exit_p = stop_loss
-                reason = "Stop-Loss Triggered 🛑"
+                reason = "Trailing Stop Triggered (Breakeven) 🛡️" if pt.get('trailing_sl_active') else "Stop-Loss Triggered 🛑"
         elif action == 'SELL':
             if target and cur_p <= target:
                 hit_target = True
@@ -1236,7 +1371,7 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             elif stop_loss and cur_p >= stop_loss:
                 hit_sl = True
                 exit_p = stop_loss
-                reason = "Stop-Loss Triggered 🛑"
+                reason = "Trailing Stop Triggered (Breakeven) 🛡️" if pt.get('trailing_sl_active') else "Stop-Loss Triggered 🛑"
 
         if hit_target or hit_sl:
             pnl_pts = (exit_p - entry_p) if action == 'BUY' else (entry_p - exit_p)
@@ -1244,18 +1379,25 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             
             pt['exit_price'] = exit_p
             pt['exit_time'] = now_time_str
-            pt['exit_trigger'] = "TARGET_HIT" if hit_target else "STOP_LOSS_HIT"
+            pt['exit_trigger'] = "TARGET_HIT" if hit_target else ("TRAILING_BREAKEVEN_HIT" if pt.get('trailing_sl_active') else "STOP_LOSS_HIT")
             pt['pnl_points'] = round(pnl_pts, 2)
             pt['pnl_inr'] = pnl_inr
             pt['status'] = "CLOSED"
             
-            outcome_val = "CORRECT" if hit_target else "WRONG"
-            badge_text = f"Target Achieved 🎯 ({now_time_str})" if hit_target else f"Stop Loss Hit 🛑 ({now_time_str})"
+            if hit_target:
+                outcome_val = "CORRECT"
+                badge_text = f"Target Achieved 🎯 ({now_time_str})"
+            elif pt.get('trailing_sl_active'):
+                outcome_val = "PROTECTED"
+                badge_text = f"Breakeven Exit 🛡️ ({now_time_str})"
+            else:
+                outcome_val = "WRONG"
+                badge_text = f"Stop Loss Hit 🛑 ({now_time_str})"
             
             trade['time_exit'] = now_time_str
             trade['eod_outcome']['session_close'] = exit_p
             trade['eod_outcome']['exit_time'] = now_time_str
-            trade['eod_outcome']['exit_trigger'] = "TARGET_HIT" if hit_target else "STOP_LOSS_HIT"
+            trade['eod_outcome']['exit_trigger'] = pt['exit_trigger']
             trade['eod_outcome']['outcome'] = outcome_val
             trade['eod_outcome']['badge'] = badge_text
             trade['eod_outcome']['pnl_display'] = f"{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}"
@@ -1263,7 +1405,7 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             
             updated_any = True
             
-            icon = "🎯" if hit_target else "🛑"
+            icon = "🎯" if hit_target else ("🛡️" if pt.get('trailing_sl_active') else "🛑")
             subject = f"{icon} [{badge_text.upper()}] {trade['name']} Paper Trade Exit ({now_time_str})"
             body = (
                 f"{icon} <b>PAPER TRADE AUTO-EXIT: {badge_text.upper()}</b>\n"
