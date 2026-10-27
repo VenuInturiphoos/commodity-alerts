@@ -1180,8 +1180,6 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             continue
 
         cur_p = float(c_item['current_price'])
-        day_h = float(c_item.get('day_high', cur_p))
-        day_l = float(c_item.get('day_low', cur_p))
         
         pt = trade['paper_trade']
         action = pt['action']
