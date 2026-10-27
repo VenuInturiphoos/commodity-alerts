@@ -1155,20 +1155,20 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
         reason = ""
 
         if action == 'BUY':
-            if target and (cur_p >= target or day_h >= target):
+            if target and cur_p >= target:
                 hit_target = True
                 exit_p = target
                 reason = "Target Achieved 🎯"
-            elif stop_loss and (cur_p <= stop_loss or day_l <= stop_loss):
+            elif stop_loss and cur_p <= stop_loss:
                 hit_sl = True
                 exit_p = stop_loss
                 reason = "Stop-Loss Triggered 🛑"
         elif action == 'SELL':
-            if target and (cur_p <= target or day_l <= target):
+            if target and cur_p <= target:
                 hit_target = True
                 exit_p = target
                 reason = "Target Achieved 🎯"
-            elif stop_loss and (cur_p >= stop_loss or day_h >= stop_loss):
+            elif stop_loss and cur_p >= stop_loss:
                 hit_sl = True
                 exit_p = stop_loss
                 reason = "Stop-Loss Triggered 🛑"
