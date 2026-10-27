@@ -1388,7 +1388,7 @@ def init_clean_live_tracker():
                 "exit_price": 3.05,
                 "exit_time": "11:30 PM IST",
                 "pnl_points": 0.11,
-                "pnl_inr": 11481.25,
+                "pnl_inr": 137.50,
                 "status": "CLOSED"
             },
             "eod_outcome": {
@@ -1396,8 +1396,8 @@ def init_clean_live_tracker():
                 "circuit_limit": 2.96,
                 "outcome": "CORRECT",
                 "badge": "Correct ✅",
-                "pnl_display": "+₹11,481.25",
-                "summary": "Pre-6 PM fade captured +0.11 pts retracement into 11:30 PM session close."
+                "pnl_display": "+₹137.50",
+                "summary": "Pre-6 PM fade captured +0.11 pts retracement into 11:30 PM session close (0.11 pts × 1,250 = +₹137.50)."
             }
         },
         {
