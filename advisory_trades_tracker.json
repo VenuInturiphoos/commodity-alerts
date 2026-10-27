@@ -8,7 +8,7 @@
       "time_6pm": "01:30 PM IST",
       "time_validation": "01:45 PM IST",
       "time_615": "01:45 PM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "02:01 PM IST",
       "symbol": "GOLD",
       "name": "Gold",
       "lot_size": 10,
@@ -34,19 +34,24 @@
         "quantity": 10,
         "entry_price": 142220.0,
         "entry_time": "01:30 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE"
+        "exit_price": 142727.0,
+        "exit_time": "02:01 PM IST",
+        "pnl_points": -507.0,
+        "pnl_inr": -5070.0,
+        "status": "CLOSED",
+        "target": 140768.6,
+        "stop_loss": 142727.0,
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 142727.0,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Active SELL position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+        "outcome": "WRONG",
+        "badge": "Stop Loss Hit \ud83d\uded1 (02:01 PM IST)",
+        "pnl_display": "\u20b9-5,070.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:01 PM IST. Entry: \u20b9142,220.00 -> Exit: \u20b9142,727.00 (\u20b9-5,070.00).",
+        "exit_time": "02:01 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
       }
     },
     {
@@ -57,7 +62,7 @@
       "time_6pm": "01:30 PM IST",
       "time_validation": "01:45 PM IST",
       "time_615": "01:45 PM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "02:01 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
       "lot_size": 50,
@@ -83,19 +88,24 @@
         "quantity": 50,
         "entry_price": 9750.0,
         "entry_time": "01:30 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE"
+        "exit_price": 9679.0,
+        "exit_time": "02:01 PM IST",
+        "pnl_points": -71.0,
+        "pnl_inr": -3550.0,
+        "status": "CLOSED",
+        "target": 9964.6,
+        "stop_loss": 9679.0,
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 9679.0,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+        "outcome": "WRONG",
+        "badge": "Stop Loss Hit \ud83d\uded1 (02:01 PM IST)",
+        "pnl_display": "\u20b9-3,550.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:01 PM IST. Entry: \u20b99,750.00 -> Exit: \u20b99,679.00 (\u20b9-3,550.00).",
+        "exit_time": "02:01 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
       }
     },
     {
@@ -683,23 +693,23 @@
       }
     }
   ],
-  "last_updated": "27 Oct 2026, 01:53 PM IST",
+  "last_updated": "27 Oct 2026, 02:01 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
     "total_signals": 14,
-    "executed_count": 6,
+    "executed_count": 8,
     "correct_count": 5,
-    "wrong_count": 1,
+    "wrong_count": 3,
     "protected_count": 5,
-    "win_rate_pct": 83.3,
-    "total_pnl_inr": 27011.25,
-    "avg_trade_pnl_inr": 4501.88,
-    "active_trades_count": 3,
+    "win_rate_pct": 62.5,
+    "total_pnl_inr": 18391.25,
+    "avg_trade_pnl_inr": 2298.91,
+    "active_trades_count": 1,
     "starting_cash_inr": 1000000.0,
-    "current_cash_inr": 1027011.25,
-    "used_margin_inr": 0.0,
-    "available_cash_inr": 1027011.25,
-    "net_worth_inr": 1027011.25
+    "current_cash_inr": 1018391.25,
+    "used_margin_inr": 0,
+    "available_cash_inr": 1018391.25,
+    "net_worth_inr": 1018391.25
   }
 }
