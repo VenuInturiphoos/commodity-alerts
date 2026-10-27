@@ -3777,6 +3777,7 @@ function renderAdvisoryTradesTable() {
 
         let pnlColor = '#cbd5e1';
         let pnlText = outcome.pnl_display || '₹0.00';
+        let ptsFormulaHtml = '';
         if (pt.status === 'ACTIVE' && pt.entry_price) {
             const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) ? marketData.find(m => m.symbol === t.symbol) : null;
             if (mktItem && mktItem.current_price) {
@@ -3786,15 +3787,22 @@ function renderAdvisoryTradesTable() {
                 const liveMtm = Math.round(pts * lot * 100) / 100;
                 pnlColor = liveMtm >= 0 ? '#4ade80' : '#fb7185';
                 pnlText = `${liveMtm >= 0 ? '+' : ''}₹${liveMtm.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(Live MTM)</span>`;
+                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(${pts >= 0 ? '+' : ''}${pts.toFixed(2)} pts × ₹${lot})</span>`;
             } else {
                 pnlText = '<span style="color:#fbbf24; font-size:0.8rem;">Ticking...</span>';
             }
         } else if (pt.pnl_inr > 0) {
             pnlColor = '#4ade80';
             pnlText = `+₹${Number(pt.pnl_inr).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            if (pt.pnl_points !== undefined && t.lot_size) {
+                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(+${Number(pt.pnl_points).toFixed(2)} pts × ₹${t.lot_size})</span>`;
+            }
         } else if (pt.pnl_inr < 0) {
             pnlColor = '#fb7185';
             pnlText = `-₹${Math.abs(Number(pt.pnl_inr)).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            if (pt.pnl_points !== undefined && t.lot_size) {
+                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(${Number(pt.pnl_points).toFixed(2)} pts × ₹${t.lot_size})</span>`;
+            }
         }
 
         // Validation check cell
@@ -3847,6 +3855,7 @@ function renderAdvisoryTradesTable() {
                 <div>
                     <span class="adv-action-tag ${actColor}">${pt.action}</span>
                     <strong style="color:#f8fafc; font-size:0.85rem; margin-left:4px;">${pt.quantity} units</strong>
+                    <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 5px; border-radius:4px; margin-left:4px; font-weight:600;">1 pt = ₹${t.lot_size || 1}</span>
                     <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${pt.entry_price ? Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} (${pt.entry_time || 'Trigger'})</div>
                 </div>
             `;
@@ -3894,6 +3903,7 @@ function renderAdvisoryTradesTable() {
                 </td>
                 <td style="font-weight:700; font-size:0.95rem; color:${pnlColor};">
                     ${pnlText}
+                    ${ptsFormulaHtml}
                 </td>
                 <td>
                     ${outcomeBadge}
@@ -3923,6 +3933,7 @@ function renderAdvisoryTradesTable() {
 
             let pnlColor = '#cbd5e1';
             let pnlText = outcome.pnl_display || '₹0.00';
+            let mobilePtsFormulaHtml = '';
             if (pt.status === 'ACTIVE' && pt.entry_price) {
                 const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) ? marketData.find(m => m.symbol === t.symbol) : null;
                 if (mktItem && mktItem.current_price) {
@@ -3932,15 +3943,22 @@ function renderAdvisoryTradesTable() {
                     const liveMtm = Math.round(pts * lot * 100) / 100;
                     pnlColor = liveMtm >= 0 ? '#4ade80' : '#fb7185';
                     pnlText = `${liveMtm >= 0 ? '+' : ''}₹${liveMtm.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <small style="font-size:0.68rem; color:#94a3b8; display:block; font-weight:400;">(Live MTM)</small>`;
+                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(${pts >= 0 ? '+' : ''}${pts.toFixed(2)} pts × ₹${lot})</div>`;
                 } else {
                     pnlText = '<span style="color:#fbbf24; font-size:0.8rem;">Ticking...</span>';
                 }
             } else if (pt.pnl_inr > 0) {
                 pnlColor = '#4ade80';
                 pnlText = `+₹${Number(pt.pnl_inr).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                if (pt.pnl_points !== undefined && t.lot_size) {
+                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(+${Number(pt.pnl_points).toFixed(2)} pts × ₹${t.lot_size})</div>`;
+                }
             } else if (pt.pnl_inr < 0) {
                 pnlColor = '#fb7185';
                 pnlText = `-₹${Math.abs(Number(pt.pnl_inr)).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                if (pt.pnl_points !== undefined && t.lot_size) {
+                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(${Number(pt.pnl_points).toFixed(2)} pts × ₹${t.lot_size})</div>`;
+                }
             }
 
             let actionColor = '#94a3b8';
@@ -3957,7 +3975,7 @@ function renderAdvisoryTradesTable() {
             else if (c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') checkLabel = 'Stood Aside (Protected)';
 
             const executedText = pt.action && pt.action !== 'STAND_ASIDE' 
-                ? `${pt.action} ${pt.quantity} qty @ ₹${pt.entry_price ? Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}`
+                ? `${pt.action} ${pt.quantity} qty <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:1px 4px; border-radius:3px;">1 pt = ₹${t.lot_size || 1}</span><div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${pt.entry_price ? Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>`
                 : 'Stood Aside';
 
             const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || '11:30 PM';
@@ -4036,6 +4054,7 @@ function renderAdvisoryTradesTable() {
                         <div style="text-align:right;">
                             <div style="font-size:0.68rem; color:#94a3b8; text-transform:uppercase; font-weight:600;">Net P&L</div>
                             <div style="font-weight:800; font-size:1.05rem; color:${pnlColor};">${pnlText}</div>
+                            ${mobilePtsFormulaHtml}
                         </div>
                     </div>
                 </div>
