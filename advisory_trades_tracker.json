@@ -736,17 +736,115 @@
         "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute rule successfully protected capital by preventing premature counter-trend knife-catching."
       }
+    },
+    {
+      "id": "ADV-27Oct2026-1330-CRUDEOIL",
+      "date": "27 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 50,
+      "event_context": "Range-Bound Asian Range [\u20b99,595.00 \u2013 \u20b99,763.00]",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b99,595.00 \u2013 \u20b99,763.00]. Morning gap fade already booked at 12:41 PM (+\u20b96,100).",
+        "reference_price": 9750.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 9750.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Inside Asian morning range at 1:30 PM open. Capital protected."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside on range-bound asset at 1:30 PM. Morning target was already achieved."
+      }
+    },
+    {
+      "id": "ADV-27Oct2026-1330-NATURALGAS",
+      "date": "27 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "Range-Bound Asian Range [\u20b9244.00 \u2013 \u20b9248.70]",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b9244.00 \u2013 \u20b9248.70]. Awaiting 6:00 PM US pit open volume.",
+        "reference_price": 246.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 246.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Inside Asian morning range at 1:30 PM open. Awaiting 6:00 PM US session."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside on range-bound asset at 1:30 PM. Awaiting 6:00 PM US open."
+      }
     }
   ],
-  "last_updated": "27 Oct 2026, 02:13 PM IST",
+  "last_updated": "27 Oct 2026, 02:20 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
-    "total_signals": 15,
+    "total_signals": 17,
     "executed_count": 6,
     "correct_count": 5,
     "wrong_count": 1,
-    "protected_count": 5,
+    "protected_count": 7,
     "win_rate_pct": 83.3,
     "total_pnl_inr": 27011.25,
     "avg_trade_pnl_inr": 4501.88,
