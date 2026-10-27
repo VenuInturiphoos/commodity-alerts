@@ -567,6 +567,178 @@ def generate_and_send_8pm_advisory(force=False):
         except Exception as e:
             print(f"Error saving alerts_state.json: {e}")
         return True
+def generate_and_send_9am_advisory(force=False):
+    """
+    Scans live market data at 09:00 AM IST (MCX market open & NSE pre-market),
+    evaluates Opening Gap vs Previous Day Close and Central Pivot Range (CPR),
+    constructs an actionable Morning Market Pulse advisory, and sends it via Telegram & Email.
+    """
+    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+    today_ist = now_dt.strftime('%Y-%m-%d')
+    today_time_ist = now_dt.strftime('%d %b %Y, %I:%M %p IST')
+    day_name = now_dt.strftime('%A')
+    
+    state_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
+    state = {}
+    if os.path.exists(state_file):
+        try:
+            with open(state_file, 'r') as f:
+                state = json.load(f)
+        except Exception:
+            state = {}
+            
+    last_9am_date = state.get('DAILY_9AM_ADVISORY', {}).get('last_alert_date')
+    if not force and last_9am_date == today_ist:
+        print(f"Daily 9:00 AM advisory already dispatched for today ({today_ist}). Skipping.")
+        return False
+
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+
+    checker = PriceChecker(config)
+    alerter = EmailAlerter(config)
+
+    circuits_res = checker.generate_circuits_data()
+    commodities_list = circuits_res.get('commodities', []) if circuits_res else []
+    
+    if not commodities_list:
+        print("Could not fetch commodities data for 9:00 AM advisory.")
+        return False
+
+    action_items = []
+    overview_lines = []
+
+    for item in commodities_list:
+        sym = item['symbol']
+        name = item['name']
+        cur_p = item['current_price']
+        day_h = item.get('day_high', cur_p)
+        day_l = item.get('day_low', cur_p)
+        p_close = item.get('prev_close', cur_p)
+        chg_pct = item.get('change_pct', 0.0)
+        
+        # CPR Math
+        pivot = round((day_h + day_l + p_close) / 3.0, 2)
+        bc = round((day_h + day_l) / 2.0, 2)
+        tc = round((pivot - bc) + pivot, 2)
+        cpr_top = max(tc, bc)
+        cpr_bot = min(tc, bc)
+        cpr_width_pct = round((cpr_top - cpr_bot) / pivot * 100, 3) if pivot > 0 else 0.5
+        r1 = round((2 * pivot) - day_l, 2)
+        s1 = round((2 * pivot) - day_h, 2)
+        r2 = round(pivot + (day_h - day_l), 2)
+        s2 = round(pivot - (day_h - day_l), 2)
+
+        gap_pts = round(cur_p - p_close, 2)
+        gap_pct = round((gap_pts / p_close) * 100, 2) if p_close > 0 else 0.0
+        gap_direction = "GAP UP" if gap_pct > 0 else ("GAP DOWN" if gap_pct < 0 else "FLAT OPEN")
+        cpr_type = "Narrow CPR (Trending Day Expected 🚀)" if cpr_width_pct <= 0.25 else ("Wide CPR (Range-Bound / Mean Reverting 🔄)" if cpr_width_pct >= 0.40 else "Average CPR")
+
+        overview_lines.append(
+            f"• <b>{name}</b>: ₹{cur_p:,.2f} ({gap_direction} {gap_pct:+.2f}% | {gap_pts:+,.2f} pts)\n"
+            f"  Pivot: ₹{pivot:,.2f} | CPR: [₹{cpr_bot:,.2f} - ₹{cpr_top:,.2f}] ({cpr_width_pct:.2f}% width) | R1: ₹{r1:,.2f} / S1: ₹{s1:,.2f}"
+        )
+
+        # Actionable setups
+        if gap_pct >= 0.75:
+            if cpr_width_pct >= 0.30:
+                action_items.append(
+                    f"🔴 <b>{name.upper()} (Gap Up Fade Setup)</b>\n"
+                    f"  • Live Open: ₹{cur_p:,.2f} (+{gap_pct:.2f}% Gap Up vs PDC ₹{p_close:,.2f})\n"
+                    f"  • Setup: Wide CPR ({cpr_width_pct:.2f}%) indicates high probability of morning mean-reversion.\n"
+                    f"  • Recommended Action: <b>FADE GAP / SHORT AT R1 RESISTANCE</b>\n"
+                    f"  • Entry Zone: Around current open (₹{cur_p:,.2f}) to R1 (₹{r1:,.2f})\n"
+                    f"  • Target: ₹{p_close:,.2f} (Previous Day Close Gap-Fill)\n"
+                    f"  • Stop-Loss: ₹{round(max(cur_p, r1) * 1.004, 2):,.2f} (Above Opening High)"
+                )
+            else:
+                action_items.append(
+                    f"🟢 <b>{name.upper()} (Gap Momentum Continuation)</b>\n"
+                    f"  • Live Open: ₹{cur_p:,.2f} (+{gap_pct:.2f}% Gap Up vs PDC ₹{p_close:,.2f})\n"
+                    f"  • Setup: Narrow CPR ({cpr_width_pct:.2f}%) indicates expansion volatility. Sustaining above open.\n"
+                    f"  • Recommended Action: <b>BUY / RIDE OPENING MOMENTUM</b>\n"
+                    f"  • Entry Zone: Above ₹{cur_p:,.2f}\n"
+                    f"  • Target: ₹{r2:,.2f} (R2 Daily Extension)\n"
+                    f"  • Stop-Loss: ₹{round(min(cur_p, pivot) * 0.996, 2):,.2f} (Below Central Pivot)"
+                )
+        elif gap_pct <= -0.75:
+            if cpr_width_pct >= 0.30:
+                action_items.append(
+                    f"🟢 <b>{name.upper()} (Gap Down Fade / Bounce Setup)</b>\n"
+                    f"  • Live Open: ₹{cur_p:,.2f} ({gap_pct:.2f}% Gap Down vs PDC ₹{p_close:,.2f})\n"
+                    f"  • Setup: Wide CPR ({cpr_width_pct:.2f}%) indicates high probability of morning mean-reversion bounce.\n"
+                    f"  • Recommended Action: <b>FADE GAP / BUY AT S1 SUPPORT</b>\n"
+                    f"  • Entry Zone: Around current open (₹{cur_p:,.2f}) to S1 (₹{s1:,.2f})\n"
+                    f"  • Target: ₹{p_close:,.2f} (Previous Day Close Gap-Fill)\n"
+                    f"  • Stop-Loss: ₹{round(min(cur_p, s1) * 0.996, 2):,.2f} (Below Opening Low)"
+                )
+            else:
+                action_items.append(
+                    f"🔴 <b>{name.upper()} (Gap Flush Continuation)</b>\n"
+                    f"  • Live Open: ₹{cur_p:,.2f} ({gap_pct:.2f}% Gap Down vs PDC ₹{p_close:,.2f})\n"
+                    f"  • Setup: Narrow CPR ({cpr_width_pct:.2f}%) breakdown. Opening below value area.\n"
+                    f"  • Recommended Action: <b>SELL / SHORT OPENING FLUSH</b>\n"
+                    f"  • Entry Zone: Below ₹{cur_p:,.2f}\n"
+                    f"  • Target: ₹{s2:,.2f} (S2 Daily Extension)\n"
+                    f"  • Stop-Loss: ₹{round(max(cur_p, pivot) * 1.004, 2):,.2f} (Above Central Pivot)"
+                )
+        else:
+            action_items.append(
+                f"ℹ️ <b>{name.upper()} (Normal Open - Within Daily Value Area)</b>\n"
+                f"  • Live Open: ₹{cur_p:,.2f} ({gap_pct:+.2f}% | PDC: ₹{p_close:,.2f})\n"
+                f"  • Setup: {cpr_type}. Price opened within the standard daily volatility range.\n"
+                f"  • Recommended Action: <b>STAND ASIDE / AWAIT 1:30 PM LONDON BREAKOUT</b>\n"
+                f"  • Key Levels: Central Pivot ₹{pivot:,.2f} | R1: ₹{r1:,.2f} | S1: ₹{s1:,.2f}"
+            )
+
+    overview_text = "\n\n".join(overview_lines)
+    action_text = "\n\n".join(action_items)
+
+    subject = f"🎯 [9:00 AM IST ADVISORY] Morning Market Pulse, CPR & Opening Gap Playbook ({day_name})"
+    body = (
+        f"🎯 <b>DAILY 09:00 AM IST MORNING MARKET PULSE ADVISORY</b>\n"
+        f"📅 <i>{today_time_ist}</i>\n\n"
+        f"<b>📊 MCX COMMODITIES OPENING & CPR OVERVIEW:</b>\n"
+        f"{overview_text}\n\n"
+        f"<b>⚡ OPENING ACTION PLAYBOOK & GAP SETUPS:</b>\n"
+        f"{action_text}\n\n"
+        f"<b>🛡️ RISK MANAGEMENT & EXECUTION RULES:</b>\n"
+        f"1. <b>Gap Fill Rule (Wide CPR)</b>: Fade large gaps only when the 09:15 AM 15-minute candle closes in the direction of the gap fill.\n"
+        f"2. <b>Gap & Go Rule (Narrow CPR)</b>: Never fade a narrow CPR gap; narrow CPRs indicate institutional trend days.\n"
+        f"3. <b>Hard 11:30 PM Exit</b>: All intraday positions auto-square-off at 11:30 PM IST before settlement.\n\n"
+        f"🌐 <b>Live Interactive Dashboard</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+    )
+
+    try:
+        from advisory_tracker import record_live_9am_advisory
+        record_live_9am_advisory(commodities_list)
+    except Exception as e:
+        print(f"Error recording live 09:00 AM advisory in paper trading tracker: {e}")
+
+    alert_payload = [{
+        'symbol': 'DAILY_9AM_ADVISORY',
+        'name': 'Daily 9 AM Action Advisory',
+        'event_type': 'DAILY_9AM_ADVISORY',
+        'today_ist': today_ist,
+        'subject': subject,
+        'body': body
+    }]
+
+    print(f"Dispatching 09:00 AM IST Daily Action Advisory for {today_ist}...")
+    success, sent_alerts = alerter.send_alerts(alert_payload)
+    if success:
+        state['DAILY_9AM_ADVISORY'] = {
+            'last_alert_date': today_ist,
+            'last_alert_time': today_time_ist,
+            'last_alert_msg': subject
+        }
+        try:
+            with open(state_file, 'w') as f:
+                json.dump(state, f, indent=2)
+            print("Successfully recorded Daily 9 AM advisory dispatch in alerts_state.json")
+        except Exception as e:
+            print(f"Error saving alerts_state.json: {e}")
+        return True
     return False
 
 if __name__ == "__main__":
@@ -586,12 +758,15 @@ if __name__ == "__main__":
         alt = EmailAlerter(cfg)
         from advisory_tracker import exit_and_evaluate_eod_trades
         exit_and_evaluate_eod_trades(chk, alt)
-    elif '--session' in sys.argv or any(s in sys.argv for s in ['--130pm', '--8pm', '--6pm']):
-        if '--130pm' in sys.argv or ('--session' in sys.argv and '130' in sys.argv):
+    elif '--session' in sys.argv or any(s in sys.argv for s in ['--9am', '--130pm', '--8pm', '--6pm']):
+        if '--9am' in sys.argv or ('--session' in sys.argv and ('9am' in sys.argv or '900' in sys.argv)):
+            generate_and_send_9am_advisory(force=force_run)
+        elif '--130pm' in sys.argv or ('--session' in sys.argv and '130' in sys.argv):
             generate_and_send_130pm_advisory(force=force_run)
-        elif '--8pm' in sys.argv or ('--session' in sys.argv and '800' in sys.argv or '8pm' in sys.argv):
+        elif '--8pm' in sys.argv or ('--session' in sys.argv and ('800' in sys.argv or '8pm' in sys.argv)):
             generate_and_send_8pm_advisory(force=force_run)
         else:
             generate_and_send_6pm_advisory(force=force_run)
     else:
         generate_and_send_6pm_advisory(force=force_run)
+

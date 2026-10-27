@@ -106,6 +106,255 @@ def save_tracker(tracker_data):
         print(f"Error saving tracker file: {e}")
         return False
 
+def record_live_9am_advisory(commodities_list):
+    """
+    Called at 09:00 AM IST by generate_and_send_9am_advisory.
+    Evaluates Opening Gap vs Previous Day Close and Central Pivot Range (CPR),
+    creates paper trades for venu.photos1@gmail.com, and logs entries in the advisory tracker.
+    """
+    tracker = load_tracker()
+    trades = tracker.get('trades', [])
+    
+    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+    today_str = now_dt.strftime('%d %b %Y')
+    
+    existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str and t.get('time_trigger') == '09:00 AM IST'}
+    new_entries = []
+
+    for item in commodities_list:
+        sym = item['symbol']
+        name = item['name']
+        cur_p = item['current_price']
+        day_h = item.get('day_high', cur_p)
+        day_l = item.get('day_low', cur_p)
+        p_close = item.get('prev_close', cur_p)
+        chg_pct = item.get('change_pct', 0.0)
+        lot_size = LOT_SIZES.get(sym, 1)
+
+        trade_id = f"ADV-{today_str.replace(' ', '')}-0900-{sym}"
+        if trade_id in existing_today_ids:
+            continue
+
+        # CPR & Daily Pivot Math
+        pivot = round((day_h + day_l + p_close) / 3.0, 2)
+        bc = round((day_h + day_l) / 2.0, 2)
+        tc = round((pivot - bc) + pivot, 2)
+        cpr_top = max(tc, bc)
+        cpr_bot = min(tc, bc)
+        cpr_width_pct = round((cpr_top - cpr_bot) / pivot * 100, 3) if pivot > 0 else 0.5
+        r1 = round((2 * pivot) - day_l, 2)
+        s1 = round((2 * pivot) - day_h, 2)
+        r2 = round(pivot + (day_h - day_l), 2)
+        s2 = round(pivot - (day_h - day_l), 2)
+
+        gap_pts = round(cur_p - p_close, 2)
+        gap_pct = round((gap_pts / p_close) * 100, 2) if p_close > 0 else 0.0
+
+        # Action Logic:
+        # 1. Significant Gap Up (>= +0.75%)
+        if gap_pct >= 0.75:
+            # If Wide CPR -> Fade back to Previous Day Close (Gap Fill)
+            if cpr_width_pct >= 0.30:
+                action = "SELL"
+                entry_text = "SELL / GAP FADE (SHORT)"
+                rationale = f"Significant opening gap up (+{gap_pct:.2f}%). Wide CPR ({cpr_width_pct:.2f}%) indicates high probability gap fill towards Prev Day Close (₹{p_close:,.2f})."
+                sl = round(max(cur_p, r1) * 1.004, 2)
+                tgt = p_close
+                c15_status = "GAP_FADE_ENTERED"
+                c15_detail = f"Fading opening gap up towards PDC ₹{p_close:,.2f}."
+            else:
+                # Narrow CPR -> Momentum continuation
+                action = "BUY"
+                entry_text = "BUY / GAP MOMENTUM"
+                rationale = f"Narrow CPR ({cpr_width_pct:.2f}%) expansion gap up (+{gap_pct:.2f}%). Riding opening momentum."
+                sl = round(min(cur_p, pivot) * 0.996, 2)
+                tgt = r2
+                c15_status = "GAP_MOMENTUM_ENTERED"
+                c15_detail = f"Riding opening breakout momentum towards R2 ₹{r2:,.2f}."
+            
+            entry = {
+                "id": trade_id,
+                "date": today_str,
+                "session_name": "Morning Pulse (09:00 AM)",
+                "time_trigger": "09:00 AM IST",
+                "time_6pm": "09:00 AM IST",
+                "time_validation": "09:15 AM IST",
+                "time_615": "09:15 AM IST",
+                "time_exit": "11:30 PM IST",
+                "symbol": sym,
+                "name": name,
+                "lot_size": lot_size,
+                "event_context": f"MCX Open Gap (+{gap_pct:+.2f}%) | CPR: {cpr_width_pct:.2f}%",
+                "suggestion_6pm": {
+                    "status": "MORNING_GAP_TRADE",
+                    "action_text": entry_text,
+                    "rationale": rationale,
+                    "reference_price": cur_p,
+                    "stop_loss": sl,
+                    "target": tgt
+                },
+                "check_615": {
+                    "checked": True,
+                    "status": c15_status,
+                    "price_615": cur_p,
+                    "action_taken": f"Entered {action} {lot_size} units @ ₹{cur_p:,.2f}",
+                    "detail": c15_detail
+                },
+                "paper_trade": {
+                    "user": USER_ACCOUNT,
+                    "action": action,
+                    "quantity": lot_size,
+                    "entry_price": cur_p,
+                    "entry_time": "09:00 AM IST",
+                    "exit_price": None,
+                    "exit_time": None,
+                    "pnl_points": 0.0,
+                    "pnl_inr": 0.0,
+                    "status": "ACTIVE"
+                },
+                "eod_outcome": {
+                    "session_close": None,
+                    "circuit_limit": None,
+                    "outcome": "PENDING",
+                    "badge": "Active Trade ⚡",
+                    "pnl_display": "Ticking Live...",
+                    "summary": f"Active {action} position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                }
+            }
+            new_entries.append(entry)
+
+        # 2. Significant Gap Down (<= -0.75%)
+        elif gap_pct <= -0.75:
+            # If Wide CPR -> Fade back to Previous Day Close (Gap Fill Bounce)
+            if cpr_width_pct >= 0.30:
+                action = "BUY"
+                entry_text = "BUY / GAP FADE (BOUNCE)"
+                rationale = f"Significant opening gap down ({gap_pct:.2f}%). Wide CPR ({cpr_width_pct:.2f}%) indicates high probability gap fill bounce towards Prev Day Close (₹{p_close:,.2f})."
+                sl = round(min(cur_p, s1) * 0.996, 2)
+                tgt = p_close
+                c15_status = "GAP_FADE_ENTERED"
+                c15_detail = f"Fading opening gap down towards PDC ₹{p_close:,.2f}."
+            else:
+                # Narrow CPR -> Momentum continuation down
+                action = "SELL"
+                entry_text = "SELL / GAP FLUSH"
+                rationale = f"Narrow CPR ({cpr_width_pct:.2f}%) breakdown gap down ({gap_pct:.2f}%). Riding opening short momentum."
+                sl = round(max(cur_p, pivot) * 1.004, 2)
+                tgt = s2
+                c15_status = "GAP_MOMENTUM_ENTERED"
+                c15_detail = f"Riding opening flush momentum towards S2 ₹{s2:,.2f}."
+
+            entry = {
+                "id": trade_id,
+                "date": today_str,
+                "session_name": "Morning Pulse (09:00 AM)",
+                "time_trigger": "09:00 AM IST",
+                "time_6pm": "09:00 AM IST",
+                "time_validation": "09:15 AM IST",
+                "time_615": "09:15 AM IST",
+                "time_exit": "11:30 PM IST",
+                "symbol": sym,
+                "name": name,
+                "lot_size": lot_size,
+                "event_context": f"MCX Open Gap ({gap_pct:+.2f}%) | CPR: {cpr_width_pct:.2f}%",
+                "suggestion_6pm": {
+                    "status": "MORNING_GAP_TRADE",
+                    "action_text": entry_text,
+                    "rationale": rationale,
+                    "reference_price": cur_p,
+                    "stop_loss": sl,
+                    "target": tgt
+                },
+                "check_615": {
+                    "checked": True,
+                    "status": c15_status,
+                    "price_615": cur_p,
+                    "action_taken": f"Entered {action} {lot_size} units @ ₹{cur_p:,.2f}",
+                    "detail": c15_detail
+                },
+                "paper_trade": {
+                    "user": USER_ACCOUNT,
+                    "action": action,
+                    "quantity": lot_size,
+                    "entry_price": cur_p,
+                    "entry_time": "09:00 AM IST",
+                    "exit_price": None,
+                    "exit_time": None,
+                    "pnl_points": 0.0,
+                    "pnl_inr": 0.0,
+                    "status": "ACTIVE"
+                },
+                "eod_outcome": {
+                    "session_close": None,
+                    "circuit_limit": None,
+                    "outcome": "PENDING",
+                    "badge": "Active Trade ⚡",
+                    "pnl_display": "Ticking Live...",
+                    "summary": f"Active {action} position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                }
+            }
+            new_entries.append(entry)
+
+        # 3. Flat / Normal Open (-0.75% < gap < +0.75%)
+        else:
+            entry = {
+                "id": trade_id,
+                "date": today_str,
+                "session_name": "Morning Pulse (09:00 AM)",
+                "time_trigger": "09:00 AM IST",
+                "time_6pm": "09:00 AM IST",
+                "time_validation": "09:15 AM IST",
+                "time_615": "09:15 AM IST",
+                "time_exit": "11:30 PM IST",
+                "symbol": sym,
+                "name": name,
+                "lot_size": lot_size,
+                "event_context": f"Normal Open ({gap_pct:+.2f}%) | CPR: {cpr_width_pct:.2f}%",
+                "suggestion_6pm": {
+                    "status": "STAND_ASIDE",
+                    "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+                    "rationale": f"Opening within normal daily value area ({gap_pct:+.2f}%). Zero statistical gap edge; standing aside for London open.",
+                    "reference_price": cur_p,
+                    "stop_loss": None,
+                    "target": None
+                },
+                "check_615": {
+                    "checked": True,
+                    "status": "NO_GAP_STAND_ASIDE",
+                    "price_615": cur_p,
+                    "action_taken": "Stood Aside (0 Units)",
+                    "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+                },
+                "paper_trade": {
+                    "user": USER_ACCOUNT,
+                    "action": "STAND_ASIDE",
+                    "quantity": 0,
+                    "entry_price": None,
+                    "entry_time": "09:00 AM IST",
+                    "exit_price": None,
+                    "exit_time": None,
+                    "pnl_points": 0.0,
+                    "pnl_inr": 0.0,
+                    "status": "STAND_ASIDE"
+                },
+                "eod_outcome": {
+                    "session_close": None,
+                    "circuit_limit": None,
+                    "outcome": "PROTECTED",
+                    "badge": "Avoided Chop 🛡️",
+                    "pnl_display": "₹0.00",
+                    "summary": "Stood aside during morning open chop. 100% capital protected."
+                }
+            }
+            new_entries.append(entry)
+
+    if new_entries:
+        tracker['trades'] = new_entries + trades
+        save_tracker(tracker)
+        print(f"Recorded {len(new_entries)} live 09:00 AM Morning Pulse advisory signals for today.")
+    else:
+        print("No new 09:00 AM Morning Pulse entries to record.")
+
 def record_live_130pm_advisory(commodities_list):
     """
     Called at 1:30 PM IST by generate_and_send_130pm_advisory.

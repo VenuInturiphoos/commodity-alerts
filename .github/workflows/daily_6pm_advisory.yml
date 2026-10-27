@@ -2,6 +2,8 @@ name: Daily MCX Commodity Advisories & Settlements
 
 on:
   schedule:
+    # 03:30 UTC = 09:00 (9:00 AM) IST, Monday to Friday (Morning Market Pulse & Opening Gap)
+    - cron: '30 03 * * 1-5'
     # 08:00 UTC = 13:30 (1:30 PM) IST, Monday to Friday (London Breakout)
     - cron: '00 08 * * 1-5'
     # 12:30 UTC = 18:00 (6:00 PM) IST, Monday to Friday (US Pit Open Advisory)
@@ -21,6 +23,7 @@ on:
         type: choice
         options:
           - 'auto'
+          - '9am'
           - '130pm'
           - '6pm'
           - '8pm'
@@ -65,6 +68,9 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             case "${{ inputs.session }}" in
+              9am)
+                python daily_6pm_advisory.py --9am --force
+                ;;
               130pm)
                 python daily_6pm_advisory.py --130pm --force
                 ;;
@@ -86,7 +92,9 @@ jobs:
             esac
           else
             UTC_H=$(date -u +%H)
-            if [ "$UTC_H" -ge 7 ] && [ "$UTC_H" -le 9 ]; then
+            if [ "$UTC_H" -ge 3 ] && [ "$UTC_H" -le 5 ]; then
+              python daily_6pm_advisory.py --9am
+            elif [ "$UTC_H" -ge 7 ] && [ "$UTC_H" -le 9 ]; then
               python daily_6pm_advisory.py --130pm
             elif [ "$UTC_H" -eq 12 ]; then
               UTC_M=$(date -u +%M)
