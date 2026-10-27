@@ -26,8 +26,14 @@ def generate_and_send_6pm_advisory(force=False):
             state = {}
             
     last_6pm_date = state.get('DAILY_6PM_ADVISORY', {}).get('last_alert_date')
-    if not force and last_6pm_date == today_ist:
-        print(f"Daily 6 PM advisory already dispatched for today ({today_ist}). Skipping.")
+    last_6pm_time = state.get('DAILY_6PM_ADVISORY', {}).get('last_alert_time', '')
+    is_off_hours = False
+    if last_6pm_time:
+        if 'AM' in last_6pm_time or any(f" {h:02d}:" in last_6pm_time for h in range(1, 17)):
+            is_off_hours = True
+
+    if not force and last_6pm_date == today_ist and not is_off_hours:
+        print(f"Daily 6 PM advisory already dispatched for today ({today_ist}) at {last_6pm_time}. Skipping.")
         return False
 
     with open('config.json', 'r') as f:
