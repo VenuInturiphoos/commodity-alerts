@@ -3777,8 +3777,25 @@ function renderAdvisoryTradesTable() {
 
         let pnlColor = '#cbd5e1';
         let pnlText = outcome.pnl_display || '₹0.00';
-        if (pt.pnl_inr > 0) pnlColor = '#4ade80';
-        else if (pt.pnl_inr < 0) pnlColor = '#fb7185';
+        if (pt.status === 'ACTIVE' && pt.entry_price) {
+            const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) ? marketData.find(m => m.symbol === t.symbol) : null;
+            if (mktItem && mktItem.current_price) {
+                const curPrice = Number(mktItem.current_price);
+                const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
+                const lot = t.lot_size || 1;
+                const liveMtm = Math.round(pts * lot * 100) / 100;
+                pnlColor = liveMtm >= 0 ? '#4ade80' : '#fb7185';
+                pnlText = `${liveMtm >= 0 ? '+' : ''}₹${liveMtm.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(Live MTM)</span>`;
+            } else {
+                pnlText = '<span style="color:#fbbf24; font-size:0.8rem;">Ticking...</span>';
+            }
+        } else if (pt.pnl_inr > 0) {
+            pnlColor = '#4ade80';
+            pnlText = `+₹${Number(pt.pnl_inr).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        } else if (pt.pnl_inr < 0) {
+            pnlColor = '#fb7185';
+            pnlText = `-₹${Math.abs(Number(pt.pnl_inr)).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
 
         // Validation check cell
         let check615Html = `<span style="color:#94a3b8; font-size:0.8rem;">Direct Entry</span>`;
@@ -3906,8 +3923,25 @@ function renderAdvisoryTradesTable() {
 
             let pnlColor = '#cbd5e1';
             let pnlText = outcome.pnl_display || '₹0.00';
-            if (pt.pnl_inr > 0) pnlColor = '#4ade80';
-            else if (pt.pnl_inr < 0) pnlColor = '#fb7185';
+            if (pt.status === 'ACTIVE' && pt.entry_price) {
+                const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) ? marketData.find(m => m.symbol === t.symbol) : null;
+                if (mktItem && mktItem.current_price) {
+                    const curPrice = Number(mktItem.current_price);
+                    const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
+                    const lot = t.lot_size || 1;
+                    const liveMtm = Math.round(pts * lot * 100) / 100;
+                    pnlColor = liveMtm >= 0 ? '#4ade80' : '#fb7185';
+                    pnlText = `${liveMtm >= 0 ? '+' : ''}₹${liveMtm.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <small style="font-size:0.68rem; color:#94a3b8; display:block; font-weight:400;">(Live MTM)</small>`;
+                } else {
+                    pnlText = '<span style="color:#fbbf24; font-size:0.8rem;">Ticking...</span>';
+                }
+            } else if (pt.pnl_inr > 0) {
+                pnlColor = '#4ade80';
+                pnlText = `+₹${Number(pt.pnl_inr).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            } else if (pt.pnl_inr < 0) {
+                pnlColor = '#fb7185';
+                pnlText = `-₹${Math.abs(Number(pt.pnl_inr)).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
 
             let actionColor = '#94a3b8';
             if (s6.action_text?.includes('BUY')) actionColor = '#4ade80';
