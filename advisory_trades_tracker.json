@@ -34,24 +34,24 @@
         "quantity": 10,
         "entry_price": 142203.0,
         "entry_time": "01:30 PM IST",
-        "exit_price": 144100.0,
-        "exit_time": "11:30 PM IST",
-        "pnl_points": -1897.0,
-        "pnl_inr": -18970.0,
+        "exit_price": 142749.5,
+        "exit_time": "06:01 PM IST",
+        "pnl_points": -546.5,
+        "pnl_inr": -5465.0,
         "status": "CLOSED",
         "target": 140867.6,
         "stop_loss": 142749.5,
-        "exit_trigger": "EOD_SQUAREOFF"
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": 144100.0,
+        "session_close": 142749.5,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Wrong \u274c (11:30 PM)",
-        "pnl_display": "\u20b9-18,970.00",
-        "summary": "11:30 PM session close exit. Entry: \u20b9142,203.00 -> Exit: \u20b9144,100.00 (-1897.00 pts | \u20b9-18,970.00).",
-        "exit_time": "11:30 PM IST",
-        "exit_trigger": "EOD_SQUAREOFF"
+        "badge": "Stop Loss Hit \ud83d\uded1 (06:01 PM IST)",
+        "pnl_display": "\u20b9-5,465.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 06:01 PM IST. Entry: \u20b9142,203.00 -> Exit: \u20b9142,749.50 (-546.50 pts \u00d7 \u20b910 = \u20b9-5,465.00).",
+        "exit_time": "06:01 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
       }
     },
     {
@@ -88,24 +88,24 @@
         "quantity": 5,
         "entry_price": 191779.0,
         "entry_time": "01:30 PM IST",
-        "exit_price": 196511.0,
-        "exit_time": "11:30 PM IST",
-        "pnl_points": -4732.0,
-        "pnl_inr": -23660.0,
+        "exit_price": 193355.5,
+        "exit_time": "03:31 PM IST",
+        "pnl_points": -1576.5,
+        "pnl_inr": -7882.5,
         "status": "CLOSED",
         "target": 187101.2,
         "stop_loss": 193355.5,
-        "exit_trigger": "EOD_SQUAREOFF"
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": 196511.0,
+        "session_close": 193355.5,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Wrong \u274c (11:30 PM)",
-        "pnl_display": "\u20b9-23,660.00",
-        "summary": "11:30 PM session close exit. Entry: \u20b9191,779.00 -> Exit: \u20b9196,511.00 (-4732.00 pts | \u20b9-23,660.00).",
-        "exit_time": "11:30 PM IST",
-        "exit_trigger": "EOD_SQUAREOFF"
+        "badge": "Stop Loss Hit \ud83d\uded1 (03:31 PM IST)",
+        "pnl_display": "\u20b9-7,882.50",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 03:31 PM IST. Entry: \u20b9191,779.00 -> Exit: \u20b9193,355.50 (-1576.50 pts \u00d7 \u20b95 = \u20b9-7,882.50).",
+        "exit_time": "03:31 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
       }
     },
     {
@@ -142,24 +142,24 @@
         "quantity": 2500,
         "entry_price": 1391.7,
         "entry_time": "01:30 PM IST",
-        "exit_price": 1405.35,
-        "exit_time": "11:30 PM IST",
-        "pnl_points": -13.65,
-        "pnl_inr": -34125.0,
+        "exit_price": 1395.67,
+        "exit_time": "02:26 PM IST",
+        "pnl_points": -3.97,
+        "pnl_inr": -9925.0,
         "status": "CLOSED",
         "target": 1379.95,
         "stop_loss": 1395.67,
-        "exit_trigger": "EOD_SQUAREOFF"
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": 1405.35,
+        "session_close": 1395.67,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Wrong \u274c (11:30 PM)",
-        "pnl_display": "\u20b9-34,125.00",
-        "summary": "11:30 PM session close exit. Entry: \u20b91,391.70 -> Exit: \u20b91,405.35 (-13.65 pts | \u20b9-34,125.00).",
-        "exit_time": "11:30 PM IST",
-        "exit_trigger": "EOD_SQUAREOFF"
+        "badge": "Stop Loss Hit \ud83d\uded1 (02:26 PM IST)",
+        "pnl_display": "\u20b9-9,925.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:26 PM IST. Entry: \u20b91,391.70 -> Exit: \u20b91,395.67 (-3.97 pts \u00d7 \u20b92,500 = \u20b9-9,925.00).",
+        "exit_time": "02:26 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
       }
     },
     {
@@ -845,7 +845,7 @@
       }
     }
   ],
-  "last_updated": "27 Oct 2026, 11:37 PM IST",
+  "last_updated": "27 Oct 2026, 11:57 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
@@ -855,13 +855,13 @@
     "wrong_count": 4,
     "protected_count": 7,
     "win_rate_pct": 55.6,
-    "total_pnl_inr": -61087.5,
-    "avg_trade_pnl_inr": -6787.5,
+    "total_pnl_inr": -7605.0,
+    "avg_trade_pnl_inr": -845.0,
     "active_trades_count": 1,
     "starting_cash_inr": 1000000.0,
-    "current_cash_inr": 938912.5,
+    "current_cash_inr": 992395.0,
     "used_margin_inr": 0,
-    "available_cash_inr": 938912.5,
-    "net_worth_inr": 938912.5
+    "available_cash_inr": 992395.0,
+    "net_worth_inr": 992395.0
   }
 }
