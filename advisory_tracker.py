@@ -387,11 +387,18 @@ def record_live_130pm_advisory(commodities_list):
         range_pts = day_h - day_l
         mid_p = round((day_h + day_l) / 2.0, 2)
 
-        # Bullish Breakout: Current price breaking above morning Asian range
+        # Bullish Breakout: Enter on Retest of Broken Asian High (Support Level)
         if cur_p >= day_h * 0.9985 and range_pts > 0:
             action = "BUY"
+            support_entry = day_h
+            tight_sl = round(day_h - max(range_pts * 0.25, day_h * 0.003), 2)
             tgt = round(day_h + (range_pts * 1.2), 2)
-            sl = mid_p
+            
+            # If price is right at support (within 0.2%), enter ACTIVE; otherwise set PENDING_LIMIT
+            is_at_support = abs(cur_p - support_entry) / support_entry <= 0.002
+            entry_p = cur_p if is_at_support else support_entry
+            trade_status = "ACTIVE" if is_at_support else "PENDING_LIMIT"
+            
             entry = {
                 "id": trade_id,
                 "date": today_str,
@@ -404,50 +411,59 @@ def record_live_130pm_advisory(commodities_list):
                 "symbol": sym,
                 "name": name,
                 "lot_size": lot_size,
-                "event_context": "London / European Open Asian Range Breakout",
+                "event_context": f"London / European Breakout (Support Retest @ ₹{support_entry:,.2f})",
                 "suggestion_6pm": {
                     "status": "LONDON_BREAKOUT",
-                    "action_text": "BUY / LONDON BREAKOUT",
-                    "rationale": f"European open volume breaking above morning Asian range [₹{day_l:,.2f} – ₹{day_h:,.2f}].",
-                    "reference_price": cur_p,
-                    "stop_loss": sl,
+                    "action_text": f"BUY @ SUPPORT ₹{support_entry:,.2f}",
+                    "rationale": f"European open breakout. Entering at Key Support (broken Asian High ₹{day_h:,.2f}) with tight risk-defined SL.",
+                    "reference_price": support_entry,
+                    "stop_loss": tight_sl,
                     "target": tgt
                 },
                 "check_615": {
                     "checked": True,
-                    "status": "BREAKOUT_ENTERED",
-                    "price_615": cur_p,
-                    "action_taken": f"Entered BUY {lot_size} units @ ₹{cur_p:,.2f}",
-                    "detail": "London breakout confirmed outside Asian morning range."
+                    "status": "BREAKOUT_ENTERED" if is_at_support else "RETEST_PENDING",
+                    "price_615": entry_p,
+                    "action_taken": f"BUY {lot_size} units @ Support ₹{entry_p:,.2f}" if is_at_support else f"Awaiting Support Retest @ ₹{support_entry:,.2f}",
+                    "detail": f"Support Retest order at Asian High ₹{support_entry:,.2f} with SL ₹{tight_sl:,.2f}."
                 },
                 "paper_trade": {
                     "user": USER_ACCOUNT,
                     "action": "BUY",
                     "quantity": lot_size,
-                    "entry_price": cur_p,
+                    "entry_price": entry_p,
                     "entry_time": "01:30 PM IST",
                     "exit_price": None,
                     "exit_time": None,
                     "pnl_points": 0.0,
                     "pnl_inr": 0.0,
-                    "status": "ACTIVE"
+                    "status": trade_status,
+                    "target": tgt,
+                    "stop_loss": tight_sl
                 },
                 "eod_outcome": {
                     "session_close": None,
                     "circuit_limit": None,
                     "outcome": "PENDING",
-                    "badge": "Active Trade ⚡",
-                    "pnl_display": "Ticking Live...",
-                    "summary": f"Active BUY position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                    "badge": "Active Trade ⚡" if trade_status == "ACTIVE" else "Limit at Support ⏳",
+                    "pnl_display": "Ticking Live..." if trade_status == "ACTIVE" else "Awaiting Retest",
+                    "summary": f"Support retest entry @ ₹{support_entry:,.2f} with tight SL ₹{tight_sl:,.2f} and TGT ₹{tgt:,.2f}."
                 }
             }
             new_entries.append(entry)
 
-        # Bearish Breakdown: Current price breaking below morning Asian range
+        # Bearish Breakdown: Enter on Bounce to Broken Asian Low (Resistance Level)
         elif cur_p <= day_l * 1.0015 and range_pts > 0:
             action = "SELL"
+            resistance_entry = day_l
+            tight_sl = round(day_l + max(range_pts * 0.25, day_l * 0.003), 2)
             tgt = round(day_l - (range_pts * 1.2), 2)
-            sl = mid_p
+            
+            # If price is right at resistance (within 0.2%), enter ACTIVE; otherwise set PENDING_LIMIT
+            is_at_res = abs(cur_p - resistance_entry) / resistance_entry <= 0.002
+            entry_p = cur_p if is_at_res else resistance_entry
+            trade_status = "ACTIVE" if is_at_res else "PENDING_LIMIT"
+            
             entry = {
                 "id": trade_id,
                 "date": today_str,
@@ -460,41 +476,43 @@ def record_live_130pm_advisory(commodities_list):
                 "symbol": sym,
                 "name": name,
                 "lot_size": lot_size,
-                "event_context": "London / European Open Asian Range Breakdown",
+                "event_context": f"London / European Breakdown (Resistance Retest @ ₹{resistance_entry:,.2f})",
                 "suggestion_6pm": {
                     "status": "LONDON_BREAKDOWN",
-                    "action_text": "SELL / LONDON BREAKDOWN",
-                    "rationale": f"European open volume breaking below morning Asian range [₹{day_l:,.2f} – ₹{day_h:,.2f}].",
-                    "reference_price": cur_p,
-                    "stop_loss": sl,
+                    "action_text": f"SELL @ RESISTANCE ₹{resistance_entry:,.2f}",
+                    "rationale": f"European open breakdown. Entering on bounce to Key Resistance (broken Asian Low ₹{day_l:,.2f}) with tight risk-defined SL.",
+                    "reference_price": resistance_entry,
+                    "stop_loss": tight_sl,
                     "target": tgt
                 },
                 "check_615": {
                     "checked": True,
-                    "status": "BREAKDOWN_ENTERED",
-                    "price_615": cur_p,
-                    "action_taken": f"Entered SELL {lot_size} units @ ₹{cur_p:,.2f}",
-                    "detail": "London breakdown confirmed outside Asian morning range."
+                    "status": "BREAKDOWN_ENTERED" if is_at_res else "RETEST_PENDING",
+                    "price_615": entry_p,
+                    "action_taken": f"SELL {lot_size} units @ Resistance ₹{entry_p:,.2f}" if is_at_res else f"Awaiting Resistance Retest @ ₹{resistance_entry:,.2f}",
+                    "detail": f"Resistance Retest order at Asian Low ₹{resistance_entry:,.2f} with SL ₹{tight_sl:,.2f}."
                 },
                 "paper_trade": {
                     "user": USER_ACCOUNT,
                     "action": "SELL",
                     "quantity": lot_size,
-                    "entry_price": cur_p,
+                    "entry_price": entry_p,
                     "entry_time": "01:30 PM IST",
                     "exit_price": None,
                     "exit_time": None,
                     "pnl_points": 0.0,
                     "pnl_inr": 0.0,
-                    "status": "ACTIVE"
+                    "status": trade_status,
+                    "target": tgt,
+                    "stop_loss": tight_sl
                 },
                 "eod_outcome": {
                     "session_close": None,
                     "circuit_limit": None,
                     "outcome": "PENDING",
-                    "badge": "Active Trade ⚡",
-                    "pnl_display": "Ticking Live...",
-                    "summary": f"Active SELL position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                    "badge": "Active Trade ⚡" if trade_status == "ACTIVE" else "Limit at Resistance ⏳",
+                    "pnl_display": "Ticking Live..." if trade_status == "ACTIVE" else "Awaiting Retest",
+                    "summary": f"Resistance retest entry @ ₹{resistance_entry:,.2f} with tight SL ₹{tight_sl:,.2f} and TGT ₹{tgt:,.2f}."
                 }
             }
             new_entries.append(entry)
