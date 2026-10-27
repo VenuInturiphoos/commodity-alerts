@@ -1179,14 +1179,18 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             
             pt['exit_price'] = exit_p
             pt['exit_time'] = now_time_str
+            pt['exit_trigger'] = "TARGET_HIT" if hit_target else "STOP_LOSS_HIT"
             pt['pnl_points'] = round(pnl_pts, 2)
             pt['pnl_inr'] = pnl_inr
             pt['status'] = "CLOSED"
             
             outcome_val = "CORRECT" if hit_target else "WRONG"
-            badge_text = "Target Achieved 🎯" if hit_target else "Stop Loss Hit 🛑"
+            badge_text = f"Target Achieved 🎯 ({now_time_str})" if hit_target else f"Stop Loss Hit 🛑 ({now_time_str})"
             
+            trade['time_exit'] = now_time_str
             trade['eod_outcome']['session_close'] = exit_p
+            trade['eod_outcome']['exit_time'] = now_time_str
+            trade['eod_outcome']['exit_trigger'] = "TARGET_HIT" if hit_target else "STOP_LOSS_HIT"
             trade['eod_outcome']['outcome'] = outcome_val
             trade['eod_outcome']['badge'] = badge_text
             trade['eod_outcome']['pnl_display'] = f"{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}"
@@ -1261,14 +1265,18 @@ def exit_and_evaluate_eod_trades(checker, alerter):
         
         trade['paper_trade']['exit_price'] = close_p
         trade['paper_trade']['exit_time'] = "11:30 PM IST"
+        trade['paper_trade']['exit_trigger'] = "EOD_SQUAREOFF"
         trade['paper_trade']['pnl_points'] = round(pnl_pts, 2)
         trade['paper_trade']['pnl_inr'] = pnl_inr
         trade['paper_trade']['status'] = "CLOSED"
         
         is_correct = pnl_inr > 0
+        trade['time_exit'] = "11:30 PM IST"
         trade['eod_outcome']['session_close'] = close_p
+        trade['eod_outcome']['exit_time'] = "11:30 PM IST"
+        trade['eod_outcome']['exit_trigger'] = "EOD_SQUAREOFF"
         trade['eod_outcome']['outcome'] = "CORRECT" if is_correct else "WRONG"
-        trade['eod_outcome']['badge'] = "Correct ✅" if is_correct else "Wrong ❌"
+        trade['eod_outcome']['badge'] = "Correct ✅ (11:30 PM)" if is_correct else "Wrong ❌ (11:30 PM)"
         trade['eod_outcome']['pnl_display'] = f"{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}"
         trade['eod_outcome']['summary'] = f"11:30 PM session close exit. Entry: ₹{entry_p:,.2f} -> Exit: ₹{close_p:,.2f} ({pnl_pts:+.2f} pts | {'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f})."
         
