@@ -59,7 +59,7 @@
       "time_6pm": "01:30 PM IST",
       "time_validation": "01:45 PM IST",
       "time_615": "01:45 PM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "03:31 PM IST",
       "symbol": "SILVER",
       "name": "Silver",
       "lot_size": 5,
@@ -85,21 +85,24 @@
         "quantity": 5,
         "entry_price": 191779.0,
         "entry_time": "01:30 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 193355.5,
+        "exit_time": "03:31 PM IST",
+        "pnl_points": -1576.5,
+        "pnl_inr": -7882.5,
+        "status": "CLOSED",
         "target": 187101.2,
-        "stop_loss": 193355.5
+        "stop_loss": 193355.5,
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 193355.5,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Active SELL position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+        "outcome": "WRONG",
+        "badge": "Stop Loss Hit \ud83d\uded1 (03:31 PM IST)",
+        "pnl_display": "\u20b9-7,882.50",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 03:31 PM IST. Entry: \u20b9191,779.00 -> Exit: \u20b9193,355.50 (\u20b9-7,882.50).",
+        "exit_time": "03:31 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
       }
     },
     {
@@ -839,23 +842,23 @@
       }
     }
   ],
-  "last_updated": "27 Oct 2026, 02:26 PM IST",
+  "last_updated": "27 Oct 2026, 03:31 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
     "total_signals": 17,
-    "executed_count": 7,
+    "executed_count": 8,
     "correct_count": 5,
-    "wrong_count": 2,
+    "wrong_count": 3,
     "protected_count": 7,
-    "win_rate_pct": 71.4,
-    "total_pnl_inr": 17086.25,
-    "avg_trade_pnl_inr": 2440.89,
-    "active_trades_count": 3,
+    "win_rate_pct": 62.5,
+    "total_pnl_inr": 9203.75,
+    "avg_trade_pnl_inr": 1150.47,
+    "active_trades_count": 2,
     "starting_cash_inr": 1000000.0,
-    "current_cash_inr": 1017086.25,
+    "current_cash_inr": 1009203.75,
     "used_margin_inr": 0.0,
-    "available_cash_inr": 1017086.25,
-    "net_worth_inr": 1017086.25
+    "available_cash_inr": 1009203.75,
+    "net_worth_inr": 1009203.75
   }
 }
