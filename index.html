@@ -602,6 +602,21 @@
                         </div>
                     </div>
 
+                    <!-- Session Timing & Win Probability Filter Bar -->
+                    <div style="background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 0.85rem;">
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                            <span><i class="fa-regular fa-clock" style="color: #818cf8; margin-right: 5px;"></i> Filter by Advisory Entry Session & Win Probability:</span>
+                            <span id="session-stats-summary" style="font-size: 0.78rem; color: #a5b4fc; font-weight: 600; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); padding: 2px 8px; border-radius: 6px;"></span>
+                        </div>
+                        <div class="circuit-filters" id="adv-session-filters" style="gap: 0.45rem;">
+                            <button class="circuit-filter-pill active" id="adv-session-all" onclick="filterAdvisorySession('ALL', this)">All Sessions 🌐 (<span id="sess-badge-all">...</span>)</button>
+                            <button class="circuit-filter-pill" id="adv-session-9am" onclick="filterAdvisorySession('9AM', this)">09:00 AM Morning Pulse 🌅 (<span id="sess-badge-9am">...</span>)</button>
+                            <button class="circuit-filter-pill" id="adv-session-1pm" onclick="filterAdvisorySession('1PM', this)">01:30 PM London Breakout 🏛️ (<span id="sess-badge-1pm">...</span>)</button>
+                            <button class="circuit-filter-pill" id="adv-session-6pm" onclick="filterAdvisorySession('6PM', this)">06:00 PM US Pit Open 🔔 (<span id="sess-badge-6pm">...</span>)</button>
+                            <button class="circuit-filter-pill" id="adv-session-8pm" onclick="filterAdvisorySession('8PM', this)">08:00 PM Evening Review 🌙 (<span id="sess-badge-8pm">...</span>)</button>
+                        </div>
+                    </div>
+
                     <!-- Tracker Toolbar Filters -->
                     <div class="circuits-toolbar" style="margin-bottom: 1rem;">
                         <div class="circuit-filters" style="gap: 0.4rem;">
@@ -3602,6 +3617,85 @@ function switchPaperTradingSubView(subview) {
 // ==========================================
 let advisoryTrackerData = null;
 let activeAdvFilter = 'CALLED';
+let activeAdvSession = 'ALL';
+
+function getTradeSessionCategory(t) {
+    if (!t) return 'OTHER';
+    const sName = (t.session_name || '').toLowerCase();
+    const tTrig = (t.time_trigger || t.time_6pm || '').toLowerCase();
+    const id = (t.id || '').toLowerCase();
+    
+    if (sName.includes('09:00') || sName.includes('morning') || tTrig.includes('09:00') || id.includes('-0900-')) {
+        return '9AM';
+    }
+    if (sName.includes('1:30') || sName.includes('london') || tTrig.includes('01:30') || id.includes('-1330-')) {
+        return '1PM';
+    }
+    if (sName.includes('6:00') || sName.includes('pit open') || tTrig.includes('06:00') || id.includes('-1800-') || id.includes('20261023')) {
+        return '6PM';
+    }
+    if (sName.includes('8:00') || sName.includes('evening') || tTrig.includes('08:00') || id.includes('-2000-')) {
+        return '8PM';
+    }
+    return 'OTHER';
+}
+
+function updateSessionStatsBadges(trades) {
+    const sessions = ['9AM', '1PM', '6PM', '8PM'];
+    const sessNames = {
+        '9AM': '09:00 AM Morning Pulse',
+        '1PM': '01:30 PM London Breakout',
+        '6PM': '06:00 PM US Pit Open',
+        '8PM': '08:00 PM Evening Review'
+    };
+    
+    sessions.forEach(sessKey => {
+        const sessTrades = trades.filter(t => getTradeSessionCategory(t) === sessKey);
+        const executed = sessTrades.filter(t => t.paper_trade?.status === 'CLOSED');
+        const wins = executed.filter(t => t.eod_outcome?.outcome === 'CORRECT').length;
+        const totalExec = executed.length;
+        const winRate = totalExec > 0 ? Math.round((wins / totalExec) * 100) : 0;
+        const pnl = executed.reduce((acc, t) => acc + (t.paper_trade?.pnl_inr || 0), 0);
+        
+        const badgeEl = document.getElementById(`sess-badge-${sessKey.toLowerCase()}`);
+        if (badgeEl) {
+            badgeEl.textContent = totalExec > 0 ? `${winRate}% Win | ${pnl >= 0 ? '+' : '-'}₹${Math.abs(Math.round(pnl)).toLocaleString('en-IN')}` : `${sessTrades.length} Signals`;
+        }
+    });
+
+    const badgeAllEl = document.getElementById('sess-badge-all');
+    if (badgeAllEl) badgeAllEl.textContent = `${trades.length} Signals`;
+
+    // Update banner summary for active session
+    const summaryBanner = document.getElementById('session-stats-summary');
+    if (summaryBanner) {
+        if (activeAdvSession === 'ALL') {
+            const execAll = trades.filter(t => t.paper_trade?.status === 'CLOSED');
+            const winsAll = execAll.filter(t => t.eod_outcome?.outcome === 'CORRECT').length;
+            const rateAll = execAll.length > 0 ? Math.round((winsAll / execAll.length) * 100) : 0;
+            const pnlAll = execAll.reduce((acc, t) => acc + (t.paper_trade?.pnl_inr || 0), 0);
+            summaryBanner.innerHTML = `🌐 All Sessions Combined: <strong>${rateAll}% Win Rate</strong> (${winsAll}W / ${execAll.length - winsAll}L) · P&L: <span style="color:${pnlAll >= 0 ? '#4ade80' : '#fb7185'}; font-weight:700;">${pnlAll >= 0 ? '+₹' : '-₹'}${Math.abs(Math.round(pnlAll)).toLocaleString('en-IN')}</span>`;
+        } else {
+            const sessTrades = trades.filter(t => getTradeSessionCategory(t) === activeAdvSession);
+            const executed = sessTrades.filter(t => t.paper_trade?.status === 'CLOSED');
+            const wins = executed.filter(t => t.eod_outcome?.outcome === 'CORRECT').length;
+            const losses = executed.length - wins;
+            const protectedCount = sessTrades.filter(isAvoidedAdvisoryTrade).length;
+            const winRate = executed.length > 0 ? Math.round((wins / executed.length) * 100) : 0;
+            const pnl = executed.reduce((acc, t) => acc + (t.paper_trade?.pnl_inr || 0), 0);
+            const sessTitle = sessNames[activeAdvSession] || activeAdvSession;
+            summaryBanner.innerHTML = `⏱️ ${sessTitle}: <strong>${winRate}% Win Rate</strong> (${wins} Won, ${losses} Lost, ${protectedCount} Protected) · Realized P&L: <span style="color:${pnl >= 0 ? '#4ade80' : '#fb7185'}; font-weight:700;">${pnl >= 0 ? '+₹' : '-₹'}${Math.abs(Math.round(pnl)).toLocaleString('en-IN')}</span>`;
+        }
+    }
+}
+
+function filterAdvisorySession(sessionType, btnEl) {
+    activeAdvSession = sessionType;
+    document.querySelectorAll('#adv-session-filters button').forEach(b => b.classList.remove('active'));
+    if (btnEl) btnEl.classList.add('active');
+    if (advisoryTrackerData?.trades) updateSessionStatsBadges(advisoryTrackerData.trades);
+    renderAdvisoryTradesTable();
+}
 
 function isAvoidedAdvisoryTrade(t) {
     if (!t) return false;
@@ -3707,6 +3801,9 @@ async function loadAdvisoryTracker() {
         if (countActiveEl) countActiveEl.textContent = countActive;
         if (subnavBadgeEl) subnavBadgeEl.textContent = `${countCalled} Called Trades`;
 
+        // Update session win probability badges and banner
+        updateSessionStatsBadges(trades);
+
         renderAdvisoryTradesTable();
     } catch (e) {
         console.error("Error loading advisory tracker:", e);
@@ -3730,6 +3827,12 @@ function renderAdvisoryTradesTable() {
     const searchVal = (document.getElementById('adv-search-input')?.value || '').trim().toLowerCase();
 
     const filtered = trades.filter(t => {
+        // Filter by Session Timing
+        if (activeAdvSession !== 'ALL') {
+            const sessCat = getTradeSessionCategory(t);
+            if (sessCat !== activeAdvSession) return false;
+        }
+
         // Filter by pill: by default CALLED only shows called signals (active today, wins, or losses)
         if (activeAdvFilter === 'CALLED') {
             if (!isCalledAdvisoryTrade(t)) return false;
