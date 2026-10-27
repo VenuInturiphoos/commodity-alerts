@@ -498,13 +498,62 @@ def record_live_130pm_advisory(commodities_list):
                 }
             }
             new_entries.append(entry)
+        else:
+            entry = {
+                "id": trade_id,
+                "date": today_str,
+                "session_name": "London Breakout (1:30 PM)",
+                "time_trigger": "01:30 PM IST",
+                "time_6pm": "01:30 PM IST",
+                "time_validation": "01:45 PM IST",
+                "time_615": "01:45 PM IST",
+                "time_exit": "11:30 PM IST",
+                "symbol": sym,
+                "name": name,
+                "lot_size": lot_size,
+                "event_context": f"Range-Bound Asian Range [₹{day_l:,.2f} – ₹{day_h:,.2f}]",
+                "suggestion_6pm": {
+                    "status": "STAND_ASIDE",
+                    "action_text": "STAND ASIDE / RANGE-BOUND",
+                    "rationale": f"Trading within morning Asian range [₹{day_l:,.2f} – ₹{day_h:,.2f}]. Standing aside awaiting range breakout.",
+                    "reference_price": cur_p,
+                    "stop_loss": None,
+                    "target": None
+                },
+                "check_615": {
+                    "checked": True,
+                    "status": "RANGE_BOUND_STAND_ASIDE",
+                    "price_615": cur_p,
+                    "action_taken": "Stood Aside (0 Units)",
+                    "detail": "Inside Asian morning range. Awaiting breakout."
+                },
+                "paper_trade": {
+                    "user": USER_ACCOUNT,
+                    "action": "STAND_ASIDE",
+                    "quantity": 0,
+                    "entry_price": None,
+                    "entry_time": "01:30 PM IST",
+                    "exit_price": None,
+                    "exit_time": None,
+                    "pnl_points": 0.0,
+                    "pnl_inr": 0.0,
+                    "status": "STAND_ASIDE"
+                },
+                "eod_outcome": {
+                    "session_close": None,
+                    "circuit_limit": None,
+                    "outcome": "PROTECTED",
+                    "badge": "Avoided Range 🛡️",
+                    "pnl_display": "₹0.00",
+                    "summary": "Stood aside on range-bound asset. Capital protected."
+                }
+            }
+            new_entries.append(entry)
 
     if new_entries:
         tracker['trades'] = new_entries + trades
         save_tracker(tracker)
-        print(f"Recorded {len(new_entries)} live 1:30 PM London breakout trades for today.")
-    else:
-        print("No London range breakout triggered today at 1:30 PM (commodities inside Asian range).")
+        print(f"Recorded {len(new_entries)} live 1:30 PM London breakout session records for today.")
 
 def record_live_6pm_advisory(commodities_list, pre_6pm_events):
     """
