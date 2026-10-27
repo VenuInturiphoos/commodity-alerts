@@ -1098,6 +1098,130 @@ def check_and_execute_615_confirmation(checker, alerter):
     
     return True
 
+def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
+    """
+    Called periodically during market hours (every 3 minutes).
+    Checks all ACTIVE advisory paper trades against live high/low/current prices.
+    If Target or Stop-Loss is hit, automatically closes the trade at target/SL,
+    updates P&L and outcome, and sends an immediate alert notification.
+    """
+    tracker = load_tracker()
+    trades = tracker.get('trades', [])
+    
+    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+    today_str = now_dt.strftime('%d %b %Y')
+    now_time_str = now_dt.strftime('%I:%M %p IST')
+    
+    active_trades = [t for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('status') == 'ACTIVE']
+    if not active_trades:
+        return False
+
+    circuits_res = checker.generate_circuits_data()
+    commodities_map = {c['symbol']: c for c in circuits_res.get('commodities', [])} if circuits_res else {}
+    if not commodities_map:
+        return False
+
+    updated_any = False
+    alerts_to_send = []
+
+    for trade in active_trades:
+        sym = trade['symbol']
+        c_item = commodities_map.get(sym)
+        if not c_item:
+            continue
+
+        cur_p = float(c_item['current_price'])
+        day_h = float(c_item.get('day_high', cur_p))
+        day_l = float(c_item.get('day_low', cur_p))
+        
+        pt = trade['paper_trade']
+        action = pt['action']
+        entry_p = float(pt['entry_price'])
+        lot_size = trade.get('lot_size', 1)
+        
+        s6 = trade.get('suggestion_6pm', {})
+        target = float(s6.get('target')) if s6.get('target') is not None else pt.get('target')
+        stop_loss = float(s6.get('stop_loss')) if s6.get('stop_loss') is not None else pt.get('stop_loss')
+        
+        # Ensure paper_trade object has target and stop_loss stored
+        if target is not None:
+            pt['target'] = target
+        if stop_loss is not None:
+            pt['stop_loss'] = stop_loss
+
+        hit_target = False
+        hit_sl = False
+        exit_p = cur_p
+        reason = ""
+
+        if action == 'BUY':
+            if target and (cur_p >= target or day_h >= target):
+                hit_target = True
+                exit_p = target
+                reason = "Target Achieved 🎯"
+            elif stop_loss and (cur_p <= stop_loss or day_l <= stop_loss):
+                hit_sl = True
+                exit_p = stop_loss
+                reason = "Stop-Loss Triggered 🛑"
+        elif action == 'SELL':
+            if target and (cur_p <= target or day_l <= target):
+                hit_target = True
+                exit_p = target
+                reason = "Target Achieved 🎯"
+            elif stop_loss and (cur_p >= stop_loss or day_h >= stop_loss):
+                hit_sl = True
+                exit_p = stop_loss
+                reason = "Stop-Loss Triggered 🛑"
+
+        if hit_target or hit_sl:
+            pnl_pts = (exit_p - entry_p) if action == 'BUY' else (entry_p - exit_p)
+            pnl_inr = round(pnl_pts * lot_size, 2)
+            
+            pt['exit_price'] = exit_p
+            pt['exit_time'] = now_time_str
+            pt['pnl_points'] = round(pnl_pts, 2)
+            pt['pnl_inr'] = pnl_inr
+            pt['status'] = "CLOSED"
+            
+            outcome_val = "CORRECT" if hit_target else "WRONG"
+            badge_text = "Target Achieved 🎯" if hit_target else "Stop Loss Hit 🛑"
+            
+            trade['eod_outcome']['session_close'] = exit_p
+            trade['eod_outcome']['outcome'] = outcome_val
+            trade['eod_outcome']['badge'] = badge_text
+            trade['eod_outcome']['pnl_display'] = f"{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}"
+            trade['eod_outcome']['summary'] = f"{reason} at {now_time_str}. Entry: ₹{entry_p:,.2f} -> Exit: ₹{exit_p:,.2f} ({'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f})."
+            
+            updated_any = True
+            
+            icon = "🎯" if hit_target else "🛑"
+            subject = f"{icon} [{badge_text.upper()}] {trade['name']} Paper Trade Exit ({now_time_str})"
+            body = (
+                f"{icon} <b>PAPER TRADE AUTO-EXIT: {badge_text.upper()}</b>\n"
+                f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                f"• <b>Asset</b>: {trade['name']} ({sym})\n"
+                f"• <b>Position</b>: {action} {lot_size} units\n"
+                f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
+                f"• <b>Exit Price</b>: ₹{exit_p:,.2f} ({reason})\n"
+                f"• <b>Target</b>: ₹{target:,.2f} | <b>Stop-Loss</b>: ₹{stop_loss:,.2f}\n"
+                f"• <b>Net Realized P&L</b>: <b>{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}</b>\n\n"
+                f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+            )
+            alerts_to_send.append({'subject': subject, 'body': body})
+
+    if updated_any:
+        save_tracker(tracker)
+        print("Updated advisory tracker with target/stop-loss executions.")
+        if alerter and alerts_to_send:
+            for al in alerts_to_send:
+                try:
+                    alerter.send_alert(al['subject'], al['body'])
+                except Exception as e:
+                    print(f"Error sending target/SL alert: {e}")
+        return True
+    return False
+
 def exit_and_evaluate_eod_trades(checker, alerter):
     """
     Called at 11:15 PM – 11:30 PM IST.

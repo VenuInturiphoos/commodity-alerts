@@ -85,6 +85,13 @@ def main():
     except Exception as e:
         print(f"Error generating circuits data & history: {e}")
 
+    # Monitor active advisory paper trades for Target and Stop-Loss triggers
+    try:
+        from advisory_tracker import check_and_execute_intraday_targets_and_stops
+        check_and_execute_intraday_targets_and_stops(checker, alerter)
+    except Exception as e:
+        print(f"Error checking advisory targets/stops: {e}")
+
     # Check and trigger 09:00 AM IST Morning Market Pulse & Opening Gap Advisory (Mon - Fri)
     try:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))

@@ -2707,9 +2707,27 @@ function renderPortfolio() {
         const sign = isProfit ? '+' : '';
         const positionType = isLong ? '<span style="color:#4ade80; font-size:0.8rem; border:1px solid #4ade80; padding:2px 4px; border-radius:4px;">LONG</span>' : '<span style="color:#fb7185; font-size:0.8rem; border:1px solid #fb7185; padding:2px 4px; border-radius:4px;">SHORT</span>';
         
+        // Check for active advisory Stop-Loss and Target for this symbol
+        let activeSl = null;
+        let activeTgt = null;
+        if (typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) {
+            const adv = advisoryTrackerData.trades.find(t => t.symbol === symbol && t.paper_trade?.status === 'ACTIVE');
+            if (adv?.suggestion_6pm) {
+                if (adv.suggestion_6pm.stop_loss) activeSl = Number(adv.suggestion_6pm.stop_loss);
+                if (adv.suggestion_6pm.target) activeTgt = Number(adv.suggestion_6pm.target);
+            }
+        }
+
+        const targetSlBadge = (activeTgt || activeSl) ? `
+            <div style="display:flex; gap:6px; margin-top:4px; font-size:0.75rem; flex-wrap:wrap;">
+                ${activeTgt ? `<span style="color:#4ade80; background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.3); padding:1px 6px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-bullseye"></i> TGT: ₹${activeTgt.toLocaleString('en-IN', {minimumFractionDigits:2})}</span>` : ''}
+                ${activeSl ? `<span style="color:#fb7185; background:rgba(251,113,133,0.12); border:1px solid rgba(251,113,133,0.3); padding:1px 6px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-shield"></i> SL: ₹${activeSl.toLocaleString('en-IN', {minimumFractionDigits:2})}</span>` : ''}
+            </div>
+        ` : '';
+
         const rowHtml = `
             <tr>
-                <td><strong>${marketItem ? marketItem.name : symbol}</strong> <small style="color:var(--text-secondary)">(${symbol})</small><br>${positionType}</td>
+                <td><strong>${marketItem ? marketItem.name : symbol}</strong> <small style="color:var(--text-secondary)">(${symbol})</small><br>${positionType}${targetSlBadge}</td>
                 <td>${absShares}</td>
                 <td>₹${avgPrice.toFixed(2)}</td>
                 <td>₹${currentPrice.toFixed(2)}</td>
@@ -2722,6 +2740,19 @@ function renderPortfolio() {
         `;
 
         const isCommodity = marketItem && marketItem.asset_type && marketItem.asset_type.includes('Commodity');
+        const cardTargetSlSection = (activeTgt || activeSl) ? `
+            <div class="mobile-card-grid-2" style="margin-top:-2px;">
+                <div class="mobile-cell-item" style="border-left: 3px solid #fb7185;">
+                    <span class="mobile-cell-label"><i class="fa-solid fa-shield"></i> Stop Loss</span>
+                    <span class="mobile-cell-val" style="color:#fb7185;">${activeSl ? '₹' + activeSl.toLocaleString('en-IN', {minimumFractionDigits:2}) : 'None'}</span>
+                </div>
+                <div class="mobile-cell-item" style="border-left: 3px solid #4ade80;">
+                    <span class="mobile-cell-label"><i class="fa-solid fa-bullseye"></i> Target</span>
+                    <span class="mobile-cell-val" style="color:#4ade80;">${activeTgt ? '₹' + activeTgt.toLocaleString('en-IN', {minimumFractionDigits:2}) : 'None'}</span>
+                </div>
+            </div>
+        ` : '';
+
         const cardHtml = `
             <div class="mobile-trading-card">
                 <div class="mobile-card-top">
@@ -2736,6 +2767,8 @@ function renderPortfolio() {
                         <button class="trade-btn sell-btn btn-small" onclick="exitPosition('${symbol}', '${marketItem ? marketItem.name : symbol}', ${currentPrice}, ${absShares}, ${isLong})" style="padding: 6px 14px; font-size: 0.82rem;">Exit</button>
                     </div>
                 </div>
+
+                ${cardTargetSlSection}
 
                 <div class="mobile-card-grid-3">
                     <div class="mobile-cell-item">
@@ -2836,6 +2869,10 @@ function renderPortfolio() {
 }
 
 window.cancelPendingOrder = async function(orderId) {
+    if (String(orderId).startsWith('adv-')) {
+        alert("This is an active Advisory Target/Stop-Loss trigger linked to your open position.");
+        return;
+    }
     if (!confirm("Are you sure you want to cancel this limit order?")) return;
     try {
         const { error } = await supabaseClient.from('pending_orders').update({ status: 'CANCELLED' }).eq('id', orderId);
@@ -2852,7 +2889,41 @@ function renderPendingOrders(orders) {
     const cardsFeed = document.getElementById('pending-orders-cards');
     if (!tbody) return;
     
-    const activeOrders = (orders || []).filter(o => o.status === 'PENDING' || o.status === 'PENDING_STOP');
+    const activeOrders = [...(orders || []).filter(o => o.status === 'PENDING' || o.status === 'PENDING_STOP')];
+
+    // Automatically incorporate Target & Stop-Loss from active advisory trades
+    if (typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) {
+        for (const t of advisoryTrackerData.trades) {
+            if (t.paper_trade?.status === 'ACTIVE' && t.suggestion_6pm) {
+                const isLong = t.paper_trade.action === 'BUY';
+                const closeAction = isLong ? 'SELL' : 'BUY';
+                if (t.suggestion_6pm.target && !activeOrders.some(o => o.symbol === t.symbol && o.status === 'PENDING')) {
+                    activeOrders.push({
+                        id: `adv-tgt-${t.id}`,
+                        created_at: new Date().toISOString(),
+                        symbol: t.symbol,
+                        transaction_type: closeAction,
+                        quantity: t.paper_trade.quantity,
+                        limit_price: t.suggestion_6pm.target,
+                        status: 'PENDING',
+                        is_advisory: true
+                    });
+                }
+                if (t.suggestion_6pm.stop_loss && !activeOrders.some(o => o.symbol === t.symbol && o.status === 'PENDING_STOP')) {
+                    activeOrders.push({
+                        id: `adv-sl-${t.id}`,
+                        created_at: new Date().toISOString(),
+                        symbol: t.symbol,
+                        transaction_type: closeAction,
+                        quantity: t.paper_trade.quantity,
+                        limit_price: t.suggestion_6pm.stop_loss,
+                        status: 'PENDING_STOP',
+                        is_advisory: true
+                    });
+                }
+            }
+        }
+    }
 
     if (activeOrders.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No pending limit or stop orders.</td></tr>`;
@@ -2863,7 +2934,7 @@ function renderPendingOrders(orders) {
     tbody.innerHTML = activeOrders.map(tx => {
         const date = new Date(tx.created_at).toLocaleString('en-IN', { 
             year: 'numeric', month: 'short', day: 'numeric', 
-            hour: '2-digit', minute:'2-digit', second:'2-digit' 
+            hour: '2-digit', minute:'2-digit' 
         });
         
         const marketItem = marketData.find(item => item.symbol === tx.symbol);
@@ -2872,7 +2943,10 @@ function renderPendingOrders(orders) {
         const totalValue = tx.quantity * tx.limit_price;
         const color = tx.transaction_type === 'BUY' ? '#4ade80' : '#fb7185';
         
-        const orderTypeLabel = tx.status === 'PENDING_STOP' ? `Stop Loss (${tx.transaction_type})` : `Limit (${tx.transaction_type})`;
+        const orderTypeLabel = tx.status === 'PENDING_STOP' ? `Stop Loss (${tx.transaction_type})` : `Target Limit (${tx.transaction_type})`;
+        const actionBtn = tx.is_advisory 
+            ? `<span style="font-size:0.75rem; color:#818cf8; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.35); padding:3px 8px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-robot"></i> Advisory</span>`
+            : `<button onclick="cancelPendingOrder('${tx.id}')" class="trade-btn sell-btn btn-small" style="background: rgba(239, 68, 68, 0.1) !important; color: #fb7185 !important; border-color: rgba(239, 68, 68, 0.3) !important;">Cancel</button>`;
         
         return `
             <tr>
@@ -2883,7 +2957,7 @@ function renderPendingOrders(orders) {
                 <td style="font-weight:600">₹${parseFloat(tx.limit_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td style="font-weight:600; color:var(--text-secondary)">₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td style="text-align: right;">
-                    <button onclick="cancelPendingOrder('${tx.id}')" class="trade-btn sell-btn btn-small" style="background: rgba(239, 68, 68, 0.1) !important; color: #fb7185 !important; border-color: rgba(239, 68, 68, 0.3) !important;">Cancel</button>
+                    ${actionBtn}
                 </td>
             </tr>
         `;
@@ -2899,7 +2973,10 @@ function renderPendingOrders(orders) {
             const name = marketItem ? marketItem.name : tx.symbol;
             const totalValue = tx.quantity * tx.limit_price;
             const color = tx.transaction_type === 'BUY' ? '#4ade80' : '#fb7185';
-            const orderTypeLabel = tx.status === 'PENDING_STOP' ? `Stop Loss (${tx.transaction_type})` : `Limit (${tx.transaction_type})`;
+            const orderTypeLabel = tx.status === 'PENDING_STOP' ? `Stop Loss (${tx.transaction_type})` : `Target Limit (${tx.transaction_type})`;
+            const actionBtn = tx.is_advisory 
+                ? `<span style="font-size:0.75rem; color:#818cf8; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.35); padding:3px 8px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-robot"></i> Advisory Trigger</span>`
+                : `<button onclick="cancelPendingOrder('${tx.id}')" class="trade-btn sell-btn btn-small" style="background: rgba(239, 68, 68, 0.15) !important; color: #fb7185 !important; border: 1px solid rgba(239, 68, 68, 0.3) !important; padding: 4px 12px; font-size: 0.8rem;">Cancel Order</button>`;
 
             return `
                 <div class="mobile-trading-card">
@@ -2920,7 +2997,7 @@ function renderPendingOrders(orders) {
                             <span class="mobile-cell-val">${tx.quantity.toLocaleString('en-IN')}</span>
                         </div>
                         <div class="mobile-cell-item">
-                            <span class="mobile-cell-label">Limit Price</span>
+                            <span class="mobile-cell-label">Trigger Price</span>
                             <span class="mobile-cell-val">₹${parseFloat(tx.limit_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                         </div>
                         <div class="mobile-cell-item">
@@ -2930,8 +3007,8 @@ function renderPendingOrders(orders) {
                     </div>
 
                     <div class="mobile-card-bottom">
-                        <span style="font-size:0.75rem; color:#94a3b8;">Status: <strong style="color:#fbbf24;">Pending Order</strong></span>
-                        <button onclick="cancelPendingOrder('${tx.id}')" class="trade-btn sell-btn btn-small" style="background: rgba(239, 68, 68, 0.15) !important; color: #fb7185 !important; border: 1px solid rgba(239, 68, 68, 0.3) !important; padding: 4px 12px; font-size: 0.8rem;">Cancel Order</button>
+                        <span style="font-size:0.75rem; color:#94a3b8;">Status: <strong style="color:#fbbf24;">Monitoring Trigger</strong></span>
+                        ${actionBtn}
                     </div>
                 </div>
             `;
