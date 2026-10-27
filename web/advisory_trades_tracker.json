@@ -1,6 +1,153 @@
 {
   "trades": [
     {
+      "id": "ADV-27Oct2026-1330-GOLD",
+      "date": "27 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 10,
+      "event_context": "London / European Open Asian Range Breakdown",
+      "suggestion_6pm": {
+        "status": "LONDON_BREAKDOWN",
+        "action_text": "SELL / LONDON BREAKDOWN",
+        "rationale": "European open volume breaking below morning Asian range [\u20b9142,196.00 \u2013 \u20b9143,303.00].",
+        "reference_price": 142203.0,
+        "stop_loss": 142749.5,
+        "target": 140867.6
+      },
+      "check_615": {
+        "checked": true,
+        "status": "BREAKDOWN_ENTERED",
+        "price_615": 142203.0,
+        "action_taken": "Entered SELL 10 units @ \u20b9142,203.00",
+        "detail": "London breakdown confirmed outside Asian morning range."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 10,
+        "entry_price": 142203.0,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active SELL position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
+      "id": "ADV-27Oct2026-1330-SILVER",
+      "date": "27 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 5,
+      "event_context": "London / European Open Asian Range Breakdown",
+      "suggestion_6pm": {
+        "status": "LONDON_BREAKDOWN",
+        "action_text": "SELL / LONDON BREAKDOWN",
+        "rationale": "European open volume breaking below morning Asian range [\u20b9191,516.00 \u2013 \u20b9195,195.00].",
+        "reference_price": 191779.0,
+        "stop_loss": 193355.5,
+        "target": 187101.2
+      },
+      "check_615": {
+        "checked": true,
+        "status": "BREAKDOWN_ENTERED",
+        "price_615": 191779.0,
+        "action_taken": "Entered SELL 5 units @ \u20b9191,779.00",
+        "detail": "London breakdown confirmed outside Asian morning range."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 5,
+        "entry_price": 191779.0,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active SELL position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
+      "id": "ADV-27Oct2026-1330-COPPER",
+      "date": "27 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPER",
+      "name": "Copper",
+      "lot_size": 2500,
+      "event_context": "London / European Open Asian Range Breakdown",
+      "suggestion_6pm": {
+        "status": "LONDON_BREAKDOWN",
+        "action_text": "SELL / LONDON BREAKDOWN",
+        "rationale": "European open volume breaking below morning Asian range [\u20b91,391.05 \u2013 \u20b91,400.30].",
+        "reference_price": 1391.7,
+        "stop_loss": 1395.67,
+        "target": 1379.95
+      },
+      "check_615": {
+        "checked": true,
+        "status": "BREAKDOWN_ENTERED",
+        "price_615": 1391.7,
+        "action_taken": "Entered SELL 2500 units @ \u20b91,391.70",
+        "detail": "London breakdown confirmed outside Asian morning range."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 2500,
+        "entry_price": 1391.7,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active SELL position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
       "id": "ADV-27Oct2026-0900-GOLD",
       "date": "27 Oct 2026",
       "session_name": "Morning Pulse (09:00 AM)",
@@ -585,11 +732,11 @@
       }
     }
   ],
-  "last_updated": "27 Oct 2026, 12:41 PM IST",
+  "last_updated": "27 Oct 2026, 01:31 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
-    "total_signals": 12,
+    "total_signals": 15,
     "executed_count": 6,
     "correct_count": 5,
     "wrong_count": 1,
@@ -597,10 +744,10 @@
     "win_rate_pct": 83.3,
     "total_pnl_inr": 27011.25,
     "avg_trade_pnl_inr": 4501.88,
-    "active_trades_count": 1,
+    "active_trades_count": 4,
     "starting_cash_inr": 1000000.0,
     "current_cash_inr": 1027011.25,
-    "used_margin_inr": 0,
+    "used_margin_inr": 0.0,
     "available_cash_inr": 1027011.25,
     "net_worth_inr": 1027011.25
   }
