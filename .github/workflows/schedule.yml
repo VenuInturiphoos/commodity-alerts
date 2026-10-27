@@ -2,8 +2,8 @@ name: Commodity Price Alerter
 
 on:
   schedule:
-    # Runs every 3 minutes, 24/7
-    - cron: '*/3 * * * *'
+    # Runs continuously with 1-minute check loop
+    - cron: '* * * * *'
   workflow_dispatch: # Allows manual trigger from the UI
   repository_dispatch:
     types: [trigger-cron] # Allows triggering via external webhook
@@ -33,7 +33,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Script
+      - name: Run Intraday Monitoring (Every 1 Minute Loop)
         env:
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
@@ -43,21 +43,29 @@ jobs:
           ANGEL_CLIENT_ID: ${{ secrets.ANGEL_CLIENT_ID }}
           ANGEL_PASSWORD: ${{ secrets.ANGEL_PASSWORD }}
           ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
-        run: python main.py
-
-      - name: Commit Web Data
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add web/near_alerts.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json web/alerts_state.json web/advisory_trades_tracker.json
-          # Check if there are changes to commit
-          if ! git diff --staged --quiet; then
-            git commit -m "Auto-update near alerts and circuit limits data"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          else
-            echo "No changes to commit."
-          fi
+          
+          # Execute 1-minute interval checks within the runner
+          for i in 1 2 3 4; do
+            echo "=== Intraday 1-Minute Check #$i at $(date -u) ==="
+            python main.py
+            
+            git add web/near_alerts.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json web/alerts_state.json web/advisory_trades_tracker.json
+            if ! git diff --staged --quiet; then
+              git commit -m "Auto-update near alerts and circuit limits data" || true
+              git pull --rebase origin main || true
+              git push origin HEAD:main || true
+            else
+              echo "No changes to commit in run #$i."
+            fi
+            
+            if [ $i -lt 4 ]; then
+              echo "Waiting 60 seconds for next 1-minute check..."
+              sleep 60
+            fi
+          done
 
       - name: Deploy to GitHub Pages
         if: success()
