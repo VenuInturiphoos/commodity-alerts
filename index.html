@@ -605,11 +605,12 @@
                     <!-- Tracker Toolbar Filters -->
                     <div class="circuits-toolbar" style="margin-bottom: 1rem;">
                         <div class="circuit-filters" style="gap: 0.4rem;">
-                            <button class="circuit-filter-pill active" id="adv-filter-all" onclick="filterAdvisoryTrades('ALL', this)">All Signals (<span id="adv-count-all">0</span>)</button>
+                            <button class="circuit-filter-pill active" id="adv-filter-called" onclick="filterAdvisoryTrades('CALLED', this)">Called Signals 🎯 (<span id="adv-count-called">0</span>)</button>
+                            <button class="circuit-filter-pill" id="adv-filter-active" onclick="filterAdvisoryTrades('ACTIVE', this)">Active / Today ⚡ (<span id="adv-count-active">0</span>)</button>
                             <button class="circuit-filter-pill" id="adv-filter-correct" onclick="filterAdvisoryTrades('CORRECT', this)">Correct Wins 🟢 (<span id="adv-count-correct">0</span>)</button>
                             <button class="circuit-filter-pill" id="adv-filter-wrong" onclick="filterAdvisoryTrades('WRONG', this)">Wrong 🔴 (<span id="adv-count-wrong">0</span>)</button>
                             <button class="circuit-filter-pill" id="adv-filter-protected" onclick="filterAdvisoryTrades('PROTECTED', this)">Protected / Stood Aside 🛡️ (<span id="adv-count-protected">0</span>)</button>
-                            <button class="circuit-filter-pill" id="adv-filter-active" onclick="filterAdvisoryTrades('ACTIVE', this)">Active / Today ⚡ (<span id="adv-count-active">0</span>)</button>
+                            <button class="circuit-filter-pill" id="adv-filter-all" onclick="filterAdvisoryTrades('ALL', this)">All Signals 🌐 (<span id="adv-count-all">0</span>)</button>
                         </div>
                         <div class="circuit-search-box">
                             <i class="fa-solid fa-magnifying-glass"></i>
@@ -633,7 +634,7 @@
                                     <th>Validation / Trigger Check</th>
                                     <th>Paper Trade Entry</th>
                                     <th>Stop-Loss / Target</th>
-                                    <th>11:30 PM Exit Price</th>
+                                    <th>Exit Price & Time</th>
                                     <th>Day P&L (₹)</th>
                                     <th>End Result Outcome</th>
                                 </tr>
@@ -3600,7 +3601,32 @@ function switchPaperTradingSubView(subview) {
 // 🎯 6:00 PM IST ADVISORY SIGNALS & PAPER TRADE TRACKER
 // ==========================================
 let advisoryTrackerData = null;
-let activeAdvFilter = 'ALL';
+let activeAdvFilter = 'CALLED';
+
+function isAvoidedAdvisoryTrade(t) {
+    if (!t) return false;
+    const pt = t.paper_trade || {};
+    const outcome = t.eod_outcome?.outcome;
+    const c15 = t.check_615 || {};
+    const s6 = t.suggestion_6pm || {};
+    return outcome === 'PROTECTED' || 
+           pt.action === 'STAND_ASIDE' || 
+           c15.status === 'EXTENSION_CONFIRMED' || 
+           c15.status === 'NO_REVERSAL_STAND_ASIDE' ||
+           c15.status === 'NO_GAP_STAND_ASIDE' ||
+           s6.status === 'STAND_ASIDE' ||
+           (s6.action_text && s6.action_text.includes('STAND ASIDE'));
+}
+
+function isCalledAdvisoryTrade(t) {
+    if (!t || isAvoidedAdvisoryTrade(t)) return false;
+    const pt = t.paper_trade || {};
+    const outcome = t.eod_outcome?.outcome;
+    if (outcome === 'CORRECT' || outcome === 'WRONG') return true;
+    if (pt.status === 'ACTIVE' || pt.status === 'PENDING_615') return true;
+    if (pt.action === 'BUY' || pt.action === 'SELL') return true;
+    return false;
+}
 
 async function loadAdvisoryTracker() {
     const timeEl = document.getElementById('tracker-last-updated');
@@ -3621,17 +3647,28 @@ async function loadAdvisoryTracker() {
         
         // Update summary KPI cards
         const summary = advisoryTrackerData.summary || {};
+        const trades = advisoryTrackerData.trades || [];
+        const countAll = trades.length;
+        const calledTrades = trades.filter(isCalledAdvisoryTrade);
+        const countCalled = calledTrades.length;
+        const countCorrect = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'CORRECT').length;
+        const countWrong = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'WRONG').length;
+        const countProtected = trades.filter(isAvoidedAdvisoryTrade).length;
+        const countActive = trades.filter(t => t.paper_trade && (t.paper_trade.status === 'ACTIVE' || t.paper_trade.status === 'PENDING_615')).length;
+
         const totalEl = document.getElementById('kpi-adv-total');
+        const totalSubEl = document.getElementById('kpi-adv-total-sub');
         const winrateEl = document.getElementById('kpi-adv-winrate');
         const correctSubEl = document.getElementById('kpi-adv-correct-sub');
         const pnlEl = document.getElementById('kpi-adv-pnl');
         
-        if (totalEl) totalEl.textContent = summary.total_signals || 0;
+        if (totalEl) totalEl.textContent = `${countCalled} Called`;
+        if (totalSubEl) totalSubEl.textContent = `${countAll} Total Signals (${countProtected} Avoided Traps)`;
         if (winrateEl) winrateEl.textContent = (summary.win_rate_pct || 0) + '%';
         if (correctSubEl) {
             const correct = summary.correct_count || 0;
             const wrong = summary.wrong_count || 0;
-            const prot = summary.protected_count || 0;
+            const prot = summary.protected_count || countProtected;
             correctSubEl.textContent = `${correct} Won / ${wrong} Lost (${prot} Filtered)`;
         }
         if (pnlEl) {
@@ -3654,13 +3691,7 @@ async function loadAdvisoryTracker() {
         if (timeEl) timeEl.textContent = 'Updated: ' + (advisoryTrackerData.last_updated || 'Just now');
 
         // Update counts in filter pills
-        const trades = advisoryTrackerData.trades || [];
-        const countAll = trades.length;
-        const countCorrect = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'CORRECT').length;
-        const countWrong = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'WRONG').length;
-        const countProtected = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'PROTECTED').length;
-        const countActive = trades.filter(t => t.paper_trade && (t.paper_trade.status === 'ACTIVE' || t.paper_trade.status === 'PENDING_615')).length;
-
+        const countCalledEl = document.getElementById('adv-count-called');
         const countAllEl = document.getElementById('adv-count-all');
         const countCorrectEl = document.getElementById('adv-count-correct');
         const countWrongEl = document.getElementById('adv-count-wrong');
@@ -3668,12 +3699,13 @@ async function loadAdvisoryTracker() {
         const countActiveEl = document.getElementById('adv-count-active');
         const subnavBadgeEl = document.getElementById('advisory-badge-count');
 
+        if (countCalledEl) countCalledEl.textContent = countCalled;
         if (countAllEl) countAllEl.textContent = countAll;
         if (countCorrectEl) countCorrectEl.textContent = countCorrect;
         if (countWrongEl) countWrongEl.textContent = countWrong;
         if (countProtectedEl) countProtectedEl.textContent = countProtected;
         if (countActiveEl) countActiveEl.textContent = countActive;
-        if (subnavBadgeEl) subnavBadgeEl.textContent = `${countAll} Signals (Live)`;
+        if (subnavBadgeEl) subnavBadgeEl.textContent = `${countCalled} Called Trades`;
 
         renderAdvisoryTradesTable();
     } catch (e) {
@@ -3698,21 +3730,24 @@ function renderAdvisoryTradesTable() {
     const searchVal = (document.getElementById('adv-search-input')?.value || '').trim().toLowerCase();
 
     const filtered = trades.filter(t => {
-        // Filter by pill
-        if (activeAdvFilter === 'CORRECT') {
+        // Filter by pill: by default CALLED only shows called signals (active today, wins, or losses)
+        if (activeAdvFilter === 'CALLED') {
+            if (!isCalledAdvisoryTrade(t)) return false;
+        } else if (activeAdvFilter === 'ACTIVE') {
+            const st = t.paper_trade?.status;
+            if (st !== 'ACTIVE' && st !== 'PENDING_615') return false;
+        } else if (activeAdvFilter === 'CORRECT') {
             if (t.eod_outcome?.outcome !== 'CORRECT') return false;
         } else if (activeAdvFilter === 'WRONG') {
             if (t.eod_outcome?.outcome !== 'WRONG') return false;
         } else if (activeAdvFilter === 'PROTECTED') {
-            if (t.eod_outcome?.outcome !== 'PROTECTED') return false;
-        } else if (activeAdvFilter === 'ACTIVE') {
-            const st = t.paper_trade?.status;
-            if (st !== 'ACTIVE' && st !== 'PENDING_615') return false;
+            if (!isAvoidedAdvisoryTrade(t)) return false;
         }
+        // 'ALL' includes both called and protected/stood aside
 
         // Search filter
         if (searchVal) {
-            const str = `${t.date} ${t.symbol} ${t.name} ${t.suggestion_6pm?.action_text} ${t.check_615?.status}`.toLowerCase();
+            const str = `${t.date} ${t.symbol} ${t.name} ${t.session_name || ''} ${t.suggestion_6pm?.action_text || ''} ${t.check_615?.status || ''}`.toLowerCase();
             if (!str.includes(searchVal)) return false;
         }
         return true;
@@ -3734,7 +3769,7 @@ function renderAdvisoryTradesTable() {
         let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
         if (outcome.outcome === 'WRONG') {
             outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
-        } else if (outcome.outcome === 'PROTECTED') {
+        } else if (outcome.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t)) {
             outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${outcome.badge || 'Avoided Trap 🛡️'}</span>`;
         } else if (outcome.outcome === 'PENDING' || pt.status === 'ACTIVE' || pt.status === 'PENDING_615') {
             outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
@@ -3768,6 +3803,13 @@ function renderAdvisoryTradesTable() {
                     <div style="font-size:0.75rem; color:#cbd5e1;">Range breakdown confirmed</div>
                 </div>
             `;
+        } else if (c15.status === 'GAP_FADE_ENTERED') {
+            check615Html = `
+                <div>
+                    <span style="color:#4ade80; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-rotate-left"></i> Gap Fade Entered</span>
+                    <div style="font-size:0.75rem; color:#cbd5e1;">Bounce towards PDC</div>
+                </div>
+            `;
         } else if (c15.status === 'EXTENSION_CONFIRMED') {
             check615Html = `
                 <div>
@@ -3777,8 +3819,8 @@ function renderAdvisoryTradesTable() {
             `;
         } else if (c15.status === 'PENDING_615') {
             check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Confirmation</span>`;
-        } else if (c15.status === 'NO_REVERSAL_STAND_ASIDE') {
-            check615Html = `<span style="color:#60a5fa; font-size:0.8rem;"><i class="fa-solid fa-ban"></i> No rejection (Stood Aside)</span>`;
+        } else if (c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') {
+            check615Html = `<span style="color:#60a5fa; font-size:0.8rem;"><i class="fa-solid fa-ban"></i> Stood Aside (Protected)</span>`;
         }
 
         let paperTradeCell = `<span style="color:#94a3b8; font-size:0.8rem;">Stood Aside</span>`;
@@ -3791,6 +3833,20 @@ function renderAdvisoryTradesTable() {
                     <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${pt.entry_price ? Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} (${pt.entry_time || 'Trigger'})</div>
                 </div>
             `;
+        }
+
+        // Format Exit Price & Logged Exit Time
+        const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || '11:30 PM Close';
+        let exitDetailHtml = `<div style="font-size:0.75rem; color:#94a3b8;"><i class="fa-regular fa-clock"></i> ${exitTimeStr}</div>`;
+        
+        if (pt.status === 'ACTIVE' || pt.status === 'PENDING_615') {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</div>`;
+        } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#4ade80; font-weight:700;"><i class="fa-solid fa-bullseye"></i> Target Hit (${exitTimeStr})</div>`;
+        } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || outcome.summary?.includes('Stop-Loss')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#fb7185; font-weight:700;"><i class="fa-solid fa-shield"></i> Stop Loss (${exitTimeStr})</div>`;
+        } else if (isAvoidedAdvisoryTrade(t)) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#64748b;">N/A (Avoided Trap)</div>`;
         }
 
         return `
@@ -3812,12 +3868,12 @@ function renderAdvisoryTradesTable() {
                 <td>${check615Html}</td>
                 <td>${paperTradeCell}</td>
                 <td>
-                    <div style="font-size:0.8rem; color:#fb7185;">SL: ₹${s6.stop_loss ? Number(s6.stop_loss).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
-                    <div style="font-size:0.8rem; color:#4ade80;">TGT: ₹${s6.target ? Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
+                    <div style="font-size:0.8rem; color:#fb7185; font-weight:600;">SL: ₹${s6.stop_loss ? Number(s6.stop_loss).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
+                    <div style="font-size:0.8rem; color:#4ade80; font-weight:600;">TGT: ₹${s6.target ? Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
                 </td>
                 <td>
-                    <strong style="font-size:0.9rem; color:#f8fafc;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</strong>
-                    <div style="font-size:0.75rem; color:#94a3b8;">11:30 PM Close</div>
+                    <strong style="font-size:0.9rem; color:#f8fafc;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : (pt.status === 'ACTIVE' ? 'Ticking...' : '--')}</strong>
+                    ${exitDetailHtml}
                 </td>
                 <td style="font-weight:700; font-size:0.95rem; color:${pnlColor};">
                     ${pnlText}
@@ -3842,7 +3898,7 @@ function renderAdvisoryTradesTable() {
             let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
             if (outcome.outcome === 'WRONG') {
                 outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
-            } else if (outcome.outcome === 'PROTECTED') {
+            } else if (outcome.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t)) {
                 outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${outcome.badge || 'Avoided Trap 🛡️'}</span>`;
             } else if (outcome.outcome === 'PENDING' || pt.status === 'ACTIVE' || pt.status === 'PENDING_615') {
                 outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
@@ -3861,13 +3917,34 @@ function renderAdvisoryTradesTable() {
             if (c15.status === 'REVERSAL_CONFIRMED') checkLabel = 'Reversal Confirmed';
             else if (c15.status === 'BREAKOUT_ENTERED') checkLabel = 'London Breakout';
             else if (c15.status === 'BREAKDOWN_ENTERED') checkLabel = 'London Breakdown';
+            else if (c15.status === 'GAP_FADE_ENTERED') checkLabel = 'Gap Fade Entered';
             else if (c15.status === 'EXTENSION_CONFIRMED') checkLabel = 'Limit Broken (Stood Aside)';
             else if (c15.status === 'PENDING_615') checkLabel = 'Awaiting Confirmation';
-            else if (c15.status === 'NO_REVERSAL_STAND_ASIDE') checkLabel = 'No Rejection (Stood Aside)';
+            else if (c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') checkLabel = 'Stood Aside (Protected)';
 
             const executedText = pt.action && pt.action !== 'STAND_ASIDE' 
                 ? `${pt.action} ${pt.quantity} qty @ ₹${pt.entry_price ? Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}`
                 : 'Stood Aside';
+
+            const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || '11:30 PM';
+            let mobileExitLabel = 'Exit (EOD)';
+            let mobileExitVal = pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--';
+
+            if (pt.status === 'ACTIVE' || pt.status === 'PENDING_615') {
+                mobileExitLabel = 'Position Status';
+                mobileExitVal = '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</span>';
+            } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {
+                mobileExitLabel = `<i class="fa-solid fa-bullseye" style="color:#4ade80;"></i> Target Hit`;
+                mobileExitVal = `<span style="color:#4ade80; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
+            } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || outcome.summary?.includes('Stop-Loss')) {
+                mobileExitLabel = `<i class="fa-solid fa-shield" style="color:#fb7185;"></i> Stop Loss Hit`;
+                mobileExitVal = `<span style="color:#fb7185; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
+            } else if (isAvoidedAdvisoryTrade(t)) {
+                mobileExitLabel = 'Trade Action';
+                mobileExitVal = '<span style="color:#64748b;">Avoided Trap</span>';
+            } else if (pt.exit_price) {
+                mobileExitLabel = `Exit (${exitTimeStr})`;
+            }
 
             return `
                 <div class="mobile-trading-card">
@@ -3899,11 +3976,11 @@ function renderAdvisoryTradesTable() {
                         </div>
                         <div class="mobile-cell-item">
                             <span class="mobile-cell-label">Stop Loss</span>
-                            <span class="mobile-cell-val" style="color:#fb7185;">₹${s6.stop_loss ? Number(s6.stop_loss).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</span>
+                            <span class="mobile-cell-val" style="color:#fb7185; font-weight:600;">₹${s6.stop_loss ? Number(s6.stop_loss).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</span>
                         </div>
                         <div class="mobile-cell-item">
                             <span class="mobile-cell-label">Target</span>
-                            <span class="mobile-cell-val" style="color:#4ade80;">₹${s6.target ? Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</span>
+                            <span class="mobile-cell-val" style="color:#4ade80; font-weight:600;">₹${s6.target ? Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</span>
                         </div>
                     </div>
 
@@ -3913,8 +3990,8 @@ function renderAdvisoryTradesTable() {
                             <span class="mobile-cell-val" style="font-size:0.8rem;">${executedText}</span>
                         </div>
                         <div class="mobile-cell-item">
-                            <span class="mobile-cell-label">Exit (EOD)</span>
-                            <span class="mobile-cell-val" style="font-size:0.8rem;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</span>
+                            <span class="mobile-cell-label">${mobileExitLabel}</span>
+                            <span class="mobile-cell-val" style="font-size:0.8rem;">${mobileExitVal}</span>
                         </div>
                     </div>
 
