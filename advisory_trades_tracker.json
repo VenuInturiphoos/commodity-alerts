@@ -1,6 +1,55 @@
 {
   "trades": [
     {
+      "id": "ADV-28Oct2026-2000-CRUDEOIL",
+      "date": "28 Oct 2026",
+      "session_name": "EIA Crude Inventory (8:00 PM)",
+      "time_trigger": "08:00 PM IST",
+      "time_6pm": "08:00 PM IST",
+      "time_validation": "08:15 PM IST",
+      "time_615": "08:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 50,
+      "event_context": "Wednesday EIA Petroleum Inventory Spike Fade",
+      "suggestion_6pm": {
+        "status": "EIA_FADE",
+        "action_text": "SELL / FADE EIA INVENTORY OVERREACTION",
+        "rationale": "Historical EIA inventory spikes show 60%+ mean-reversion rate back toward anchor.",
+        "reference_price": 9770.0,
+        "stop_loss": 9917.43,
+        "target": 9498.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 9770.0,
+        "action_taken": "Entered SELL 50 units @ \u20b99,770.00",
+        "detail": "EIA Inventory setup entered at 8:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 50,
+        "entry_price": 9770.0,
+        "entry_time": "08:00 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 9877.92,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active SELL position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
       "id": "ADV-28Oct2026-1330-GOLD",
       "date": "28 Oct 2026",
       "session_name": "London Breakout (1:30 PM)",
@@ -1349,11 +1398,11 @@
       }
     }
   ],
-  "last_updated": "28 Oct 2026, 02:16 PM IST",
+  "last_updated": "28 Oct 2026, 08:23 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
-    "total_signals": 27,
+    "total_signals": 28,
     "executed_count": 11,
     "correct_count": 5,
     "wrong_count": 6,
@@ -1361,10 +1410,10 @@
     "win_rate_pct": 45.5,
     "total_pnl_inr": -18792.5,
     "avg_trade_pnl_inr": -1708.41,
-    "active_trades_count": 1,
+    "active_trades_count": 2,
     "starting_cash_inr": 1000000.0,
     "current_cash_inr": 981207.5,
-    "used_margin_inr": 0,
+    "used_margin_inr": 0.0,
     "available_cash_inr": 981207.5,
     "net_worth_inr": 981207.5
   }
