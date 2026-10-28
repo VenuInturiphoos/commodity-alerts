@@ -204,7 +204,7 @@
       "time_6pm": "01:30 PM IST",
       "time_validation": "01:45 PM IST",
       "time_615": "01:45 PM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "02:16 PM IST",
       "symbol": "COPPER",
       "name": "Copper",
       "lot_size": 2500,
@@ -230,21 +230,24 @@
         "quantity": 2500,
         "entry_price": 1407.2,
         "entry_time": "01:30 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 1404.08,
+        "exit_time": "02:16 PM IST",
+        "pnl_points": -3.12,
+        "pnl_inr": -7800.0,
+        "status": "CLOSED",
         "target": 1415.2,
-        "stop_loss": 1404.08
+        "stop_loss": 1404.08,
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 1404.08,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Support retest entry @ \u20b91,408.30 (SL: \u20b91,404.08, TGT: \u20b91,415.20)."
+        "outcome": "WRONG",
+        "badge": "Stop Loss Hit \ud83d\uded1 (02:16 PM IST)",
+        "pnl_display": "\u20b9-7,800.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:16 PM IST. Entry: \u20b91,407.20 -> Exit: \u20b91,404.08 (\u20b9-7,800.00).",
+        "exit_time": "02:16 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
       }
     },
     {
@@ -1346,23 +1349,23 @@
       }
     }
   ],
-  "last_updated": "28 Oct 2026, 01:28 PM IST",
+  "last_updated": "28 Oct 2026, 02:16 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
     "total_signals": 27,
-    "executed_count": 10,
+    "executed_count": 11,
     "correct_count": 5,
-    "wrong_count": 5,
+    "wrong_count": 6,
     "protected_count": 14,
-    "win_rate_pct": 50.0,
-    "total_pnl_inr": -10992.5,
-    "avg_trade_pnl_inr": -1099.25,
-    "active_trades_count": 2,
+    "win_rate_pct": 45.5,
+    "total_pnl_inr": -18792.5,
+    "avg_trade_pnl_inr": -1708.41,
+    "active_trades_count": 1,
     "starting_cash_inr": 1000000.0,
-    "current_cash_inr": 989007.5,
-    "used_margin_inr": 0.0,
-    "available_cash_inr": 989007.5,
-    "net_worth_inr": 989007.5
+    "current_cash_inr": 981207.5,
+    "used_margin_inr": 0,
+    "available_cash_inr": 981207.5,
+    "net_worth_inr": 981207.5
   }
 }
