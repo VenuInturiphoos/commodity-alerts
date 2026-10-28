@@ -36,6 +36,7 @@
                 <button class="tab-btn" onclick="switchTab(this, 'circuits-tab')" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24;">⚡ Circuit Limits</button>
                 <button class="tab-btn" onclick="switchTab(this, 'alerts-tab')">🔥 Alert Zone</button>
                 <button class="tab-btn" onclick="switchTab(this, 'trade-tab')" style="background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3); color: #4ade80;">📈 Paper Trading</button>
+                <button class="tab-btn" id="copilot-tab-btn" onclick="switchTab(this, 'copilot-tab')" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(168, 85, 247, 0.45); color: #c084fc; font-weight: 700;"><i class="fa-solid fa-robot"></i> Copilot Chat</button>
                 <button class="tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Account</button>
                 <button id="theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Mode" style="margin-left: 0.5rem;"><i class="fa-solid fa-moon"></i></button>
             </nav>
@@ -921,6 +922,81 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Trade Copilot Chat Tab -->
+            <section id="copilot-tab" class="tab-content">
+                <div class="copilot-wrapper">
+                    <div class="copilot-hero">
+                        <div class="badge" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc;">Algorithmic Market Intelligence ⚡</div>
+                        <h2><i class="fa-solid fa-robot"></i> Commodity Trade Copilot</h2>
+                        <p>Ask about any MCX commodity to receive instant <strong>BUY</strong>, <strong>SELL</strong>, or <strong>STAND ASIDE</strong> playbook analysis powered by live exchange ticks, Central Pivot Range (CPR), and circuit limits.</p>
+                        
+                        <!-- Quick Commodity Prompt Chips -->
+                        <div class="copilot-pills-bar">
+                            <span style="font-size: 0.8rem; color: var(--text-secondary); margin-right: 4px;">Quick Ask:</span>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Crude Oil')">🛢️ Crude Oil</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Natural Gas')">⚡ Natural Gas</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Gold')">🥇 Gold</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Silver')">🥈 Silver</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Copper')">🪙 Copper</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Scan All')" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2)); border-color: rgba(168, 85, 247, 0.45); color: #c084fc;">🎯 Scan All Commodities</button>
+                        </div>
+                    </div>
+
+                    <!-- Chat Container -->
+                    <div class="copilot-chat-container">
+                        <!-- Chat Header -->
+                        <div class="copilot-chat-header">
+                            <div class="copilot-bot-profile">
+                                <div class="copilot-avatar">
+                                    <i class="fa-solid fa-brain"></i>
+                                    <div class="copilot-live-dot" title="Live Market Feeds Connected"></div>
+                                </div>
+                                <div class="copilot-bot-info">
+                                    <h3>MCX Copilot AI <span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #34d399; font-weight: 700;">LIVE</span></h3>
+                                    <span>Real-Time CPR • Pivots • Circuit Bands • Gap Analysis</span>
+                                </div>
+                            </div>
+                            <div class="copilot-header-actions">
+                                <button class="copilot-tool-btn" onclick="clearCopilotChat()" title="Reset conversation">
+                                    <i class="fa-solid fa-rotate-right"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Chat Messages Log -->
+                        <div id="copilot-chat-messages" class="copilot-chat-messages">
+                            <!-- Welcome Message -->
+                            <div class="copilot-msg-row assistant">
+                                <div class="copilot-assistant-bubble">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                        <span style="font-size: 1.2rem;">👋</span>
+                                        <strong style="color: var(--text-primary); font-size: 1.05rem;">Welcome to the Commodity Trade Copilot!</strong>
+                                    </div>
+                                    <p style="font-size: 0.92rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 12px;">
+                                        Type any commodity name (e.g. <em>"Crude Oil"</em>, <em>"Gold"</em>, <em>"Natural Gas"</em>, <em>"Copper"</em>, or <em>"Silver"</em>) or click any chip above. I will immediately analyze the latest live MCX prices, Central Pivot Range (CPR), opening gap, and circuit limits to deliver an actionable <strong>BUY</strong>, <strong>SELL</strong>, or <strong>STAND ASIDE</strong> decision with exact Entry, Target, and Stop-Loss.
+                                    </p>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                        <button class="copilot-chip" style="padding: 5px 12px; font-size: 0.78rem;" onclick="quickPromptCopilot('Crude Oil')">Analyze Crude Oil 🛢️</button>
+                                        <button class="copilot-chip" style="padding: 5px 12px; font-size: 0.78rem;" onclick="quickPromptCopilot('Natural Gas')">Analyze Natural Gas ⚡</button>
+                                        <button class="copilot-chip" style="padding: 5px 12px; font-size: 0.78rem;" onclick="quickPromptCopilot('Scan All')">Scan Full Market 🎯</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Input Bar -->
+                        <div class="copilot-chat-input-bar">
+                            <div class="copilot-input-wrapper">
+                                <input type="text" id="copilot-input" class="copilot-input-field" placeholder="Type a commodity name (e.g. 'Crude Oil', 'Natural Gas', 'Gold', 'Silver', 'Copper')..." autocomplete="off" onkeypress="if(event.key === 'Enter') handleCopilotSend()">
+                            </div>
+                            <button id="copilot-send-btn" class="copilot-send-btn" onclick="handleCopilotSend()" title="Send query">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -1065,6 +1141,9 @@ function initApp() {
     } else if (hash === 'trade') {
         const btn = document.querySelector('button[onclick*="trade-tab"]');
         if (btn) switchTab(btn, 'trade-tab');
+    } else if (hash === 'copilot' || hash === 'chat') {
+        const btn = document.querySelector('button[onclick*="copilot-tab"]');
+        if (btn) switchTab(btn, 'copilot-tab');
     }
     
     setInterval(fetchMarketData, 300000); 
@@ -4435,178 +4514,739 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     </script>
     
-    <!-- Chat Widget -->
-    <div id="chat-widget-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; font-family: 'Inter', sans-serif;">
-        <!-- Chat Button -->
-        <button id="chat-widget-button" onclick="toggleChat()" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
-            <i class="fa-solid fa-comments" style="color: white; font-size: 1.5rem;"></i>
+    <!-- Chat Widget (Floating & Expandable) -->
+    <div id="chat-widget-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; font-family: 'Outfit', sans-serif;">
+        <!-- Chat Launcher Button -->
+        <button id="chat-widget-button" onclick="toggleChat()" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #9333ea); border: 2px solid rgba(255,255,255,0.25); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.45), 0 0 15px rgba(99, 102, 241, 0.35); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative;" title="Open Commodity Trade Copilot">
+            <span style="position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; background: #34d399; border: 2px solid #0f172a; border-radius: 50%; animation: pulseDot 2s infinite;"></span>
+            <i class="fa-solid fa-robot" style="color: white; font-size: 1.45rem;"></i>
         </button>
         
         <!-- Chat Window -->
-        <div id="chat-widget-window" class="glass-card" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; height: 450px; border-radius: 12px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <div id="chat-widget-window" class="glass-card" style="display: none; position: absolute; bottom: 76px; right: 0; width: 420px; max-width: calc(100vw - 32px); height: 570px; max-height: calc(100vh - 100px); border-radius: 18px; flex-direction: column; overflow: hidden; box-shadow: 0 20px 45px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); background: rgba(15, 23, 42, 0.94); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);">
             <!-- Header -->
-            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+            <div style="background: rgba(11, 15, 25, 0.85); padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 30px; height: 30px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center;">
-                        <i class="fa-solid fa-robot" style="color: white; font-size: 0.9rem;"></i>
+                    <div style="width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(135deg, #6366f1, #a855f7); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);">
+                        <i class="fa-solid fa-brain" style="color: white; font-size: 0.9rem;"></i>
                     </div>
-                    <strong style="color: white;">Trading Assistant</strong>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <strong style="color: white; font-size: 0.95rem;">MCX Trade Copilot</strong>
+                            <span style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 1px 5px; border-radius: 4px; font-weight: 700;">LIVE</span>
+                        </div>
+                        <div style="font-size: 0.72rem; color: #94a3b8;">CPR • Circuits • Buy/Sell/Wait Playbook</div>
+                    </div>
                 </div>
-                <button onclick="toggleChat()" style="background: none; border: none; color: #a1a1aa; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <button onclick="expandChatToTab()" title="Expand to Full Tab" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: #c084fc; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-up-right-and-down-left-from-center"></i> Full Tab
+                    </button>
+                    <button onclick="toggleChat()" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px 6px; font-size: 1rem;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+
+            <!-- Quick Chips Bar in Floating Widget -->
+            <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; gap: 6px; overflow-x: auto; white-space: nowrap;">
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Crude Oil')">🛢️ Crude</button>
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Natural Gas')">⚡ NatGas</button>
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Gold')">🥇 Gold</button>
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Silver')">🥈 Silver</button>
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Copper')">🪙 Copper</button>
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(168, 85, 247, 0.2); color: #c084fc;" onclick="quickPromptCopilot('Scan All')">🎯 All</button>
             </div>
             
             <!-- Messages -->
-            <div id="chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
-                <div style="align-self: flex-start; background: rgba(59, 130, 246, 0.2); padding: 10px 15px; border-radius: 12px 12px 12px 0; max-width: 85%; border: 1px solid rgba(59, 130, 246, 0.3);">
-                    <p style="margin: 0; color: #e2e8f0; font-size: 0.9rem;">Hi! I'm your Trading Assistant. Type <strong>"comm"</strong> for live MCX commodities status & 6 PM action advisory, or <strong>"near"</strong> for stock breakout setups.</p>
+            <div id="chat-messages" style="flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth;">
+                <div style="align-self: flex-start; background: rgba(30, 41, 59, 0.7); padding: 12px 14px; border-radius: 14px 14px 14px 2px; max-width: 95%; border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <p style="margin: 0 0 6px 0; color: #f8fafc; font-size: 0.88rem; font-weight: 700;">👋 Ask me about any MCX commodity!</p>
+                    <p style="margin: 0; color: #94a3b8; font-size: 0.8rem; line-height: 1.45;">Type <strong>Crude Oil</strong>, <strong>Natural Gas</strong>, <strong>Gold</strong>, <strong>Silver</strong>, or <strong>Copper</strong> to get an immediate <strong>BUY / SELL / STAND ASIDE</strong> analysis with exact Entry, Target, Stop-Loss, and CPR pivot levels.</p>
                 </div>
             </div>
             
             <!-- Input -->
-            <div style="padding: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; background: rgba(0,0,0,0.2);">
-                <input type="text" id="chat-input" placeholder="Type 'comm' for commodities or 'near' for stocks..." style="flex: 1; padding: 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; outline: none;" onkeypress="if(event.key === 'Enter') handleChatInput()">
-                <button onclick="handleChatInput()" style="background: #3b82f6; border: none; width: 40px; height: 40px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-paper-plane"></i></button>
+            <div style="padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; background: rgba(11, 15, 25, 0.9);">
+                <input type="text" id="chat-input" placeholder="Type commodity name (e.g. 'Crude Oil', 'Gold')..." style="flex: 1; padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: white; font-size: 0.88rem; outline: none;" onkeypress="if(event.key === 'Enter') handleChatInput()">
+                <button onclick="handleChatInput()" style="background: linear-gradient(135deg, #6366f1, #a855f7); border: none; width: 38px; height: 38px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4); flex-shrink: 0;"><i class="fa-solid fa-paper-plane" style="font-size: 0.85rem;"></i></button>
             </div>
         </div>
     </div>
     
     <script>
+        // ========================================================
+        // COMMODITY TRADE COPILOT & REAL-TIME ANALYZER ENGINE
+        // ========================================================
+
+        const COPILOT_SPECS = {
+            'CRUDEOIL': { name: 'Crude Oil', lot: 50, unit: 'bbl', icon: '🛢️', aliases: ['crude', 'crudeoil', 'oil', 'brent', 'wti'] },
+            'NATURALGAS': { name: 'Natural Gas', lot: 1250, unit: 'mmBtu', icon: '⚡', aliases: ['natural gas', 'naturalgas', 'natgas', 'ng', 'gas'] },
+            'COPPER': { name: 'Copper', lot: 2500, unit: 'kg', icon: '🪙', aliases: ['copper', 'cu', 'tamba'] },
+            'GOLD': { name: 'Gold', lot: 1, unit: '10g', icon: '🥇', aliases: ['gold', 'xau', 'sona'] },
+            'SILVER': { name: 'Silver', lot: 1, unit: '1kg', icon: '🥈', aliases: ['silver', 'xag', 'chandi'] }
+        };
+
         function toggleChat() {
-            const window = document.getElementById('chat-widget-window');
-            window.style.display = window.style.display === 'none' ? 'flex' : 'none';
+            const win = document.getElementById('chat-widget-window');
+            if (!win) return;
+            const isOpen = win.style.display === 'flex';
+            win.style.display = isOpen ? 'none' : 'flex';
+            if (!isOpen) {
+                setTimeout(() => {
+                    const input = document.getElementById('chat-input');
+                    if (input) input.focus();
+                }, 100);
+            }
         }
-        
+
+        function expandChatToTab() {
+            const btn = document.getElementById('copilot-tab-btn') || document.querySelector('button[onclick*="copilot-tab"]');
+            if (btn) switchTab(btn, 'copilot-tab');
+            const win = document.getElementById('chat-widget-window');
+            if (win) win.style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function clearCopilotChat() {
+            const tabMessages = document.getElementById('copilot-chat-messages');
+            if (tabMessages) {
+                tabMessages.innerHTML = `
+                    <div class="copilot-msg-row assistant">
+                        <div class="copilot-assistant-bubble">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="font-size: 1.2rem;">👋</span>
+                                <strong style="color: var(--text-primary); font-size: 1.05rem;">Chat cleared. Ready for your next query!</strong>
+                            </div>
+                            <p style="font-size: 0.92rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 12px;">
+                                Type any commodity name (e.g. <em>"Crude Oil"</em>, <em>"Gold"</em>, <em>"Natural Gas"</em>, <em>"Copper"</em>, or <em>"Silver"</em>) or click any chip above for instant BUY/SELL/STAND ASIDE analysis.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+            const widgetMessages = document.getElementById('chat-messages');
+            if (widgetMessages) {
+                widgetMessages.innerHTML = `
+                    <div style="align-self: flex-start; background: rgba(30, 41, 59, 0.7); padding: 12px 14px; border-radius: 14px 14px 14px 2px; max-width: 95%; border: 1px solid rgba(255, 255, 255, 0.08);">
+                        <p style="margin: 0; color: #94a3b8; font-size: 0.8rem; line-height: 1.45;">Chat cleared. Type any commodity name (e.g. <strong>Crude Oil</strong>, <strong>Gold</strong>, <strong>Natural Gas</strong>) to start a fresh analysis.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function quickPromptCopilot(query) {
+            const copilotTab = document.getElementById('copilot-tab');
+            if (copilotTab && copilotTab.classList.contains('active')) {
+                const input = document.getElementById('copilot-input');
+                if (input) input.value = query;
+                handleCopilotSend();
+            } else {
+                const win = document.getElementById('chat-widget-window');
+                if (win && win.style.display !== 'flex') {
+                    win.style.display = 'flex';
+                }
+                const input = document.getElementById('chat-input');
+                if (input) input.value = query;
+                handleChatInput();
+            }
+        }
+
         async function handleChatInput() {
             const input = document.getElementById('chat-input');
             const messages = document.getElementById('chat-messages');
-            const text = input.value.trim().toLowerCase();
-            
+            if (!input || !messages) return;
+            const text = input.value.trim();
             if (!text) return;
             
-            // Add user message
             messages.innerHTML += `
-                <div style="align-self: flex-end; background: rgba(139, 92, 246, 0.2); padding: 10px 15px; border-radius: 12px 12px 0 12px; max-width: 80%; border: 1px solid rgba(139, 92, 246, 0.3);">
-                    <p style="margin: 0; color: white; font-size: 0.9rem;">${text}</p>
+                <div style="align-self: flex-end; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 9px 14px; border-radius: 14px 14px 2px 14px; max-width: 85%; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+                    <p style="margin: 0; color: white; font-size: 0.88rem; font-weight: 500;">${escapeHtml(text)}</p>
                 </div>
             `;
             input.value = '';
             messages.scrollTop = messages.scrollHeight;
             
-            // Add typing indicator
             const typingId = 'typing-' + Date.now();
             messages.innerHTML += `
-                <div id="${typingId}" style="align-self: flex-start; padding: 10px 15px;">
-                    <p style="margin: 0; color: #a1a1aa; font-size: 0.9rem; font-style: italic;">Assistant is typing...</p>
+                <div id="${typingId}" style="align-self: flex-start; background: rgba(255,255,255,0.04); padding: 8px 14px; border-radius: 14px; display: flex; align-items: center; gap: 4px;">
+                    <div class="copilot-typing-dot"></div>
+                    <div class="copilot-typing-dot"></div>
+                    <div class="copilot-typing-dot"></div>
                 </div>
             `;
             messages.scrollTop = messages.scrollHeight;
             
-            // Process response
-            setTimeout(async () => {
-                document.getElementById(typingId).remove();
-                
-                let reply = "";
-                if (text.includes("comm") || text.includes("commodity") || text.includes("commodities")) {
-                    try {
-                        const response = await fetch('circuits_data.json?t=' + Date.now());
-                        if (response.ok) {
-                            const data = await response.json();
-                            const commodities = data.commodities || [];
-                            reply = "<p style='margin:0 0 8px 0; color:#38bdf8; font-weight:700;'><i class='fa-solid fa-bolt'></i> <strong>MCX Commodities Live Action Advisory</strong></p>";
-                            if (commodities.length > 0) {
-                                reply += "<div style='display:flex; flex-direction:column; gap:8px;'>";
-                                commodities.forEach(c => {
-                                    const chgColor = c.change_pct >= 0 ? '#4ade80' : '#fb7185';
-                                    let actionAdvice = "Safe trading range. No circuit halt threat; trade standard S1/R1 levels.";
-                                    let statusBadge = "<span style='color:#34d399; font-weight:600;'>Safe Range 🟢</span>";
+            const responseHtml = await executeCopilotQuery(text);
+            const typingEl = document.getElementById(typingId);
+            if (typingEl) typingEl.remove();
+            
+            messages.innerHTML += `
+                <div style="align-self: flex-start; width: 100%; max-width: 100%;">
+                    ${responseHtml}
+                </div>
+            `;
+            messages.scrollTop = messages.scrollHeight;
+        }
 
-                                    if (c.status.includes('LOWER') || c.status.includes('LC')) {
-                                        statusBadge = "<span style='color:#fb7185; font-weight:700;'>Testing Floor ⚠️</span>";
-                                        if (c.symbol === 'SILVER') {
-                                            actionAdvice = "⚠️ <strong>Wait for 6:15 PM candle!</strong> 66.7% downward extension rate. Do not knife-catch.";
-                                        } else if (c.symbol === 'CRUDEOIL') {
-                                            actionAdvice = "🟢 <strong>Rebound Setup!</strong> 52.9% bounce rate. Buy if 6:15 PM rejection candle holds.";
-                                        } else {
-                                            actionAdvice = "Testing lower limit. Enforce 15-min rule at 6:15 PM before entering.";
-                                        }
-                                    } else if (c.status.includes('UPPER') || c.status.includes('UC')) {
-                                        statusBadge = "<span style='color:#f59e0b; font-weight:700;'>Testing Ceiling ⚠️</span>";
-                                        if (c.symbol === 'COPPER') {
-                                            actionAdvice = "🟢 <strong>Take Profit / Fade Spike!</strong> 50% pullback rate on US profit taking.";
-                                        } else {
-                                            actionAdvice = "Ceiling resistance test. Wait for 6:15 PM candle; do not chase highs.";
-                                        }
-                                    } else if (Math.abs(c.change_pct) >= 2.0) {
-                                        statusBadge = "<span style='color:#60a5fa; font-weight:600;'>Trending Session</span>";
-                                        actionAdvice = "High volatility expected at 6:00 PM US Pit Open. Trade strictly with defined stops.";
-                                    }
+        async function handleCopilotSend() {
+            const input = document.getElementById('copilot-input');
+            const messages = document.getElementById('copilot-chat-messages');
+            if (!input || !messages) return;
+            const text = input.value.trim();
+            if (!text) return;
+            
+            messages.innerHTML += `
+                <div class="copilot-msg-row user">
+                    <div class="copilot-user-bubble">
+                        ${escapeHtml(text)}
+                    </div>
+                </div>
+            `;
+            input.value = '';
+            messages.scrollTop = messages.scrollHeight;
+            
+            const typingId = 'copilot-typing-' + Date.now();
+            messages.innerHTML += `
+                <div id="${typingId}" class="copilot-msg-row assistant">
+                    <div class="copilot-typing">
+                        <div class="copilot-typing-dot"></div>
+                        <div class="copilot-typing-dot"></div>
+                        <div class="copilot-typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            messages.scrollTop = messages.scrollHeight;
+            
+            const responseHtml = await executeCopilotQuery(text);
+            const typingEl = document.getElementById(typingId);
+            if (typingEl) typingEl.remove();
+            
+            messages.innerHTML += `
+                <div class="copilot-msg-row assistant">
+                    <div class="copilot-assistant-bubble">
+                        ${responseHtml}
+                    </div>
+                </div>
+            `;
+            messages.scrollTop = messages.scrollHeight;
+        }
 
-                                    reply += `
-                                        <div style='background:rgba(255,255,255,0.04); padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); font-size:0.83rem;'>
-                                            <div style='display:flex; justify-content:space-between; align-items:center;'>
-                                                <strong style='color:#f1f5f9;'>${c.name}</strong>
-                                                <span style='color:${chgColor}; font-weight:600;'>₹${Number(c.current_price).toLocaleString('en-IN', {minimumFractionDigits:2})} (${c.change_pct >= 0 ? '+' : ''}${c.change_pct.toFixed(2)}%)</span>
-                                            </div>
-                                            <div style='display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8; margin:2px 0;'>
-                                                <span>Floor: ₹${c.lower_circuit ? Number(c.lower_circuit).toLocaleString('en-IN') : '--'}</span>
-                                                <span>Ceiling: ₹${c.upper_circuit ? Number(c.upper_circuit).toLocaleString('en-IN') : '--'}</span>
-                                            </div>
-                                            <div style='margin-top:4px; font-size:0.78rem; color:#cbd5e1;'>
-                                                ${statusBadge} • ${actionAdvice}
-                                            </div>
-                                        </div>
-                                    `;
-                                });
-                                reply += "</div>";
-                                reply += "<p style='margin:8px 0 0 0; font-size:0.75rem; color:#94a3b8;'>🛡️ <i>Daily advisory auto-executes in Paper Trading at 6 PM & exits at 11:30 PM.</i></p>";
-                            } else {
-                                reply = "<p style='margin:0; color:#a1a1aa;'>No commodities data available.</p>";
-                            }
-                        } else {
-                            reply = "I couldn't fetch the latest commodities data. Please refresh.";
-                        }
-                    } catch (e) {
-                        reply = "Error fetching commodity status: " + e.message;
+        function escapeHtml(str) {
+            return (str || '').replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+
+        async function fetchFreshCircuitsIfNeeded() {
+            if (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData) && rawCircuitsData.length > 0) {
+                return rawCircuitsData;
+            }
+            try {
+                const res = await fetch('circuits_data.json?t=' + Date.now());
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.commodities) {
+                        rawCircuitsData = data.commodities;
+                        return data.commodities;
                     }
-                } else if (text.includes("near") || text.includes("buy") || text.includes("sell") || text.includes("alert")) {
-                    try {
-                        const response = await fetch('near_alerts.json?t=' + Date.now());
-                        if (response.ok) {
-                            const data = await response.json();
-                            reply = "<p style='margin:0 0 10px 0;'><strong>Near Buy (Oversold)</strong></p>";
-                            if (data.near_buy && data.near_buy.length > 0) {
-                                reply += "<ul style='margin:0; padding-left:15px;'>";
-                                data.near_buy.forEach(i => reply += `<li>${i.symbol.replace('.NS','')} (RSI: ${i.rsi})</li>`);
-                                reply += "</ul>";
-                            } else {
-                                reply += "<p style='margin:0; color:#a1a1aa;'>None right now.</p>";
-                            }
-                            
-                            reply += "<p style='margin:10px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top:10px;'><strong>Near Sell (Overbought)</strong></p>";
-                            if (data.near_sell && data.near_sell.length > 0) {
-                                reply += "<ul style='margin:0; padding-left:15px;'>";
-                                data.near_sell.forEach(i => reply += `<li>${i.symbol.replace('.NS','')} (RSI: ${i.rsi})</li>`);
-                                reply += "</ul>";
-                            } else {
-                                reply += "<p style='margin:0; color:#a1a1aa;'>None right now.</p>";
-                            }
-                        } else {
-                            reply = "I couldn't fetch the latest near alerts. They might not be generated yet.";
-                        }
-                    } catch (e) {
-                        reply = "Error fetching near alerts. Please try again later.";
-                    }
-                } else {
-                    reply = "I am your Trading Assistant. Type <strong>'comm'</strong> for live MCX commodities status & 6 PM action advice, or <strong>'near'</strong> for stock setups!";
                 }
-                
-                messages.innerHTML += `
-                    <div style="align-self: flex-start; background: rgba(59, 130, 246, 0.2); padding: 10px 15px; border-radius: 12px 12px 12px 0; max-width: 80%; border: 1px solid rgba(59, 130, 246, 0.3);">
-                        <div style="margin: 0; color: #e2e8f0; font-size: 0.9rem;">${reply}</div>
+            } catch(e) {
+                console.error("Error fetching circuits_data:", e);
+            }
+            return [];
+        }
+
+        async function executeCopilotQuery(userQuery) {
+            const query = (userQuery || '').toLowerCase().trim();
+            const commodities = await fetchFreshCircuitsIfNeeded();
+            
+            // Check for stock near alerts query
+            if (query.includes('near') || query.includes('stock') || query.includes('rsi') || query.includes('nifty')) {
+                return await generateStocksNearAlertsResponse();
+            }
+
+            // Check if user requested a full market scan / all commodities
+            if (query.includes('all') || query.includes('scan') || query.includes('full') || query.includes('market') || query.includes('overview') || query.includes('comm')) {
+                return generateMultiAssetScanResponse(commodities);
+            }
+
+            // Find specific matching commodity
+            let matchedSymbol = null;
+            for (const [sym, info] of Object.entries(COPILOT_SPECS)) {
+                if (query.includes(sym.toLowerCase()) || info.aliases.some(alias => query.includes(alias))) {
+                    matchedSymbol = sym;
+                    break;
+                }
+            }
+
+            if (!matchedSymbol) {
+                return `
+                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 12px 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <span style="font-size: 1.2rem;">🔍</span>
+                            <strong style="color: #fbbf24;">Which commodity would you like to analyze?</strong>
+                        </div>
+                        <p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 10px; line-height: 1.4;">
+                            Please enter a valid MCX commodity name. Quick select below:
+                        </p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Crude Oil')">🛢️ Crude Oil</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Natural Gas')">⚡ Natural Gas</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Gold')">🥇 Gold</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Silver')">🥈 Silver</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Copper')">🪙 Copper</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Scan All')" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">🎯 Scan All</button>
+                        </div>
                     </div>
                 `;
-                messages.scrollTop = messages.scrollHeight;
-            }, 600);
+            }
+
+            const commData = commodities.find(c => c.symbol === matchedSymbol);
+            if (!commData) {
+                return `<p style="color: #fb7185;">Could not retrieve live price feed for ${matchedSymbol}. Please refresh in a moment.</p>`;
+            }
+
+            return analyzeSingleCommodity(commData);
+        }
+
+        function analyzeSingleCommodity(c) {
+            const spec = COPILOT_SPECS[c.symbol] || { name: c.name, lot: 1, unit: 'unit', icon: '📊' };
+            const curP = Number(c.current_price) || 0;
+            const prevC = Number(c.prev_close) || curP;
+            const dayH = Number(c.day_high) || curP;
+            const dayL = Number(c.day_low) || curP;
+            const openP = Number(c.open_price) || curP;
+            const lot = spec.lot;
+            
+            // CPR & Daily Pivots Math
+            const pivot = Math.round(((dayH + dayL + prevC) / 3.0) * 100) / 100;
+            const bc = Math.round(((dayH + dayL) / 2.0) * 100) / 100;
+            const tc = Math.round(((pivot - bc) + pivot) * 100) / 100;
+            const cprTop = Math.max(tc, bc);
+            const cprBot = Math.min(tc, bc);
+            const cprWidthPct = pivot > 0 ? Math.round((Math.abs(cprTop - cprBot) / pivot) * 10000) / 100 : 0.5;
+            
+            const r1 = Math.round(((2 * pivot) - dayL) * 100) / 100;
+            const s1 = Math.round(((2 * pivot) - dayH) * 100) / 100;
+            const r2 = Math.round((pivot + (dayH - dayL)) * 100) / 100;
+            const s2 = Math.round((pivot - (dayH - dayL)) * 100) / 100;
+
+            const gapPts = Math.round((curP - prevC) * 100) / 100;
+            const gapPct = prevC > 0 ? Math.round((gapPts / prevC) * 10000) / 100 : 0.0;
+            const isWideCPR = cprWidthPct >= 0.30;
+            
+            const distUc = c.dist_to_uc_pct !== undefined ? Number(c.dist_to_uc_pct) : 5.0;
+            const distLc = c.dist_to_lc_pct !== undefined ? Number(c.dist_to_lc_pct) : 5.0;
+
+            // Strategy Decision Logic
+            let action = "STAND ASIDE";
+            let actionType = "standaside";
+            let modelName = "Neutral Range Oscillation";
+            let rationale = "";
+            let entryZone = `₹${formatInr(curP)}`;
+            let stopLoss = curP;
+            let target1 = curP;
+            let target2 = curP;
+            let slPoints = 0;
+            let tgtPoints = 0;
+
+            // 1. Extreme Circuit Limit Ceiling/Floor Guard
+            if (distUc <= 1.2) {
+                action = "STAND ASIDE / CEILING TEST ⚠️";
+                actionType = "standaside";
+                modelName = "Upper Circuit Resistance Lock";
+                rationale = `Trading within ${distUc.toFixed(2)}% of the Upper Circuit limit (₹${formatInr(c.upper_circuit)}). Asymmetric downside risk; buying into the ceiling is prohibited.`;
+                entryZone = "Wait for pullback";
+                stopLoss = c.upper_circuit;
+                target1 = pivot;
+                target2 = s1;
+            } else if (distLc <= 1.2) {
+                action = "STAND ASIDE / FLOOR TEST ⚠️";
+                actionType = "standaside";
+                modelName = "Lower Circuit Floor Lock";
+                rationale = `Trading within ${distLc.toFixed(2)}% of the Lower Circuit limit (₹${formatInr(c.lower_circuit)}). Do not knife-catch; await a confirmed 15-minute floor rejection candle.`;
+                entryZone = "Wait for confirmed bounce";
+                stopLoss = c.lower_circuit;
+                target1 = pivot;
+                target2 = r1;
+            }
+            // 2. Opening Gap Fade (Gap >= ±0.75% + Wide CPR)
+            else if (gapPct >= 0.75 && isWideCPR) {
+                action = "SELL / GAP FADE (PULLBACK)";
+                actionType = "sell";
+                modelName = "Wide CPR Mean-Reverting Gap Fade";
+                rationale = `Significant opening gap up (+${gapPct.toFixed(2)}%) into a Wide CPR (${cprWidthPct.toFixed(2)}%). High statistical probability of mean-reversion pullback towards Previous Day Close (₹${formatInr(prevC)}).`;
+                entryZone = `₹${formatInr(curP)} - ₹${formatInr(Math.max(curP, r1))}`;
+                stopLoss = Math.round(Math.max(curP, r1) * 1.004 * 100) / 100;
+                target1 = prevC;
+                target2 = pivot;
+            } else if (gapPct <= -0.75 && isWideCPR) {
+                action = "BUY / GAP FADE (BOUNCE)";
+                actionType = "buy";
+                modelName = "Wide CPR Mean-Reverting Gap Bounce";
+                rationale = `Significant opening gap down (${gapPct.toFixed(2)}%) into a Wide CPR (${cprWidthPct.toFixed(2)}%). High probability bounce towards Previous Day Close (₹${formatInr(prevC)}).`;
+                entryZone = `₹${formatInr(curP)} - ₹${formatInr(Math.min(curP, s1))}`;
+                stopLoss = Math.round(Math.min(curP, s1) * 0.996 * 100) / 100;
+                target1 = prevC;
+                target2 = pivot;
+            }
+            // 3. Narrow CPR Momentum Breakout (Trending Day)
+            else if (gapPct >= 0.75 && !isWideCPR) {
+                action = "BUY / GAP MOMENTUM";
+                actionType = "buy";
+                modelName = "Narrow CPR Trend Day Breakout";
+                rationale = `Narrow CPR (${cprWidthPct.toFixed(2)}%) opening expansion (+${gapPct.toFixed(2)}%). Institutional momentum favors continuing long towards R2.`;
+                entryZone = `₹${formatInr(curP)}`;
+                stopLoss = Math.round(Math.min(curP, pivot) * 0.996 * 100) / 100;
+                target1 = r1;
+                target2 = r2;
+            } else if (gapPct <= -0.75 && !isWideCPR) {
+                action = "SELL / GAP BREAKDOWN";
+                actionType = "sell";
+                modelName = "Narrow CPR Trend Day Breakdown";
+                rationale = `Narrow CPR (${cprWidthPct.toFixed(2)}%) opening breakdown (${gapPct.toFixed(2)}%). Riding downward breakout momentum towards S2.`;
+                entryZone = `₹${formatInr(curP)}`;
+                stopLoss = Math.round(Math.max(curP, pivot) * 1.004 * 100) / 100;
+                target1 = s1;
+                target2 = s2;
+            }
+            // 4. Intraday Location Relative to CPR & Pivots
+            else if (curP >= cprBot && curP <= cprTop) {
+                action = "STAND ASIDE / CHOP ZONE ⏸️";
+                actionType = "standaside";
+                modelName = "Inside CPR Equilibrium";
+                rationale = `Price (₹${formatInr(curP)}) is oscillating inside the Central Pivot Range [₹${formatInr(cprBot)} - ₹${formatInr(cprTop)}]. This is a chop zone with no directional edge. Await a decisive 15-minute close outside CPR.`;
+                entryZone = `Breakout > ₹${formatInr(cprTop)} or Breakdown < ₹${formatInr(cprBot)}`;
+                stopLoss = pivot;
+                target1 = r1;
+                target2 = s1;
+            } else if (curP > cprTop) {
+                if (curP >= r1) {
+                    action = "BUY / R1 BREAKOUT";
+                    actionType = "buy";
+                    modelName = "Above R1 Bullish Expansion";
+                    rationale = `Trading above R1 resistance (₹${formatInr(r1)}) and CPR Top (₹${formatInr(cprTop)}). Strong bullish intraday structure.`;
+                    entryZone = `₹${formatInr(curP)}`;
+                    stopLoss = Math.round(cprTop * 0.998 * 100) / 100;
+                    target1 = r2;
+                    target2 = c.upper_circuit || (r2 * 1.01);
+                } else {
+                    action = "BUY ON DIPS (Near CPR Top)";
+                    actionType = "buy";
+                    modelName = "CPR Support Rebound";
+                    rationale = `Price is comfortably above CPR Top (₹${formatInr(cprTop)}). Look for buying opportunities on dips towards CPR top support for an upside target of R1 (₹${formatInr(r1)}).`;
+                    entryZone = `₹${formatInr(cprTop)} - ₹${formatInr(curP)}`;
+                    stopLoss = Math.round(cprBot * 0.997 * 100) / 100;
+                    target1 = r1;
+                    target2 = r2;
+                }
+            } else if (curP < cprBot) {
+                if (curP <= s1) {
+                    action = "SELL / S1 BREAKDOWN";
+                    actionType = "sell";
+                    modelName = "Below S1 Bearish Extension";
+                    rationale = `Trading below S1 support (₹${formatInr(s1)}) and CPR Bottom (₹${formatInr(cprBot)}). Strong bearish intraday pressure.`;
+                    entryZone = `₹${formatInr(curP)}`;
+                    stopLoss = Math.round(cprBot * 1.002 * 100) / 100;
+                    target1 = s2;
+                    target2 = c.lower_circuit || (s2 * 0.99);
+                } else {
+                    action = "SELL ON PULLBACK (Near CPR Bot)";
+                    actionType = "sell";
+                    modelName = "CPR Resistance Rejection";
+                    rationale = `Price is below CPR Bottom (₹${formatInr(cprBot)}). Favour short setups on pullbacks towards CPR bottom resistance for a target of S1 (₹${formatInr(s1)}).`;
+                    entryZone = `₹${formatInr(curP)} - ₹${formatInr(cprBot)}`;
+                    stopLoss = Math.round(cprTop * 1.003 * 100) / 100;
+                    target1 = s1;
+                    target2 = s2;
+                }
+            }
+
+            if (actionType === 'buy') {
+                slPoints = Math.abs(curP - stopLoss);
+                tgtPoints = Math.abs(target1 - curP);
+            } else if (actionType === 'sell') {
+                slPoints = Math.abs(stopLoss - curP);
+                tgtPoints = Math.abs(curP - target1);
+            } else {
+                slPoints = Math.abs(curP - stopLoss);
+                tgtPoints = Math.abs(target1 - curP);
+            }
+
+            const riskInr = Math.round(slPoints * lot);
+            const rewardInr = Math.round(tgtPoints * lot);
+            const rrRatio = slPoints > 0 ? (tgtPoints / slPoints).toFixed(1) : '1.5';
+            const chgColor = c.change_pct >= 0 ? '#34d399' : '#fb7185';
+            const chgSign = c.change_pct >= 0 ? '+' : '';
+
+            return `
+                <div class="copilot-card-head">
+                    <div class="copilot-card-title">
+                        <span class="copilot-comm-icon">${spec.icon}</span>
+                        <div>
+                            <span class="copilot-comm-name">${spec.name}</span>
+                            <span class="copilot-comm-sym">${c.symbol} • 1 Lot = ${lot} ${spec.unit}</span>
+                        </div>
+                    </div>
+                    <div class="copilot-live-price-box">
+                        <div class="copilot-live-price-val">₹${formatInr(curP)}</div>
+                        <div class="copilot-live-chg" style="color: ${chgColor};">${chgSign}${c.change_pct ? c.change_pct.toFixed(2) : '0.00'}% (${chgSign}₹${formatInr(gapPts)})</div>
+                    </div>
+                </div>
+
+                <!-- Big Action Banner -->
+                <div class="copilot-action-banner ${actionType}">
+                    <div class="copilot-action-left">
+                        <span class="copilot-action-icon">${actionType === 'buy' ? '🟢' : actionType === 'sell' ? '🔴' : '⏸️'}</span>
+                        <div>
+                            <div class="copilot-action-text">${action}</div>
+                            <div class="copilot-action-tag">${modelName}</div>
+                        </div>
+                    </div>
+                    ${actionType !== 'standaside' ? `
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Risk : Reward</div>
+                            <div style="font-size: 1.15rem; font-weight: 800; color: #a5b4fc;">1 : ${rrRatio}</div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Strategic Levels Matrix -->
+                <div class="copilot-levels-matrix">
+                    <div class="copilot-level-card">
+                        <label>Entry Zone</label>
+                        <div class="level-val" style="color: #60a5fa; font-size: 0.95rem;">${entryZone}</div>
+                        <div class="level-sub" style="color: var(--text-secondary);">Market / Limit</div>
+                    </div>
+                    <div class="copilot-level-card">
+                        <label>Target 1 (T1)</label>
+                        <div class="level-val" style="color: #34d399;">₹${formatInr(target1)}</div>
+                        <div class="level-sub" style="color: #34d399;">+${tgtPoints.toFixed(1)} pts (${actionType === 'buy' || actionType === 'sell' ? `+₹${formatInr(rewardInr)}/lot` : 'Target'})</div>
+                    </div>
+                    <div class="copilot-level-card">
+                        <label>Strict Stop Loss</label>
+                        <div class="level-val" style="color: #fb7185;">₹${formatInr(stopLoss)}</div>
+                        <div class="level-sub" style="color: #fb7185;">-${slPoints.toFixed(1)} pts (${actionType === 'buy' || actionType === 'sell' ? `-₹${formatInr(riskInr)}/lot` : 'Stop Loss'})</div>
+                    </div>
+                    <div class="copilot-level-card">
+                        <label>Target 2 (T2)</label>
+                        <div class="level-val" style="color: #a78bfa;">₹${formatInr(target2)}</div>
+                        <div class="level-sub" style="color: var(--text-secondary);">Runner Target</div>
+                    </div>
+                </div>
+
+                <!-- Technical Levels Grid -->
+                <div class="copilot-tech-grid">
+                    <div class="copilot-tech-item">
+                        <span>Central Pivot (P)</span>
+                        <strong>₹${formatInr(pivot)}</strong>
+                    </div>
+                    <div class="copilot-tech-item">
+                        <span>CPR Band [BC - TC]</span>
+                        <strong>₹${formatInr(cprBot)} - ₹${formatInr(cprTop)}</strong>
+                    </div>
+                    <div class="copilot-tech-item">
+                        <span>CPR Width %</span>
+                        <strong style="color: ${isWideCPR ? '#f59e0b' : '#38bdf8'};">${cprWidthPct.toFixed(2)}% (${isWideCPR ? 'Wide' : 'Narrow'})</strong>
+                    </div>
+                    <div class="copilot-tech-item">
+                        <span>Key R1 / S1</span>
+                        <strong>R1: ₹${formatInr(r1)} | S1: ₹${formatInr(s1)}</strong>
+                    </div>
+                    <div class="copilot-tech-item">
+                        <span>Circuit Limits</span>
+                        <strong>LC: ₹${formatInr(c.lower_circuit)} | UC: ₹${formatInr(c.upper_circuit)}</strong>
+                    </div>
+                </div>
+
+                <!-- Playbook Rationale -->
+                <div class="copilot-rationale-box">
+                    <strong>Strategy Playbook Analysis:</strong> ${rationale}
+                </div>
+
+                <!-- Card Action Buttons -->
+                <div class="copilot-card-actions">
+                    ${actionType !== 'standaside' ? `
+                        <button class="copilot-btn-action copilot-btn-trade" onclick="tradeFromCopilot('${c.symbol}', '${actionType.toUpperCase()}', ${curP})">
+                            <i class="fa-solid fa-chart-line"></i> Trade ${actionType.toUpperCase()} in Paper Trading
+                        </button>
+                    ` : ''}
+                    <button class="copilot-btn-action copilot-btn-copy" onclick="copyCopilotSignal(this, '${spec.name}: ${action} @ ₹${formatInr(curP)} | SL: ₹${formatInr(stopLoss)} | Target: ₹${formatInr(target1)}')">
+                        <i class="fa-solid fa-copy"></i> Copy Signal
+                    </button>
+                    <button class="copilot-btn-action copilot-btn-copy" onclick="quickPromptCopilot('${spec.name}')">
+                        <i class="fa-solid fa-rotate"></i> Refresh Live
+                    </button>
+                </div>
+            `;
+        }
+
+        function generateMultiAssetScanResponse(commodities) {
+            if (!commodities || commodities.length === 0) {
+                return `<p style="color: #fb7185;">No live commodities data available to scan.</p>`;
+            }
+
+            let html = `
+                <div style="margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                        <strong style="font-size: 1.1rem; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> MCX Commodity Playbook Scan (5 Assets)
+                        </strong>
+                        <span style="font-size: 0.72rem; color: #94a3b8;">${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} IST</span>
+                    </div>
+                    <p style="font-size: 0.82rem; color: #94a3b8; margin: 0;">Instant algorithmic Buy / Sell / Stand Aside recommendations across all active MCX commodities.</p>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+            `;
+
+            commodities.forEach(c => {
+                const spec = COPILOT_SPECS[c.symbol] || { name: c.name, lot: 1, unit: 'unit', icon: '📊' };
+                const curP = Number(c.current_price) || 0;
+                const prevC = Number(c.prev_close) || curP;
+                const dayH = Number(c.day_high) || curP;
+                const dayL = Number(c.day_low) || curP;
+                
+                const pivot = Math.round(((dayH + dayL + prevC) / 3.0) * 100) / 100;
+                const bc = Math.round(((dayH + dayL) / 2.0) * 100) / 100;
+                const tc = Math.round(((pivot - bc) + pivot) * 100) / 100;
+                const cprTop = Math.max(tc, bc);
+                const cprBot = Math.min(tc, bc);
+                const cprWidthPct = pivot > 0 ? Math.round((Math.abs(cprTop - cprBot) / pivot) * 10000) / 100 : 0.5;
+                const gapPct = prevC > 0 ? Math.round(((curP - prevC) / prevC) * 10000) / 100 : 0.0;
+                const isWideCPR = cprWidthPct >= 0.30;
+                const distUc = c.dist_to_uc_pct !== undefined ? Number(c.dist_to_uc_pct) : 5.0;
+                const distLc = c.dist_to_lc_pct !== undefined ? Number(c.dist_to_lc_pct) : 5.0;
+
+                let actionBadge = "<span style='color:#fbbf24; font-weight:700;'>STAND ASIDE ⏸️</span>";
+                let actionBorder = "rgba(245, 158, 11, 0.3)";
+                let bgGradient = "rgba(245, 158, 11, 0.05)";
+                let note = "Within neutral zone; await London / US session triggers.";
+
+                if (distUc <= 1.2) {
+                    actionBadge = "<span style='color:#fbbf24; font-weight:700;'>STAND ASIDE (Ceiling Risk) ⚠️</span>";
+                    note = `Testing upper circuit ceiling (${distUc.toFixed(1)}% away).`;
+                } else if (distLc <= 1.2) {
+                    actionBadge = "<span style='color:#fbbf24; font-weight:700;'>STAND ASIDE (Floor Risk) ⚠️</span>";
+                    note = `Testing lower circuit floor (${distLc.toFixed(1)}% away).`;
+                } else if (gapPct >= 0.75 && isWideCPR) {
+                    actionBadge = "<span style='color:#fb7185; font-weight:700;'>SELL / GAP FADE 🔴</span>";
+                    actionBorder = "rgba(244, 63, 94, 0.4)";
+                    bgGradient = "rgba(244, 63, 94, 0.08)";
+                    note = `Gap up (+${gapPct.toFixed(1)}%) into Wide CPR. Target: PDC ₹${formatInr(prevC)}.`;
+                } else if (gapPct <= -0.75 && isWideCPR) {
+                    actionBadge = "<span style='color:#34d399; font-weight:700;'>BUY / GAP FADE 🟢</span>";
+                    actionBorder = "rgba(16, 185, 129, 0.4)";
+                    bgGradient = "rgba(16, 185, 129, 0.08)";
+                    note = `Gap down (${gapPct.toFixed(1)}%) into Wide CPR. Target: PDC ₹${formatInr(prevC)}.`;
+                } else if (curP >= cprBot && curP <= cprTop) {
+                    actionBadge = "<span style='color:#fbbf24; font-weight:700;'>STAND ASIDE (Chop) ⏸️</span>";
+                    note = `Oscillating inside Central Pivot Range [₹${formatInr(cprBot)} - ₹${formatInr(cprTop)}].`;
+                } else if (curP > cprTop) {
+                    actionBadge = "<span style='color:#34d399; font-weight:700;'>BUY / ABOVE CPR 🟢</span>";
+                    actionBorder = "rgba(16, 185, 129, 0.4)";
+                    bgGradient = "rgba(16, 185, 129, 0.08)";
+                    note = `Bullish bias above CPR Top (₹${formatInr(cprTop)}).`;
+                } else if (curP < cprBot) {
+                    actionBadge = "<span style='color:#fb7185; font-weight:700;'>SELL / BELOW CPR 🔴</span>";
+                    actionBorder = "rgba(244, 63, 94, 0.4)";
+                    bgGradient = "rgba(244, 63, 94, 0.08)";
+                    note = `Bearish bias below CPR Bottom (₹${formatInr(cprBot)}).`;
+                }
+
+                const chgColor = c.change_pct >= 0 ? '#34d399' : '#fb7185';
+                const chgSign = c.change_pct >= 0 ? '+' : '';
+
+                html += `
+                    <div style="background: ${bgGradient}; border: 1px solid ${actionBorder}; border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.15s;" onclick="quickPromptCopilot('${spec.name}')" title="Click to view deep analysis for ${spec.name}">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.4rem;">${spec.icon}</span>
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <strong style="color: #f8fafc; font-size: 0.95rem;">${spec.name}</strong>
+                                    <span style="font-size: 0.7rem; color: #94a3b8; padding: 1px 5px; border-radius: 4px; background: rgba(255,255,255,0.06);">${c.symbol}</span>
+                                </div>
+                                <div style="font-size: 0.78rem; color: #cbd5e1; margin-top: 2px;">
+                                    ${actionBadge} • <span style="color: #94a3b8;">${note}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1rem; font-weight: 800; color: #f8fafc;">₹${formatInr(curP)}</div>
+                            <div style="font-size: 0.78rem; font-weight: 700; color: ${chgColor};">${chgSign}${c.change_pct ? c.change_pct.toFixed(2) : '0.00'}%</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+                <p style="margin: 10px 0 0; font-size: 0.75rem; color: #94a3b8; text-align: center;">
+                    💡 Click on any commodity above or type its name for comprehensive target, stop-loss & CPR levels.
+                </p>
+            `;
+            return html;
+        }
+
+        async function generateStocksNearAlertsResponse() {
+            try {
+                const res = await fetch('near_alerts.json?t=' + Date.now());
+                if (res.ok) {
+                    const data = await res.json();
+                    let html = `
+                        <div style="margin-bottom: 8px;">
+                            <strong style="color: #60a5fa; font-size: 1rem;"><i class="fa-solid fa-bell"></i> Nifty 50 Stocks Near Support/Resistance</strong>
+                        </div>
+                    `;
+                    if (data.near_buy && data.near_buy.length > 0) {
+                        html += "<p style='margin: 6px 0 2px 0; color: #34d399; font-weight: 700; font-size: 0.85rem;'>🟢 Approaching Strong Buy (Oversold):</p><ul style='margin:0; padding-left:18px; font-size: 0.82rem; color: #cbd5e1;'>";
+                        data.near_buy.forEach(i => html += `<li>${i.symbol.replace('.NS','')} (RSI: ${i.rsi})</li>`);
+                        html += "</ul>";
+                    }
+                    if (data.near_sell && data.near_sell.length > 0) {
+                        html += "<p style='margin: 8px 0 2px 0; color: #fb7185; font-weight: 700; font-size: 0.85rem;'>🔴 Approaching Strong Sell (Overbought):</p><ul style='margin:0; padding-left:18px; font-size: 0.82rem; color: #cbd5e1;'>";
+                        data.near_sell.forEach(i => html += `<li>${i.symbol.replace('.NS','')} (RSI: ${i.rsi})</li>`);
+                        html += "</ul>";
+                    }
+                    if ((!data.near_buy || data.near_buy.length === 0) && (!data.near_sell || data.near_sell.length === 0)) {
+                        html += "<p style='color: #94a3b8; font-size: 0.82rem;'>No stocks currently nearing extreme RSI bands.</p>";
+                    }
+                    return html;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            return `<p style="color: #fb7185;">Could not load stock alerts right now.</p>`;
+        }
+
+        function formatInr(num) {
+            if (num === null || num === undefined || isNaN(num)) return '--';
+            return Number(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function copyCopilotSignal(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+                btn.style.color = '#34d399';
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.style.color = '';
+                }, 2000);
+            }).catch(err => {
+                console.error("Copy failed:", err);
+            });
+        }
+
+        function tradeFromCopilot(symbol, action, price) {
+            const tradeBtn = document.querySelector('button[onclick*="trade-tab"]');
+            if (tradeBtn) switchTab(tradeBtn, 'trade-tab');
+            
+            const win = document.getElementById('chat-widget-window');
+            if (win) win.style.display = 'none';
+
+            if (typeof openTradeModal === 'function') {
+                setTimeout(() => {
+                    openTradeModal(symbol, price, action);
+                }, 300);
+            }
         }
     </script>
 </body>
