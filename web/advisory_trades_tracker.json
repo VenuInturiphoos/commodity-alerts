@@ -1,6 +1,253 @@
 {
   "trades": [
     {
+      "id": "ADV-28Oct2026-1330-GOLD",
+      "date": "28 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 10,
+      "event_context": "Counter-Trend Bull Trap Avoided (Daily Bearish: -0.33%)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / COUNTER-TREND TRAP",
+        "rationale": "Macro trend is Bearish (below CPR \u20b9143,594.00 | -0.33%). High Asian range breakout is a classic Bull Trap. Avoided.",
+        "reference_price": 143659.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "BULL_TRAP_AVOIDED",
+        "price_615": 143659.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Counter-trend BUY blocked by Macro CPR Filter."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Counter-trend BUY blocked by Daily CPR Trend Filter. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-28Oct2026-1330-SILVER",
+      "date": "28 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 5,
+      "event_context": "Range-Bound Asian Range [\u20b9194,853.00 \u2013 \u20b9196,010.00]",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b9194,853.00 \u2013 \u20b9196,010.00]. Standing aside awaiting range breakout.",
+        "reference_price": 195419.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 195419.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Inside Asian morning range. Awaiting breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside on range-bound asset. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-28Oct2026-1330-CRUDEOIL",
+      "date": "28 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 50,
+      "event_context": "Range-Bound Asian Range [\u20b99,617.00 \u2013 \u20b99,744.00]",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b99,617.00 \u2013 \u20b99,744.00]. Standing aside awaiting range breakout.",
+        "reference_price": 9689.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 9689.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Inside Asian morning range. Awaiting breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside on range-bound asset. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-28Oct2026-1330-NATURALGAS",
+      "date": "28 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "Asian Liquidity Sweep Trap Avoided (Daily Bullish: +1.39%)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / LIQUIDITY SWEEP TRAP",
+        "rationale": "Macro trend is Bullish (above CPR \u20b9293.65 | +1.39%). Low Asian range breakdown is a classic institutional Liquidity Sweep. Avoided.",
+        "reference_price": 292.4,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "LIQUIDITY_SWEEP_AVOIDED",
+        "price_615": 292.4,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Counter-trend SELL blocked by Macro CPR Filter."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Counter-trend SELL blocked by Daily CPR Trend Filter. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-28Oct2026-1330-COPPER",
+      "date": "28 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPER",
+      "name": "Copper",
+      "lot_size": 2500,
+      "event_context": "London Bullish Breakout (Trend Aligned: CPR Top \u20b91,405.42)",
+      "suggestion_6pm": {
+        "status": "LONDON_BREAKOUT",
+        "action_text": "BUY @ SUPPORT \u20b91,408.30",
+        "rationale": "Trend-aligned European breakout (Macro Bullish above CPR). Entering at Support \u20b91,408.30 with tight SL.",
+        "reference_price": 1408.3,
+        "stop_loss": 1404.08,
+        "target": 1415.2
+      },
+      "check_615": {
+        "checked": true,
+        "status": "BREAKOUT_ENTERED",
+        "price_615": 1407.2,
+        "action_taken": "BUY 2500 units @ Support \u20b91,407.20",
+        "detail": "Support Retest order at Asian High \u20b91,408.30 with tight SL \u20b91,404.08."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 2500,
+        "entry_price": 1407.2,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 1415.2,
+        "stop_loss": 1404.08
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Support retest entry @ \u20b91,408.30 (SL: \u20b91,404.08, TGT: \u20b91,415.20)."
+      }
+    },
+    {
       "id": "ADV-28Oct2026-0901-GOLD",
       "date": "28 Oct 2026",
       "session_name": "Morning Pulse (09:01 AM)",
@@ -1099,22 +1346,22 @@
       }
     }
   ],
-  "last_updated": "28 Oct 2026, 11:47 AM IST",
+  "last_updated": "28 Oct 2026, 01:28 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
-    "total_signals": 22,
+    "total_signals": 27,
     "executed_count": 10,
     "correct_count": 5,
     "wrong_count": 5,
-    "protected_count": 10,
+    "protected_count": 14,
     "win_rate_pct": 50.0,
     "total_pnl_inr": -10992.5,
     "avg_trade_pnl_inr": -1099.25,
-    "active_trades_count": 1,
+    "active_trades_count": 2,
     "starting_cash_inr": 1000000.0,
     "current_cash_inr": 989007.5,
-    "used_margin_inr": 0,
+    "used_margin_inr": 0.0,
     "available_cash_inr": 989007.5,
     "net_worth_inr": 989007.5
   }
