@@ -157,7 +157,7 @@
       "time_6pm": "09:01 AM IST",
       "time_validation": "09:15 AM IST",
       "time_615": "09:15 AM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "11:47 AM IST",
       "symbol": "NATURALGAS",
       "name": "Natural Gas",
       "lot_size": 1250,
@@ -165,7 +165,7 @@
       "suggestion_6pm": {
         "status": "MORNING_GAP_TRADE",
         "action_text": "SELL / GAP FADE (SHORT)",
-        "rationale": "Significant opening gap up (+1.49%). Wide CPR (1.03%) indicates high probability gap fill towards Prev Day Close (₹288.40).",
+        "rationale": "Significant opening gap up (+1.49%). Wide CPR (1.03%) indicates high probability gap fill towards Prev Day Close (\u20b9288.40).",
         "reference_price": 292.7,
         "stop_loss": 293.87,
         "target": 288.4
@@ -174,8 +174,8 @@
         "checked": true,
         "status": "GAP_FADE_ENTERED",
         "price_615": 292.7,
-        "action_taken": "Entered SELL 1250 units @ ₹292.70",
-        "detail": "Fading opening gap up towards PDC ₹288.40."
+        "action_taken": "Entered SELL 1250 units @ \u20b9292.70",
+        "detail": "Fading opening gap up towards PDC \u20b9288.40."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -183,21 +183,24 @@
         "quantity": 1250,
         "entry_price": 292.7,
         "entry_time": "09:01 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 293.87,
+        "exit_time": "11:47 AM IST",
+        "pnl_points": -1.17,
+        "pnl_inr": -1462.5,
+        "status": "CLOSED",
         "target": 288.4,
-        "stop_loss": 293.87
+        "stop_loss": 293.87,
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 293.87,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Active SELL position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+        "outcome": "WRONG",
+        "badge": "Stop Loss Hit \ud83d\uded1 (11:47 AM IST)",
+        "pnl_display": "\u20b9-1,462.50",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 11:47 AM IST. Entry: \u20b9292.70 -> Exit: \u20b9293.87 (\u20b9-1,462.50).",
+        "exit_time": "11:47 AM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
       }
     },
     {
@@ -1096,23 +1099,23 @@
       }
     }
   ],
-  "last_updated": "28 Oct 2026, 09:01 AM IST",
+  "last_updated": "28 Oct 2026, 11:47 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
     "total_signals": 22,
-    "executed_count": 9,
+    "executed_count": 10,
     "correct_count": 5,
-    "wrong_count": 4,
-    "protected_count": 9,
-    "win_rate_pct": 55.6,
-    "total_pnl_inr": -7605.0,
-    "avg_trade_pnl_inr": -845.0,
-    "active_trades_count": 4,
+    "wrong_count": 5,
+    "protected_count": 10,
+    "win_rate_pct": 50.0,
+    "total_pnl_inr": -10992.5,
+    "avg_trade_pnl_inr": -1099.25,
+    "active_trades_count": 1,
     "starting_cash_inr": 1000000.0,
-    "current_cash_inr": 992395.0,
-    "used_margin_inr": 0.0,
-    "available_cash_inr": 992395.0,
-    "net_worth_inr": 992395.0
+    "current_cash_inr": 989007.5,
+    "used_margin_inr": 0,
+    "available_cash_inr": 989007.5,
+    "net_worth_inr": 989007.5
   }
 }
