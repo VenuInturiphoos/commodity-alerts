@@ -92,16 +92,16 @@ def main():
     except Exception as e:
         print(f"Error checking advisory targets/stops: {e}")
 
-    # Check and trigger 09:00 AM IST Morning Market Pulse & Opening Gap Advisory (Mon - Fri)
+    # Check and trigger 09:01 AM IST Morning Market Pulse & Opening Gap Advisory (Mon - Fri)
     try:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
-        # Active window: 08:58 AM to 11:00 AM IST (catches morning open and deduplicates via alerts_state.json)
-        if now_ist.weekday() < 5 and (now_ist.hour in [9, 10] or (now_ist.hour == 8 and now_ist.minute >= 58)):
-            print("\n--- Checking 09:00 AM IST Morning Pulse & Opening Gap Advisory ---")
+        # Active window: 09:01 AM to 11:00 AM IST (Waits until 09:01 AM so MCX opening order matching is in effect)
+        if now_ist.weekday() < 5 and ((now_ist.hour == 9 and now_ist.minute >= 1) or now_ist.hour == 10):
+            print("\n--- Checking 09:01 AM IST Morning Pulse & Opening Gap Advisory ---")
             from daily_6pm_advisory import generate_and_send_9am_advisory
             generate_and_send_9am_advisory()
     except Exception as e:
-        print(f"Error checking 09:00 AM advisory: {e}")
+        print(f"Error checking 09:01 AM advisory: {e}")
 
     # Check and trigger 1:30 PM IST London/European Session Breakout Advisory (Mon - Fri)
     try:

@@ -623,7 +623,7 @@ def generate_and_send_8pm_advisory(force=False):
         return True
 def generate_and_send_9am_advisory(force=False):
     """
-    Scans live market data at 09:00 AM IST (MCX market open & NSE pre-market),
+    Scans live market data at 09:01 AM IST (after MCX opening auction order matching settles),
     evaluates Opening Gap vs Previous Day Close and Central Pivot Range (CPR),
     constructs an actionable Morning Market Pulse advisory, and sends it via Telegram & Email.
     """
@@ -631,6 +631,13 @@ def generate_and_send_9am_advisory(force=False):
     today_ist = now_dt.strftime('%Y-%m-%d')
     today_time_ist = now_dt.strftime('%d %b %Y, %I:%M %p IST')
     day_name = now_dt.strftime('%A')
+    
+    # ⚠️ MCX Opening Auction Matching Guard:
+    # Exactly at 09:00 AM IST, live prices are not yet in effect because order matching is settling.
+    # We strictly wait until 09:01 AM IST to take trades at real in-effect MCX market prices.
+    if not force and (now_dt.hour < 9 or (now_dt.hour == 9 and now_dt.minute < 1)):
+        print(f"Current time is {now_dt.strftime('%I:%M:%S %p IST')}. MCX opening matching in progress. Waiting until 09:01 AM IST for real in-effect prices.")
+        return False
     
     state_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
     state = {}
@@ -643,7 +650,7 @@ def generate_and_send_9am_advisory(force=False):
             
     last_9am_date = state.get('DAILY_9AM_ADVISORY', {}).get('last_alert_date')
     if not force and last_9am_date == today_ist:
-        print(f"Daily 9:00 AM advisory already dispatched for today ({today_ist}). Skipping.")
+        print(f"Daily 9:01 AM advisory already dispatched for today ({today_ist}). Skipping.")
         return False
 
     with open('config.json', 'r') as f:
@@ -748,18 +755,19 @@ def generate_and_send_9am_advisory(force=False):
     overview_text = "\n\n".join(overview_lines)
     action_text = "\n\n".join(action_items)
 
-    subject = f"🎯 [9:00 AM IST ADVISORY] Morning Market Pulse, CPR & Opening Gap Playbook ({day_name})"
+    subject = f"🎯 [9:01 AM IST ADVISORY] Morning Market Pulse, CPR & Opening Gap Playbook ({day_name})"
     body = (
-        f"🎯 <b>DAILY 09:00 AM IST MORNING MARKET PULSE ADVISORY</b>\n"
+        f"🎯 <b>DAILY 09:01 AM IST MORNING MARKET PULSE ADVISORY</b>\n"
         f"📅 <i>{today_time_ist}</i>\n\n"
         f"<b>📊 MCX COMMODITIES OPENING & CPR OVERVIEW:</b>\n"
         f"{overview_text}\n\n"
         f"<b>⚡ OPENING ACTION PLAYBOOK & GAP SETUPS:</b>\n"
         f"{action_text}\n\n"
         f"<b>🛡️ RISK MANAGEMENT & EXECUTION RULES:</b>\n"
-        f"1. <b>Gap Fill Rule (Wide CPR)</b>: Fade large gaps only when the 09:15 AM 15-minute candle closes in the direction of the gap fill.\n"
-        f"2. <b>Gap & Go Rule (Narrow CPR)</b>: Never fade a narrow CPR gap; narrow CPRs indicate institutional trend days.\n"
-        f"3. <b>Hard 11:30 PM Exit</b>: All intraday positions auto-square-off at 11:30 PM IST before settlement.\n\n"
+        f"1. <b>09:01 AM Live MCX Match Rule</b>: Morning trades are taken at 09:01 AM IST to ensure live MCX auction matching is settled and executed at real market prices.\n"
+        f"2. <b>Gap Fill Rule (Wide CPR)</b>: Fade large gaps only when the 09:15 AM 15-minute candle closes in the direction of the gap fill.\n"
+        f"3. <b>Gap & Go Rule (Narrow CPR)</b>: Never fade a narrow CPR gap; narrow CPRs indicate institutional trend days.\n"
+        f"4. <b>Hard 11:30 PM Exit</b>: All intraday positions auto-square-off at 11:30 PM IST before settlement.\n\n"
         f"🌐 <b>Live Interactive Dashboard</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
     )
 
@@ -767,18 +775,18 @@ def generate_and_send_9am_advisory(force=False):
         from advisory_tracker import record_live_9am_advisory
         record_live_9am_advisory(commodities_list)
     except Exception as e:
-        print(f"Error recording live 09:00 AM advisory in paper trading tracker: {e}")
+        print(f"Error recording live 09:01 AM advisory in paper trading tracker: {e}")
 
     alert_payload = [{
         'symbol': 'DAILY_9AM_ADVISORY',
-        'name': 'Daily 9 AM Action Advisory',
+        'name': 'Daily 9:01 AM Action Advisory',
         'event_type': 'DAILY_9AM_ADVISORY',
         'today_ist': today_ist,
         'subject': subject,
         'body': body
     }]
 
-    print(f"Dispatching 09:00 AM IST Daily Action Advisory for {today_ist}...")
+    print(f"Dispatching 09:01 AM IST Daily Action Advisory for {today_ist}...")
     success, sent_alerts = alerter.send_alerts(alert_payload)
     if success:
         state['DAILY_9AM_ADVISORY'] = {

@@ -108,17 +108,24 @@ def save_tracker(tracker_data):
 
 def record_live_9am_advisory(commodities_list):
     """
-    Called at 09:00 AM IST by generate_and_send_9am_advisory.
+    Called at 09:01 AM IST by generate_and_send_9am_advisory (after MCX opening auction settles).
     Evaluates Opening Gap vs Previous Day Close and Central Pivot Range (CPR),
     creates paper trades for venu.photos1@gmail.com, and logs entries in the advisory tracker.
     """
-    tracker = load_tracker()
-    trades = tracker.get('trades', [])
-    
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     today_str = now_dt.strftime('%d %b %Y')
     
-    existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str and t.get('time_trigger') == '09:00 AM IST'}
+    # ⚠️ MCX Opening Auction Matching Guard:
+    # Exactly at 09:00 AM IST, live prices are not yet in effect because order matching is settling.
+    # We strictly wait until 09:01 AM IST to record trades at real in-effect MCX market prices.
+    if now_dt.hour < 9 or (now_dt.hour == 9 and now_dt.minute < 1):
+        print(f"Skipping 9:00 AM advisory recording at {now_dt.strftime('%I:%M:%S %p IST')}: waiting for 09:01 AM IST for real in-effect MCX matching prices.")
+        return []
+
+    tracker = load_tracker()
+    trades = tracker.get('trades', [])
+    
+    existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str and ('09:00' in t.get('time_trigger', '') or '09:01' in t.get('time_trigger', ''))}
     new_entries = []
 
     for item in commodities_list:
@@ -131,8 +138,9 @@ def record_live_9am_advisory(commodities_list):
         chg_pct = item.get('change_pct', 0.0)
         lot_size = LOT_SIZES.get(sym, 1)
 
-        trade_id = f"ADV-{today_str.replace(' ', '')}-0900-{sym}"
-        if trade_id in existing_today_ids:
+        trade_id = f"ADV-{today_str.replace(' ', '')}-0901-{sym}"
+        trade_id_alt = f"ADV-{today_str.replace(' ', '')}-0900-{sym}"
+        if trade_id in existing_today_ids or trade_id_alt in existing_today_ids:
             continue
 
         # CPR & Daily Pivot Math
@@ -175,9 +183,9 @@ def record_live_9am_advisory(commodities_list):
             entry = {
                 "id": trade_id,
                 "date": today_str,
-                "session_name": "Morning Pulse (09:00 AM)",
-                "time_trigger": "09:00 AM IST",
-                "time_6pm": "09:00 AM IST",
+                "session_name": "Morning Pulse (09:01 AM)",
+                "time_trigger": "09:01 AM IST",
+                "time_6pm": "09:01 AM IST",
                 "time_validation": "09:15 AM IST",
                 "time_615": "09:15 AM IST",
                 "time_exit": "11:30 PM IST",
@@ -205,7 +213,7 @@ def record_live_9am_advisory(commodities_list):
                     "action": action,
                     "quantity": lot_size,
                     "entry_price": cur_p,
-                    "entry_time": "09:00 AM IST",
+                    "entry_time": "09:01 AM IST",
                     "exit_price": None,
                     "exit_time": None,
                     "pnl_points": 0.0,
@@ -247,9 +255,9 @@ def record_live_9am_advisory(commodities_list):
             entry = {
                 "id": trade_id,
                 "date": today_str,
-                "session_name": "Morning Pulse (09:00 AM)",
-                "time_trigger": "09:00 AM IST",
-                "time_6pm": "09:00 AM IST",
+                "session_name": "Morning Pulse (09:01 AM)",
+                "time_trigger": "09:01 AM IST",
+                "time_6pm": "09:01 AM IST",
                 "time_validation": "09:15 AM IST",
                 "time_615": "09:15 AM IST",
                 "time_exit": "11:30 PM IST",
@@ -277,7 +285,7 @@ def record_live_9am_advisory(commodities_list):
                     "action": action,
                     "quantity": lot_size,
                     "entry_price": cur_p,
-                    "entry_time": "09:00 AM IST",
+                    "entry_time": "09:01 AM IST",
                     "exit_price": None,
                     "exit_time": None,
                     "pnl_points": 0.0,
@@ -300,9 +308,9 @@ def record_live_9am_advisory(commodities_list):
             entry = {
                 "id": trade_id,
                 "date": today_str,
-                "session_name": "Morning Pulse (09:00 AM)",
-                "time_trigger": "09:00 AM IST",
-                "time_6pm": "09:00 AM IST",
+                "session_name": "Morning Pulse (09:01 AM)",
+                "time_trigger": "09:01 AM IST",
+                "time_6pm": "09:01 AM IST",
                 "time_validation": "09:15 AM IST",
                 "time_615": "09:15 AM IST",
                 "time_exit": "11:30 PM IST",
@@ -330,7 +338,7 @@ def record_live_9am_advisory(commodities_list):
                     "action": "STAND_ASIDE",
                     "quantity": 0,
                     "entry_price": None,
-                    "entry_time": "09:00 AM IST",
+                    "entry_time": "09:01 AM IST",
                     "exit_price": None,
                     "exit_time": None,
                     "pnl_points": 0.0,
@@ -351,9 +359,10 @@ def record_live_9am_advisory(commodities_list):
     if new_entries:
         tracker['trades'] = new_entries + trades
         save_tracker(tracker)
-        print(f"Recorded {len(new_entries)} live 09:00 AM Morning Pulse advisory signals for today.")
+        print(f"Recorded {len(new_entries)} live 09:01 AM Morning Pulse advisory signals for today.")
     else:
-        print("No new 09:00 AM Morning Pulse entries to record.")
+        print("No new 09:01 AM Morning Pulse entries to record.")
+    return new_entries
 
 def record_live_130pm_advisory(commodities_list):
     """
