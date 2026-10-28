@@ -1265,9 +1265,13 @@ async function fetchCircuitsData(forceNetwork = false) {
             const tvEndpoint = 'https://scanner.tradingview.com/futures/scan';
             const commodityMap = {
                 'GOLD': { ticker: 'MCX:GOLD1!', name: 'Gold', dpl_initial: 0.03, dpl_max: 0.06, category: 'Bullion', unit: '10 g' },
+                'GOLDM': { ticker: 'MCX:GOLDM1!', name: 'Gold (10g) / Mini', dpl_initial: 0.03, dpl_max: 0.06, category: 'Bullion', unit: '10 g' },
                 'SILVER': { ticker: 'MCX:SILVER1!', name: 'Silver', dpl_initial: 0.04, dpl_max: 0.06, category: 'Bullion', unit: '1 kg' },
+                'SILVERMIC': { ticker: 'MCX:SILVERMIC1!', name: 'Silver Micro', dpl_initial: 0.04, dpl_max: 0.06, category: 'Bullion', unit: '1 kg' },
                 'CRUDEOIL': { ticker: 'MCX:CRUDEOIL1!', name: 'Crude Oil', dpl_initial: 0.04, dpl_max: 0.07, category: 'Energy', unit: '1 bbl' },
+                'CRUDEOILM': { ticker: 'MCX:CRUDEOILM1!', name: 'Crude Oil Mini', dpl_initial: 0.04, dpl_max: 0.07, category: 'Energy', unit: '10 bbl' },
                 'NATURALGAS': { ticker: 'MCX:NATURALGASX2026', name: 'Natural Gas', dpl_initial: 0.06, dpl_max: 0.09, category: 'Energy', unit: '1 mmBtu' },
+                'NATURALGASM': { ticker: 'MCX:NATURALGASM1!', name: 'Natural Gas Mini', dpl_initial: 0.06, dpl_max: 0.09, category: 'Energy', unit: '250 mmBtu' },
                 'COPPER': { ticker: 'MCX:COPPER1!', name: 'Copper', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' }
             };
             
@@ -4071,20 +4075,26 @@ function renderAdvisoryTradesTable() {
                 </div>
             `;
         } else if (c15.status === 'PENDING_615') {
-            check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Confirmation</span>`;
-        } else if (c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') {
+            const tradeDate = new Date(t.date);
+            const isPast = !isNaN(tradeDate.getTime()) && (new Date().toDateString() !== tradeDate.toDateString()) && (new Date() > tradeDate);
+            if (isPast) {
+                check615Html = `<span style="color:#94a3b8; font-size:0.8rem;"><i class="fa-solid fa-clock-rotate-left"></i> Window Lapsed (Stood Aside)</span>`;
+            } else {
+                check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Confirmation</span>`;
+            }
+        } else if (c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') {
             check615Html = `<span style="color:#60a5fa; font-size:0.8rem;"><i class="fa-solid fa-ban"></i> Stood Aside (Protected)</span>`;
         }
 
         let paperTradeCell = `<span style="color:#94a3b8; font-size:0.8rem;">Stood Aside</span>`;
-        if (pt.action && pt.action !== 'STAND_ASIDE') {
+        if (pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price) {
             const actColor = pt.action === 'BUY' ? 'adv-action-buy' : 'adv-action-sell';
             paperTradeCell = `
                 <div>
                     <span class="adv-action-tag ${actColor}">${pt.action}</span>
                     <strong style="color:#f8fafc; font-size:0.85rem; margin-left:4px;">${pt.quantity} units</strong>
                     <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 5px; border-radius:4px; margin-left:4px; font-weight:600;">1 pt = ₹${t.lot_size || 1}</span>
-                    <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${pt.entry_price ? Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} (${pt.entry_time || 'Trigger'})</div>
+                    <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2})} (${pt.entry_time || 'Trigger'})</div>
                 </div>
             `;
         }
@@ -4093,8 +4103,14 @@ function renderAdvisoryTradesTable() {
         const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || '11:30 PM Close';
         let exitDetailHtml = `<div style="font-size:0.75rem; color:#94a3b8;"><i class="fa-regular fa-clock"></i> ${exitTimeStr}</div>`;
         
-        if (pt.status === 'ACTIVE' || pt.status === 'PENDING_615') {
+        if (pt.status === 'ACTIVE') {
             exitDetailHtml = `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</div>`;
+        } else if (pt.status === 'PENDING_615') {
+            const tradeDate = new Date(t.date);
+            const isPast = !isNaN(tradeDate.getTime()) && (new Date().toDateString() !== tradeDate.toDateString()) && (new Date() > tradeDate);
+            exitDetailHtml = isPast
+                ? `<div style="font-size:0.75rem; color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</div>`
+                : `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Pending Check</div>`;
         } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {
             exitDetailHtml = `<div style="font-size:0.75rem; color:#4ade80; font-weight:700;"><i class="fa-solid fa-bullseye"></i> Target Hit (${exitTimeStr})</div>`;
         } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || outcome.summary?.includes('Stop-Loss')) {
@@ -4203,19 +4219,32 @@ function renderAdvisoryTradesTable() {
             else if (c15.status === 'BREAKDOWN_ENTERED') checkLabel = 'London Breakdown';
             else if (c15.status === 'GAP_FADE_ENTERED') checkLabel = 'Gap Fade Entered';
             else if (c15.status === 'EXTENSION_CONFIRMED') checkLabel = 'Limit Broken (Stood Aside)';
-            else if (c15.status === 'PENDING_615') checkLabel = 'Awaiting Confirmation';
-            else if (c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') checkLabel = 'Stood Aside (Protected)';
+            else if (c15.status === 'PENDING_615') {
+                const tradeDate = new Date(t.date);
+                const isPast = !isNaN(tradeDate.getTime()) && (new Date().toDateString() !== tradeDate.toDateString()) && (new Date() > tradeDate);
+                checkLabel = isPast ? 'Window Lapsed (Stood Aside)' : 'Awaiting Confirmation';
+            }
+            else if (c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') checkLabel = 'Stood Aside (Protected)';
 
-            const executedText = pt.action && pt.action !== 'STAND_ASIDE' 
-                ? `${pt.action} ${pt.quantity} qty <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:1px 4px; border-radius:3px;">1 pt = ₹${t.lot_size || 1}</span><div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${pt.entry_price ? Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>`
+            const executedText = pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price
+                ? `${pt.action} ${pt.quantity} qty <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:1px 4px; border-radius:3px;">1 pt = ₹${t.lot_size || 1}</span><div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</div>`
                 : 'Stood Aside';
 
             const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || '11:30 PM';
             let mobileExitLabel = 'Exit (EOD)';
             let mobileExitVal = pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--';
 
-            if (pt.status === 'ACTIVE' || pt.status === 'PENDING_615') {
+            if (pt.status === 'ACTIVE') {
                 mobileExitLabel = 'Position Status';
+                mobileExitVal = '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</span>';
+            } else if (pt.status === 'PENDING_615') {
+                const tradeDate = new Date(t.date);
+                const isPast = !isNaN(tradeDate.getTime()) && (new Date().toDateString() !== tradeDate.toDateString()) && (new Date() > tradeDate);
+                mobileExitLabel = 'Position Status';
+                mobileExitVal = isPast 
+                    ? '<span style="color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</span>'
+                    : '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Pending Check</span>';
+            }
                 mobileExitVal = '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</span>';
             } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {
                 mobileExitLabel = `<i class="fa-solid fa-bullseye" style="color:#4ade80;"></i> Target Hit`;
