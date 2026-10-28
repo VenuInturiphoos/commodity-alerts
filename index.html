@@ -1116,58 +1116,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Global State Variables (declared early to prevent TDZ ReferenceErrors)
 let marketData = [];
-
-function initApp() {
-    console.log("Initializing App...");
-    try { setupSubscribeForm(); } catch(e) { console.error("Form setup error:", e); }
-    try { setupUnsubscribeForm(); } catch(e) { console.error("Unsub Form setup error:", e); }
-    try { fetchMarketData(); } catch(e) { console.error("Fetch data error:", e); }
-    try { fetchCircuitsData(); } catch(e) { console.error("Fetch circuits error:", e); }
-    try { fetchCircuitsHistory(); } catch(e) { console.error("Fetch circuits history error:", e); }
-    try { setupAuth(); } catch(e) { console.error("Auth setup error:", e); }
-    
-    // Check URL hash routing (e.g. #circuits, #dashboard, #trade, #alerts)
-    const hash = (window.location.hash || '').replace('#', '').toLowerCase();
-    if (hash === 'circuits') {
-        const btn = document.querySelector('button[onclick*="circuits-tab"]');
-        if (btn) switchTab(btn, 'circuits-tab');
-    } else if (hash === 'dashboard' || hash === 'market') {
-        const btn = document.querySelector('button[onclick*="dashboard-tab"]');
-        if (btn) switchTab(btn, 'dashboard-tab');
-    } else if (hash === 'alerts') {
-        const btn = document.querySelector('button[onclick*="alerts-tab"]');
-        if (btn) switchTab(btn, 'alerts-tab');
-    } else if (hash === 'trade') {
-        const btn = document.querySelector('button[onclick*="trade-tab"]');
-        if (btn) switchTab(btn, 'trade-tab');
-    } else if (hash === 'copilot' || hash === 'chat') {
-        const btn = document.querySelector('button[onclick*="copilot-tab"]');
-        if (btn) switchTab(btn, 'copilot-tab');
-    }
-    
-    setInterval(fetchMarketData, 300000); 
-    setInterval(() => {
-        const circuitsTab = document.getElementById('circuits-tab');
-        if (circuitsTab && circuitsTab.classList.contains('active')) {
-            fetchCircuitsData();
-        }
-    }, 45000);
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        try { initApp(); } catch(e) { console.error("Init Error:", e); }
-    });
-} else {
-    try { initApp(); } catch(e) { console.error("Init Error:", e); }
-}
-
 let lastMarketFetchTime = 0;
 let lastCircuitsFetchTime = 0;
 let lastHistoryFetchTime = 0;
+let rawCircuitsData = [];
+let activeCircuitCategory = 'ALL';
+let circuitsHistoryFullData = null;
+let circuitsHistorySummary = null;
+let allHistoryEvents = [];
+let activeHistoryPeriod = 30;
+let activeHistoryViewMode = 'intraday';
+let activePaperTradingSubView = 'terminal';
 
-window.switchTab = function(btn, targetId) {
+function switchTab(btn, targetId) {
+    if (!btn && typeof event !== 'undefined' && event && event.target) {
+        btn = event.target.closest('.tab-btn') || event.target;
+    }
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     
@@ -1176,7 +1142,7 @@ window.switchTab = function(btn, targetId) {
     tabContents.forEach(c => c.classList.remove('active'));
     
     // Add active class to clicked
-    btn.classList.add('active');
+    if (btn && btn.classList) btn.classList.add('active');
     const targetEl = document.getElementById(targetId);
     if (targetEl) targetEl.classList.add('active');
     
@@ -1184,10 +1150,10 @@ window.switchTab = function(btn, targetId) {
     // Fast tab switching: render instantly from memory cache if fresh, otherwise fetch in background
     if (targetId === 'dashboard-tab' || targetId === 'alerts-tab' || targetId === 'trade-tab') {
         if (!lastMarketFetchTime || (now - lastMarketFetchTime > 60000)) {
-            fetchMarketData();
+            if (typeof fetchMarketData === 'function') fetchMarketData();
         } else {
-            renderMarketTable();
-            renderAlertTable();
+            if (typeof renderMarketTable === 'function') renderMarketTable();
+            if (typeof renderAlertTable === 'function') renderAlertTable();
             if (targetId === 'trade-tab') {
                 if (typeof activePaperTradingSubView !== 'undefined' && activePaperTradingSubView === 'advisory') {
                     if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker();
@@ -1201,27 +1167,63 @@ window.switchTab = function(btn, targetId) {
     
     if (targetId === 'circuits-tab') {
         if (!lastCircuitsFetchTime || (now - lastCircuitsFetchTime > 45000)) {
-            fetchCircuitsData();
+            if (typeof fetchCircuitsData === 'function') fetchCircuitsData();
         } else {
-            renderCircuitsTable();
+            if (typeof renderCircuitsTable === 'function') renderCircuitsTable();
         }
         if (!circuitsHistoryFullData || (now - lastHistoryFetchTime > 120000)) {
-            fetchCircuitsHistory();
+            if (typeof fetchCircuitsHistory === 'function') fetchCircuitsHistory();
         } else {
-            renderCircuitsHistoryTable();
+            if (typeof renderCircuitsHistoryTable === 'function') renderCircuitsHistoryTable();
         }
     }
     
     if (targetId === 'admin-tab') {
-        fetchSubscribers();
+        if (typeof fetchSubscribers === 'function') fetchSubscribers();
     }
+}
+window.switchTab = switchTab;
+
+function initApp() {
+    console.log("Initializing App...");
+    try { setupSubscribeForm(); } catch(e) { console.error("Form setup error:", e); }
+    try { setupUnsubscribeForm(); } catch(e) { console.error("Unsub Form setup error:", e); }
+    try { fetchMarketData(); } catch(e) { console.error("Fetch data error:", e); }
+    try { fetchCircuitsData(); } catch(e) { console.error("Fetch circuits error:", e); }
+    try { fetchCircuitsHistory(); } catch(e) { console.error("Fetch circuits history error:", e); }
+    try { setupAuth(); } catch(e) { console.error("Auth setup error:", e); }
+    
+    // Check URL hash routing (e.g. #circuits, #dashboard, #trade, #alerts)
+    const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+    if (hash === 'circuits' || hash === 'circuit' || hash === 'circuits-tab') {
+        const btn = document.querySelector('button[onclick*="circuits-tab"]');
+        if (btn) switchTab(btn, 'circuits-tab');
+    } else if (hash === 'dashboard' || hash === 'market' || hash === 'dashboard-tab') {
+        const btn = document.querySelector('button[onclick*="dashboard-tab"]');
+        if (btn) switchTab(btn, 'dashboard-tab');
+    } else if (hash === 'alerts' || hash === 'alert' || hash === 'alerts-tab') {
+        const btn = document.querySelector('button[onclick*="alerts-tab"]');
+        if (btn) switchTab(btn, 'alerts-tab');
+    } else if (hash === 'trade' || hash === 'trade-tab') {
+        const btn = document.querySelector('button[onclick*="trade-tab"]');
+        if (btn) switchTab(btn, 'trade-tab');
+    } else if (hash === 'copilot' || hash === 'chat' || hash === 'copilot-tab') {
+        const btn = document.querySelector('button[onclick*="copilot-tab"]');
+        if (btn) switchTab(btn, 'copilot-tab');
+    }
+    
+    setInterval(() => { if (typeof fetchMarketData === 'function') fetchMarketData(); }, 300000); 
+    setInterval(() => {
+        const circuitsTab = document.getElementById('circuits-tab');
+        if (circuitsTab && circuitsTab.classList.contains('active')) {
+            if (typeof fetchCircuitsData === 'function') fetchCircuitsData();
+        }
+    }, 45000);
 }
 
 // ==========================================
 // ⚡ MCX Daily Circuit Limits & Price Bands
 // ==========================================
-let rawCircuitsData = [];
-let activeCircuitCategory = 'ALL';
 
 async function fetchCircuitsData(forceNetwork = false) {
     const tbody = document.getElementById('circuits-data-body');
@@ -1721,11 +1723,7 @@ function switchCircuitsSubView(subview) {
     }
 }
 
-let allHistoryEvents = [];
-let activeHistoryPeriod = 30;
-let circuitsHistoryFullData = null;
-let activeHistoryViewMode = 'intraday';
-let circuitsHistorySummary = null;
+// History state variables already initialized at script top
 
 async function fetchCircuitsHistory(forceNetwork = false) {
     const tbody = document.getElementById('circuits-history-body');
@@ -3249,11 +3247,17 @@ function renderTradeMarket() {
 }
 
 const LOT_SIZES = {
-    'GOLD': 10,
-    'SILVER': 5,
-    'CRUDEOIL': 50,
-    'NATURALGAS': 1250,
-    'COPPER': 2500,
+    'GOLD': 1,
+    'GOLDM': 1,
+    'SILVER': 1,
+    'SILVERMIC': 1,
+    'SILVERM': 5,
+    'CRUDEOIL': 10,
+    'CRUDEOILM': 10,
+    'NATURALGAS': 250,
+    'NATURALGASM': 250,
+    'COPPER': 250,
+    'COPPERM': 250,
     'NIFTY': 25,
     'BANKNIFTY': 15,
     'ADANIENT.NS': 309,
@@ -3315,10 +3319,16 @@ function getLotSize(symbol) {
 
 const COMMODITY_MARGIN_RATES = {
     'CRUDEOIL': 0.20,
+    'CRUDEOILM': 0.20,
     'NATURALGAS': 0.20,
+    'NATURALGASM': 0.20,
     'SILVER': 0.12,
+    'SILVERMIC': 0.12,
+    'SILVERM': 0.12,
     'COPPER': 0.15,
+    'COPPERM': 0.15,
     'GOLD': 0.10,
+    'GOLDM': 0.10,
     'NIFTY': 0.10,
     'BANKNIFTY': 0.10
 };
@@ -3681,7 +3691,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 // 📈 PAPER TRADING SUB-NAVIGATION SWITCHER
 // ==========================================
-let activePaperTradingSubView = 'terminal';
+// activePaperTradingSubView initialized at top
 
 function switchPaperTradingSubView(subview) {
     activePaperTradingSubView = subview;
@@ -4365,10 +4375,18 @@ window.setMobileViewMode = function(mode) {
     } catch(e){}
 })();
 
-// Automatically load advisory tracker on page init
-document.addEventListener('DOMContentLoaded', () => {
-    loadAdvisoryTracker();
-});
+// Initialize App after all modules, functions, and state are defined
+function startApp() {
+    try { initApp(); } catch(e) { console.error("Init Error:", e); }
+    try { if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker(); } catch(e) { console.error("Load Advisory Error:", e); }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startApp);
+} else {
+    // If DOM is already ready, defer to next tick so all script definitions finish evaluating
+    setTimeout(startApp, 0);
+}
     </script>
     
     <!-- TradingView Lightweight Charts API -->
@@ -4609,11 +4627,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // ========================================================
 
         const COPILOT_SPECS = {
-            'CRUDEOIL': { name: 'Crude Oil', lot: 50, unit: 'bbl', icon: '🛢️', aliases: ['crude', 'crudeoil', 'oil', 'brent', 'wti'] },
-            'NATURALGAS': { name: 'Natural Gas', lot: 1250, unit: 'mmBtu', icon: '⚡', aliases: ['natural gas', 'naturalgas', 'natgas', 'ng', 'gas'] },
-            'COPPER': { name: 'Copper', lot: 2500, unit: 'kg', icon: '🪙', aliases: ['copper', 'cu', 'tamba'] },
-            'GOLD': { name: 'Gold', lot: 1, unit: '10g', icon: '🥇', aliases: ['gold', 'xau', 'sona'] },
-            'SILVER': { name: 'Silver', lot: 1, unit: '1kg', icon: '🥈', aliases: ['silver', 'xag', 'chandi'] }
+            'CRUDEOIL': { name: 'Crude Oil Mini', lot: 10, unit: 'bbl', icon: '🛢️', aliases: ['crude', 'crudeoil', 'oil', 'brent', 'wti', 'crudeoilm', 'crude mini'] },
+            'CRUDEOILM': { name: 'Crude Oil Mini', lot: 10, unit: 'bbl', icon: '🛢️', aliases: ['crudeoilm', 'crude mini'] },
+            'NATURALGAS': { name: 'Natural Gas Mini', lot: 250, unit: 'mmBtu', icon: '⚡', aliases: ['natural gas', 'naturalgas', 'natgas', 'ng', 'gas', 'naturalgasm', 'natgas mini'] },
+            'NATURALGASM': { name: 'Natural Gas Mini', lot: 250, unit: 'mmBtu', icon: '⚡', aliases: ['naturalgasm', 'natgas mini'] },
+            'COPPER': { name: 'Copper Mini', lot: 250, unit: 'kg', icon: '🪙', aliases: ['copper', 'cu', 'tamba', 'copperm', 'copper mini'] },
+            'COPPERM': { name: 'Copper Mini', lot: 250, unit: 'kg', icon: '🪙', aliases: ['copperm', 'copper mini'] },
+            'GOLD': { name: 'Gold (10g)', lot: 1, unit: '10g', icon: '🥇', aliases: ['gold', 'xau', 'sona', 'goldm', 'gold mini'] },
+            'GOLDM': { name: 'Gold Mini (10g)', lot: 1, unit: '10g', icon: '🥇', aliases: ['goldm', 'gold mini'] },
+            'SILVER': { name: 'Silver Micro', lot: 1, unit: '1kg', icon: '🥈', aliases: ['silver', 'xag', 'chandi', 'silvermic', 'silver micro'] },
+            'SILVERMIC': { name: 'Silver Micro', lot: 1, unit: '1kg', icon: '🥈', aliases: ['silvermic', 'silver micro'] }
         };
 
         function toggleChat() {
