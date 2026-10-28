@@ -646,6 +646,7 @@
                                 <tr>
                                     <th>Date, Session & Asset</th>
                                     <th>Advisory Suggestion</th>
+                                    <th>Current Price (₹)</th>
                                     <th>Validation / Trigger Check</th>
                                     <th>Paper Trade Entry</th>
                                     <th>Stop-Loss / Target</th>
@@ -655,7 +656,7 @@
                                 </tr>
                             </thead>
                             <tbody id="advisory-tracker-body">
-                                <tr><td colspan="8" class="loading">Loading multi-session advisory tracker data...</td></tr>
+                                <tr><td colspan="9" class="loading">Loading multi-session advisory tracker data...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1371,6 +1372,9 @@ async function fetchCircuitsData(forceNetwork = false) {
                 }
             }
             renderCircuitsTable();
+            if (typeof activePaperTradingSubView !== 'undefined' && activePaperTradingSubView === 'advisory' && typeof renderAdvisoryTradesTable === 'function') {
+                renderAdvisoryTradesTable();
+            }
             
             // Visual glow pulse on table card without forced synchronous reflow
             const tableContainer = document.querySelector('#circuits-tab .table-container');
@@ -2342,6 +2346,9 @@ async function fetchMarketData() {
         if (typeof renderTradeMarket === 'function') {
             const tradeTab = document.getElementById('trade-tab');
             if (tradeTab && tradeTab.classList.contains('active')) renderTradeMarket();
+        }
+        if (typeof activePaperTradingSubView !== 'undefined' && activePaperTradingSubView === 'advisory' && typeof renderAdvisoryTradesTable === 'function') {
+            renderAdvisoryTradesTable();
         }
         
     } catch (error) {
@@ -3857,7 +3864,7 @@ function renderAdvisoryTradesTable() {
     });
 
     if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--text-secondary);">No advisory signals match the selected filter.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:2rem; color:var(--text-secondary);">No advisory signals match the selected filter.</td></tr>`;
         const cardsFeed = document.getElementById('advisory-cards-feed');
         if (cardsFeed) cardsFeed.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No advisory signals match the selected filter.</div>`;
         return;
@@ -3868,6 +3875,42 @@ function renderAdvisoryTradesTable() {
         const s6 = t.suggestion_6pm || {};
         const c15 = t.check_615 || {};
         const outcome = t.eod_outcome || {};
+
+        // Find live market data from Supabase marketData or rawCircuitsData
+        const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) ? marketData.find(m => m.symbol === t.symbol) : null;
+        const circuitItem = (!mktItem && typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) ? rawCircuitsData.find(c => c.symbol === t.symbol) : null;
+        const liveSource = mktItem || circuitItem;
+
+        // Current Price column computation
+        let curPriceHtml = '<span style="color:#64748b; font-size:0.8rem;">--</span>';
+        if (liveSource && liveSource.current_price) {
+            const cp = Number(liveSource.current_price);
+            const chg = Number(liveSource.change_pct || 0);
+            const chgColor = chg >= 0 ? '#4ade80' : '#fb7185';
+            const chgIcon = chg >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+            const isLiveActive = pt.status === 'ACTIVE' || pt.status === 'PENDING_615';
+
+            curPriceHtml = `
+                <div>
+                    <div style="font-size:0.92rem; font-weight:700; color:#f8fafc; display:flex; align-items:center; gap:5px;">
+                        ₹${cp.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        ${isLiveActive ? '<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#22c55e; box-shadow:0 0 6px #22c55e;" title="Ticking Live"></span>' : ''}
+                    </div>
+                    <div style="font-size:0.75rem; font-weight:600; color:${chgColor}; margin-top:2px;">
+                        <i class="fa-solid ${chgIcon}"></i> ${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%
+                    </div>
+                </div>
+            `;
+        } else if (s6.reference_price) {
+            curPriceHtml = `
+                <div>
+                    <div style="font-size:0.9rem; font-weight:600; color:#cbd5e1;">
+                        ₹${Number(s6.reference_price).toLocaleString('en-IN', {minimumFractionDigits: 2})}
+                    </div>
+                    <div style="font-size:0.7rem; color:#94a3b8;">(Signal Ref)</div>
+                </div>
+            `;
+        }
 
         let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
         if (outcome.outcome === 'WRONG') {
@@ -3882,9 +3925,8 @@ function renderAdvisoryTradesTable() {
         let pnlText = outcome.pnl_display || '₹0.00';
         let ptsFormulaHtml = '';
         if (pt.status === 'ACTIVE' && pt.entry_price) {
-            const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) ? marketData.find(m => m.symbol === t.symbol) : null;
-            if (mktItem && mktItem.current_price) {
-                const curPrice = Number(mktItem.current_price);
+            if (liveSource && liveSource.current_price) {
+                const curPrice = Number(liveSource.current_price);
                 const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
                 const lot = t.lot_size || 1;
                 const liveMtm = Math.round(pts * lot * 100) / 100;
@@ -3994,6 +4036,7 @@ function renderAdvisoryTradesTable() {
                     <div style="font-size:0.85rem; font-weight:600; color:#f1f5f9;">${s6.action_text || '--'}</div>
                     <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Ref: ₹${s6.reference_price ? Number(s6.reference_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
                 </td>
+                <td>${curPriceHtml}</td>
                 <td>${check615Html}</td>
                 <td>${paperTradeCell}</td>
                 <td>
@@ -4025,6 +4068,10 @@ function renderAdvisoryTradesTable() {
             const c15 = t.check_615 || {};
             const outcome = t.eod_outcome || {};
 
+            const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) ? marketData.find(m => m.symbol === t.symbol) : null;
+            const circuitItem = (!mktItem && typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) ? rawCircuitsData.find(c => c.symbol === t.symbol) : null;
+            const liveSource = mktItem || circuitItem;
+
             let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
             if (outcome.outcome === 'WRONG') {
                 outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
@@ -4038,9 +4085,8 @@ function renderAdvisoryTradesTable() {
             let pnlText = outcome.pnl_display || '₹0.00';
             let mobilePtsFormulaHtml = '';
             if (pt.status === 'ACTIVE' && pt.entry_price) {
-                const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) ? marketData.find(m => m.symbol === t.symbol) : null;
-                if (mktItem && mktItem.current_price) {
-                    const curPrice = Number(mktItem.current_price);
+                if (liveSource && liveSource.current_price) {
+                    const curPrice = Number(liveSource.current_price);
                     const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
                     const lot = t.lot_size || 1;
                     const liveMtm = Math.round(pts * lot * 100) / 100;
@@ -4119,9 +4165,18 @@ function renderAdvisoryTradesTable() {
                     </div>
 
                     <div class="mobile-card-rec-box">
-                        <div class="mobile-card-rec-label">Advisory Signal (${t.session_name || 'Trigger'})</div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+                            <div class="mobile-card-rec-label">Advisory Signal (${t.session_name || 'Trigger'})</div>
+                            ${liveSource && liveSource.current_price ? `
+                                <div style="font-size:0.8rem; font-weight:700; color:#f8fafc; display:flex; align-items:center; gap:5px;">
+                                    <span style="color:#94a3b8; font-size:0.68rem; font-weight:600; text-transform:uppercase;">Live:</span>
+                                    <span>₹${Number(liveSource.current_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span>
+                                    <span style="color:${(liveSource.change_pct||0) >= 0 ? '#4ade80' : '#fb7185'}; font-size:0.72rem;">(${((liveSource.change_pct||0) >= 0 ? '+' : '') + Number(liveSource.change_pct||0).toFixed(2)}%)</span>
+                                </div>
+                            ` : ''}
+                        </div>
                         <div class="mobile-card-rec-action" style="color:${actionColor};">${s6.action_text || '--'}</div>
-                        <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Ref: ₹${s6.reference_price ? Number(s6.reference_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
+                        <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Signal Ref: ₹${s6.reference_price ? Number(s6.reference_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
                     </div>
 
                     <div class="mobile-card-grid-3">
