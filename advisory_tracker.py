@@ -7,7 +7,7 @@ TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', '
 USER_ACCOUNT = "venu.photos1@gmail.com"
 
 LOT_SIZES = {
-    'CRUDEOIL': 50,     # 50 bbl / units
+    'CRUDEOIL': 100,    # 100 bbl (Standard MCX Contract)
     'NATURALGAS': 1250, # 1250 mmBtu
     'SILVER': 5,        # 5 units (Silver Mini / 5 kg)
     'COPPER': 2500,     # 2500 kg
@@ -868,7 +868,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 chg = crude['change_pct']
                 lc = crude['lower_circuit']
                 uc = crude['upper_circuit']
-                lot_size = LOT_SIZES.get('CRUDEOIL', 50)
+                lot_size = LOT_SIZES.get('CRUDEOIL', 100)
 
                 # Fade overreaction if near circuit or spike > 1.2%
                 if 'NEAR' in crude['status'] or 'HIT' in crude['status'] or abs(chg) >= 1.5:

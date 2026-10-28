@@ -2,8 +2,8 @@ name: Commodity Price Alerter
 
 on:
   schedule:
-    # Runs continuously with 1-minute check loop
-    - cron: '* * * * *'
+    # Runs every 5 minutes during MCX trading days (runner loops 4 times with 60s intervals)
+    - cron: '*/5 * * * 1-5'
   workflow_dispatch: # Allows manual trigger from the UI
   repository_dispatch:
     types: [trigger-cron] # Allows triggering via external webhook
@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: alerter-cron
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   check-prices:

@@ -91,25 +91,7 @@ jobs:
                 ;;
             esac
           else
-            UTC_H=$(date -u +%H)
-            if [ "$UTC_H" -ge 3 ] && [ "$UTC_H" -le 5 ]; then
-              python daily_6pm_advisory.py --9am
-            elif [ "$UTC_H" -ge 7 ] && [ "$UTC_H" -le 9 ]; then
-              python daily_6pm_advisory.py --130pm
-            elif [ "$UTC_H" -eq 12 ]; then
-              UTC_M=$(date -u +%M)
-              if [ "$UTC_M" -ge 44 ]; then
-                python daily_6pm_advisory.py --check-615
-              else
-                python daily_6pm_advisory.py --6pm --force
-              fi
-            elif [ "$UTC_H" -ge 14 ] && [ "$UTC_H" -le 15 ]; then
-              python daily_6pm_advisory.py --8pm
-            elif [ "$UTC_H" -ge 17 ] && [ "$UTC_H" -le 19 ]; then
-              python daily_6pm_advisory.py --exit-eod
-            else
-              python daily_6pm_advisory.py
-            fi
+            python daily_6pm_advisory.py --auto
           fi
 
       - name: Commit State & Web Data

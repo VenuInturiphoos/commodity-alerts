@@ -196,11 +196,12 @@ def generate_and_send_6pm_advisory(force=False):
                 pt = lt.get('paper_trade', {})
                 act = pt.get('action', 'TRADE')
                 qty = pt.get('quantity', lt.get('lot_size', 1))
-                ep = pt.get('entry_price', 0)
+                ep = pt.get('entry_price')
                 st = pt.get('status', 'ACTIVE')
                 pnl = pt.get('pnl_inr', 0.0)
-                pnl_str = f" | P&L: ₹{pnl:+,.2f}" if pnl != 0 else ""
-                london_lines.append(f"• <b>{lt['name']}</b>: {act} {qty} units @ ₹{ep:,.2f} | Status: <b>{st}</b>{pnl_str} ({lt.get('event_context', '')})")
+                pnl_str = f" | P&L: ₹{pnl:+,.2f}" if pnl and pnl != 0 else ""
+                ep_str = f" @ ₹{ep:,.2f}" if ep is not None else ""
+                london_lines.append(f"• <b>{lt['name']}</b>: {act} {qty} units{ep_str} | Status: <b>{st}</b>{pnl_str} ({lt.get('event_context', '')})")
             london_review_text = "\n".join(london_lines) + "\n\n"
         else:
             london_review_text = (
@@ -333,7 +334,7 @@ def generate_and_send_130pm_advisory(force=False):
             st = pt.get('status', 'STAND_ASIDE')
             s6 = rec.get('suggestion_6pm', {})
             ctx = rec.get('event_context', '')
-            ep = pt.get('entry_price', cur_p)
+            ep = pt.get('entry_price') or cur_p
             sl = s6.get('stop_loss')
             tgt = s6.get('target')
             rationale = s6.get('rationale', '')
@@ -803,6 +804,76 @@ def generate_and_send_9am_advisory(force=False):
         return True
     return False
 
+def run_auto_session(force=False):
+    """
+    Intelligently determines and dispatches whichever scheduled advisory or check is due
+    and has NOT yet been dispatched today, preventing any advisory from being skipped
+    due to GitHub Actions runner queue delays.
+    """
+    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+    today_ist = now_dt.strftime('%Y-%m-%d')
+    cur_hm = (now_dt.hour, now_dt.minute)
+    
+    state_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
+    state = {}
+    if os.path.exists(state_file):
+        try:
+            with open(state_file, 'r') as f:
+                state = json.load(f)
+        except Exception:
+            state = {}
+            
+    sent_9am = state.get('DAILY_9AM_ADVISORY', {}).get('last_alert_date') == today_ist
+    sent_130pm = state.get('DAILY_130PM_ADVISORY', {}).get('last_alert_date') == today_ist
+    sent_6pm = state.get('DAILY_6PM_ADVISORY', {}).get('last_alert_date') == today_ist
+    sent_8pm = state.get('DAILY_8PM_ADVISORY', {}).get('last_alert_date') == today_ist
+
+    print(f"Auto-dispatch evaluating at {now_dt.strftime('%d %b %Y, %I:%M:%S %p IST')} (HH:MM={cur_hm})")
+    print(f"State Today ({today_ist}): 9AM={sent_9am}, 1:30PM={sent_130pm}, 6PM={sent_6pm}, 8PM={sent_8pm}")
+
+    # 1. 11:20 PM IST or later -> EOD Exit
+    if cur_hm >= (23, 20):
+        print("Time is >= 11:20 PM IST. Triggering EOD Settlement & Square-off.")
+        with open('config.json', 'r') as f:
+            cfg = json.load(f)
+        chk = PriceChecker(cfg)
+        alt = EmailAlerter(cfg)
+        from advisory_tracker import exit_and_evaluate_eod_trades
+        return exit_and_evaluate_eod_trades(chk, alt)
+
+    # 2. 8:00 PM IST or later -> 8 PM EIA / Evening Playbook
+    if cur_hm >= (20, 0) and (not sent_8pm or force):
+        print("Time is >= 8:00 PM IST and 8 PM advisory not sent today. Dispatching 8 PM Advisory.")
+        return generate_and_send_8pm_advisory(force=force)
+
+    # 3. 6:15 PM IST or later -> 6:15 Confirmation check (if 6 PM was already sent)
+    if cur_hm >= (18, 15) and sent_6pm and cur_hm < (19, 30):
+        print("Time is in 6:15 PM - 7:30 PM IST window with 6 PM already dispatched. Running 6:15 Confirmation.")
+        with open('config.json', 'r') as f:
+            cfg = json.load(f)
+        chk = PriceChecker(cfg)
+        alt = EmailAlerter(cfg)
+        from advisory_tracker import check_and_execute_615_confirmation
+        return check_and_execute_615_confirmation(chk, alt)
+
+    # 4. 6:00 PM IST or later -> 6 PM US Pit Open Advisory
+    if cur_hm >= (18, 0) and (not sent_6pm or force):
+        print("Time is >= 6:00 PM IST and 6 PM advisory not sent today. Dispatching 6 PM Advisory.")
+        return generate_and_send_6pm_advisory(force=force)
+
+    # 5. 1:30 PM IST or later -> London Breakout Advisory
+    if cur_hm >= (13, 30) and (not sent_130pm or force):
+        print("Time is >= 1:30 PM IST and 1:30 PM advisory not sent today. Dispatching 1:30 PM Advisory.")
+        return generate_and_send_130pm_advisory(force=force)
+
+    # 6. 9:01 AM IST or later -> Morning Pulse Advisory
+    if cur_hm >= (9, 1) and (not sent_9am or force):
+        print("Time is >= 9:01 AM IST and 9:01 AM advisory not sent today. Dispatching 9:01 AM Advisory.")
+        return generate_and_send_9am_advisory(force=force)
+
+    print("No scheduled advisory is currently pending for today at this time.")
+    return True
+
 if __name__ == "__main__":
     import sys
     force_run = '--force' in sys.argv
@@ -820,6 +891,8 @@ if __name__ == "__main__":
         alt = EmailAlerter(cfg)
         from advisory_tracker import exit_and_evaluate_eod_trades
         exit_and_evaluate_eod_trades(chk, alt)
+    elif '--auto' in sys.argv:
+        run_auto_session(force=force_run)
     elif '--session' in sys.argv or any(s in sys.argv for s in ['--9am', '--130pm', '--8pm', '--6pm']):
         if '--9am' in sys.argv or ('--session' in sys.argv and ('9am' in sys.argv or '900' in sys.argv)):
             generate_and_send_9am_advisory(force=force_run)
@@ -830,5 +903,6 @@ if __name__ == "__main__":
         else:
             generate_and_send_6pm_advisory(force=force_run)
     else:
-        generate_and_send_6pm_advisory(force=force_run)
+        run_auto_session(force=force_run)
+
 
