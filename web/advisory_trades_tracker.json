@@ -1,6 +1,251 @@
 {
   "trades": [
     {
+      "id": "ADV-28Oct2026-0900-GOLD",
+      "date": "28 Oct 2026",
+      "session_name": "Morning Pulse (09:00 AM)",
+      "time_trigger": "09:00 AM IST",
+      "time_6pm": "09:00 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 10,
+      "event_context": "Normal Open (+0.74%) | CPR: 0.05%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (+0.74%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 144138.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 144138.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:00 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-28Oct2026-0900-SILVER",
+      "date": "28 Oct 2026",
+      "session_name": "Morning Pulse (09:00 AM)",
+      "time_trigger": "09:00 AM IST",
+      "time_6pm": "09:00 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 5,
+      "event_context": "Normal Open (+0.47%) | CPR: 0.46%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (+0.47%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 196717.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 196717.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:00 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-28Oct2026-0900-CRUDEOIL",
+      "date": "28 Oct 2026",
+      "session_name": "Morning Pulse (09:00 AM)",
+      "time_trigger": "09:00 AM IST",
+      "time_6pm": "09:00 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 50,
+      "event_context": "MCX Open Gap (-2.31%) | CPR: 0.62%",
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "BUY / GAP FADE (BOUNCE)",
+        "rationale": "Significant opening gap down (-2.31%). Wide CPR (0.62%) indicates high probability gap fill bounce towards Prev Day Close (\u20b99,723.00).",
+        "reference_price": 9498.0,
+        "stop_loss": 9460.01,
+        "target": 9723.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "GAP_FADE_ENTERED",
+        "price_615": 9498.0,
+        "action_taken": "Entered BUY 50 units @ \u20b99,498.00",
+        "detail": "Fading opening gap down towards PDC \u20b99,723.00."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 50,
+        "entry_price": 9498.0,
+        "entry_time": "09:00 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
+      "id": "ADV-28Oct2026-0900-NATURALGAS",
+      "date": "28 Oct 2026",
+      "session_name": "Morning Pulse (09:00 AM)",
+      "time_trigger": "09:00 AM IST",
+      "time_6pm": "09:00 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "MCX Open Gap (++3.22%) | CPR: 0.56%",
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "SELL / GAP FADE (SHORT)",
+        "rationale": "Significant opening gap up (+3.22%). Wide CPR (0.56%) indicates high probability gap fill towards Prev Day Close (\u20b9248.40).",
+        "reference_price": 256.4,
+        "stop_loss": 257.53,
+        "target": 248.4
+      },
+      "check_615": {
+        "checked": true,
+        "status": "GAP_FADE_ENTERED",
+        "price_615": 256.4,
+        "action_taken": "Entered SELL 1250 units @ \u20b9256.40",
+        "detail": "Fading opening gap up towards PDC \u20b9248.40."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1250,
+        "entry_price": 256.4,
+        "entry_time": "09:00 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active SELL position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
+      "id": "ADV-28Oct2026-0900-COPPER",
+      "date": "28 Oct 2026",
+      "session_name": "Morning Pulse (09:00 AM)",
+      "time_trigger": "09:00 AM IST",
+      "time_6pm": "09:00 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPER",
+      "name": "Copper",
+      "lot_size": 2500,
+      "event_context": "MCX Open Gap (++0.88%) | CPR: 0.26%",
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "BUY / GAP MOMENTUM",
+        "rationale": "Narrow CPR (0.26%) expansion gap up (+0.88%). Riding opening momentum.",
+        "reference_price": 1405.35,
+        "stop_loss": 1391.11,
+        "target": 1411.65
+      },
+      "check_615": {
+        "checked": true,
+        "status": "GAP_MOMENTUM_ENTERED",
+        "price_615": 1405.35,
+        "action_taken": "Entered BUY 2500 units @ \u20b91,405.35",
+        "detail": "Riding opening breakout momentum towards R2 \u20b91,411.65."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 2500,
+        "entry_price": 1405.35,
+        "entry_time": "09:00 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
       "id": "ADV-27Oct2026-1330-GOLD",
       "date": "27 Oct 2026",
       "session_name": "London Breakout (1:30 PM)",
@@ -845,22 +1090,22 @@
       }
     }
   ],
-  "last_updated": "27 Oct 2026, 11:57 PM IST",
+  "last_updated": "28 Oct 2026, 08:58 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
-    "total_signals": 17,
+    "total_signals": 22,
     "executed_count": 9,
     "correct_count": 5,
     "wrong_count": 4,
-    "protected_count": 7,
+    "protected_count": 9,
     "win_rate_pct": 55.6,
     "total_pnl_inr": -7605.0,
     "avg_trade_pnl_inr": -845.0,
-    "active_trades_count": 1,
+    "active_trades_count": 4,
     "starting_cash_inr": 1000000.0,
     "current_cash_inr": 992395.0,
-    "used_margin_inr": 0,
+    "used_margin_inr": 0.0,
     "available_cash_inr": 992395.0,
     "net_worth_inr": 992395.0
   }
