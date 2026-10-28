@@ -106,49 +106,47 @@
       "time_6pm": "09:01 AM IST",
       "time_validation": "09:15 AM IST",
       "time_615": "09:15 AM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "09:21 AM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
       "lot_size": 50,
-      "event_context": "MCX Open Gap (-2.31%) | CPR: 0.62%",
+      "event_context": "MCX Open Gap (+1.28%) | CPR: 0.90%",
       "suggestion_6pm": {
         "status": "MORNING_GAP_TRADE",
-        "action_text": "BUY / GAP FADE (BOUNCE)",
-        "rationale": "Significant opening gap down (-2.31%). Wide CPR (0.62%) indicates high probability gap fill bounce towards Prev Day Close (\u20b99,723.00).",
-        "reference_price": 9498.0,
-        "stop_loss": 9498.0,
-        "target": 9723.0
+        "action_text": "SELL / GAP FADE (SHORT)",
+        "rationale": "Significant opening gap up (+1.28%). Wide CPR (0.90%) indicates high probability gap fill pullback towards Prev Day Close (\u20b99,498.00).",
+        "reference_price": 9620.0,
+        "stop_loss": 9658.5,
+        "target": 9498.0
       },
       "check_615": {
         "checked": true,
         "status": "GAP_FADE_ENTERED",
-        "price_615": 9498.0,
-        "action_taken": "Entered BUY 50 units @ \u20b99,498.00",
-        "detail": "Fading opening gap down towards PDC \u20b99,723.00."
+        "price_615": 9620.0,
+        "action_taken": "Entered SELL 50 units @ \u20b99,620.00",
+        "detail": "Fading opening gap up towards PDC \u20b99,498.00."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "BUY",
+        "action": "SELL",
         "quantity": 50,
-        "entry_price": 9498.0,
+        "entry_price": 9620.0,
         "entry_time": "09:01 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
-        "trailing_sl_active": true,
-        "original_sl": 9460.01,
-        "stop_loss": 9498.0,
-        "target": 9723.0
+        "exit_price": 9658.5,
+        "exit_time": "09:21 AM IST",
+        "pnl_points": -38.5,
+        "pnl_inr": -1925.0,
+        "status": "CLOSED",
+        "stop_loss": 9658.5,
+        "target": 9498.0
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 9658.5,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+        "outcome": "INCORRECT",
+        "badge": "SL Triggered \ud83d\uded1",
+        "pnl_display": "-\u20b91,925.00",
+        "summary": "Stop Loss triggered \ud83d\uded1 at 09:21 AM IST. Entry: \u20b99,620.00 (SELL) -> Exit: \u20b99,658.50 (-\u20b91,925.00)."
       }
     },
     {
@@ -214,43 +212,43 @@
       "symbol": "COPPER",
       "name": "Copper",
       "lot_size": 2500,
-      "event_context": "MCX Open Gap (++0.88%) | CPR: 0.26%",
+      "event_context": "MCX Open Gap (-0.06%) | CPR: 0.08%",
       "suggestion_6pm": {
-        "status": "MORNING_GAP_TRADE",
-        "action_text": "BUY / GAP MOMENTUM",
-        "rationale": "Narrow CPR (0.26%) expansion gap up (+0.88%). Riding opening momentum.",
-        "reference_price": 1405.35,
-        "stop_loss": 1391.11,
-        "target": 1411.65
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / NO CLEAR GAP",
+        "rationale": "Opening gap (-0.06%) within neutral zone (\u00b10.75%). No opening edge.",
+        "reference_price": 1404.5,
+        "stop_loss": null,
+        "target": null
       },
       "check_615": {
         "checked": true,
-        "status": "GAP_MOMENTUM_ENTERED",
-        "price_615": 1405.35,
-        "action_taken": "Entered BUY 2500 units @ \u20b91,405.35",
-        "detail": "Riding opening breakout momentum towards R2 \u20b91,411.65."
+        "status": "STAND_ASIDE",
+        "price_615": 1404.5,
+        "action_taken": "No trade taken (Stand Aside)",
+        "detail": "Neutral opening gap (-0.06%). Awaiting 1:30 PM London breakout."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "BUY",
-        "quantity": 2500,
-        "entry_price": 1405.35,
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
         "entry_time": "09:01 AM IST",
         "exit_price": null,
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "ACTIVE",
-        "target": 1411.65,
-        "stop_loss": 1391.11
+        "status": "CLOSED",
+        "stop_loss": null,
+        "target": null
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+        "outcome": "NEUTRAL",
+        "badge": "Stand Aside \u23f8\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "No trade triggered. Opening gap (-0.06%) within neutral zone."
       }
     },
     {
