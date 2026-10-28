@@ -738,40 +738,137 @@ class PriceChecker:
             print(f"Error persisting alerts_state.json: {e}")
 
     def fetch_tradingview_commodity_quotes(self):
-        """Fetches live MCX continuous futures quotes directly from TradingView futures scanner."""
+        """
+        Fetches live MCX futures quotes dynamically from TradingView futures scanner.
+        Intelligently resolves active front-month contracts (e.g. November 2026 X2026 vs expired October V2026),
+        preventing stale prices when continuous tickers (1!) lag after expiry.
+        """
         try:
-            tickers = []
-            symbol_to_ticker = {}
-            for sym, data in self.commodities.items():
-                tv_tick = data.get('tv_ticker')
-                if tv_tick:
-                    tickers.append(tv_tick)
-                    symbol_to_ticker[tv_tick] = sym
-            
-            if not tickers:
-                return {}
-                
             url = 'https://scanner.tradingview.com/futures/scan'
-            payload = {
-                'symbols': {'tickers': tickers},
-                'columns': ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume', 'description']
-            }
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             }
+            cols = ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume', 'description', 'expiration', 'name']
+            payload = {
+                'filter': [{'left': 'exchange', 'operation': 'equal', 'right': 'MCX'}],
+                'columns': cols
+            }
+            
             resp = requests.post(url, json=payload, headers=headers, timeout=10)
-            if resp.status_code != 200:
-                print(f"TradingView scanner returned status {resp.status_code}")
-                return {}
+            data_rows = []
+            if resp.status_code == 200:
+                data_rows = resp.json().get('data', [])
                 
-            res_data = resp.json().get('data', [])
+            # If exchange filter succeeded, dynamically resolve active front-month contracts
+            if data_rows:
+                by_symbol = {row['s']: dict(zip(cols, row.get('d', []))) for row in data_rows}
+                today_int = int(datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%Y%m%d'))
+                
+                quotes = {}
+                for sym, conf in self.commodities.items():
+                    root = sym
+                    default_tick = conf.get('tv_ticker') or f"MCX:{root}1!"
+                    
+                    # 1. Collect all standard unexpired monthly contracts for this commodity
+                    monthly_contracts = []
+                    for s, d in by_symbol.items():
+                        if not s.startswith(f"MCX:{root}"):
+                            continue
+                        ticker_part = s.split(':')[-1]
+                        suffix = ticker_part[len(root):]
+                        # Standard MCX contracts have suffix format: 1 month letter + 4 digit year (e.g. X2026, Z2026)
+                        if len(suffix) == 5 and suffix[0] in 'FGHJKMNQUVXZ' and suffix[1:].isdigit():
+                            exp = d.get('expiration')
+                            if exp and exp >= today_int:
+                                monthly_contracts.append({
+                                    'ticker': s,
+                                    'data': d,
+                                    'exp': exp,
+                                    'vol': d.get('volume') or 0,
+                                    'close': d.get('close')
+                                })
+                    monthly_contracts.sort(key=lambda x: x['exp'])
+                    
+                    # Determine active front-month contract:
+                    # If nearest contract expires in <= 3 days and 2nd contract has higher liquidity, roll to 2nd contract
+                    front_contract = None
+                    if monthly_contracts:
+                        if len(monthly_contracts) > 1 and (monthly_contracts[0]['exp'] - today_int <= 3) and (monthly_contracts[1]['vol'] > monthly_contracts[0]['vol'] * 1.5):
+                            front_contract = monthly_contracts[1]
+                        else:
+                            front_contract = monthly_contracts[0]
+                            
+                    cont_data = by_symbol.get(default_tick)
+                    chosen_ticker = default_tick
+                    chosen_data = cont_data
+                    
+                    if front_contract:
+                        fc_tick = front_contract['ticker']
+                        fc_data = front_contract['data']
+                        # Check if continuous ticker is missing, has 0 volume, or diverges (>4%) from active front contract
+                        if not cont_data or cont_data.get('close') is None:
+                            chosen_ticker = fc_tick
+                            chosen_data = fc_data
+                        else:
+                            c_close = cont_data.get('close') or 0
+                            f_close = fc_data.get('close') or 0
+                            if abs(c_close - f_close) / (f_close or 1) > 0.04 or (cont_data.get('volume') == 0 and fc_data.get('volume') > 0):
+                                print(f"Detected continuous ticker lag on {default_tick} (Price: {c_close}). Rolling to active {fc_tick} (Price: {f_close}, Exp: {front_contract['exp']}).")
+                                chosen_ticker = fc_tick
+                                chosen_data = fc_data
+                            else:
+                                # They align; prefer explicit active contract ticker so expiry is known
+                                chosen_ticker = fc_tick
+                                chosen_data = fc_data
+                    elif cont_data:
+                        chosen_ticker = default_tick
+                        chosen_data = cont_data
+                        
+                    if chosen_data and chosen_data.get('close') is not None:
+                        close = float(chosen_data['close'])
+                        chg_abs = float(chosen_data.get('change_abs') or 0.0)
+                        chg_pct = float(chosen_data.get('change') or 0.0)
+                        prev_close = round(close - chg_abs, 2)
+                        exp_val = chosen_data.get('expiration')
+                        exp_str = f"{str(exp_val)[:4]}-{str(exp_val)[4:6]}-{str(exp_val)[6:8]}" if exp_val else None
+                        quotes[sym] = {
+                            'symbol': sym,
+                            'ticker': chosen_ticker,
+                            'name': conf.get('name', sym),
+                            'close': close,
+                            'open': float(chosen_data.get('open') or close),
+                            'high': float(chosen_data.get('high') or close),
+                            'low': float(chosen_data.get('low') or close),
+                            'change': round(chg_pct, 2),
+                            'change_abs': round(chg_abs, 2),
+                            'volume': int(chosen_data.get('volume') or 0),
+                            'prev_close': prev_close,
+                            'description': chosen_data.get('description'),
+                            'expiry': exp_str,
+                            'contract_desc': chosen_data.get('description')
+                        }
+                return quotes
+                
+            # Fallback direct ticker query if scan returned empty
+            tickers = [data.get('tv_ticker') for sym, data in self.commodities.items() if data.get('tv_ticker')]
+            if not tickers:
+                return {}
+            fallback_payload = {
+                'symbols': {'tickers': tickers},
+                'columns': ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume', 'description']
+            }
+            resp_fb = requests.post(url, json=fallback_payload, headers=headers, timeout=10)
+            if resp_fb.status_code != 200:
+                return {}
+            res_data = resp_fb.json().get('data', [])
             quotes = {}
-            cols = payload['columns']
+            cols_fb = fallback_payload['columns']
+            symbol_to_ticker = {data.get('tv_ticker'): sym for sym, data in self.commodities.items()}
             for row in res_data:
                 tick = row.get('s')
                 sym = symbol_to_ticker.get(tick)
                 if sym:
-                    d = dict(zip(cols, row.get('d', [])))
+                    d = dict(zip(cols_fb, row.get('d', [])))
                     close = d.get('close')
                     change_abs = d.get('change_abs') or 0.0
                     change_pct = d.get('change') or 0.0
@@ -1441,7 +1538,12 @@ class PriceChecker:
             ticker = data.get('tv_ticker', '')
             
             quote = tv_quotes.get(symbol) if tv_quotes else None
+            expiry = None
+            contract_desc = None
             if quote and quote.get('close') is not None:
+                ticker = quote.get('ticker') or ticker
+                expiry = quote.get('expiry')
+                contract_desc = quote.get('contract_desc')
                 close = float(quote['close'])
                 prev_close = float(quote['prev_close']) if quote.get('prev_close') is not None else close
                 open_price = float(quote.get('open') or close)
@@ -1515,6 +1617,8 @@ class PriceChecker:
                 "category": category,
                 "unit": unit,
                 "ticker": ticker,
+                "expiry": expiry,
+                "contract_desc": contract_desc,
                 "current_price": close,
                 "prev_close": prev_close,
                 "open_price": open_price,
