@@ -4244,8 +4244,6 @@ function renderAdvisoryTradesTable() {
                 mobileExitVal = isPast 
                     ? '<span style="color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</span>'
                     : '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Pending Check</span>';
-            }
-                mobileExitVal = '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</span>';
             } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {
                 mobileExitLabel = `<i class="fa-solid fa-bullseye" style="color:#4ade80;"></i> Target Hit`;
                 mobileExitVal = `<span style="color:#4ade80; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
