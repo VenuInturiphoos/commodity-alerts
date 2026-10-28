@@ -1529,6 +1529,14 @@ class PriceChecker:
         circuits = []
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d %b %Y, %I:%M:%S %p IST')
         
+        # Parent mapping for Mini / Micro commodities to guarantee identical price and limit sync
+        PARENT_MAP = {
+            'CRUDEOILM': 'CRUDEOIL',
+            'NATURALGASM': 'NATURALGAS',
+            'SILVERMIC': 'SILVER',
+            'GOLDM': 'GOLD'
+        }
+        
         for symbol, data in self.commodities.items():
             name = data.get('name', symbol)
             dpl_initial = data.get('dpl_initial', 0.04)
@@ -1538,6 +1546,14 @@ class PriceChecker:
             ticker = data.get('tv_ticker', '')
             
             quote = tv_quotes.get(symbol) if tv_quotes else None
+            # If direct TV quote for mini/micro not available, seamlessly inherit parent quote
+            if (not quote or quote.get('close') is None) and symbol in PARENT_MAP and tv_quotes:
+                parent_quote = tv_quotes.get(PARENT_MAP[symbol])
+                if parent_quote and parent_quote.get('close') is not None:
+                    quote = parent_quote.copy()
+                    quote['ticker'] = data.get('tv_ticker') or quote.get('ticker')
+                    quote['contract_desc'] = f"{name} Futures"
+
             expiry = None
             contract_desc = None
             if quote and quote.get('close') is not None:
@@ -1558,6 +1574,8 @@ class PriceChecker:
                 mcx_multiplier = data.get('mcx_multiplier', 1.0)
                 conversion = self.usd_inr_rate * mcx_multiplier
                 close = self.get_current_price(symbol, is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
+                if not close and symbol in PARENT_MAP:
+                    close = self.get_current_price(PARENT_MAP[symbol], is_commodity=True, fallback_multiplier=conversion, yf_symbol=yf_sym)
                 if not close:
                     continue
                 close = round(close, 2)

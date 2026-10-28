@@ -10,8 +10,8 @@
       "time_615": "06:15 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "GOLD",
-      "name": "Gold",
-      "lot_size": 10,
+      "name": "Gold (10g)",
+      "lot_size": 1,
       "event_context": "Safe Normal Range (No Circuit Edge)",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -59,8 +59,8 @@
       "time_615": "06:15 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "SILVER",
-      "name": "Silver",
-      "lot_size": 5,
+      "name": "Silver Micro",
+      "lot_size": 1,
       "event_context": "Safe Normal Range (No Circuit Edge)",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -108,8 +108,8 @@
       "time_615": "06:15 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
-      "name": "Crude Oil",
-      "lot_size": 100,
+      "name": "Crude Oil Mini",
+      "lot_size": 10,
       "event_context": "US Pit Open Upper Circuit Test (15-Min Rule Enforced)",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -120,31 +120,31 @@
         "target": 9498.0
       },
       "check_615": {
-        "checked": false,
-        "status": "PENDING_615",
-        "price_615": null,
-        "action_taken": "Awaiting 6:15 PM candle close verification...",
-        "detail": "Action will be triggered dynamically at 6:15 PM IST."
+        "checked": true,
+        "status": "CONFIRMATION_EXPIRED",
+        "price_615": 9824.0,
+        "action_taken": "15-minute window closed without confirmed execution. STOOD ASIDE.",
+        "detail": "Action was not confirmed at 6:15 PM. Order was not executed, preserving 100% capital."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "SELL",
-        "quantity": 100,
+        "action": "STAND_ASIDE",
+        "quantity": 0,
         "entry_price": null,
         "entry_time": null,
         "exit_price": null,
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "PENDING_615"
+        "status": "CLOSED"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 9797.0,
         "circuit_limit": 9877.92,
-        "outcome": "PENDING",
-        "badge": "Awaiting 6:15 PM \u23f3",
-        "pnl_display": "Pending Confirmation",
-        "summary": "15-minute confirmation check scheduled for 6:15 PM IST."
+        "outcome": "PROTECTED",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -157,8 +157,8 @@
       "time_615": "06:15 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "NATURALGAS",
-      "name": "Natural Gas",
-      "lot_size": 1250,
+      "name": "Natural Gas Mini",
+      "lot_size": 250,
       "event_context": "Safe Normal Range (No Circuit Edge)",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -206,8 +206,8 @@
       "time_615": "06:15 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "COPPER",
-      "name": "Copper",
-      "lot_size": 2500,
+      "name": "Copper Mini",
+      "lot_size": 250,
       "event_context": "Safe Normal Range (No Circuit Edge)",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -255,8 +255,8 @@
       "time_615": "08:15 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
-      "name": "Crude Oil",
-      "lot_size": 100,
+      "name": "Crude Oil Mini",
+      "lot_size": 10,
       "event_context": "Wednesday EIA Petroleum Inventory Spike Fade",
       "suggestion_6pm": {
         "status": "EIA_FADE",
@@ -270,19 +270,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 9770.0,
-        "action_taken": "Entered SELL 100 units @ \u20b99,770.00",
+        "action_taken": "Entered SELL 10 units @ \u20b99,770.00",
         "detail": "EIA Inventory setup entered at 8:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 100,
+        "quantity": 10,
         "entry_price": 9770.0,
         "entry_time": "08:00 PM IST",
         "exit_price": 9810.0,
         "exit_time": "11:30 PM IST",
         "pnl_points": -40.0,
-        "pnl_inr": -4000.0,
+        "pnl_inr": -400.0,
         "status": "CLOSED",
         "exit_trigger": "EOD_SQUAREOFF"
       },
@@ -291,8 +291,8 @@
         "circuit_limit": 9877.92,
         "outcome": "WRONG",
         "badge": "Wrong \u274c (11:30 PM)",
-        "pnl_display": "\u20b9-4,000.00",
-        "summary": "11:30 PM session close exit. Entry: \u20b99,770.00 -> Exit: \u20b99,810.00 (-40.00 pts | \u20b9-4,000.00).",
+        "pnl_display": "\u20b9-400.00",
+        "summary": "11:30 PM session close exit. Entry: \u20b99,770.00 -> Exit: \u20b99,810.00 (-40.00 pts | \u20b9-400.00).",
         "exit_time": "11:30 PM IST",
         "exit_trigger": "EOD_SQUAREOFF"
       }
@@ -307,8 +307,8 @@
       "time_615": "01:45 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "GOLD",
-      "name": "Gold",
-      "lot_size": 10,
+      "name": "Gold (10g)",
+      "lot_size": 1,
       "event_context": "Counter-Trend Bull Trap Avoided (Daily Bearish: -0.33%)",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -356,8 +356,8 @@
       "time_615": "01:45 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "SILVER",
-      "name": "Silver",
-      "lot_size": 5,
+      "name": "Silver Micro",
+      "lot_size": 1,
       "event_context": "Range-Bound Asian Range [\u20b9194,853.00 \u2013 \u20b9196,010.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -405,8 +405,8 @@
       "time_615": "01:45 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
-      "name": "Crude Oil",
-      "lot_size": 50,
+      "name": "Crude Oil Mini",
+      "lot_size": 10,
       "event_context": "Range-Bound Asian Range [\u20b99,617.00 \u2013 \u20b99,744.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -454,8 +454,8 @@
       "time_615": "01:45 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "NATURALGAS",
-      "name": "Natural Gas",
-      "lot_size": 1250,
+      "name": "Natural Gas Mini",
+      "lot_size": 250,
       "event_context": "Asian Liquidity Sweep Trap Avoided (Daily Bullish: +1.39%)",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -503,8 +503,8 @@
       "time_615": "01:45 PM IST",
       "time_exit": "02:16 PM IST",
       "symbol": "COPPER",
-      "name": "Copper",
-      "lot_size": 2500,
+      "name": "Copper Mini",
+      "lot_size": 250,
       "event_context": "London Bullish Breakout (Trend Aligned: CPR Top \u20b91,405.42)",
       "suggestion_6pm": {
         "status": "LONDON_BREAKOUT",
@@ -518,19 +518,19 @@
         "checked": true,
         "status": "BREAKOUT_ENTERED",
         "price_615": 1407.2,
-        "action_taken": "BUY 2500 units @ Support \u20b91,407.20",
+        "action_taken": "BUY 250 units @ Support \u20b91,407.20",
         "detail": "Support Retest order at Asian High \u20b91,408.30 with tight SL \u20b91,404.08."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 2500,
+        "quantity": 250,
         "entry_price": 1407.2,
         "entry_time": "01:30 PM IST",
         "exit_price": 1404.08,
         "exit_time": "02:16 PM IST",
         "pnl_points": -3.12,
-        "pnl_inr": -7800.0,
+        "pnl_inr": -780.0,
         "status": "CLOSED",
         "target": 1415.2,
         "stop_loss": 1404.08,
@@ -541,8 +541,8 @@
         "circuit_limit": null,
         "outcome": "WRONG",
         "badge": "Stop Loss Hit \ud83d\uded1 (02:16 PM IST)",
-        "pnl_display": "\u20b9-7,800.00",
-        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:16 PM IST. Entry: \u20b91,407.20 -> Exit: \u20b91,404.08 (\u20b9-7,800.00).",
+        "pnl_display": "\u20b9-780.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:16 PM IST. Entry: \u20b91,407.20 -> Exit: \u20b91,404.08 (-3.12 pts \u00d7 \u20b9250 = \u20b9-780.00).",
         "exit_time": "02:16 PM IST",
         "exit_trigger": "STOP_LOSS_HIT"
       }
@@ -557,8 +557,8 @@
       "time_615": "09:15 AM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "GOLD",
-      "name": "Gold",
-      "lot_size": 10,
+      "name": "Gold (10g)",
+      "lot_size": 1,
       "event_context": "Normal Open (+0.74%) | CPR: 0.05%",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -606,8 +606,8 @@
       "time_615": "09:15 AM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "SILVER",
-      "name": "Silver",
-      "lot_size": 5,
+      "name": "Silver Micro",
+      "lot_size": 1,
       "event_context": "Normal Open (+0.47%) | CPR: 0.46%",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -655,8 +655,8 @@
       "time_615": "09:15 AM IST",
       "time_exit": "09:21 AM IST",
       "symbol": "CRUDEOIL",
-      "name": "Crude Oil",
-      "lot_size": 50,
+      "name": "Crude Oil Mini",
+      "lot_size": 10,
       "event_context": "MCX Open Gap (+1.28%) | CPR: 0.90%",
       "suggestion_6pm": {
         "status": "MORNING_GAP_TRADE",
@@ -670,19 +670,19 @@
         "checked": true,
         "status": "GAP_FADE_ENTERED",
         "price_615": 9620.0,
-        "action_taken": "Entered SELL 50 units @ \u20b99,620.00",
+        "action_taken": "Entered SELL 10 units @ \u20b99,620.00",
         "detail": "Fading opening gap up towards PDC \u20b99,498.00."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 50,
+        "quantity": 10,
         "entry_price": 9620.0,
         "entry_time": "09:01 AM IST",
         "exit_price": 9658.5,
         "exit_time": "09:21 AM IST",
         "pnl_points": -38.5,
-        "pnl_inr": -1925.0,
+        "pnl_inr": -385.0,
         "status": "CLOSED",
         "stop_loss": 9658.5,
         "target": 9498.0
@@ -692,8 +692,8 @@
         "circuit_limit": null,
         "outcome": "INCORRECT",
         "badge": "SL Triggered \ud83d\uded1",
-        "pnl_display": "-\u20b91,925.00",
-        "summary": "Stop Loss triggered \ud83d\uded1 at 09:21 AM IST. Entry: \u20b99,620.00 (SELL) -> Exit: \u20b99,658.50 (-\u20b91,925.00)."
+        "pnl_display": "\u20b9-385.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 09:21 AM IST. Entry: \u20b99,620.00 -> Exit: \u20b99,658.50 (-38.50 pts \u00d7 \u20b910 = \u20b9-385.00)."
       }
     },
     {
@@ -706,8 +706,8 @@
       "time_615": "09:15 AM IST",
       "time_exit": "11:47 AM IST",
       "symbol": "NATURALGAS",
-      "name": "Natural Gas",
-      "lot_size": 1250,
+      "name": "Natural Gas Mini",
+      "lot_size": 250,
       "event_context": "MCX Open Gap (+1.49%) | CPR: 1.03%",
       "suggestion_6pm": {
         "status": "MORNING_GAP_TRADE",
@@ -721,19 +721,19 @@
         "checked": true,
         "status": "GAP_FADE_ENTERED",
         "price_615": 292.7,
-        "action_taken": "Entered SELL 1250 units @ \u20b9292.70",
+        "action_taken": "Entered SELL 250 units @ \u20b9292.70",
         "detail": "Fading opening gap up towards PDC \u20b9288.40."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 1250,
+        "quantity": 250,
         "entry_price": 292.7,
         "entry_time": "09:01 AM IST",
         "exit_price": 293.87,
         "exit_time": "11:47 AM IST",
         "pnl_points": -1.17,
-        "pnl_inr": -1462.5,
+        "pnl_inr": -292.5,
         "status": "CLOSED",
         "target": 288.4,
         "stop_loss": 293.87,
@@ -744,8 +744,8 @@
         "circuit_limit": null,
         "outcome": "WRONG",
         "badge": "Stop Loss Hit \ud83d\uded1 (11:47 AM IST)",
-        "pnl_display": "\u20b9-1,462.50",
-        "summary": "Stop-Loss Triggered \ud83d\uded1 at 11:47 AM IST. Entry: \u20b9292.70 -> Exit: \u20b9293.87 (\u20b9-1,462.50).",
+        "pnl_display": "\u20b9-292.50",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 11:47 AM IST. Entry: \u20b9292.70 -> Exit: \u20b9293.87 (-1.17 pts \u00d7 \u20b9250 = \u20b9-292.50).",
         "exit_time": "11:47 AM IST",
         "exit_trigger": "STOP_LOSS_HIT"
       }
@@ -760,8 +760,8 @@
       "time_615": "09:15 AM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "COPPER",
-      "name": "Copper",
-      "lot_size": 2500,
+      "name": "Copper Mini",
+      "lot_size": 250,
       "event_context": "MCX Open Gap (-0.06%) | CPR: 0.08%",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -811,8 +811,8 @@
       "time_615": "01:45 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "GOLD",
-      "name": "Gold",
-      "lot_size": 10,
+      "name": "Gold (10g)",
+      "lot_size": 1,
       "event_context": "London / European Open Asian Range Breakdown",
       "suggestion_6pm": {
         "status": "LONDON_BREAKDOWN",
@@ -826,19 +826,19 @@
         "checked": true,
         "status": "BREAKDOWN_ENTERED",
         "price_615": 142203.0,
-        "action_taken": "Entered SELL 10 units @ \u20b9142,203.00",
+        "action_taken": "Entered SELL 1 units @ \u20b9142,203.00",
         "detail": "London breakdown confirmed outside Asian morning range."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 10,
+        "quantity": 1,
         "entry_price": 142203.0,
         "entry_time": "01:30 PM IST",
         "exit_price": 142749.5,
         "exit_time": "06:01 PM IST",
         "pnl_points": -546.5,
-        "pnl_inr": -5465.0,
+        "pnl_inr": -546.5,
         "status": "CLOSED",
         "target": 140867.6,
         "stop_loss": 142749.5,
@@ -849,8 +849,8 @@
         "circuit_limit": null,
         "outcome": "WRONG",
         "badge": "Stop Loss Hit \ud83d\uded1 (06:01 PM IST)",
-        "pnl_display": "\u20b9-5,465.00",
-        "summary": "Stop-Loss Triggered \ud83d\uded1 at 06:01 PM IST. Entry: \u20b9142,203.00 -> Exit: \u20b9142,749.50 (-546.50 pts \u00d7 \u20b910 = \u20b9-5,465.00).",
+        "pnl_display": "\u20b9-546.50",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 06:01 PM IST. Entry: \u20b9142,203.00 -> Exit: \u20b9142,749.50 (\u20b9-546.50).",
         "exit_time": "06:01 PM IST",
         "exit_trigger": "STOP_LOSS_HIT"
       }
@@ -865,8 +865,8 @@
       "time_615": "01:45 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "SILVER",
-      "name": "Silver",
-      "lot_size": 5,
+      "name": "Silver Micro",
+      "lot_size": 1,
       "event_context": "London / European Open Asian Range Breakdown",
       "suggestion_6pm": {
         "status": "LONDON_BREAKDOWN",
@@ -880,19 +880,19 @@
         "checked": true,
         "status": "BREAKDOWN_ENTERED",
         "price_615": 191779.0,
-        "action_taken": "Entered SELL 5 units @ \u20b9191,779.00",
+        "action_taken": "Entered SELL 1 units @ \u20b9191,779.00",
         "detail": "London breakdown confirmed outside Asian morning range."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 5,
+        "quantity": 1,
         "entry_price": 191779.0,
         "entry_time": "01:30 PM IST",
         "exit_price": 193355.5,
         "exit_time": "03:31 PM IST",
         "pnl_points": -1576.5,
-        "pnl_inr": -7882.5,
+        "pnl_inr": -1576.5,
         "status": "CLOSED",
         "target": 187101.2,
         "stop_loss": 193355.5,
@@ -903,8 +903,8 @@
         "circuit_limit": null,
         "outcome": "WRONG",
         "badge": "Stop Loss Hit \ud83d\uded1 (03:31 PM IST)",
-        "pnl_display": "\u20b9-7,882.50",
-        "summary": "Stop-Loss Triggered \ud83d\uded1 at 03:31 PM IST. Entry: \u20b9191,779.00 -> Exit: \u20b9193,355.50 (-1576.50 pts \u00d7 \u20b95 = \u20b9-7,882.50).",
+        "pnl_display": "\u20b9-1,576.50",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 03:31 PM IST. Entry: \u20b9191,779.00 -> Exit: \u20b9193,355.50 (\u20b9-1,576.50).",
         "exit_time": "03:31 PM IST",
         "exit_trigger": "STOP_LOSS_HIT"
       }
@@ -919,8 +919,8 @@
       "time_615": "01:45 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "COPPER",
-      "name": "Copper",
-      "lot_size": 2500,
+      "name": "Copper Mini",
+      "lot_size": 250,
       "event_context": "London / European Open Asian Range Breakdown",
       "suggestion_6pm": {
         "status": "LONDON_BREAKDOWN",
@@ -934,19 +934,19 @@
         "checked": true,
         "status": "BREAKDOWN_ENTERED",
         "price_615": 1391.7,
-        "action_taken": "Entered SELL 2500 units @ \u20b91,391.70",
+        "action_taken": "Entered SELL 250 units @ \u20b91,391.70",
         "detail": "London breakdown confirmed outside Asian morning range."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 2500,
+        "quantity": 250,
         "entry_price": 1391.7,
         "entry_time": "01:30 PM IST",
         "exit_price": 1395.67,
         "exit_time": "02:26 PM IST",
         "pnl_points": -3.97,
-        "pnl_inr": -9925.0,
+        "pnl_inr": -992.5,
         "status": "CLOSED",
         "target": 1379.95,
         "stop_loss": 1395.67,
@@ -957,8 +957,8 @@
         "circuit_limit": null,
         "outcome": "WRONG",
         "badge": "Stop Loss Hit \ud83d\uded1 (02:26 PM IST)",
-        "pnl_display": "\u20b9-9,925.00",
-        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:26 PM IST. Entry: \u20b91,391.70 -> Exit: \u20b91,395.67 (-3.97 pts \u00d7 \u20b92,500 = \u20b9-9,925.00).",
+        "pnl_display": "\u20b9-992.50",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:26 PM IST. Entry: \u20b91,391.70 -> Exit: \u20b91,395.67 (-3.97 pts \u00d7 \u20b9250 = \u20b9-992.50).",
         "exit_time": "02:26 PM IST",
         "exit_trigger": "STOP_LOSS_HIT"
       }
@@ -973,8 +973,8 @@
       "time_615": "09:15 AM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "GOLD",
-      "name": "Gold",
-      "lot_size": 10,
+      "name": "Gold (10g)",
+      "lot_size": 1,
       "event_context": "Normal Open (-0.00%) | CPR: 0.06%",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -1022,8 +1022,8 @@
       "time_615": "09:15 AM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "SILVER",
-      "name": "Silver",
-      "lot_size": 5,
+      "name": "Silver Micro",
+      "lot_size": 1,
       "event_context": "Normal Open (-0.56%) | CPR: 0.48%",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -1071,8 +1071,8 @@
       "time_615": "09:15 AM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
-      "name": "Crude Oil",
-      "lot_size": 50,
+      "name": "Crude Oil Mini",
+      "lot_size": 10,
       "event_context": "MCX Open Gap (-1.25%) | CPR: 0.72%",
       "suggestion_6pm": {
         "status": "MORNING_GAP_TRADE",
@@ -1086,19 +1086,19 @@
         "checked": true,
         "status": "GAP_FADE_ENTERED",
         "price_615": 9601.0,
-        "action_taken": "Entered BUY 50 units @ \u20b99,601.00",
+        "action_taken": "Entered BUY 10 units @ \u20b99,601.00",
         "detail": "Fading opening gap down towards PDC \u20b99,723.00."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 50,
+        "quantity": 10,
         "entry_price": 9601.0,
         "entry_time": "09:01 AM IST",
         "exit_price": 9723.0,
         "exit_time": "12:41 PM IST",
         "pnl_points": 122.0,
-        "pnl_inr": 6100.0,
+        "pnl_inr": 1220.0,
         "status": "CLOSED",
         "target": 9723.0,
         "stop_loss": 9562.6
@@ -1108,8 +1108,8 @@
         "circuit_limit": null,
         "outcome": "CORRECT",
         "badge": "Target Achieved \ud83c\udfaf",
-        "pnl_display": "+\u20b96,100.00",
-        "summary": "Target Achieved \ud83c\udfaf at 12:41 PM IST. Entry: \u20b99,601.00 -> Exit: \u20b99,723.00 (+\u20b96,100.00)."
+        "pnl_display": "+\u20b91,220.00",
+        "summary": "Target Achieved \ud83c\udfaf at 12:41 PM IST. Entry: \u20b99,601.00 -> Exit: \u20b99,723.00 (+\u20b91,220.00)."
       }
     },
     {
@@ -1122,8 +1122,8 @@
       "time_615": "09:15 AM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "NATURALGAS",
-      "name": "Natural Gas",
-      "lot_size": 1250,
+      "name": "Natural Gas Mini",
+      "lot_size": 250,
       "event_context": "Normal Open (-0.60%) | CPR: 0.38%",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -1171,8 +1171,8 @@
       "time_615": "09:15 AM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "COPPER",
-      "name": "Copper",
-      "lot_size": 2500,
+      "name": "Copper Mini",
+      "lot_size": 250,
       "event_context": "Normal Open (+0.46%) | CPR: 0.20%",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -1220,8 +1220,8 @@
       "time_615": "06:15 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "NATURALGAS",
-      "name": "Natural Gas",
-      "lot_size": 1250,
+      "name": "Natural Gas Mini",
+      "lot_size": 250,
       "event_context": "US Pit Open Lower Circuit Test (15-Min Rule Enforced)",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -1232,31 +1232,31 @@
         "target": 252.4
       },
       "check_615": {
-        "checked": false,
-        "status": "PENDING_615",
-        "price_615": null,
-        "action_taken": "Awaiting 6:15 PM candle close verification...",
-        "detail": "Action will be triggered dynamically at 6:15 PM IST."
+        "checked": true,
+        "status": "CONFIRMATION_EXPIRED",
+        "price_615": 248.4,
+        "action_taken": "15-minute window closed without confirmed reversal trigger. STOOD ASIDE.",
+        "detail": "Action was not confirmed at 6:15 PM. Order was not executed, preserving 100% capital."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "BUY",
-        "quantity": 1250,
+        "action": "STAND_ASIDE",
+        "quantity": 0,
         "entry_price": null,
         "entry_time": null,
         "exit_price": null,
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "PENDING_615"
+        "status": "CLOSED"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 249.6,
         "circuit_limit": 237.26,
-        "outcome": "PENDING",
-        "badge": "Awaiting 6:15 PM \u23f3",
-        "pnl_display": "Pending Confirmation",
-        "summary": "15-minute confirmation check scheduled for 6:15 PM IST."
+        "outcome": "PROTECTED",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -1269,8 +1269,8 @@
       "time_615": "08:15 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "NATURALGAS",
-      "name": "Natural Gas",
-      "lot_size": 1250,
+      "name": "Natural Gas Mini",
+      "lot_size": 250,
       "event_context": "US Evening Lower Circuit Band Test",
       "suggestion_6pm": {
         "status": "EVENING_CIRCUIT",
@@ -1284,19 +1284,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 243.3,
-        "action_taken": "Entered BUY 1250 units @ \u20b9243.30",
+        "action_taken": "Entered BUY 250 units @ \u20b9243.30",
         "detail": "Entered at 8:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 1250,
+        "quantity": 250,
         "entry_price": 243.3,
         "entry_time": "08:00 PM IST",
         "exit_price": 249.6,
         "exit_time": "11:30 PM IST",
         "pnl_points": 6.3,
-        "pnl_inr": 7875.0,
+        "pnl_inr": 1575.0,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1304,7 +1304,7 @@
         "circuit_limit": 237.26,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b97,875.00",
+        "pnl_display": "+\u20b91,575.00",
         "summary": "11:30 PM session close exit. Entry: \u20b9243.30 -> Exit: \u20b9249.60 (+6.30 pts | +\u20b97,875.00)."
       }
     },
@@ -1318,8 +1318,8 @@
       "time_615": "N/A",
       "time_exit": "11:30 PM IST",
       "symbol": "NATURALGAS",
-      "name": "Natural Gas",
-      "lot_size": 1250,
+      "name": "Natural Gas Mini",
+      "lot_size": 250,
       "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
       "suggestion_6pm": {
         "status": "DIRECT_FADE",
@@ -1333,19 +1333,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 241.6,
-        "action_taken": "Entered SELL 1250 units @ \u20b9241.60",
+        "action_taken": "Entered SELL 250 units @ \u20b9241.60",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 1250,
+        "quantity": 250,
         "entry_price": 241.6,
         "entry_time": "06:00 PM IST",
         "exit_price": 249.6,
         "exit_time": "11:30 PM IST",
         "pnl_points": -8.0,
-        "pnl_inr": -10000.0,
+        "pnl_inr": -2000.0,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1353,7 +1353,7 @@
         "circuit_limit": 267.54,
         "outcome": "WRONG",
         "badge": "Wrong \u274c",
-        "pnl_display": "\u20b9-10,000.00",
+        "pnl_display": "\u20b9-2,000.00",
         "summary": "11:30 PM session close exit. Entry: \u20b9241.60 -> Exit: \u20b9249.60 (-8.00 pts | \u20b9-10,000.00)."
       }
     },
@@ -1367,8 +1367,8 @@
       "time_615": "01:45 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "GOLD",
-      "name": "Gold",
-      "lot_size": 10,
+      "name": "Gold (10g)",
+      "lot_size": 1,
       "event_context": "London / European Open Asian Range Breakout",
       "suggestion_6pm": {
         "status": "LONDON_BREAKOUT",
@@ -1382,19 +1382,19 @@
         "checked": true,
         "status": "BREAKOUT_ENTERED",
         "price_615": 142734.0,
-        "action_taken": "Entered BUY 10 units @ \u20b9142,734.00",
+        "action_taken": "Entered BUY 1 units @ \u20b9142,734.00",
         "detail": "London breakout confirmed outside Asian morning range."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 10,
+        "quantity": 1,
         "entry_price": 142734.0,
         "entry_time": "01:30 PM IST",
         "exit_price": 143002.0,
         "exit_time": "11:30 PM IST",
         "pnl_points": 268.0,
-        "pnl_inr": 2680.0,
+        "pnl_inr": 268.0,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1402,7 +1402,7 @@
         "circuit_limit": null,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b92,680.00",
+        "pnl_display": "+\u20b9268.00",
         "summary": "11:30 PM session close exit. Entry: \u20b9142,734.00 -> Exit: \u20b9143,002.00 (+268.00 pts | +\u20b92,680.00)."
       }
     },
@@ -1416,8 +1416,8 @@
       "time_615": "01:45 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "COPPER",
-      "name": "Copper",
-      "lot_size": 2500,
+      "name": "Copper Mini",
+      "lot_size": 250,
       "event_context": "London / European Open Asian Range Breakout",
       "suggestion_6pm": {
         "status": "LONDON_BREAKOUT",
@@ -1431,19 +1431,19 @@
         "checked": true,
         "status": "BREAKOUT_ENTERED",
         "price_615": 1389.25,
-        "action_taken": "Entered BUY 2500 units @ \u20b91,389.25",
+        "action_taken": "Entered BUY 250 units @ \u20b91,389.25",
         "detail": "London breakout confirmed outside Asian morning range."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 2500,
+        "quantity": 250,
         "entry_price": 1389.25,
         "entry_time": "01:30 PM IST",
         "exit_price": 1392.8,
         "exit_time": "11:30 PM IST",
         "pnl_points": 3.55,
-        "pnl_inr": 8875.0,
+        "pnl_inr": 887.5,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1451,7 +1451,7 @@
         "circuit_limit": null,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b98,875.00",
+        "pnl_display": "+\u20b9887.50",
         "summary": "11:30 PM session close exit. Entry: \u20b91,389.25 -> Exit: \u20b91,392.80 (+3.55 pts | +\u20b98,875.00)."
       }
     },
@@ -1462,8 +1462,8 @@
       "time_615": "N/A",
       "time_exit": "11:30 PM IST",
       "symbol": "NATURALGAS",
-      "name": "Natural Gas",
-      "lot_size": 1250,
+      "name": "Natural Gas Mini",
+      "lot_size": 250,
       "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
       "suggestion_6pm": {
         "status": "DIRECT_FADE",
@@ -1477,19 +1477,19 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 3.16,
-        "action_taken": "Entered SELL 1250 units @ \u20b93.16",
+        "action_taken": "Entered SELL 250 units @ \u20b93.16",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 1250,
+        "quantity": 250,
         "entry_price": 3.16,
         "entry_time": "06:00 PM IST",
         "exit_price": 3.05,
         "exit_time": "11:30 PM IST",
         "pnl_points": 0.11,
-        "pnl_inr": 137.5,
+        "pnl_inr": 27.5,
         "status": "CLOSED"
       },
       "eod_outcome": {
@@ -1497,7 +1497,7 @@
         "circuit_limit": 2.96,
         "outcome": "CORRECT",
         "badge": "Correct \u2705",
-        "pnl_display": "+\u20b9137.50",
+        "pnl_display": "+\u20b927.50",
         "summary": "Pre-6 PM fade captured +0.11 pts retracement into 11:30 PM session close (0.11 pts \u00d7 1,250 = +\u20b9137.50)."
       }
     },
@@ -1508,8 +1508,8 @@
       "time_615": "06:15 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "SILVER",
-      "name": "Silver",
-      "lot_size": 5,
+      "name": "Silver Micro",
+      "lot_size": 1,
       "event_context": "US Pit Open Lower Band Test (Knife-Catch Warning)",
       "suggestion_6pm": {
         "status": "WAIT_615",
@@ -1557,8 +1557,8 @@
       "time_615": "01:45 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
-      "name": "Crude Oil",
-      "lot_size": 50,
+      "name": "Crude Oil Mini",
+      "lot_size": 10,
       "event_context": "Range-Bound Asian Range [\u20b99,595.00 \u2013 \u20b99,763.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -1606,8 +1606,8 @@
       "time_615": "01:45 PM IST",
       "time_exit": "11:30 PM IST",
       "symbol": "NATURALGAS",
-      "name": "Natural Gas",
-      "lot_size": 1250,
+      "name": "Natural Gas Mini",
+      "lot_size": 250,
       "event_context": "Range-Bound Asian Range [\u20b9244.00 \u2013 \u20b9248.70]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
@@ -1646,7 +1646,7 @@
       }
     }
   ],
-  "last_updated": "28 Oct 2026, 11:16 PM IST",
+  "last_updated": "28 Oct 2026, 11:35 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000.0,
   "summary": {
@@ -1654,15 +1654,15 @@
     "executed_count": 12,
     "correct_count": 5,
     "wrong_count": 7,
-    "protected_count": 18,
+    "protected_count": 20,
     "win_rate_pct": 41.7,
-    "total_pnl_inr": -22792.5,
-    "avg_trade_pnl_inr": -1899.38,
-    "active_trades_count": 2,
+    "total_pnl_inr": -2995.0,
+    "avg_trade_pnl_inr": -249.58,
+    "active_trades_count": 0,
     "starting_cash_inr": 1000000.0,
-    "current_cash_inr": 977207.5,
-    "used_margin_inr": 0,
-    "available_cash_inr": 977207.5,
-    "net_worth_inr": 977207.5
+    "current_cash_inr": 997005.0,
+    "used_margin_inr": 0.0,
+    "available_cash_inr": 997005.0,
+    "net_worth_inr": 997005.0
   }
 }

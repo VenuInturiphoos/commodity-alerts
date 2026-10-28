@@ -846,9 +846,16 @@ def run_auto_session(force=False):
         print("Time is >= 8:00 PM IST and 8 PM advisory not sent today. Dispatching 8 PM Advisory.")
         return generate_and_send_8pm_advisory(force=force)
 
-    # 3. 6:15 PM IST or later -> 6:15 Confirmation check (if 6 PM was already sent)
-    if cur_hm >= (18, 15) and sent_6pm and cur_hm < (19, 30):
-        print("Time is in 6:15 PM - 7:30 PM IST window with 6 PM already dispatched. Running 6:15 Confirmation.")
+    # 3. 6:15 PM IST or later -> 6:15 Confirmation check (if 6 PM was already sent or trades are pending confirmation)
+    has_pending_615 = False
+    try:
+        from advisory_tracker import load_tracker
+        has_pending_615 = any(t.get('check_615', {}).get('status') == 'PENDING_615' for t in load_tracker().get('trades', []))
+    except Exception:
+        pass
+
+    if cur_hm >= (18, 15) and (sent_6pm or has_pending_615) and cur_hm < (20, 0):
+        print("Time is in 6:15 PM - 8:00 PM IST window with 6 PM dispatched or trades pending confirmation. Running 6:15 Confirmation.")
         with open('config.json', 'r') as f:
             cfg = json.load(f)
         chk = PriceChecker(cfg)

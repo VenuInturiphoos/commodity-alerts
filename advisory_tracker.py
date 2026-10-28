@@ -6,21 +6,48 @@ from datetime import datetime
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'advisory_trades_tracker.json')
 USER_ACCOUNT = "venu.photos1@gmail.com"
 
+# MCX Mini / Micro Trading Lots (Personal Account Optimization)
 LOT_SIZES = {
-    'CRUDEOIL': 100,    # 100 bbl (Standard MCX Contract)
-    'NATURALGAS': 1250, # 1250 mmBtu
-    'SILVER': 5,        # 5 units (Silver Mini / 5 kg)
-    'COPPER': 2500,     # 2500 kg
-    'GOLD': 10          # 10 units (Gold Mini / 10 grams)
+    'CRUDEOIL': 10,     # Crude Oil Mini (10 bbl) - 1 pt = ₹10 (instead of 100 bbl)
+    'CRUDEOILM': 10,    # Crude Oil Mini (10 bbl) - 1 pt = ₹10
+    'NATURALGAS': 250,  # Natural Gas Mini (250 mmBtu) - 1 pt = ₹250 (instead of 1250 mmBtu)
+    'NATURALGASM': 250, # Natural Gas Mini (250 mmBtu) - 1 pt = ₹250
+    'SILVER': 1,        # Silver Micro (1 kg) - 1 pt = ₹1 (instead of 5 kg or 30 kg)
+    'SILVERMIC': 1,     # Silver Micro (1 kg) - 1 pt = ₹1
+    'GOLD': 1,          # Gold Ten (10 grams) - 1 pt = ₹1 (instead of 10 or 100 grams)
+    'GOLDM': 1,         # Gold Ten (10 grams) - 1 pt = ₹1
+    'GOLDTEN': 1,       # Gold Ten (10 grams) - 1 pt = ₹1
+    'COPPER': 250,      # Copper Mini (250 kg) - 1 pt = ₹250 (instead of 2500 kg)
+    'COPPERM': 250      # Copper Mini (250 kg) - 1 pt = ₹250
 }
 
 # MCX Standard Initial Margin Requirements (SPAN + Exposure Margin)
 MARGIN_RATES = {
     'CRUDEOIL': 0.20,    # 20% margin
+    'CRUDEOILM': 0.20,
     'NATURALGAS': 0.20,  # 20% margin
-    'SILVER': 0.12,      # 12% margin (Mini)
+    'NATURALGASM': 0.20,
+    'SILVER': 0.12,      # 12% margin (Micro/Mini)
+    'SILVERMIC': 0.12,
     'COPPER': 0.15,      # 15% margin
-    'GOLD': 0.10         # 10% margin (Mini)
+    'COPPERM': 0.15,
+    'GOLD': 0.10,        # 10% margin (10g / Mini)
+    'GOLDM': 0.10,
+    'GOLDTEN': 0.10
+}
+
+COMMODITY_DISPLAY_NAMES = {
+    'CRUDEOIL': 'Crude Oil Mini',
+    'CRUDEOILM': 'Crude Oil Mini',
+    'NATURALGAS': 'Natural Gas Mini',
+    'NATURALGASM': 'Natural Gas Mini',
+    'SILVER': 'Silver Micro',
+    'SILVERMIC': 'Silver Micro',
+    'GOLD': 'Gold (10g)',
+    'GOLDM': 'Gold (10g)',
+    'GOLDTEN': 'Gold (10g)',
+    'COPPER': 'Copper Mini',
+    'COPPERM': 'Copper Mini'
 }
 
 DEFAULT_STARTING_CASH = 1000000.0  # ₹10,00,000 (10 Lakhs Virtual Cash)
@@ -64,6 +91,27 @@ def load_tracker():
 
 def save_tracker(tracker_data):
     trades = tracker_data.get('trades', [])
+    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+    today_str = now_dt.strftime('%d %b %Y')
+
+    # Self-healing: Auto-resolve any past-date trades stuck in pending state
+    for t in trades:
+        if t.get('date') != today_str and (t.get('paper_trade', {}).get('status') in ['PENDING_615', 'PENDING_LIMIT'] or t.get('eod_outcome', {}).get('outcome') == 'PENDING'):
+            pt = t.setdefault('paper_trade', {})
+            c15 = t.setdefault('check_615', {})
+            eod = t.setdefault('eod_outcome', {})
+            if pt.get('status') in ['PENDING_615', 'PENDING_LIMIT'] or pt.get('entry_price') is None:
+                c15['checked'] = True
+                c15['status'] = 'CONFIRMATION_EXPIRED'
+                c15['action_taken'] = 'Confirmation window elapsed without executed entry. STOOD ASIDE.'
+                pt['action'] = 'STAND_ASIDE'
+                pt['quantity'] = 0
+                pt['status'] = 'CLOSED'
+                pt['pnl_inr'] = 0.0
+                eod['outcome'] = 'PROTECTED'
+                eod['badge'] = 'Avoided Trap 🛡️'
+                eod['pnl_display'] = '₹0.00 (Protected)'
+                eod['summary'] = '15-minute confirmation check elapsed without executed entry. 100% capital protected in cash.'
     
     # Strictly distinguish executed positions from protected / filtered signals
     executed_trades = [t for t in trades if t.get('paper_trade', {}).get('action') in ['BUY', 'SELL'] and t.get('eod_outcome', {}).get('outcome') in ['CORRECT', 'WRONG']]
@@ -74,10 +122,9 @@ def save_tracker(tracker_data):
     
     protected_count = sum(1 for t in trades if t.get('eod_outcome', {}).get('outcome') == 'PROTECTED' or t.get('paper_trade', {}).get('action') == 'STAND_ASIDE')
     total_pnl = sum(t.get('paper_trade', {}).get('pnl_inr', 0.0) for t in trades if t.get('paper_trade', {}).get('status') == 'CLOSED')
-    active_count = sum(1 for t in trades if t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_615'])
+    active_count = sum(1 for t in trades if t.get('paper_trade', {}).get('status') == 'ACTIVE')
     
     cash_info = get_cash_and_margin(tracker_data)
-    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     tracker_data['last_updated'] = now_dt.strftime('%d %b %Y, %I:%M %p IST')
     tracker_data['account_email'] = USER_ACCOUNT
     tracker_data['starting_cash_inr'] = cash_info['starting_cash']
@@ -128,9 +175,16 @@ def record_live_9am_advisory(commodities_list):
     existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str and ('09:00' in t.get('time_trigger', '') or '09:01' in t.get('time_trigger', ''))}
     new_entries = []
 
+    seen_bases = set()
     for item in commodities_list:
-        sym = item['symbol']
-        name = item['name']
+        raw_sym = item['symbol']
+        base = raw_sym.replace('MIC', '').rstrip('M')
+        if base in seen_bases:
+            continue
+        seen_bases.add(base)
+
+        sym = raw_sym
+        name = COMMODITY_DISPLAY_NAMES.get(sym, item['name'])
         cur_p = item['current_price']
         day_h = item.get('day_high', cur_p)
         day_l = item.get('day_low', cur_p)
@@ -379,9 +433,16 @@ def record_live_130pm_advisory(commodities_list):
     existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str}
     new_entries = []
 
+    seen_bases = set()
     for item in commodities_list:
-        sym = item['symbol']
-        name = item['name']
+        raw_sym = item['symbol']
+        base = raw_sym.replace('MIC', '').rstrip('M')
+        if base in seen_bases:
+            continue
+        seen_bases.add(base)
+
+        sym = raw_sym
+        name = COMMODITY_DISPLAY_NAMES.get(sym, item['name'])
         cur_p = item['current_price']
         day_h = item.get('day_high', cur_p)
         day_l = item.get('day_low', cur_p)
@@ -652,9 +713,16 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
     existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str}
     new_entries = []
 
+    seen_bases = set()
     for item in commodities_list:
-        sym = item['symbol']
-        name = item['name']
+        raw_sym = item['symbol']
+        base = raw_sym.replace('MIC', '').rstrip('M')
+        if base in seen_bases:
+            continue
+        seen_bases.add(base)
+
+        sym = raw_sym
+        name = COMMODITY_DISPLAY_NAMES.get(sym, item['name'])
         cur_p = item['current_price']
         p_close = item['prev_close']
         chg_pct = item['change_pct']
@@ -859,7 +927,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
 
     # Priority 1: Wednesday EIA Crude Oil Special
     if day_name == 'Wednesday':
-        crude = next((c for c in commodities_list if c['symbol'] == 'CRUDEOIL'), None)
+        crude = next((c for c in commodities_list if c['symbol'] in ['CRUDEOILM', 'CRUDEOIL']), None)
         if crude:
             trade_id = f"ADV-{today_str.replace(' ', '')}-2000-CRUDEOIL"
             if trade_id not in existing_today_ids:
@@ -868,7 +936,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 chg = crude['change_pct']
                 lc = crude['lower_circuit']
                 uc = crude['upper_circuit']
-                lot_size = LOT_SIZES.get('CRUDEOIL', 100)
+                lot_size = LOT_SIZES.get('CRUDEOILM', 10)
 
                 # Fade overreaction if near circuit or spike > 1.2%
                 if 'NEAR' in crude['status'] or 'HIT' in crude['status'] or abs(chg) >= 1.5:
@@ -885,7 +953,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         "time_615": "08:15 PM IST",
                         "time_exit": "11:30 PM IST",
                         "symbol": "CRUDEOIL",
-                        "name": "Crude Oil",
+                        "name": "Crude Oil Mini",
                         "lot_size": lot_size,
                         "event_context": "Wednesday EIA Petroleum Inventory Spike Fade",
                         "suggestion_6pm": {
@@ -928,7 +996,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
 
     # Priority 2: Thursday EIA Natural Gas Special
     elif day_name == 'Thursday':
-        natgas = next((c for c in commodities_list if c['symbol'] == 'NATURALGAS'), None)
+        natgas = next((c for c in commodities_list if c['symbol'] in ['NATURALGASM', 'NATURALGAS']), None)
         if natgas:
             trade_id = f"ADV-{today_str.replace(' ', '')}-2000-NATURALGAS"
             if trade_id not in existing_today_ids:
@@ -937,7 +1005,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 chg = natgas['change_pct']
                 lc = natgas['lower_circuit']
                 uc = natgas['upper_circuit']
-                lot_size = LOT_SIZES.get('NATURALGAS', 1250)
+                lot_size = LOT_SIZES.get('NATURALGASM', 250)
 
                 if 'NEAR' in natgas['status'] or 'HIT' in natgas['status'] or abs(chg) >= 2.0:
                     action = "BUY" if chg < 0 else "SELL"
@@ -953,7 +1021,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         "time_615": "08:15 PM IST",
                         "time_exit": "11:30 PM IST",
                         "symbol": "NATURALGAS",
-                        "name": "Natural Gas",
+                        "name": "Natural Gas Mini",
                         "lot_size": lot_size,
                         "event_context": "Thursday EIA Storage Report Spike Fade",
                         "suggestion_6pm": {
@@ -1445,7 +1513,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
 def exit_and_evaluate_eod_trades(checker, alerter):
     """
     Called at 11:15 PM – 11:30 PM IST.
-    Squares off all ACTIVE paper trades for venu.photos1@gmail.com, records final P&L and outcome.
+    Squares off all ACTIVE paper trades for venu.photos1@gmail.com, records final P&L and outcome,
+    and automatically expires any unconfirmed / pending limit setups so no trades remain stuck.
     """
     tracker = load_tracker()
     trades = tracker.get('trades', [])
@@ -1453,10 +1522,38 @@ def exit_and_evaluate_eod_trades(checker, alerter):
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     today_str = now_dt.strftime('%d %b %Y')
     
+    # 1. Sweep and Expire Any Unconfirmed or Pending Limit Orders (15-Min window lapsed)
+    pending_to_expire = [
+        t for t in trades 
+        if t.get('paper_trade', {}).get('status') in ['PENDING_615', 'PENDING_LIMIT', 'PENDING_615_CHECK']
+        or (t.get('date') == today_str and t.get('eod_outcome', {}).get('outcome') == 'PENDING' and t.get('paper_trade', {}).get('status') != 'ACTIVE')
+    ]
+    for pt_trade in pending_to_expire:
+        pt = pt_trade.setdefault('paper_trade', {})
+        c15 = pt_trade.setdefault('check_615', {})
+        eod = pt_trade.setdefault('eod_outcome', {})
+        
+        c15['checked'] = True
+        c15['status'] = 'CONFIRMATION_EXPIRED'
+        c15['action_taken'] = 'Confirmation window elapsed without executed entry. STOOD ASIDE.'
+        pt['action'] = 'STAND_ASIDE'
+        pt['quantity'] = 0
+        pt['entry_price'] = None
+        pt['exit_price'] = None
+        pt['pnl_inr'] = 0.0
+        pt['status'] = 'CLOSED'
+        
+        eod['outcome'] = 'PROTECTED'
+        eod['badge'] = 'Avoided Trap 🛡️'
+        eod['pnl_display'] = '₹0.00 (Protected)'
+        eod['summary'] = '15-minute confirmation check elapsed without executed entry. 100% capital protected in cash.'
+
+    # 2. Square off ACTIVE Paper Trades
     active_trades = [t for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('status') == 'ACTIVE']
     if not active_trades:
-        print("No active advisory paper trades to exit tonight.")
-        return False
+        print(f"No active advisory paper trades to exit tonight ({len(pending_to_expire)} unconfirmed setups expired to Protected).")
+        save_tracker(tracker)
+        return bool(pending_to_expire)
 
     circuits_res = checker.generate_circuits_data()
     commodities_map = {c['symbol']: c for c in circuits_res.get('commodities', [])} if circuits_res else {}
@@ -1510,7 +1607,7 @@ def exit_and_evaluate_eod_trades(checker, alerter):
             f"<b>📊 TODAY'S 6 PM ADVISORY RESULTS:</b>\n"
             + "\n".join(summary_lines) + "\n\n"
             f"💰 <b>Total Day Realized P&L</b>: <b>{'+' if total_day_pnl >= 0 else ''}₹{total_day_pnl:,.2f}</b>\n"
-            f"📈 Cumulative Advisory Win Rate: <b>{tracker['summary']['win_rate_pct']}%</b> ({tracker['summary']['correct_count']}/{tracker['summary']['evaluated_count']})\n\n"
+            f"📈 Cumulative Advisory Win Rate: <b>{tracker['summary']['win_rate_pct']}%</b> ({tracker['summary']['correct_count']}/{tracker['summary'].get('executed_count', 0)})\n\n"
             f"🌐 <b>Interactive Tracker</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
         )
         alerter.send_alert(f"🏁 [11:30 PM SETTLEMENT] Daily 6 PM Advisory Results ({today_str})", body)
