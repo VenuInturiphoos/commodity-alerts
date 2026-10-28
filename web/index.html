@@ -4811,7 +4811,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return analyzeSingleCommodity(commData);
         }
 
-        function analyzeSingleCommodity(c) {
+        function computeCommodityTradePlan(c) {
             const spec = COPILOT_SPECS[c.symbol] || { name: c.name, lot: 1, unit: 'unit', icon: '📊' };
             const curP = Number(c.current_price) || 0;
             const prevC = Number(c.prev_close) || curP;
@@ -4841,32 +4841,36 @@ document.addEventListener('DOMContentLoaded', () => {
             const distLc = c.dist_to_lc_pct !== undefined ? Number(c.dist_to_lc_pct) : 5.0;
 
             // Strategy Decision Logic
-            let action = "STAND ASIDE";
+            let action = "STAY BACK";
             let actionType = "standaside";
+            let verdict = "STAY BACK";
             let modelName = "Neutral Range Oscillation";
             let rationale = "";
+            let briefAnalysis = "";
             let entryZone = `₹${formatInr(curP)}`;
             let stopLoss = curP;
             let target1 = curP;
             let target2 = curP;
-            let slPoints = 0;
-            let tgtPoints = 0;
 
             // 1. Extreme Circuit Limit Ceiling/Floor Guard
             if (distUc <= 1.2) {
-                action = "STAND ASIDE / CEILING TEST ⚠️";
+                action = "STAY BACK / CEILING TEST ⚠️";
                 actionType = "standaside";
+                verdict = "STAY BACK";
                 modelName = "Upper Circuit Resistance Lock";
-                rationale = `Trading within ${distUc.toFixed(2)}% of the Upper Circuit limit (₹${formatInr(c.upper_circuit)}). Asymmetric downside risk; buying into the ceiling is prohibited.`;
+                rationale = `Trading within ${distUc.toFixed(2)}% of Upper Circuit limit (₹${formatInr(c.upper_circuit)}). Asymmetric downside risk; buying into ceiling resistance is strictly prohibited.`;
+                briefAnalysis = `Testing Upper Circuit ceiling (${distUc.toFixed(1)}% away). Stay back; upside is capped by exchange circuit limits.`;
                 entryZone = "Wait for pullback";
                 stopLoss = c.upper_circuit;
                 target1 = pivot;
                 target2 = s1;
             } else if (distLc <= 1.2) {
-                action = "STAND ASIDE / FLOOR TEST ⚠️";
+                action = "STAY BACK / FLOOR TEST ⚠️";
                 actionType = "standaside";
+                verdict = "STAY BACK";
                 modelName = "Lower Circuit Floor Lock";
-                rationale = `Trading within ${distLc.toFixed(2)}% of the Lower Circuit limit (₹${formatInr(c.lower_circuit)}). Do not knife-catch; await a confirmed 15-minute floor rejection candle.`;
+                rationale = `Trading within ${distLc.toFixed(2)}% of Lower Circuit limit (₹${formatInr(c.lower_circuit)}). Do not knife-catch; await a confirmed 15-minute floor rejection candle.`;
+                briefAnalysis = `Testing Lower Circuit floor (${distLc.toFixed(1)}% away). Stay back; knife-catching prohibited until support confirms.`;
                 entryZone = "Wait for confirmed bounce";
                 stopLoss = c.lower_circuit;
                 target1 = pivot;
@@ -4876,8 +4880,10 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (gapPct >= 0.75 && isWideCPR) {
                 action = "SELL / GAP FADE (PULLBACK)";
                 actionType = "sell";
+                verdict = "SELL";
                 modelName = "Wide CPR Mean-Reverting Gap Fade";
                 rationale = `Significant opening gap up (+${gapPct.toFixed(2)}%) into a Wide CPR (${cprWidthPct.toFixed(2)}%). High statistical probability of mean-reversion pullback towards Previous Day Close (₹${formatInr(prevC)}).`;
+                briefAnalysis = `Opening gap up (+${gapPct.toFixed(1)}%) with Wide CPR indicates overextended opening momentum; high probability pullback towards PDC ₹${formatInr(prevC)}.`;
                 entryZone = `₹${formatInr(curP)} - ₹${formatInr(Math.max(curP, r1))}`;
                 stopLoss = Math.round(Math.max(curP, r1) * 1.004 * 100) / 100;
                 target1 = prevC;
@@ -4885,8 +4891,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (gapPct <= -0.75 && isWideCPR) {
                 action = "BUY / GAP FADE (BOUNCE)";
                 actionType = "buy";
+                verdict = "BUY";
                 modelName = "Wide CPR Mean-Reverting Gap Bounce";
                 rationale = `Significant opening gap down (${gapPct.toFixed(2)}%) into a Wide CPR (${cprWidthPct.toFixed(2)}%). High probability bounce towards Previous Day Close (₹${formatInr(prevC)}).`;
+                briefAnalysis = `Opening gap down (${gapPct.toFixed(1)}%) into Wide CPR. Oversold opening offers favorable bounce buying towards PDC ₹${formatInr(prevC)}.`;
                 entryZone = `₹${formatInr(curP)} - ₹${formatInr(Math.min(curP, s1))}`;
                 stopLoss = Math.round(Math.min(curP, s1) * 0.996 * 100) / 100;
                 target1 = prevC;
@@ -4896,8 +4904,10 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (gapPct >= 0.75 && !isWideCPR) {
                 action = "BUY / GAP MOMENTUM";
                 actionType = "buy";
+                verdict = "BUY";
                 modelName = "Narrow CPR Trend Day Breakout";
                 rationale = `Narrow CPR (${cprWidthPct.toFixed(2)}%) opening expansion (+${gapPct.toFixed(2)}%). Institutional momentum favors continuing long towards R2.`;
+                briefAnalysis = `Narrow CPR opening breakout (+${gapPct.toFixed(1)}%) indicates a trend day. Momentum favors buying continuation towards R2.`;
                 entryZone = `₹${formatInr(curP)}`;
                 stopLoss = Math.round(Math.min(curP, pivot) * 0.996 * 100) / 100;
                 target1 = r1;
@@ -4905,8 +4915,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (gapPct <= -0.75 && !isWideCPR) {
                 action = "SELL / GAP BREAKDOWN";
                 actionType = "sell";
+                verdict = "SELL";
                 modelName = "Narrow CPR Trend Day Breakdown";
                 rationale = `Narrow CPR (${cprWidthPct.toFixed(2)}%) opening breakdown (${gapPct.toFixed(2)}%). Riding downward breakout momentum towards S2.`;
+                briefAnalysis = `Narrow CPR breakdown (${gapPct.toFixed(1)}%) indicates a strong trend sell-off. Momentum favors shorting towards S2.`;
                 entryZone = `₹${formatInr(curP)}`;
                 stopLoss = Math.round(Math.max(curP, pivot) * 1.004 * 100) / 100;
                 target1 = s1;
@@ -4914,10 +4926,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // 4. Intraday Location Relative to CPR & Pivots
             else if (curP >= cprBot && curP <= cprTop) {
-                action = "STAND ASIDE / CHOP ZONE ⏸️";
+                action = "STAY BACK / CHOP ZONE ⏸️";
                 actionType = "standaside";
+                verdict = "STAY BACK";
                 modelName = "Inside CPR Equilibrium";
-                rationale = `Price (₹${formatInr(curP)}) is oscillating inside the Central Pivot Range [₹${formatInr(cprBot)} - ₹${formatInr(cprTop)}]. This is a chop zone with no directional edge. Await a decisive 15-minute close outside CPR.`;
+                rationale = `Price (₹${formatInr(curP)}) is oscillating inside Central Pivot Range [₹${formatInr(cprBot)} - ₹${formatInr(cprTop)}]. This is a chop zone with no directional edge. Await a decisive 15-minute close outside CPR.`;
+                briefAnalysis = `Price is oscillating inside CPR chop range [₹${formatInr(cprBot)} - ₹${formatInr(cprTop)}]. Stay back; await 15m breakout before entering.`;
                 entryZone = `Breakout > ₹${formatInr(cprTop)} or Breakdown < ₹${formatInr(cprBot)}`;
                 stopLoss = pivot;
                 target1 = r1;
@@ -4926,8 +4940,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (curP >= r1) {
                     action = "BUY / R1 BREAKOUT";
                     actionType = "buy";
+                    verdict = "BUY";
                     modelName = "Above R1 Bullish Expansion";
                     rationale = `Trading above R1 resistance (₹${formatInr(r1)}) and CPR Top (₹${formatInr(cprTop)}). Strong bullish intraday structure.`;
+                    briefAnalysis = `Trading above R1 resistance (₹${formatInr(r1)}) & CPR Top. Bulls in command; buy breakouts targeting R2.`;
                     entryZone = `₹${formatInr(curP)}`;
                     stopLoss = Math.round(cprTop * 0.998 * 100) / 100;
                     target1 = r2;
@@ -4935,8 +4951,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     action = "BUY ON DIPS (Near CPR Top)";
                     actionType = "buy";
+                    verdict = "BUY";
                     modelName = "CPR Support Rebound";
                     rationale = `Price is comfortably above CPR Top (₹${formatInr(cprTop)}). Look for buying opportunities on dips towards CPR top support for an upside target of R1 (₹${formatInr(r1)}).`;
+                    briefAnalysis = `Holding above CPR Top (₹${formatInr(cprTop)}). Favour buying pullbacks towards CPR support targeting R1.`;
                     entryZone = `₹${formatInr(cprTop)} - ₹${formatInr(curP)}`;
                     stopLoss = Math.round(cprBot * 0.997 * 100) / 100;
                     target1 = r1;
@@ -4946,8 +4964,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (curP <= s1) {
                     action = "SELL / S1 BREAKDOWN";
                     actionType = "sell";
+                    verdict = "SELL";
                     modelName = "Below S1 Bearish Extension";
                     rationale = `Trading below S1 support (₹${formatInr(s1)}) and CPR Bottom (₹${formatInr(cprBot)}). Strong bearish intraday pressure.`;
+                    briefAnalysis = `Slicing below S1 support (₹${formatInr(s1)}) and CPR Bottom. Bears dominating; sell breakdowns targeting S2.`;
                     entryZone = `₹${formatInr(curP)}`;
                     stopLoss = Math.round(cprBot * 1.002 * 100) / 100;
                     target1 = s2;
@@ -4955,8 +4975,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     action = "SELL ON PULLBACK (Near CPR Bot)";
                     actionType = "sell";
+                    verdict = "SELL";
                     modelName = "CPR Resistance Rejection";
                     rationale = `Price is below CPR Bottom (₹${formatInr(cprBot)}). Favour short setups on pullbacks towards CPR bottom resistance for a target of S1 (₹${formatInr(s1)}).`;
+                    briefAnalysis = `Weakness below CPR Bottom (₹${formatInr(cprBot)}). Favour short positions on rallies towards CPR resistance targeting S1.`;
                     entryZone = `₹${formatInr(curP)} - ₹${formatInr(cprBot)}`;
                     stopLoss = Math.round(cprTop * 1.003 * 100) / 100;
                     target1 = s1;
@@ -4964,6 +4986,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            let slPoints = 0;
+            let tgtPoints = 0;
             if (actionType === 'buy') {
                 slPoints = Math.abs(curP - stopLoss);
                 tgtPoints = Math.abs(target1 - curP);
@@ -4980,6 +5004,48 @@ document.addEventListener('DOMContentLoaded', () => {
             const rrRatio = slPoints > 0 ? (tgtPoints / slPoints).toFixed(1) : '1.5';
             const chgColor = c.change_pct >= 0 ? '#34d399' : '#fb7185';
             const chgSign = c.change_pct >= 0 ? '+' : '';
+
+            return {
+                spec, curP, prevC, dayH, dayL, openP, lot,
+                pivot, bc, tc, cprTop, cprBot, cprWidthPct,
+                r1, s1, r2, s2, gapPts, gapPct, isWideCPR,
+                distUc, distLc, action, actionType, verdict, modelName,
+                rationale, briefAnalysis, entryZone, stopLoss, target1, target2,
+                slPoints, tgtPoints, riskInr, rewardInr, rrRatio,
+                chgColor, chgSign
+            };
+        }
+
+        function analyzeSingleCommodity(c) {
+            const p = computeCommodityTradePlan(c);
+            const spec = p.spec;
+            const curP = p.curP;
+            const prevC = p.prevC;
+            const gapPts = p.gapPts;
+            const lot = p.lot;
+            const pivot = p.pivot;
+            const cprTop = p.cprTop;
+            const cprBot = p.cprBot;
+            const cprWidthPct = p.cprWidthPct;
+            const isWideCPR = p.isWideCPR;
+            const r1 = p.r1;
+            const s1 = p.s1;
+            const r2 = p.r2;
+            const action = p.action;
+            const actionType = p.actionType;
+            const modelName = p.modelName;
+            const rationale = p.rationale;
+            const entryZone = p.entryZone;
+            const stopLoss = p.stopLoss;
+            const target1 = p.target1;
+            const target2 = p.target2;
+            const slPoints = p.slPoints;
+            const tgtPoints = p.tgtPoints;
+            const riskInr = p.riskInr;
+            const rewardInr = p.rewardInr;
+            const rrRatio = p.rrRatio;
+            const chgColor = p.chgColor;
+            const chgSign = p.chgSign;
 
             return `
                 <div class="copilot-card-head">
@@ -5089,92 +5155,95 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             let html = `
-                <div style="margin-bottom: 12px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                        <strong style="font-size: 1.1rem; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+                <div style="margin-bottom: 14px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                        <strong style="font-size: 1.12rem; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
                             <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> MCX Commodity Playbook Scan (5 Assets)
                         </strong>
-                        <span style="font-size: 0.72rem; color: #94a3b8;">${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} IST</span>
+                        <span style="font-size: 0.74rem; color: #94a3b8;"><i class="fa-regular fa-clock" style="margin-right:3px;"></i>${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} IST</span>
                     </div>
-                    <p style="font-size: 0.82rem; color: #94a3b8; margin: 0;">Instant algorithmic Buy / Sell / Stand Aside recommendations across all active MCX commodities.</p>
+                    <p style="font-size: 0.82rem; color: #94a3b8; margin: 0;">Comprehensive trade analysis and actionable BUY, SELL, or STAY BACK suggestions for every commodity.</p>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="copilot-scan-list">
             `;
 
             commodities.forEach(c => {
-                const spec = COPILOT_SPECS[c.symbol] || { name: c.name, lot: 1, unit: 'unit', icon: '📊' };
-                const curP = Number(c.current_price) || 0;
-                const prevC = Number(c.prev_close) || curP;
-                const dayH = Number(c.day_high) || curP;
-                const dayL = Number(c.day_low) || curP;
-                
-                const pivot = Math.round(((dayH + dayL + prevC) / 3.0) * 100) / 100;
-                const bc = Math.round(((dayH + dayL) / 2.0) * 100) / 100;
-                const tc = Math.round(((pivot - bc) + pivot) * 100) / 100;
-                const cprTop = Math.max(tc, bc);
-                const cprBot = Math.min(tc, bc);
-                const cprWidthPct = pivot > 0 ? Math.round((Math.abs(cprTop - cprBot) / pivot) * 10000) / 100 : 0.5;
-                const gapPct = prevC > 0 ? Math.round(((curP - prevC) / prevC) * 10000) / 100 : 0.0;
-                const isWideCPR = cprWidthPct >= 0.30;
-                const distUc = c.dist_to_uc_pct !== undefined ? Number(c.dist_to_uc_pct) : 5.0;
-                const distLc = c.dist_to_lc_pct !== undefined ? Number(c.dist_to_lc_pct) : 5.0;
+                const p = computeCommodityTradePlan(c);
 
-                let actionBadge = "<span style='color:#fbbf24; font-weight:700;'>STAND ASIDE ⏸️</span>";
-                let actionBorder = "rgba(245, 158, 11, 0.3)";
-                let bgGradient = "rgba(245, 158, 11, 0.05)";
-                let note = "Within neutral zone; await London / US session triggers.";
-
-                if (distUc <= 1.2) {
-                    actionBadge = "<span style='color:#fbbf24; font-weight:700;'>STAND ASIDE (Ceiling Risk) ⚠️</span>";
-                    note = `Testing upper circuit ceiling (${distUc.toFixed(1)}% away).`;
-                } else if (distLc <= 1.2) {
-                    actionBadge = "<span style='color:#fbbf24; font-weight:700;'>STAND ASIDE (Floor Risk) ⚠️</span>";
-                    note = `Testing lower circuit floor (${distLc.toFixed(1)}% away).`;
-                } else if (gapPct >= 0.75 && isWideCPR) {
-                    actionBadge = "<span style='color:#fb7185; font-weight:700;'>SELL / GAP FADE 🔴</span>";
-                    actionBorder = "rgba(244, 63, 94, 0.4)";
-                    bgGradient = "rgba(244, 63, 94, 0.08)";
-                    note = `Gap up (+${gapPct.toFixed(1)}%) into Wide CPR. Target: PDC ₹${formatInr(prevC)}.`;
-                } else if (gapPct <= -0.75 && isWideCPR) {
-                    actionBadge = "<span style='color:#34d399; font-weight:700;'>BUY / GAP FADE 🟢</span>";
-                    actionBorder = "rgba(16, 185, 129, 0.4)";
-                    bgGradient = "rgba(16, 185, 129, 0.08)";
-                    note = `Gap down (${gapPct.toFixed(1)}%) into Wide CPR. Target: PDC ₹${formatInr(prevC)}.`;
-                } else if (curP >= cprBot && curP <= cprTop) {
-                    actionBadge = "<span style='color:#fbbf24; font-weight:700;'>STAND ASIDE (Chop) ⏸️</span>";
-                    note = `Oscillating inside Central Pivot Range [₹${formatInr(cprBot)} - ₹${formatInr(cprTop)}].`;
-                } else if (curP > cprTop) {
-                    actionBadge = "<span style='color:#34d399; font-weight:700;'>BUY / ABOVE CPR 🟢</span>";
-                    actionBorder = "rgba(16, 185, 129, 0.4)";
-                    bgGradient = "rgba(16, 185, 129, 0.08)";
-                    note = `Bullish bias above CPR Top (₹${formatInr(cprTop)}).`;
-                } else if (curP < cprBot) {
-                    actionBadge = "<span style='color:#fb7185; font-weight:700;'>SELL / BELOW CPR 🔴</span>";
-                    actionBorder = "rgba(244, 63, 94, 0.4)";
-                    bgGradient = "rgba(244, 63, 94, 0.08)";
-                    note = `Bearish bias below CPR Bottom (₹${formatInr(cprBot)}).`;
+                let badgeHtml = '';
+                if (p.actionType === 'buy') {
+                    badgeHtml = `<span class="copilot-scan-badge buy"><i class="fa-solid fa-circle-arrow-up"></i> BUY</span>`;
+                } else if (p.actionType === 'sell') {
+                    badgeHtml = `<span class="copilot-scan-badge sell"><i class="fa-solid fa-circle-arrow-down"></i> SELL</span>`;
+                } else {
+                    badgeHtml = `<span class="copilot-scan-badge standaside"><i class="fa-solid fa-hand"></i> STAY BACK</span>`;
                 }
 
-                const chgColor = c.change_pct >= 0 ? '#34d399' : '#fb7185';
-                const chgSign = c.change_pct >= 0 ? '+' : '';
-
                 html += `
-                    <div style="background: ${bgGradient}; border: 1px solid ${actionBorder}; border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.15s;" onclick="quickPromptCopilot('${spec.name}')" title="Click to view deep analysis for ${spec.name}">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 1.4rem;">${spec.icon}</span>
-                            <div>
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <strong style="color: #f8fafc; font-size: 0.95rem;">${spec.name}</strong>
-                                    <span style="font-size: 0.7rem; color: #94a3b8; padding: 1px 5px; border-radius: 4px; background: rgba(255,255,255,0.06);">${c.symbol}</span>
-                                </div>
-                                <div style="font-size: 0.78rem; color: #cbd5e1; margin-top: 2px;">
-                                    ${actionBadge} • <span style="color: #94a3b8;">${note}</span>
+                    <div class="copilot-scan-card ${p.actionType}" onclick="quickPromptCopilot('${p.spec.name}')" title="Click to view full in-depth playbook for ${p.spec.name}">
+                        <!-- Top Header Row -->
+                        <div class="copilot-scan-top">
+                            <div class="copilot-scan-title">
+                                <span style="font-size: 1.35rem;">${p.spec.icon}</span>
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        <strong style="color: #f8fafc; font-size: 0.96rem;">${p.spec.name}</strong>
+                                        <span style="font-size: 0.7rem; color: #94a3b8; padding: 1px 5px; border-radius: 4px; background: rgba(255,255,255,0.06);">${c.symbol}</span>
+                                        ${c.expiry ? `<span style="font-size: 0.68rem; color: #60a5fa; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); border-radius: 4px; padding: 1px 5px;"><i class="fa-regular fa-calendar-check" style="margin-right:2px;"></i>Exp: ${c.expiry}</span>` : ''}
+                                    </div>
+                                    <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 2px;">
+                                        1 Lot = ${p.lot} ${p.spec.unit}
+                                    </div>
                                 </div>
                             </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.05rem; font-weight: 800; color: #f8fafc;">₹${formatInr(p.curP)}</div>
+                                <div style="font-size: 0.78rem; font-weight: 700; color: ${p.chgColor};">${p.chgSign}${c.change_pct ? c.change_pct.toFixed(2) : '0.00'}%</div>
+                            </div>
                         </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 1rem; font-weight: 800; color: #f8fafc;">₹${formatInr(curP)}</div>
-                            <div style="font-size: 0.78rem; font-weight: 700; color: ${chgColor};">${chgSign}${c.change_pct ? c.change_pct.toFixed(2) : '0.00'}%</div>
+
+                        <!-- Action Verdict Banner -->
+                        <div style="display: flex; align-items: center; gap: 8px; margin: 6px 0; flex-wrap: wrap;">
+                            ${badgeHtml}
+                            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">${p.action}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">(${p.modelName})</span>
+                        </div>
+
+                        <!-- Brief Analysis -->
+                        <div class="copilot-scan-analysis">
+                            <strong style="color: var(--text-primary);"><i class="fa-solid fa-chart-line" style="color: #a855f7; margin-right: 4px;"></i>Analysis:</strong> ${p.briefAnalysis}
+                        </div>
+
+                        <!-- Trade Suggestion Levels Grid -->
+                        <div class="copilot-scan-levels">
+                            <div class="copilot-scan-level-col">
+                                <span>Suggested Entry</span>
+                                <strong style="color: #60a5fa;">${p.entryZone}</strong>
+                            </div>
+                            <div class="copilot-scan-level-col">
+                                <span>Target (T1)</span>
+                                <strong style="color: #34d399;">₹${formatInr(p.target1)} ${p.actionType !== 'standaside' ? `<small style="font-weight:600; font-size:0.7rem;">(+₹${formatInr(p.rewardInr)})</small>` : ''}</strong>
+                            </div>
+                            <div class="copilot-scan-level-col">
+                                <span>Stop Loss (SL)</span>
+                                <strong style="color: #fb7185;">₹${formatInr(p.stopLoss)} ${p.actionType !== 'standaside' ? `<small style="font-weight:600; font-size:0.7rem;">(-₹${formatInr(p.riskInr)})</small>` : ''}</strong>
+                            </div>
+                            <div class="copilot-scan-level-col">
+                                <span>${p.actionType !== 'standaside' ? 'Risk : Reward' : 'CPR Width'}</span>
+                                <strong style="color: ${p.actionType !== 'standaside' ? '#a5b4fc' : (p.isWideCPR ? '#f59e0b' : '#38bdf8')};">
+                                    ${p.actionType !== 'standaside' ? `1 : ${p.rrRatio}` : `${p.cprWidthPct.toFixed(2)}% (${p.isWideCPR ? 'Wide' : 'Narrow'})`}
+                                </strong>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer CTA -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 6px; border-top: 1px dashed rgba(255, 255, 255, 0.08); font-size: 0.74rem;">
+                            <span style="color: #94a3b8;">
+                                CPR Range: ₹${formatInr(p.cprBot)} - ₹${formatInr(p.cprTop)}
+                            </span>
+                            <span style="color: #c084fc; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">
+                                View Full Playbook & Pivot Breakdown <i class="fa-solid fa-arrow-right" style="font-size: 0.68rem;"></i>
+                            </span>
                         </div>
                     </div>
                 `;
@@ -5182,8 +5251,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             html += `
                 </div>
-                <p style="margin: 10px 0 0; font-size: 0.75rem; color: #94a3b8; text-align: center;">
-                    💡 Click on any commodity above or type its name for comprehensive target, stop-loss & CPR levels.
+                <p style="margin: 12px 0 0; font-size: 0.78rem; color: #94a3b8; text-align: center;">
+                    💡 Click on any card above or type a commodity name (e.g. <em>"Crude Oil"</em>) to view detailed intraday execution and paper trade triggers.
                 </p>
             `;
             return html;

@@ -2292,3 +2292,163 @@ body.light-theme .copilot-input-field {
     }
 }
 
+/* Multi-Asset Scan Response Styles */
+.copilot-scan-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.copilot-scan-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.copilot-scan-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    border-color: rgba(168, 85, 247, 0.4);
+}
+
+.copilot-scan-card.buy {
+    border-color: rgba(16, 185, 129, 0.35);
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.06), rgba(15, 23, 42, 0.65));
+}
+.copilot-scan-card.buy:hover {
+    border-color: rgba(16, 185, 129, 0.6);
+}
+
+.copilot-scan-card.sell {
+    border-color: rgba(244, 63, 94, 0.35);
+    background: linear-gradient(145deg, rgba(244, 63, 94, 0.06), rgba(15, 23, 42, 0.65));
+}
+.copilot-scan-card.sell:hover {
+    border-color: rgba(244, 63, 94, 0.6);
+}
+
+.copilot-scan-card.standaside {
+    border-color: rgba(245, 158, 11, 0.35);
+    background: linear-gradient(145deg, rgba(245, 158, 11, 0.05), rgba(15, 23, 42, 0.65));
+}
+.copilot-scan-card.standaside:hover {
+    border-color: rgba(245, 158, 11, 0.6);
+}
+
+body.light-theme .copilot-scan-card {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+}
+body.light-theme .copilot-scan-card.buy {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.05), #ffffff);
+}
+body.light-theme .copilot-scan-card.sell {
+    background: linear-gradient(145deg, rgba(244, 63, 94, 0.05), #ffffff);
+}
+body.light-theme .copilot-scan-card.standaside {
+    background: linear-gradient(145deg, rgba(245, 158, 11, 0.05), #ffffff);
+}
+
+.copilot-scan-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.copilot-scan-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.copilot-scan-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.copilot-scan-badge.buy {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.copilot-scan-badge.sell {
+    background: rgba(244, 63, 94, 0.18);
+    color: #fb7185;
+    border: 1px solid rgba(244, 63, 94, 0.35);
+}
+
+.copilot-scan-badge.standaside {
+    background: rgba(245, 158, 11, 0.18);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.copilot-scan-analysis {
+    font-size: 0.82rem;
+    color: #cbd5e1;
+    line-height: 1.45;
+    margin: 6px 0 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.25);
+}
+
+body.light-theme .copilot-scan-analysis {
+    background: rgba(0, 0, 0, 0.04);
+    color: #334155;
+}
+
+.copilot-scan-levels {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 6px 8px;
+}
+
+body.light-theme .copilot-scan-levels {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+.copilot-scan-level-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.copilot-scan-level-col span {
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.copilot-scan-level-col strong {
+    font-size: 0.82rem;
+    color: var(--text-primary);
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+@media (max-width: 640px) {
+    .copilot-scan-levels {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+}
+
+
