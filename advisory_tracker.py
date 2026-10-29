@@ -1526,7 +1526,7 @@ def exit_and_evaluate_eod_trades(checker, alerter):
     pending_to_expire = [
         t for t in trades 
         if t.get('paper_trade', {}).get('status') in ['PENDING_615', 'PENDING_LIMIT', 'PENDING_615_CHECK']
-        or (t.get('date') == today_str and t.get('eod_outcome', {}).get('outcome') == 'PENDING' and t.get('paper_trade', {}).get('status') != 'ACTIVE')
+        or (t.get('eod_outcome', {}).get('outcome') == 'PENDING' and t.get('paper_trade', {}).get('status') != 'ACTIVE')
     ]
     for pt_trade in pending_to_expire:
         pt = pt_trade.setdefault('paper_trade', {})
