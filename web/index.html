@@ -683,23 +683,19 @@
                         <!-- Paper Trading & Investing Tab -->
             <section id="trade-tab" class="tab-content">
                 <div class="dashboard-header">
-                    <h2>Paper Trading & Wealth Investing</h2>
-                    <p>Practice MCX commodity futures trading with standardized risk-parity margin, or build long-term equity wealth by purchasing individual Nifty 50 shares.</p>
+                    <h2>Stock Wealth Investing & Automated Signals</h2>
+                    <p>Build long-term equity wealth with individual Nifty 50 delivery shares (~₹30,000 Daily Golden Cross SIP), or track automated empirical MCX commodity advisory signals.</p>
                 </div>
 
-                <!-- Sub-Navigation View Switcher: Commodities, Investing, Advisory Signals -->
+                <!-- Sub-Navigation View Switcher: Stock Investing & Advisory Signals -->
                 <div class="circuit-subnav-container" style="margin-bottom: 1.75rem;">
-                    <button class="circuit-subnav-btn active" id="btn-subnav-trade-commodities" onclick="switchPaperTradingSubView('commodities')">
-                        <i class="fa-solid fa-oil-well" style="color:#f59e0b;"></i>
-                        <span>⚡ Commodity Trading (MCX F&O)</span>
-                    </button>
-                    <button class="circuit-subnav-btn" id="btn-subnav-trade-investing" onclick="switchPaperTradingSubView('investing')">
+                    <button class="circuit-subnav-btn active" id="btn-subnav-trade-investing" onclick="switchPaperTradingSubView('investing')">
                         <i class="fa-solid fa-seedling" style="color:#4ade80;"></i>
                         <span>💼 Stock Investing (Cash Delivery)</span>
                     </button>
                     <button class="circuit-subnav-btn" id="btn-subnav-trade-advisory" onclick="switchPaperTradingSubView('advisory')">
                         <i class="fa-solid fa-crosshairs" style="color:#818cf8;"></i>
-                        <span>🎯 Advisory Signals (1:30 & 6:00 PM)</span>
+                        <span>🎯 Advisory Signals & Automated MCX Tracker</span>
                         <span class="subnav-badge" id="advisory-badge-count">Signals</span>
                     </button>
                 </div>
@@ -841,11 +837,9 @@
 
             <!-- Account / Trading Views Wrapper -->
             <div id="trade-view-terminal">
-                    <div id="trade-login-prompt" style="text-align: center; margin: 4rem 0;">
-                        <h3 style="color: var(--text-secondary);">Please log in via the Account tab to access Paper Trading & Investing.</h3>
-                    </div>
+                    <div id="trade-login-prompt" style="display: none;"></div>
 
-                    <div id="trade-dashboard-content" style="display: none; width: 100%;">
+                    <div id="trade-dashboard-content" style="display: block; width: 100%;">
                         <!-- Account Portfolio Overview Card -->
                         <div class="glass-card full-width" style="margin-bottom: 2rem;">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
@@ -865,133 +859,46 @@
                             
                             <div class="paper-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                                 <div>
-                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Available Cash / Margin</h4>
-                                    <p id="virtual-available-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Available Stock Cash</h4>
+                                    <p id="virtual-available-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600; color: #60a5fa;">₹...</p>
                                 </div>
                                 <div>
-                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Used Margin / Invested</h4>
-                                    <p id="virtual-used-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Active Capital Invested</h4>
+                                    <p id="virtual-used-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600; color: #fbbf24;">₹...</p>
                                 </div>
                                 <div>
-                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Current Portfolio Value</h4>
-                                    <p id="virtual-portfolio-value" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Current Holdings Value</h4>
+                                    <p id="virtual-portfolio-value" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600; color: #4ade80;">₹...</p>
                                 </div>
                                 <div>
-                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Total Unrealized P&L</h4>
+                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Total Stock Return (P&L)</h4>
                                     <p id="virtual-total-pl" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ========================================================= -->
-                        <!-- MODULE 1: ⚡ COMMODITY TRADING TERMINAL (MCX F&O) -->
-                        <!-- ========================================================= -->
-                        <div id="trade-module-commodities">
-                            <!-- Commodity Module Banner -->
-                            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(30, 41, 59, 0.6)); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-                                <div>
-                                    <div style="font-weight: 700; color: #fbbf24; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fa-solid fa-bolt"></i> MCX Commodity Futures Terminal (Standardized Risk Parity)
-                                    </div>
-                                    <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 4px; line-height: 1.4;">
-                                        Calibrated contract sizes requiring approximately <strong>₹1.2 Lakh – ₹1.5 Lakh</strong> capital per lot: <strong>Crude Oil 50 bbl</strong> (₹50/pt), <strong>Natural Gas 2500 mmBtu</strong> (₹2500/pt), <strong>Gold 10 units</strong> (₹10/pt), <strong>Silver 5 units</strong> (₹5/pt), <strong>Copper 1250 kg</strong> (₹1250/pt). Two-way trading (Long & Short) with 8%–35% margin leverage.
-                                    </div>
-                                </div>
-                                <div class="view-toggle-bar" style="margin-bottom: 0;">
-                                    <button class="view-toggle-pill active" data-mode="cards" onclick="setMobileViewMode('cards')"><i class="fa-solid fa-mobile-screen"></i> Cards</button>
-                                    <button class="view-toggle-pill" data-mode="table" onclick="setMobileViewMode('table')"><i class="fa-solid fa-table"></i> Table</button>
-                                </div>
-                            </div>
-
-                            <!-- Commodity Portfolio Holdings -->
-                            <div class="table-container glass-card full-width" style="margin-bottom: 1.5rem;">
-                                <h3 style="color: #fbbf24; font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-oil-well" style="color:#f59e0b; margin-right:8px;"></i> Active Commodity Futures Positions</h3>
-                                <div class="desktop-table-view">
-                                    <table class="market-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Asset</th>
-                                                <th>Quantity / Lots</th>
-                                                <th>Avg Price</th>
-                                                <th>Current Price</th>
-                                                <th>Notional Value</th>
-                                                <th>P&L</th>
-                                                <th style="text-align: right;">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="portfolio-commodities-body">
-                                            <tr><td colspan="7" class="loading">Loading commodity positions...</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div id="portfolio-commodities-cards" class="mobile-cards-feed">
-                                    <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">No active commodity futures positions.</div>
-                                </div>
-                            </div>
-
-                            <!-- Commodity Pending Orders -->
-                            <div class="table-container glass-card full-width" style="margin-bottom: 1.5rem;">
-                                <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-clock" style="color:#f59e0b; margin-right:8px;"></i> Commodity Pending Limit & Stop Orders</h3>
-                                <div class="desktop-table-view">
-                                    <table class="market-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Asset</th>
-                                                <th>Type</th>
-                                                <th>Quantity</th>
-                                                <th>Trigger Price</th>
-                                                <th>Notional Value</th>
-                                                <th style="text-align: right;">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="pending-commodity-orders-body">
-                                            <tr><td colspan="7" class="loading">Loading pending orders...</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div id="pending-commodity-orders-cards" class="mobile-cards-feed">
-                                    <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">No pending commodity orders.</div>
-                                </div>
-                            </div>
-
-                            <!-- Commodity Trading Terminal -->
-                            <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
-                                <h3 style="color: #fbbf24; font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-bolt" style="color:#f59e0b; margin-right:8px;"></i> MCX Commodity Futures Markets (Standardized Risk Parity)</h3>
-                                <div class="desktop-table-view">
-                                    <table class="market-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Asset</th>
-                                                <th>Contract Size / Multiplier</th>
-                                                <th>Live Market Price</th>
-                                                <th>Capital / Margin Required</th>
-                                                <th style="text-align: right;">Trade Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="trade-market-commodities-body">
-                                            <tr><td colspan="5" class="loading">Loading MCX contracts...</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div id="trade-market-commodities-cards" class="mobile-cards-feed">
-                                    <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">Loading market commodities...</div>
-                                </div>
-                            </div>
+                        <!-- Fallback hidden containers for legacy scripts -->
+                        <div id="trade-module-commodities" style="display:none;" aria-hidden="true">
+                            <tbody id="portfolio-commodities-body"></tbody>
+                            <div id="portfolio-commodities-cards"></div>
+                            <tbody id="pending-commodity-orders-body"></tbody>
+                            <div id="pending-commodity-orders-cards"></div>
+                            <tbody id="trade-market-commodities-body"></tbody>
+                            <div id="trade-market-commodities-cards"></div>
                         </div>
 
                         <!-- ========================================================= -->
-                        <!-- MODULE 2: 💼 STOCK INVESTING (100% CASH / DELIVERY) -->
+                        <!-- 💼 STOCK WEALTH INVESTING MODULE (100% CASH / DELIVERY) -->
                         <!-- ========================================================= -->
-                        <div id="trade-module-investing" style="display: none;">
+                        <div id="trade-module-investing" style="display: block;">
                             <!-- Stock Investing Banner -->
                             <div style="background: linear-gradient(135deg, rgba(74, 222, 128, 0.12), rgba(30, 41, 59, 0.6)); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
                                 <div>
                                     <div style="font-weight: 700; color: #4ade80; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fa-solid fa-seedling"></i> Individual Stock Wealth Investing (100% Cash Delivery)
+                                        <i class="fa-solid fa-seedling"></i> Individual Stock Wealth Investing (100% Cash Delivery · ~₹30,000 Daily SIP)
                                     </div>
                                     <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 4px; line-height: 1.4;">
-                                        Build long-term equity wealth by purchasing individual shares starting from <strong>1 Share</strong> (step 1). 100% cash paid from virtual balance with zero derivative leverage, zero forced F&O lots, and no contract expiry.
+                                        Automated daily purchases of the highest-ranking Nifty 50 <strong>Golden Crossover (50/200 EMA)</strong> stock using strictly available investing cash (~₹30,000 ±₹1,000 allocation). Intraday target and protective stop-loss rules enforced. Zero forced futures leverage, zero expiry risk.
                                     </div>
                                 </div>
                                 <div class="view-toggle-bar" style="margin-bottom: 0;">
@@ -999,6 +906,9 @@
                                     <button class="view-toggle-pill" data-mode="table" onclick="setMobileViewMode('table')"><i class="fa-solid fa-table"></i> Table</button>
                                 </div>
                             </div>
+
+                            <!-- Today's Daily Golden Cross SIP Pick Hero Card -->
+                            <div id="stock-invest-daily-pick-container" style="margin-bottom: 1.5rem;"></div>
 
                             <!-- Stock Search & Quick Actions Bar -->
                             <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
@@ -2481,9 +2391,29 @@ async function loadStockInvestmentsTracker() {
         if (!res || !res.ok) return;
         stockInvestmentsData = await res.json();
         
-        // Render hero card in Golden Crossover tab
+        // Render hero card in Golden Crossover tab & Stock Investing subtab
         if (stockInvestmentsData.today_pick) {
             renderNiftyDailyPickHeroCard(stockInvestmentsData.today_pick);
+        }
+
+        // Update Stock Investing Top KPI cards
+        if (stockInvestmentsData.summary) {
+            const sum = stockInvestmentsData.summary;
+            const availEl = document.getElementById('virtual-available-margin');
+            const usedEl = document.getElementById('virtual-used-margin');
+            const portEl = document.getElementById('virtual-portfolio-value');
+            const plEl = document.getElementById('virtual-total-pl');
+            const netWorthEl = document.getElementById('virtual-net-worth');
+            
+            if (availEl) availEl.textContent = '₹' + Number(sum.available_cash_inr || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (usedEl) usedEl.textContent = '₹' + Number(sum.active_capital_invested_inr || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (portEl) portEl.textContent = '₹' + Number(sum.current_portfolio_value_inr || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (netWorthEl) netWorthEl.textContent = '₹' + Number(sum.net_worth_inr || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (plEl) {
+                const pl = Number(sum.total_pnl_inr || 0);
+                plEl.textContent = (pl >= 0 ? '+₹' : '-₹') + Math.abs(pl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                plEl.style.color = pl >= 0 ? '#4ade80' : '#fb7185';
+            }
         }
         
         // Render holdings into Paper Trading Stock Investing module
@@ -2498,10 +2428,12 @@ window.loadStockInvestmentsTracker = loadStockInvestmentsTracker;
 
 function renderNiftyDailyPickHeroCard(pick) {
     const container = document.getElementById('nifty-daily-pick-container');
-    if (!container) return;
+    const investContainer = document.getElementById('stock-invest-daily-pick-container');
+    if (!container && !investContainer) return;
     
     if (!pick) {
-        container.innerHTML = '';
+        if (container) container.innerHTML = '';
+        if (investContainer) investContainer.innerHTML = '';
         return;
     }
     
@@ -2517,7 +2449,7 @@ function renderNiftyDailyPickHeroCard(pick) {
     const varianceVal = Number(pick.variance_from_30k || 0);
     const varianceText = varianceVal >= 0 ? `+₹${varianceVal.toFixed(2)}` : `-₹${Math.abs(varianceVal).toFixed(2)}`;
 
-    container.innerHTML = `
+    const cardHtml = `
         <div class="glass-card full-width" style="border: 1px solid rgba(245, 158, 11, 0.45); background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border-radius: 14px; padding: 1.25rem 1.5rem; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1rem;">
                 <div>
@@ -2589,6 +2521,9 @@ function renderNiftyDailyPickHeroCard(pick) {
             </div>
         </div>
     `;
+
+    if (container) container.innerHTML = cardHtml;
+    if (investContainer) investContainer.innerHTML = cardHtml;
 }
 
 function updateCircuitsKPIs(data) {
@@ -3335,12 +3270,16 @@ function updateAdminUI(session) {
         authSection.style.display = 'block';
         adminContent.style.display = 'none';
         
-        if (tradePrompt) tradePrompt.style.display = 'block';
-        if (tradeDashboard) tradeDashboard.style.display = 'none';
+        if (tradePrompt) tradePrompt.style.display = 'none';
+        if (tradeDashboard) tradeDashboard.style.display = 'block';
         
         currentUser = null;
-        userBalance = 0;
+        userBalance = (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary?.available_cash_inr) 
+            ? Number(stockInvestmentsData.summary.available_cash_inr) 
+            : 1000000;
         userPortfolio = {};
+        if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker();
+        if (typeof renderPortfolio === 'function') renderPortfolio();
     }
 }
 
@@ -4008,10 +3947,14 @@ function renderPortfolio() {
         }
     }
 
-    // Net Worth = Cash Balance + Blocked Margin + Unrealized P&L
-    const netWorth = userBalance + activePositionsMargin + totalPl;
-    const usedMargin = activePositionsMargin + pendingMarginLocked;
-    const availableMargin = Math.max(0, userBalance - pendingMarginLocked);
+    // Net Worth = Cash Balance + Current Stock Value + Blocked Margin
+    let effectiveCash = userBalance;
+    if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary?.available_cash_inr) {
+        effectiveCash = Number(stockInvestmentsData.summary.available_cash_inr);
+    }
+    const netWorth = effectiveCash + currentPortfolioValue + activePositionsMargin;
+    const usedMargin = totalInvested + activePositionsMargin + pendingMarginLocked;
+    const availableMargin = Math.max(0, effectiveCash - pendingMarginLocked);
 
     const netWorthEl = document.getElementById('virtual-net-worth');
     if (netWorthEl) netWorthEl.textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -4479,12 +4422,23 @@ function openTradeModal(symbol, name, price) {
 }
 
 window.editVirtualBalance = async function() {
-    if (!currentUser) return alert("Please log in first.");
-    const currentBal = userBalance;
+    const currentBal = (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary?.available_cash_inr) 
+        ? Number(stockInvestmentsData.summary.available_cash_inr) 
+        : userBalance;
     const newBalStr = prompt(`Enter new virtual cash balance (Current: ₹${currentBal.toFixed(2)}):`, currentBal);
     if (!newBalStr) return;
     const newBal = parseFloat(newBalStr);
     if (isNaN(newBal) || newBal < 0) return alert("Invalid amount.");
+
+    if (!currentUser) {
+        userBalance = newBal;
+        if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary) {
+            stockInvestmentsData.summary.available_cash_inr = newBal;
+        }
+        renderPortfolio();
+        alert("Virtual cash balance updated!");
+        return;
+    }
 
     try {
         const { error } = await supabaseClient.from('profiles')
@@ -4499,8 +4453,17 @@ window.editVirtualBalance = async function() {
 }
 
 window.resetPaperTradingAccount = async function() {
-    if (!currentUser) return alert("Please log in first.");
-    if (!confirm("Are you sure you want to completely reset your account? This will wipe your portfolio, transaction history, and restore your balance to ₹1,000,000.")) return;
+    if (!confirm("Are you sure you want to completely reset your account? This will restore your available cash to ₹1,000,000.")) return;
+
+    if (!currentUser) {
+        userBalance = 1000000;
+        if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary) {
+            stockInvestmentsData.summary.available_cash_inr = 1000000;
+        }
+        renderPortfolio();
+        alert("Account reset to ₹1,000,000!");
+        return;
+    }
 
     try {
         // 1. Delete all transactions for this user
@@ -4822,10 +4785,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 // activePaperTradingSubView initialized at top
 
-activePaperTradingSubView = 'commodities';
+activePaperTradingSubView = 'investing';
 
 function switchPaperTradingSubView(subview) {
-    if (subview === 'terminal') subview = 'commodities'; // backward compatibility
+    if (subview === 'terminal' || subview === 'commodities') subview = 'investing';
     activePaperTradingSubView = subview;
 
     const modCommodities = document.getElementById('trade-module-commodities');
@@ -4833,21 +4796,12 @@ function switchPaperTradingSubView(subview) {
     const modAdvisory = document.getElementById('trade-view-advisory');
     const viewTerminal = document.getElementById('trade-view-terminal');
 
-    const btnCommodities = document.getElementById('btn-subnav-trade-commodities');
     const btnInvesting = document.getElementById('btn-subnav-trade-investing');
     const btnAdvisory = document.getElementById('btn-subnav-trade-advisory');
 
-    [btnCommodities, btnInvesting, btnAdvisory].forEach(b => { if (b) b.classList.remove('active'); });
+    [btnInvesting, btnAdvisory].forEach(b => { if (b) b.classList.remove('active'); });
 
-    if (subview === 'commodities') {
-        if (viewTerminal) viewTerminal.style.display = 'block';
-        if (modCommodities) modCommodities.style.display = 'block';
-        if (modInvesting) modInvesting.style.display = 'none';
-        if (modAdvisory) modAdvisory.style.display = 'none';
-        if (btnCommodities) btnCommodities.classList.add('active');
-        if (typeof renderTradeMarket === 'function') renderTradeMarket();
-        if (typeof renderPortfolio === 'function') renderPortfolio();
-    } else if (subview === 'investing') {
+    if (subview === 'investing') {
         if (viewTerminal) viewTerminal.style.display = 'block';
         if (modCommodities) modCommodities.style.display = 'none';
         if (modInvesting) modInvesting.style.display = 'block';

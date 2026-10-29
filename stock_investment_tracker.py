@@ -3,7 +3,14 @@ Stock Investment Tracker & Automated Golden Crossover SIP Engine
 ================================================================
 Scans Indian Nifty 50 stocks at the start of each trading day, identifies the
 highest-conviction Golden Crossover (50 EMA >= 200 EMA) value setup, and executes
-an automated investment with approx ₹30,000 INR capital (tolerance ±₹1,000 based on stock price).
+an automated investment using ONLY available stock investing capital (~₹30,000 INR
+with tolerance ±₹1,000 based on stock price).
+
+Enforces strictly defined Targets (Target 1 & Target 2) and Stop Loss rules:
+  • Target 1: 2.2x risk (mean reversion to 50 EMA / 20 MA) -> Books target exit
+  • Stop-Loss: Below lower Bollinger Band / 4.5% below CMP -> Protective stop exit
+  • Cash Management: Only available stock investing capital can be deployed.
+    When a trade hits Target or Stop Loss, the capital and realized P&L return to available cash.
 
 Outputs:
   web/stock_investments_tracker.json
@@ -19,8 +26,9 @@ TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', '
 NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'nifty_crossover_oversold.json')
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json')
 
-TARGET_INVESTMENT_AMOUNT = 30000.0  # ₹30,000 INR per daily stock pick
-TOLERANCE_BAND = 1000.0             # ±₹1,000 INR tolerance
+TARGET_INVESTMENT_AMOUNT = 30000.0   # ₹30,000 INR per daily stock pick
+TOLERANCE_BAND = 1000.0              # ±₹1,000 INR tolerance
+DEFAULT_STARTING_CASH = 1000000.0    # ₹10,00,000 (10 Lakhs Virtual Stock Investing Capital)
 
 def calculate_shares_for_capital(price, target_capital=TARGET_INVESTMENT_AMOUNT):
     """
@@ -43,6 +51,47 @@ def calculate_shares_for_capital(price, target_capital=TARGET_INVESTMENT_AMOUNT)
 
     return chosen_shares, invested_value, variance
 
+def get_cash_and_holdings(tracker_data):
+    """
+    Computes available cash, currently invested capital in active stock holdings,
+    total stock portfolio value, and overall net worth.
+    """
+    starting_cash = float(tracker_data.get('starting_cash_inr', DEFAULT_STARTING_CASH))
+    investments = tracker_data.get('investments', [])
+    
+    active = [i for i in investments if i.get('status') == 'ACTIVE']
+    closed = [i for i in investments if i.get('status') in ['CLOSED', 'TARGET_HIT', 'STOP_LOSS_HIT']]
+
+    # Realized P&L from closed stock trades
+    realized_pnl = round(sum(i.get('pnl_inr', 0.0) for i in closed), 2)
+    current_cash = round(starting_cash + realized_pnl, 2)
+
+    # Active capital deployed in open stock holdings
+    active_capital_invested = round(sum(i.get('invested_value', 0.0) for i in active), 2)
+    
+    # Available stock investing cash (strictly enforces capital allocation limit)
+    available_cash = round(max(0.0, current_cash - active_capital_invested), 2)
+    
+    # Current market value of open stock holdings
+    current_holdings_value = round(sum(i.get('current_value', i.get('invested_value', 0.0)) for i in active), 2)
+    
+    # Total account net worth
+    net_worth = round(available_cash + current_holdings_value, 2)
+    unrealized_pnl = round(current_holdings_value - active_capital_invested, 2)
+    total_pnl = round(unrealized_pnl + realized_pnl, 2)
+
+    return {
+        'starting_cash_inr': starting_cash,
+        'current_cash_inr': current_cash,
+        'available_cash_inr': available_cash,
+        'active_capital_invested_inr': active_capital_invested,
+        'current_holdings_value_inr': current_holdings_value,
+        'net_worth_inr': net_worth,
+        'unrealized_pnl_inr': unrealized_pnl,
+        'realized_pnl_inr': realized_pnl,
+        'total_pnl_inr': total_pnl
+    }
+
 def load_stock_investments():
     if os.path.exists(TRACKER_FILE):
         try:
@@ -51,14 +100,19 @@ def load_stock_investments():
         except Exception as e:
             print(f"Warning: Could not read {TRACKER_FILE}: {e}")
     
+    now_str = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d %b %Y, %I:%M %p IST')
     return {
-        'last_updated': datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d %b %Y, %I:%M %p IST'),
+        'last_updated': now_str,
+        'starting_cash_inr': DEFAULT_STARTING_CASH,
         'summary': {
             'total_investments_count': 0,
             'active_holdings_count': 0,
             'closed_investments_count': 0,
-            'total_capital_invested_inr': 0.0,
+            'starting_cash_inr': DEFAULT_STARTING_CASH,
+            'available_cash_inr': DEFAULT_STARTING_CASH,
+            'active_capital_invested_inr': 0.0,
             'current_portfolio_value_inr': 0.0,
+            'net_worth_inr': DEFAULT_STARTING_CASH,
             'unrealized_pnl_inr': 0.0,
             'unrealized_pnl_pct': 0.0,
             'realized_pnl_inr': 0.0,
@@ -76,29 +130,29 @@ def save_stock_investments(data):
     active = [i for i in investments if i.get('status') == 'ACTIVE']
     closed = [i for i in investments if i.get('status') in ['CLOSED', 'TARGET_HIT', 'STOP_LOSS_HIT']]
 
-    total_invested = round(sum(i.get('invested_value', 0.0) for i in active), 2)
-    current_val = round(sum(i.get('current_value', i.get('invested_value', 0.0)) for i in active), 2)
-    unrealized_pnl = round(current_val - total_invested, 2)
-    unrealized_pct = round((unrealized_pnl / total_invested) * 100, 2) if total_invested > 0 else 0.0
-
-    realized_pnl = round(sum(i.get('pnl_inr', 0.0) for i in closed), 2)
-    total_pnl = round(unrealized_pnl + realized_pnl, 2)
-
+    cash_stats = get_cash_and_holdings(data)
+    
     tgt_hits = sum(1 for i in investments if i.get('status') == 'TARGET_HIT')
     sl_hits = sum(1 for i in investments if i.get('status') == 'STOP_LOSS_HIT')
     closed_count = len(closed)
     win_rate = round((tgt_hits / closed_count) * 100, 1) if closed_count > 0 else 0.0
+    
+    unrealized_pct = round((cash_stats['unrealized_pnl_inr'] / cash_stats['active_capital_invested_inr']) * 100, 2) if cash_stats['active_capital_invested_inr'] > 0 else 0.0
 
+    data['starting_cash_inr'] = cash_stats['starting_cash_inr']
     data['summary'] = {
         'total_investments_count': len(investments),
         'active_holdings_count': len(active),
         'closed_investments_count': closed_count,
-        'total_capital_invested_inr': total_invested,
-        'current_portfolio_value_inr': current_val,
-        'unrealized_pnl_inr': unrealized_pnl,
+        'starting_cash_inr': cash_stats['starting_cash_inr'],
+        'available_cash_inr': cash_stats['available_cash_inr'],
+        'active_capital_invested_inr': cash_stats['active_capital_invested_inr'],
+        'current_portfolio_value_inr': cash_stats['current_holdings_value_inr'],
+        'net_worth_inr': cash_stats['net_worth_inr'],
+        'unrealized_pnl_inr': cash_stats['unrealized_pnl_inr'],
         'unrealized_pnl_pct': unrealized_pct,
-        'realized_pnl_inr': realized_pnl,
-        'total_pnl_inr': total_pnl,
+        'realized_pnl_inr': cash_stats['realized_pnl_inr'],
+        'total_pnl_inr': cash_stats['total_pnl_inr'],
         'win_rate_pct': win_rate,
         'target_hit_count': tgt_hits,
         'stop_loss_hit_count': sl_hits
@@ -112,7 +166,7 @@ def save_stock_investments(data):
 def scan_and_execute_daily_stock_investment(force=False, test_date=None):
     """
     Scans Golden Crossover opportunities and executes 1 daily stock purchase
-    with ~₹30,000 INR (tolerance ±₹1,000).
+    using ONLY available stock investing capital (~₹30,000 INR with ±₹1,000 tolerance).
     """
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     today_str = test_date or now_dt.strftime('%d %b %Y')
@@ -127,6 +181,15 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
     if today_existing and not force:
         print(f"Daily stock investment already executed for today ({today_str}): {today_existing[0].get('name')}. Skipping.")
         return today_existing[0]
+
+    # Verify Available Stock Investing Capital
+    cash_stats = get_cash_and_holdings(tracker_data)
+    avail_cash = cash_stats['available_cash_inr']
+    min_capital_required = TARGET_INVESTMENT_AMOUNT - TOLERANCE_BAND  # ₹29,000
+
+    if avail_cash < min_capital_required:
+        print(f"⚠️ Insufficient Available Stock Investing Capital: ₹{avail_cash:,.2f} available. Required: ~₹{TARGET_INVESTMENT_AMOUNT:,.2f}. Skipping new purchase.")
+        return None
 
     # Load Golden Crossover Scanner data
     if not os.path.exists(NIFTY_JSON_FILE):
@@ -181,6 +244,15 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         return None
 
     shares, invested_val, variance = calculate_shares_for_capital(price, TARGET_INVESTMENT_AMOUNT)
+
+    # Re-check that the exact purchase value does not exceed available cash
+    if invested_val > avail_cash:
+        shares = max(1, math.floor(avail_cash / price))
+        invested_val = round(shares * price, 2)
+        variance = round(invested_val - TARGET_INVESTMENT_AMOUNT, 2)
+        if invested_val > avail_cash:
+            print(f"Cannot afford even 1 share of {chosen_stock.get('name')} at ₹{price}. Available cash: ₹{avail_cash}")
+            return None
 
     trade_plan = chosen_stock.get('trade_plan', {})
     stop_loss = float(trade_plan.get('stop_loss', round(price * 0.955, 2)))
@@ -237,9 +309,10 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
     tracker_data['today_pick'] = new_investment
     save_stock_investments(tracker_data)
 
-    print(f"\n✅ EXECUTED DAILY STOCK INVESTMENT:")
+    print(f"\n✅ EXECUTED DAILY STOCK INVESTMENT (CASH DELIVERY):")
     print(f"   Asset: {new_investment['name']} ({new_investment['symbol']})")
-    print(f"   Shares: {shares} @ ₹{price:,.2f} = ₹{invested_val:,.2f} (Variance from ₹30,000: ₹{variance:+,.2f})")
+    print(f"   Shares: {shares} @ ₹{price:,.2f} = ₹{invested_val:,.2f} (Target: ₹30,000 | Variance: ₹{variance:+,.2f})")
+    print(f"   Remaining Available Stock Cash: ₹{avail_cash - invested_val:,.2f}")
     print(f"   Win Prob: {new_investment['win_probability']}% | 52W Disc: {new_investment['discount_pct']}% | RSI: {new_investment['rsi']}")
     print(f"   Stop-Loss: ₹{stop_loss:,.2f} | Target 1: ₹{target_1:,.2f} | Target 2: ₹{target_2:,.2f}")
 
@@ -256,16 +329,16 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
                 f"🌟 DAILY GOLDEN CROSSOVER STOCK INVESTMENT EXECUTION\n"
                 f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
                 f"• Stock: {new_investment['full_name']} ({new_investment['symbol']})\n"
-                f"• Strategy: Automated 50/200 EMA Golden Crossover Value SIP\n"
+                f"• Strategy: Automated 50/200 EMA Golden Crossover Value SIP (100% Cash Delivery)\n"
                 f"• Shares Purchased: {shares} Shares\n"
                 f"• Entry Price: ₹{price:,.2f} CMP\n"
-                f"• Total Capital Invested: ₹{invested_val:,.2f} (Target: ₹30,000 | Variance: ₹{variance:+,.2f})\n\n"
+                f"• Capital Invested: ₹{invested_val:,.2f} (Remaining Cash: ₹{avail_cash - invested_val:,.2f})\n\n"
                 f"📊 QUANTITATIVE CONFLUENCE METRICS:\n"
                 f"• Algorithmic Win Probability: {new_investment['win_probability']}%\n"
                 f"• 52-Week High Discount: {new_investment['discount_pct']}% Off Peak\n"
                 f"• RSI Indicator: {new_investment['rsi']} (Oversold Value Zone)\n"
                 f"• Moving Averages: 50 EMA (₹{new_investment['ema_50']}) > 200 EMA (₹{new_investment['ema_200']})\n\n"
-                f"🎯 TARGET & PROTECTIVE STOP-LOSS:\n"
+                f"🎯 TARGET & PROTECTIVE STOP-LOSS RULES:\n"
                 f"• Stop-Loss (Protective Floor): ₹{stop_loss:,.2f} (-{new_investment['risk_pct']}% risk)\n"
                 f"• Target 1 (Mean Reversion): ₹{target_1:,.2f} (+{new_investment['potential_upside_t1']}% upside)\n"
                 f"• Target 2 (Swing High Retest): ₹{target_2:,.2f} (+{new_investment['potential_upside_t2']}% upside)\n\n"
@@ -282,7 +355,8 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
 def update_live_stock_investments():
     """
     Updates live market prices, calculates current MTM returns,
-    and checks for Target or Stop-Loss triggers for all active stock investments.
+    and enforces strictly defined Target 1, Target 2, and Stop-Loss triggers.
+    When a trade hits Target or Stop Loss, the capital and realized P&L return to available cash.
     """
     if not os.path.exists(TRACKER_FILE):
         return
@@ -327,6 +401,7 @@ def update_live_stock_investments():
         entry_p = float(inv.get('entry_price', latest_price))
         shares = int(inv.get('shares', 1))
         t1 = float(inv.get('target_1', entry_p * 1.10))
+        t2 = float(inv.get('target_2', entry_p * 1.18))
         sl = float(inv.get('stop_loss', entry_p * 0.95))
 
         inv['current_price'] = latest_price
@@ -343,15 +418,42 @@ def update_live_stock_investments():
             inv['exit_price'] = latest_price
             inv['exit_time'] = now_time_str
             inv['exit_trigger'] = 'TARGET_1_HIT'
-            print(f"🎯 TARGET 1 HIT for {inv['name']} at ₹{latest_price:,.2f}! Realized P&L: ₹{pnl:+,.2f} ({pnl_pct:+,.2f}%)")
+            print(f"🎯 TARGET 1 HIT for {inv['name']} at ₹{latest_price:,.2f}! Realized P&L: ₹{pnl:+,.2f} ({pnl_pct:+,.2f}%) - Capital released to cash.")
             updated = True
+            
+            # Dispatch Target Hit alert
+            try:
+                if os.path.exists(CONFIG_FILE):
+                    with open(CONFIG_FILE, 'r') as cf:
+                        cfg = json.load(cf)
+                    from alerter import EmailAlerter
+                    alerter = EmailAlerter(cfg)
+                    subj = f"🎯 [TARGET HIT] {inv['name']} reached Target 1 at ₹{latest_price:,.2f} (+{pnl_pct}%)"
+                    bdy = f"🎯 TARGET 1 EXECUTED!\n• Stock: {inv['name']} ({inv['symbol']})\n• Shares: {shares}\n• Entry: ₹{entry_p:,.2f} -> Exit: ₹{latest_price:,.2f}\n• Realized Profit: +₹{pnl:,.2f} (+{pnl_pct}%)\n• Capital of ₹{cur_val:,.2f} returned to available cash."
+                    alerter.send_alert(subj, bdy)
+            except Exception:
+                pass
+
         elif latest_price <= sl:
             inv['status'] = 'STOP_LOSS_HIT'
             inv['exit_price'] = latest_price
             inv['exit_time'] = now_time_str
             inv['exit_trigger'] = 'STOP_LOSS_HIT'
-            print(f"🛡️ STOP LOSS HIT for {inv['name']} at ₹{latest_price:,.2f}. Realized P&L: ₹{pnl:+,.2f} ({pnl_pct:+,.2f}%)")
+            print(f"🛡️ STOP LOSS HIT for {inv['name']} at ₹{latest_price:,.2f}. Realized Loss: ₹{pnl:+,.2f} ({pnl_pct:+,.2f}%) - Capital protected in cash.")
             updated = True
+            
+            # Dispatch Stop Loss alert
+            try:
+                if os.path.exists(CONFIG_FILE):
+                    with open(CONFIG_FILE, 'r') as cf:
+                        cfg = json.load(cf)
+                    from alerter import EmailAlerter
+                    alerter = EmailAlerter(cfg)
+                    subj = f"🛡️ [STOP LOSS HIT] {inv['name']} protected at ₹{latest_price:,.2f} ({pnl_pct}%)"
+                    bdy = f"🛡️ PROTECTIVE STOP LOSS EXECUTED!\n• Stock: {inv['name']} ({inv['symbol']})\n• Shares: {shares}\n• Entry: ₹{entry_p:,.2f} -> Exit: ₹{latest_price:,.2f}\n• Realized Loss: -₹{abs(pnl):,.2f} ({pnl_pct}%)\n• Remaining capital of ₹{cur_val:,.2f} returned to cash."
+                    alerter.send_alert(subj, bdy)
+            except Exception:
+                pass
         else:
             updated = True
 
@@ -366,6 +468,6 @@ def update_live_stock_investments():
         save_stock_investments(tracker_data)
 
 if __name__ == '__main__':
-    print("Testing Daily Stock Investment Engine...")
+    print("Testing Daily Stock Investment Engine with Capital & Target/Stop-Loss Rules...")
     scan_and_execute_daily_stock_investment(force=True)
     update_live_stock_investments()
