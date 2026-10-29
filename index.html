@@ -31,12 +31,12 @@
                 <span>Trade Analyser</span>
             </div>
             <nav class="tabs">
-                <button class="tab-btn active" onclick="switchTab(this, 'subscribe-tab')">Subscribe</button>
+                <button class="tab-btn" id="subscribe-tab-btn" onclick="switchTab(this, 'subscribe-tab')">Subscribe</button>
                 <button class="tab-btn" id="market-hub-tab-btn" onclick="switchTab(this, 'market-hub-tab')" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(245, 158, 11, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-bolt" style="margin-right: 5px; color: #fbbf24;"></i> Live Market & Circuits</button>
-                <button class="tab-btn" onclick="switchTab(this, 'nifty-tab')" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-gem" style="margin-right: 5px; color: #f59e0b;"></i> Golden Cross & Value</button>
+                <button class="tab-btn" id="nifty-tab-btn" onclick="switchTab(this, 'nifty-tab')" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-gem" style="margin-right: 5px; color: #f59e0b;"></i> Golden Cross & Value</button>
                 <button class="tab-btn" id="trade-tab-btn" onclick="switchTab(this, 'trade-tab')" style="background: rgba(74, 222, 128, 0.12); border: 1px solid rgba(74, 222, 128, 0.35); color: #4ade80; font-weight: 600;"><i class="fa-solid fa-chart-pie" style="margin-right: 5px;"></i> Paper Trading & Investing</button>
                 <button class="tab-btn" id="copilot-tab-btn" onclick="switchTab(this, 'copilot-tab')" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(168, 85, 247, 0.45); color: #c084fc; font-weight: 700;"><i class="fa-solid fa-robot"></i> Copilot Chat</button>
-                <button class="tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Account</button>
+                <button class="tab-btn" id="admin-tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Account</button>
                 <button id="theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Mode" style="margin-left: 0.5rem;"><i class="fa-solid fa-moon"></i></button>
             </nav>
         </header>
@@ -1150,6 +1150,34 @@
         </main>
     </div>
 
+    <!-- Early module activation to eliminate refresh flicker -->
+    <script>
+        (function() {
+            try {
+                let h = (window.location.hash || '').replace('#', '').trim().toLowerCase();
+                if (!h) h = (localStorage.getItem('active_clean_hash') || '').trim().toLowerCase();
+                let tid = localStorage.getItem('active_tab_id') || '';
+                if (h) {
+                    if (['circuits', 'prices', 'alerts', 'history', 'hub', 'all', 'circuit', 'circuits-tab', 'live-circuits', 'dashboard', 'dashboard-tab', 'alerts-tab'].includes(h)) tid = 'market-hub-tab';
+                    else if (['trade', 'investing', 'advisory', 'signals', 'advisory-signals', 'commodities', 'stocks', 'papertrading', 'paper-trading', 'trade-tab'].includes(h)) tid = 'trade-tab';
+                    else if (['nifty', 'crossover', 'goldencross', 'oversold', 'nifty-tab'].includes(h)) tid = 'nifty-tab';
+                    else if (['copilot', 'chat', 'copilot-tab', 'ai'].includes(h)) tid = 'copilot-tab';
+                    else if (['admin', 'account', 'admin-tab'].includes(h)) tid = 'admin-tab';
+                    else if (['subscribe', 'subscribe-tab', 'home'].includes(h)) tid = 'subscribe-tab';
+                }
+                if (!tid && !h) tid = 'market-hub-tab';
+                if (tid) {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+                    const targetSec = document.getElementById(tid);
+                    if (targetSec) targetSec.classList.add('active');
+                    const targetBtn = document.getElementById(tid + '-btn') || document.querySelector(`button[onclick*="'${tid}'"]`);
+                    if (targetBtn) targetBtn.classList.add('active');
+                }
+            } catch(e) {}
+        })();
+    </script>
+
     <!-- Trade Modal -->
     <div id="trade-modal" class="modal hidden">
         <div class="modal-content glass-card">
@@ -1382,8 +1410,24 @@ window.syncMarketDataWithCircuits = syncMarketDataWithCircuits;
 
 let activeMarketHubSubView = 'circuits';
 
-function switchMarketHubSubView(subview) {
+function switchMarketHubSubView(subview, updateUrl = true) {
     activeMarketHubSubView = subview;
+    try {
+        localStorage.setItem('subview_market_hub', subview);
+        if (updateUrl) {
+            let h = subview;
+            if (subview === 'circuits') {
+                const cSub = localStorage.getItem('subview_circuits') || 'live';
+                h = (cSub === 'history') ? 'history' : 'circuits';
+            }
+            localStorage.setItem('active_clean_hash', h);
+            localStorage.setItem('active_tab_id', 'market-hub-tab');
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, null, '#' + h);
+            }
+        }
+    } catch(e) {}
+
     const secCircuits = document.getElementById('hub-section-circuits');
     const secPrices = document.getElementById('hub-section-prices');
     const secAlerts = document.getElementById('hub-section-alerts');
@@ -1446,7 +1490,7 @@ async function refreshMarketHub() {
 }
 window.refreshMarketHub = refreshMarketHub;
 
-function switchTab(btn, targetId) {
+function switchTab(btn, targetId, updateUrl = true) {
     if (!btn && typeof event !== 'undefined' && event && event.target) {
         btn = event.target.closest('.tab-btn') || event.target;
     }
@@ -1455,15 +1499,20 @@ function switchTab(btn, targetId) {
     if (targetId === 'circuits-tab') {
         targetId = 'market-hub-tab';
         btn = document.getElementById('market-hub-tab-btn') || btn;
-        switchMarketHubSubView('circuits');
+        switchMarketHubSubView('circuits', updateUrl);
     } else if (targetId === 'dashboard-tab') {
         targetId = 'market-hub-tab';
         btn = document.getElementById('market-hub-tab-btn') || btn;
-        switchMarketHubSubView('prices');
+        switchMarketHubSubView('prices', updateUrl);
     } else if (targetId === 'alerts-tab') {
         targetId = 'market-hub-tab';
         btn = document.getElementById('market-hub-tab-btn') || btn;
-        switchMarketHubSubView('alerts');
+        switchMarketHubSubView('alerts', updateUrl);
+    }
+
+    if (!btn) {
+        btn = document.getElementById(targetId + '-btn') || 
+              document.querySelector(`button[onclick*="'${targetId}'"]`);
     }
 
     const tabBtns = document.querySelectorAll('.tab-btn');
@@ -1477,6 +1526,40 @@ function switchTab(btn, targetId) {
     if (btn && btn.classList) btn.classList.add('active');
     const targetEl = document.getElementById(targetId);
     if (targetEl) targetEl.classList.add('active');
+
+    // Persist active module & update URL cleanly
+    try {
+        localStorage.setItem('active_tab_id', targetId);
+        if (updateUrl) {
+            let cleanHash = '';
+            if (targetId === 'market-hub-tab') {
+                const sub = (typeof activeMarketHubSubView !== 'undefined' ? activeMarketHubSubView : localStorage.getItem('subview_market_hub')) || 'circuits';
+                if (sub === 'circuits') {
+                    const cSub = (typeof activeCircuitsSubView !== 'undefined' ? activeCircuitsSubView : localStorage.getItem('subview_circuits')) || 'live';
+                    cleanHash = cSub === 'history' ? 'history' : 'circuits';
+                } else {
+                    cleanHash = sub;
+                }
+            } else if (targetId === 'trade-tab') {
+                const sub = (typeof activePaperTradingSubView !== 'undefined' ? activePaperTradingSubView : localStorage.getItem('subview_trade')) || 'investing';
+                cleanHash = sub === 'advisory' ? 'advisory' : 'investing';
+            } else if (targetId === 'nifty-tab') {
+                cleanHash = 'nifty';
+            } else if (targetId === 'copilot-tab') {
+                cleanHash = 'copilot';
+            } else if (targetId === 'admin-tab') {
+                cleanHash = 'account';
+            } else if (targetId === 'subscribe-tab') {
+                cleanHash = 'subscribe';
+            }
+            if (cleanHash) {
+                localStorage.setItem('active_clean_hash', cleanHash);
+                if (window.history && window.history.replaceState) {
+                    window.history.replaceState(null, null, '#' + cleanHash);
+                }
+            }
+        }
+    } catch(e) {}
     
     const now = Date.now();
     // Fast tab switching: render instantly from memory cache if fresh, otherwise fetch in background
@@ -1503,6 +1586,7 @@ function switchTab(btn, targetId) {
         } else {
             if (typeof renderTradeMarket === 'function') renderTradeMarket();
             if (typeof renderPortfolio === 'function') renderPortfolio();
+            if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker();
         }
     }
     
@@ -1520,6 +1604,88 @@ function switchTab(btn, targetId) {
 }
 window.switchTab = switchTab;
 
+function restoreActiveModule() {
+    let hash = (window.location.hash || '').replace('#', '').trim().toLowerCase();
+    
+    // If no URL hash is present, restore from localStorage
+    if (!hash) {
+        try {
+            hash = (localStorage.getItem('active_clean_hash') || '').trim().toLowerCase();
+            if (!hash) {
+                const storedTab = localStorage.getItem('active_tab_id');
+                if (storedTab === 'market-hub-tab') {
+                    const mSub = localStorage.getItem('subview_market_hub') || 'circuits';
+                    hash = (mSub === 'circuits' && localStorage.getItem('subview_circuits') === 'history') ? 'history' : mSub;
+                } else if (storedTab === 'trade-tab') {
+                    hash = localStorage.getItem('subview_trade') || 'investing';
+                } else if (storedTab === 'nifty-tab') {
+                    hash = 'nifty';
+                } else if (storedTab === 'copilot-tab') {
+                    hash = 'copilot';
+                } else if (storedTab === 'admin-tab') {
+                    hash = 'account';
+                } else if (storedTab === 'subscribe-tab') {
+                    hash = 'subscribe';
+                }
+            }
+        } catch(e) {}
+    }
+
+    // Default: If no preference is saved, open Live Market & Circuits
+    if (!hash) {
+        hash = 'circuits';
+    }
+
+    const hubBtn = document.getElementById('market-hub-tab-btn');
+    const tradeBtn = document.getElementById('trade-tab-btn') || document.querySelector('button[onclick*="trade-tab"]');
+    const niftyBtn = document.getElementById('nifty-tab-btn') || document.querySelector('button[onclick*="nifty-tab"]');
+    const copilotBtn = document.getElementById('copilot-tab-btn') || document.querySelector('button[onclick*="copilot-tab"]');
+    const adminBtn = document.getElementById('admin-tab-btn') || document.querySelector('button[onclick*="admin-tab"]');
+    const subscribeBtn = document.getElementById('subscribe-tab-btn') || document.querySelector('button[onclick*="subscribe-tab"]');
+
+    if (hash === 'history' || hash === 'circuits-history' || hash === 'reversals') {
+        if (hubBtn) switchTab(hubBtn, 'market-hub-tab', false);
+        switchMarketHubSubView('circuits', false);
+        switchCircuitsSubView('history', false);
+    } else if (hash === 'circuits' || hash === 'circuit' || hash === 'circuits-tab' || hash === 'live-circuits') {
+        if (hubBtn) switchTab(hubBtn, 'market-hub-tab', false);
+        switchMarketHubSubView('circuits', false);
+        switchCircuitsSubView('live', false);
+    } else if (hash === 'prices' || hash === 'price' || hash === 'dashboard' || hash === 'dashboard-tab' || hash === 'market' || hash === 'market-prices') {
+        if (hubBtn) switchTab(hubBtn, 'market-hub-tab', false);
+        switchMarketHubSubView('prices', false);
+    } else if (hash === 'alerts' || hash === 'alert' || hash === 'alerts-tab' || hash === 'alert-zone') {
+        if (hubBtn) switchTab(hubBtn, 'market-hub-tab', false);
+        switchMarketHubSubView('alerts', false);
+    } else if (hash === 'hub' || hash === 'market-hub' || hash === 'markethub' || hash === 'hub-all' || hash === 'all') {
+        if (hubBtn) switchTab(hubBtn, 'market-hub-tab', false);
+        switchMarketHubSubView('all', false);
+    } else if (hash === 'advisory' || hash === 'signals' || hash === 'advisory-signals' || hash === 'commodities') {
+        if (tradeBtn) switchTab(tradeBtn, 'trade-tab', false);
+        switchPaperTradingSubView('advisory', false);
+    } else if (hash === 'trade' || hash === 'investing' || hash === 'stocks' || hash === 'papertrading' || hash === 'paper-trading' || hash === 'trade-tab') {
+        if (tradeBtn) switchTab(tradeBtn, 'trade-tab', false);
+        switchPaperTradingSubView('investing', false);
+    } else if (hash === 'nifty' || hash === 'crossover' || hash === 'goldencross' || hash === 'oversold' || hash === 'nifty-tab') {
+        if (niftyBtn) switchTab(niftyBtn, 'nifty-tab', false);
+        try {
+            const storedNiftySub = localStorage.getItem('subview_nifty');
+            if (storedNiftySub) switchNiftyView(storedNiftySub);
+        } catch(e) {}
+    } else if (hash === 'copilot' || hash === 'chat' || hash === 'copilot-tab' || hash === 'ai') {
+        if (copilotBtn) switchTab(copilotBtn, 'copilot-tab', false);
+    } else if (hash === 'admin' || hash === 'account' || hash === 'admin-tab') {
+        if (adminBtn) switchTab(adminBtn, 'admin-tab', false);
+    } else if (hash === 'subscribe' || hash === 'subscribe-tab' || hash === 'home') {
+        if (subscribeBtn) switchTab(subscribeBtn, 'subscribe-tab', false);
+    } else {
+        if (hubBtn) switchTab(hubBtn, 'market-hub-tab', false);
+        switchMarketHubSubView('circuits', false);
+    }
+}
+window.restoreActiveModule = restoreActiveModule;
+window.addEventListener('hashchange', restoreActiveModule);
+
 function initApp() {
     console.log("Initializing App...");
     try { setupSubscribeForm(); } catch(e) { console.error("Form setup error:", e); }
@@ -1530,37 +1696,12 @@ function initApp() {
     try { fetchCircuitsHistory(); } catch(e) { console.error("Fetch circuits history error:", e); }
     try { setupAuth(); } catch(e) { console.error("Auth setup error:", e); }
     
-    // Check URL hash routing (e.g. #circuits, #dashboard, #trade, #alerts, #nifty, #hub)
-    const hash = (window.location.hash || '').replace('#', '').toLowerCase();
-    const hubBtn = document.getElementById('market-hub-tab-btn');
-    if (hash === 'circuits' || hash === 'circuit' || hash === 'circuits-tab') {
-        if (hubBtn) switchTab(hubBtn, 'market-hub-tab');
-        switchMarketHubSubView('circuits');
-    } else if (hash === 'dashboard' || hash === 'market' || hash === 'prices' || hash === 'dashboard-tab') {
-        if (hubBtn) switchTab(hubBtn, 'market-hub-tab');
-        switchMarketHubSubView('prices');
-    } else if (hash === 'alerts' || hash === 'alert' || hash === 'alerts-tab') {
-        if (hubBtn) switchTab(hubBtn, 'market-hub-tab');
-        switchMarketHubSubView('alerts');
-    } else if (hash === 'hub' || hash === 'market-hub' || hash === 'markethub') {
-        if (hubBtn) switchTab(hubBtn, 'market-hub-tab');
-        switchMarketHubSubView('circuits');
-    } else if (hash === 'nifty' || hash === 'crossover' || hash === 'oversold' || hash === 'nifty-tab') {
-        const btn = document.querySelector('button[onclick*="nifty-tab"]');
-        if (btn) switchTab(btn, 'nifty-tab');
-    } else if (hash === 'trade' || hash === 'investing' || hash === 'commodities' || hash === 'trade-tab') {
-        const btn = document.getElementById('trade-tab-btn') || document.querySelector('button[onclick*="trade-tab"]');
-        if (btn) switchTab(btn, 'trade-tab');
-        if (hash === 'investing') switchPaperTradingSubView('investing');
-        else if (hash === 'commodities') switchPaperTradingSubView('commodities');
-    } else if (hash === 'copilot' || hash === 'chat' || hash === 'copilot-tab') {
-        const btn = document.querySelector('button[onclick*="copilot-tab"]');
-        if (btn) switchTab(btn, 'copilot-tab');
-    }
+    // Restore exact module and subview that the user was currently in
+    try { restoreActiveModule(); } catch(e) { console.error("Restore module error:", e); }
     
     setInterval(() => { if (typeof fetchMarketData === 'function') fetchMarketData(); }, 300000); 
     setInterval(() => {
-        const circuitsTab = document.getElementById('circuits-tab');
+        const circuitsTab = document.getElementById('market-hub-tab');
         if (circuitsTab && circuitsTab.classList.contains('active')) {
             if (typeof fetchCircuitsData === 'function') fetchCircuitsData();
         }
@@ -2109,6 +2250,9 @@ function sortNiftyOpportunities(sortVal) {
 
 function switchNiftyView(viewMode) {
     activeNiftyView = viewMode;
+    try {
+        localStorage.setItem('subview_nifty', viewMode);
+    } catch(e) {}
     const btnCards = document.getElementById('btn-nifty-view-cards');
     const btnTable = document.getElementById('btn-nifty-view-table');
     const cardsEl = document.getElementById('nifty-cards-container');
@@ -2581,7 +2725,20 @@ let rawCircuitsHistory = [];
 let activeHistoryFilter = 'ALL';
 let activeHistoryCommodity = 'ALL';
 
-function switchCircuitsSubView(subview) {
+function switchCircuitsSubView(subview, updateUrl = true) {
+    window.activeCircuitsSubView = subview;
+    try {
+        localStorage.setItem('subview_circuits', subview);
+        if (updateUrl) {
+            const h = (subview === 'history') ? 'history' : 'circuits';
+            localStorage.setItem('active_clean_hash', h);
+            localStorage.setItem('active_tab_id', 'market-hub-tab');
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, null, '#' + h);
+            }
+        }
+    } catch(e) {}
+
     const liveView = document.getElementById('circuits-view-live');
     const historyView = document.getElementById('circuits-view-history');
     const btnLive = document.getElementById('btn-subnav-live');
@@ -2600,6 +2757,7 @@ function switchCircuitsSubView(subview) {
         if (btnLive) btnLive.classList.add('active');
     }
 }
+window.switchCircuitsSubView = switchCircuitsSubView;
 
 // History state variables already initialized at script top
 
@@ -4859,9 +5017,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 activePaperTradingSubView = 'investing';
 
-function switchPaperTradingSubView(subview) {
+function switchPaperTradingSubView(subview, updateUrl = true) {
     if (subview === 'terminal' || subview === 'commodities') subview = 'investing';
     activePaperTradingSubView = subview;
+    try {
+        localStorage.setItem('subview_trade', subview);
+        if (updateUrl) {
+            const h = (subview === 'advisory') ? 'advisory' : 'investing';
+            localStorage.setItem('active_clean_hash', h);
+            localStorage.setItem('active_tab_id', 'trade-tab');
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, null, '#' + h);
+            }
+        }
+    } catch(e) {}
 
     const modCommodities = document.getElementById('trade-module-commodities');
     const modInvesting = document.getElementById('trade-module-investing');
