@@ -3857,11 +3857,11 @@ function renderTradeMarket() {
 }
 
 const LOT_SIZES = {
-    'GOLD': 1,
-    'SILVER': 1,
-    'CRUDEOIL': 10,
-    'NATURALGAS': 250,
-    'COPPER': 250,
+    'GOLD': 10,
+    'SILVER': 5,
+    'CRUDEOIL': 50,
+    'NATURALGAS': 1250,
+    'COPPER': 1250,
     'NIFTY': 25,
     'BANKNIFTY': 15,
     'ADANIENT.NS': 309,
@@ -3922,11 +3922,11 @@ function getLotSize(symbol) {
 }
 
 const COMMODITY_MARGIN_RATES = {
-    'CRUDEOIL': 0.20,
-    'NATURALGAS': 0.20,
-    'SILVER': 0.12,
-    'COPPER': 0.15,
-    'GOLD': 0.10,
+    'CRUDEOIL': 0.25,    // 50 bbl @ ~₹9,800 -> ~₹1.22L margin
+    'NATURALGAS': 0.35,  // 1250 mmBtu @ ~₹293 -> ~₹1.28L margin
+    'SILVER': 0.15,      // 5 kg @ ~₹194,300 -> ~₹1.45L margin
+    'GOLD': 0.10,        // 10 units (100g) @ ~₹143,700 -> ~₹1.44L margin
+    'COPPER': 0.08,      // 1250 kg @ ~₹1,406 -> ~₹1.40L margin
     'NIFTY': 0.10,
     'BANKNIFTY': 0.10
 };
