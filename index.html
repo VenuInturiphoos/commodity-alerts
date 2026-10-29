@@ -895,7 +895,7 @@
                                         <i class="fa-solid fa-bolt"></i> MCX Commodity Futures Terminal (Standardized Risk Parity)
                                     </div>
                                     <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 4px; line-height: 1.4;">
-                                        Calibrated contract sizes requiring approximately <strong>₹1.2 Lakh – ₹1.5 Lakh</strong> capital per lot: <strong>Crude Oil 50 bbl</strong> (₹50/pt), <strong>Natural Gas 1250 mmBtu</strong> (₹1250/pt), <strong>Gold 10 units</strong> (₹10/pt), <strong>Silver 5 units</strong> (₹5/pt), <strong>Copper 1250 kg</strong> (₹1250/pt). Two-way trading (Long & Short) with 8%–35% margin leverage.
+                                        Calibrated contract sizes requiring approximately <strong>₹1.2 Lakh – ₹1.5 Lakh</strong> capital per lot: <strong>Crude Oil 50 bbl</strong> (₹50/pt), <strong>Natural Gas 2500 mmBtu</strong> (₹2500/pt), <strong>Gold 10 units</strong> (₹10/pt), <strong>Silver 5 units</strong> (₹5/pt), <strong>Copper 1250 kg</strong> (₹1250/pt). Two-way trading (Long & Short) with 8%–35% margin leverage.
                                     </div>
                                 </div>
                                 <div class="view-toggle-bar" style="margin-bottom: 0;">
@@ -3969,7 +3969,7 @@ const LOT_SIZES = {
     'GOLD': 10,         // Gold: 10 units (100g)
     'SILVER': 5,        // Silver: 5 units (5 kg)
     'CRUDEOIL': 50,     // Crude Oil: 50 units (50 bbl)
-    'NATURALGAS': 1250, // Natural Gas: 1250 units (1250 mmBtu)
+    'NATURALGAS': 2500, // Natural Gas: 2500 units (2500 mmBtu)
     'COPPER': 1250      // Copper: 1250 units (1250 kg)
 };
 
@@ -3985,7 +3985,7 @@ window.getLotSize = getLotSize;
 
 const COMMODITY_MARGIN_RATES = {
     'CRUDEOIL': 0.25,    // 50 bbl @ ~₹9,800 -> ~₹1.22L margin
-    'NATURALGAS': 0.35,  // 1250 mmBtu @ ~₹293 -> ~₹1.28L margin
+    'NATURALGAS': 0.18,  // 2500 mmBtu @ ~₹290 -> ~₹1.30L margin
     'SILVER': 0.15,      // 5 kg @ ~₹194,300 -> ~₹1.45L margin
     'GOLD': 0.10,        // 10 units (100g) @ ~₹143,700 -> ~₹1.44L margin
     'COPPER': 0.08       // 1250 kg @ ~₹1,406 -> ~₹1.40L margin
@@ -5548,16 +5548,16 @@ if (document.readyState === 'loading') {
         // ========================================================
 
         const COPILOT_SPECS = {
-            'CRUDEOIL': { name: 'Crude Oil', lot: 10, unit: 'bbl', icon: '🛢️', aliases: ['crude', 'crudeoil', 'oil', 'brent', 'wti', 'crudeoilm', 'crude mini'] },
-            'CRUDEOILM': { name: 'Crude Oil', lot: 10, unit: 'bbl', icon: '🛢️', aliases: ['crudeoilm', 'crude mini'] },
-            'NATURALGAS': { name: 'Natural Gas', lot: 250, unit: 'mmBtu', icon: '⚡', aliases: ['natural gas', 'naturalgas', 'natgas', 'ng', 'gas', 'naturalgasm', 'natgas mini'] },
-            'NATURALGASM': { name: 'Natural Gas', lot: 250, unit: 'mmBtu', icon: '⚡', aliases: ['naturalgasm', 'natgas mini'] },
-            'COPPER': { name: 'Copper', lot: 250, unit: 'kg', icon: '🪙', aliases: ['copper', 'cu', 'tamba', 'copperm', 'copper mini'] },
-            'COPPERM': { name: 'Copper', lot: 250, unit: 'kg', icon: '🪙', aliases: ['copperm', 'copper mini'] },
-            'GOLD': { name: 'Gold', lot: 1, unit: '10g', icon: '🥇', aliases: ['gold', 'xau', 'sona', 'goldm', 'gold mini'] },
-            'GOLDM': { name: 'Gold', lot: 1, unit: '10g', icon: '🥇', aliases: ['goldm', 'gold mini'] },
-            'SILVER': { name: 'Silver', lot: 1, unit: '1kg', icon: '🥈', aliases: ['silver', 'xag', 'chandi', 'silvermic', 'silver micro'] },
-            'SILVERMIC': { name: 'Silver', lot: 1, unit: '1kg', icon: '🥈', aliases: ['silvermic', 'silver micro'] }
+            'CRUDEOIL': { name: 'Crude Oil', lot: 50, unit: 'bbl', icon: '🛢️', aliases: ['crude', 'crudeoil', 'oil', 'brent', 'wti', 'crudeoilm', 'crude mini'] },
+            'CRUDEOILM': { name: 'Crude Oil', lot: 50, unit: 'bbl', icon: '🛢️', aliases: ['crudeoilm', 'crude mini'] },
+            'NATURALGAS': { name: 'Natural Gas', lot: 2500, unit: 'mmBtu', icon: '⚡', aliases: ['natural gas', 'naturalgas', 'natgas', 'ng', 'gas', 'naturalgasm', 'natgas mini'] },
+            'NATURALGASM': { name: 'Natural Gas', lot: 2500, unit: 'mmBtu', icon: '⚡', aliases: ['naturalgasm', 'natgas mini'] },
+            'COPPER': { name: 'Copper', lot: 1250, unit: 'kg', icon: '🪙', aliases: ['copper', 'cu', 'tamba', 'copperm', 'copper mini'] },
+            'COPPERM': { name: 'Copper', lot: 1250, unit: 'kg', icon: '🪙', aliases: ['copperm', 'copper mini'] },
+            'GOLD': { name: 'Gold', lot: 10, unit: '10g (100g)', icon: '🥇', aliases: ['gold', 'xau', 'sona', 'goldm', 'gold mini'] },
+            'GOLDM': { name: 'Gold', lot: 10, unit: '10g (100g)', icon: '🥇', aliases: ['goldm', 'gold mini'] },
+            'SILVER': { name: 'Silver', lot: 5, unit: '1kg (5kg)', icon: '🥈', aliases: ['silver', 'xag', 'chandi', 'silvermic', 'silver micro'] },
+            'SILVERMIC': { name: 'Silver', lot: 5, unit: '1kg (5kg)', icon: '🥈', aliases: ['silvermic', 'silver micro'] }
         };
 
         function toggleChat() {
