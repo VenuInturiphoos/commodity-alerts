@@ -34,21 +34,24 @@
         "quantity": 2500,
         "entry_price": 280.7,
         "entry_time": "08:00 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 281.8,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 1.1,
+        "pnl_inr": 2750.0,
+        "status": "CLOSED",
         "target": 293.1,
-        "stop_loss": 274.41
+        "stop_loss": 274.41,
+        "exit_trigger": "EOD_SQUAREOFF"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 281.8,
         "circuit_limit": 275.51,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705 (11:30 PM)",
+        "pnl_display": "+\u20b92,750.00",
+        "summary": "11:30 PM session close exit. Entry: \u20b9280.70 -> Exit: \u20b9281.80 (+1.10 pts | +\u20b92,750.00).",
+        "exit_time": "11:30 PM IST",
+        "exit_trigger": "EOD_SQUAREOFF"
       }
     },
     {
@@ -330,23 +333,26 @@
         "quantity": 10,
         "entry_price": 143250.0,
         "entry_time": "01:30 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 142693.0,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 557.0,
+        "pnl_inr": 5570.0,
+        "status": "CLOSED",
         "target": 142340.4,
         "stop_loss": 143250.0,
         "trailing_sl_active": true,
-        "original_sl": 143631.61
+        "original_sl": 143631.61,
+        "exit_trigger": "EOD_SQUAREOFF"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 142693.0,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Resistance retest entry @ \u20b9143,202.00 (SL: \u20b9143,631.61, TGT: \u20b9142,340.40)."
+        "outcome": "CORRECT",
+        "badge": "Correct \u2705 (11:30 PM)",
+        "pnl_display": "+\u20b95,570.00",
+        "summary": "11:30 PM session close exit. Entry: \u20b9143,250.00 -> Exit: \u20b9142,693.00 (+557.00 pts | +\u20b95,570.00).",
+        "exit_time": "11:30 PM IST",
+        "exit_trigger": "EOD_SQUAREOFF"
       }
     },
     {
@@ -2462,24 +2468,24 @@
       }
     }
   ],
-  "last_updated": "29 Oct 2026, 09:41 PM IST",
+  "last_updated": "29 Oct 2026, 11:16 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000,
   "summary": {
     "total_signals": 49,
     "executed_count": 19,
-    "correct_count": 7,
+    "correct_count": 9,
     "wrong_count": 9,
     "protected_count": 30,
-    "win_rate_pct": 43.8,
-    "total_pnl_inr": 13684.0,
-    "avg_trade_pnl_inr": 720.21,
-    "active_trades_count": 2,
+    "win_rate_pct": 50.0,
+    "total_pnl_inr": 22004.0,
+    "avg_trade_pnl_inr": 1158.11,
+    "active_trades_count": 0,
     "starting_cash_inr": 1000000,
-    "current_cash_inr": 1013684.0,
-    "used_margin_inr": 0.0,
-    "available_cash_inr": 1013684.0,
-    "net_worth_inr": 1013684.0
+    "current_cash_inr": 1022004.0,
+    "used_margin_inr": 0,
+    "available_cash_inr": 1022004.0,
+    "net_worth_inr": 1022004.0
   },
   "check_615_sent_date": "29 Oct 2026"
 }
