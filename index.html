@@ -32,11 +32,9 @@
             </div>
             <nav class="tabs">
                 <button class="tab-btn active" onclick="switchTab(this, 'subscribe-tab')">Subscribe</button>
-                <button class="tab-btn" onclick="switchTab(this, 'dashboard-tab')">Live Market</button>
+                <button class="tab-btn" id="market-hub-tab-btn" onclick="switchTab(this, 'market-hub-tab')" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(245, 158, 11, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-bolt" style="margin-right: 5px; color: #fbbf24;"></i> Live Market & Circuits</button>
                 <button class="tab-btn" onclick="switchTab(this, 'nifty-tab')" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-gem" style="margin-right: 5px; color: #f59e0b;"></i> Golden Cross & Value</button>
-                <button class="tab-btn" onclick="switchTab(this, 'circuits-tab')" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24;">⚡ Circuit Limits</button>
-                <button class="tab-btn" onclick="switchTab(this, 'alerts-tab')">🔥 Alert Zone</button>
-                <button class="tab-btn" onclick="switchTab(this, 'trade-tab')" style="background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3); color: #4ade80;">📈 Paper Trading</button>
+                <button class="tab-btn" id="trade-tab-btn" onclick="switchTab(this, 'trade-tab')" style="background: rgba(74, 222, 128, 0.12); border: 1px solid rgba(74, 222, 128, 0.35); color: #4ade80; font-weight: 600;"><i class="fa-solid fa-chart-pie" style="margin-right: 5px;"></i> Paper Trading & Investing</button>
                 <button class="tab-btn" id="copilot-tab-btn" onclick="switchTab(this, 'copilot-tab')" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(168, 85, 247, 0.45); color: #c084fc; font-weight: 700;"><i class="fa-solid fa-robot"></i> Copilot Chat</button>
                 <button class="tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Account</button>
                 <button id="theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Mode" style="margin-left: 0.5rem;"><i class="fa-solid fa-moon"></i></button>
@@ -81,172 +79,49 @@
             </section>
 
             <!-- Dashboard Tab -->
-            <section id="dashboard-tab" class="tab-content">
-                <div class="dashboard-header">
-                    <h2>Live Market Prices</h2>
-                    <p>Auto-synced every 5 minutes from the cloud.</p>
-                </div>
-                
-                <div class="mobile-scroll-indicator">
-                    <i class="fa-solid fa-arrows-left-right"></i> Swipe table horizontally to view full prices & levels
-                </div>
-                <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
-                    <h3>Nifty 50 Stocks</h3>
-                    <table class="market-table">
-                        <thead>
-                            <tr>
-                                <th>Asset Name</th>
-                                <th>Current Price (₹)</th>
-                                <th>Intrinsic Value (₹)</th>
-                                <th>Support 1</th>
-                                <th>Resistance 1</th>
-                                <th>Last Updated</th>
-                                <th>Interactive Chart</th>
-                            </tr>
-                        </thead>
-                        <tbody id="market-data-body-stocks">
-                            <tr><td colspan="6" class="loading">Loading live data...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="mobile-scroll-indicator">
-                    <i class="fa-solid fa-arrows-left-right"></i> Swipe table horizontally to view full prices & levels
-                </div>
-                <div class="table-container glass-card full-width">
-                    <h3>MCX Commodities</h3>
-                    <table class="market-table">
-                        <thead>
-                            <tr>
-                                <th>Asset Name</th>
-                                <th>Current Price (₹)</th>
-                                <th>Intrinsic Value (₹)</th>
-                                <th>Support 1</th>
-                                <th>Resistance 1</th>
-                                <th>Last Updated</th>
-                                <th>Interactive Chart</th>
-                            </tr>
-                        </thead>
-                        <tbody id="market-data-body-commodities">
-                            <tr><td colspan="6" class="loading">Loading live data...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- 🎯 Nifty 50 Golden Cross & Deep Value Scanner Tab -->
-            <section id="nifty-tab" class="tab-content">
-                <!-- Header Banner -->
-                <div class="nifty-header-card full-width">
-                    <div class="nifty-title-area">
-                        <h2><i class="fa-solid fa-gem" style="color: #f59e0b;"></i> Nifty 50 Golden Cross & Oversold Value Scanner</h2>
-                        <p>High-probability institutional setups combining <strong>50/200 EMA Golden Crossovers</strong>, <strong>Oversold RSI (&lt;35-40)</strong>, <strong>Bollinger Band Mean Reversion</strong>, and <strong>deep 52-Week Discounts</strong> across Indian blue-chips.</p>
+                        <!-- ⚡ Market Hub Tab (Unified Circuits, Live Prices & Alerts) -->
+            <section id="market-hub-tab" class="tab-content">
+                <div class="circuits-header-card full-width" style="margin-bottom: 1.5rem;">
+                    <div class="circuits-title-area">
+                        <h2>⚡ Live Market & Circuit Limits Hub</h2>
+                        <p>Real-time MCX Daily Circuit Limits (DPL), intraday spot & futures quotes, support/resistance levels, and active alert zone.</p>
                     </div>
-                    <div class="nifty-controls-right">
+                    <div class="circuits-controls-right">
                         <div class="pulse-pill">
                             <span class="pulse-dot"></span>
-                            <span>NSE Live Scanner</span>
+                            <span>Live Feeds Active</span>
                         </div>
-                        <button class="circuit-refresh-btn" id="nifty-refresh-btn" onclick="fetchNiftyOpportunities(true)" title="Rescan Nifty 50 Technicals">
-                            <i class="fa-solid fa-arrows-rotate"></i> <span>Rescan Now</span>
+                        <span id="market-hub-updated-time" style="font-size: 0.8rem; color: var(--text-secondary);">Syncing...</span>
+                        <button class="refresh-circuit-btn" id="market-hub-refresh-btn" onclick="refreshMarketHub()">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                            <span>Refresh All</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- 4 KPI Summary Cards -->
-                <div class="nifty-kpi-grid">
-                    <div class="nifty-kpi-card">
-                        <div class="nifty-kpi-label"><i class="fa-solid fa-trophy" style="color: #fbbf24;"></i> High Win-Rate Setups</div>
-                        <div class="nifty-kpi-value" id="nifty-kpi-high-prob">--</div>
-                        <div class="nifty-kpi-sub">80%+ Confluence Probability</div>
-                    </div>
-                    <div class="nifty-kpi-card">
-                        <div class="nifty-kpi-label"><i class="fa-solid fa-star" style="color: #f59e0b;"></i> Golden Crossovers</div>
-                        <div class="nifty-kpi-value" id="nifty-kpi-golden" style="color: #fbbf24;">--</div>
-                        <div class="nifty-kpi-sub">50 EMA &gt; 200 EMA Bullish</div>
-                    </div>
-                    <div class="nifty-kpi-card">
-                        <div class="nifty-kpi-label"><i class="fa-solid fa-chart-line-down" style="color: #38bdf8;"></i> Deeply Oversold Gems</div>
-                        <div class="nifty-kpi-value" id="nifty-kpi-oversold" style="color: #38bdf8;">--</div>
-                        <div class="nifty-kpi-sub">RSI &lt; 40 Value Reversal Floor</div>
-                    </div>
-                    <div class="nifty-kpi-card">
-                        <div class="nifty-kpi-label"><i class="fa-solid fa-tag" style="color: #34d399;"></i> Top 10 Avg Discount</div>
-                        <div class="nifty-kpi-value" id="nifty-kpi-avg-discount" style="color: #34d399;">--</div>
-                        <div class="nifty-kpi-sub">Off 52-Week High Range</div>
-                    </div>
+                <!-- Sub-Navigation View Switcher: Circuits, Live Prices, Alerts, All-in-One -->
+                <div class="circuit-subnav-container" style="margin-bottom: 2rem;">
+                    <button class="circuit-subnav-btn active" id="btn-hub-circuits" onclick="switchMarketHubSubView('circuits')">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>⚡ MCX Circuit Limits (DPL)</span>
+                    </button>
+                    <button class="circuit-subnav-btn" id="btn-hub-prices" onclick="switchMarketHubSubView('prices')">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>📈 Live Market Prices & Levels</span>
+                    </button>
+                    <button class="circuit-subnav-btn" id="btn-hub-alerts" onclick="switchMarketHubSubView('alerts')">
+                        <i class="fa-solid fa-fire"></i>
+                        <span>🔥 Active Alert Zone</span>
+                    </button>
+                    <button class="circuit-subnav-btn" id="btn-hub-all" onclick="switchMarketHubSubView('all')">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span>📑 All-in-One View</span>
+                    </button>
                 </div>
 
-                <!-- Controls, Filters, Search & Sort Toolbar -->
-                <div class="nifty-toolbar">
-                    <div class="nifty-filters">
-                        <button class="circuit-filter-pill active" onclick="filterNiftyCategory('ALL', this)">🔥 All Setups (<span id="nifty-cnt-all">0</span>)</button>
-                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('GOLDEN', this)">🌟 Golden Cross (<span id="nifty-cnt-golden">0</span>)</button>
-                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('OVERSOLD', this)">📉 Deeply Oversold (<span id="nifty-cnt-oversold">0</span>)</button>
-                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('DISCOUNT', this)">🏷️ Deep Discount &gt;15% (<span id="nifty-cnt-discount">0</span>)</button>
-                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('ELITE', this)">🏆 90%+ Elite Win Prob (<span id="nifty-cnt-elite">0</span>)</button>
-                    </div>
-
-                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-                        <div class="circuit-search-box">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="nifty-search-input" placeholder="Search stock (Reliance, Adani...)" oninput="handleNiftySearch(this.value)">
-                        </div>
-
-                        <select id="nifty-sort-select" onchange="sortNiftyOpportunities(this.value)" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 7px 12px; border-radius: 20px; font-size: 0.85rem; outline: none; cursor: pointer;">
-                            <option value="prob">🏆 Highest Win Probability</option>
-                            <option value="discount">🏷️ Deepest 52W Discount</option>
-                            <option value="rsi">📉 Lowest RSI (Most Oversold)</option>
-                            <option value="upside">🚀 Highest Potential Upside</option>
-                            <option value="name">🔤 Stock Name (A-Z)</option>
-                        </select>
-
-                        <div class="view-toggle-group" style="display: flex; gap: 4px; background: rgba(0,0,0,0.2); padding: 3px; border-radius: 20px; border: 1px solid var(--glass-border);">
-                            <button class="view-toggle-pill active" id="btn-nifty-view-cards" onclick="switchNiftyView('cards')" style="padding: 4px 10px; border-radius: 16px; font-size: 0.78rem; border: none; cursor: pointer; color: var(--text-secondary);"><i class="fa-solid fa-grip"></i> Cards</button>
-                            <button class="view-toggle-pill" id="btn-nifty-view-table" onclick="switchNiftyView('table')" style="padding: 4px 10px; border-radius: 16px; font-size: 0.78rem; border: none; cursor: pointer; color: var(--text-secondary);"><i class="fa-solid fa-table"></i> Table</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cards View -->
-                <div id="nifty-cards-container" class="nifty-cards-grid">
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; color: var(--text-secondary);">
-                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block; color: #fbbf24;"></i>
-                        Scanning Nifty 50 stocks for Golden Crossovers and Oversold opportunities...
-                    </div>
-                </div>
-
-                <!-- Table View -->
-                <div id="nifty-table-container" class="table-container full-width" style="display: none; margin-bottom: 2rem;">
-                    <table class="market-table">
-                        <thead>
-                            <tr>
-                                <th>Stock</th>
-                                <th>CMP (₹)</th>
-                                <th>Win Prob</th>
-                                <th>Golden Cross (50 vs 200 EMA)</th>
-                                <th>RSI (14)</th>
-                                <th>52W High (Discount)</th>
-                                <th>Action &amp; Targets</th>
-                                <th style="text-align: right;">Trade / Inspect</th>
-                            </tr>
-                        </thead>
-                        <tbody id="nifty-table-body">
-                            <tr><td colspan="8" class="loading">Loading Nifty 50 technical setups...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Footer Update Note -->
-                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-secondary); padding: 0.5rem 0.25rem;">
-                    <div><i class="fa-solid fa-clock"></i> <span id="nifty-updated-note">Updated recently via TradingView NSE Screener</span></div>
-                    <div><span style="color: #fbbf24;">●</span> Quantitative multi-indicator confluence score (50/200 EMA + RSI + BB + 52W Range)</div>
-                </div>
-            </section>
-
-            <!-- Circuit Limits Tab -->
-            <section id="circuits-tab" class="tab-content">
-                <div class="circuits-header-card full-width">
+                <!-- 1. Circuit Limits Section -->
+                <div id="hub-section-circuits">
+<div class="circuits-header-card full-width">
                     <div class="circuits-title-area">
                         <h2>⚡ MCX Daily Circuit Limits (DPL)</h2>
                         <p>Live floor and ceiling prices computed daily from exchange settlement anchors & SEBI slabs.</p>
@@ -579,11 +454,65 @@
                         </div>
                     </div>
                 </div>
-            </section>
+                </div>
 
-            <!-- Alerts Tab -->
-            <section id="alerts-tab" class="tab-content">
-                <div class="dashboard-header">
+                <!-- 2. Live Market Prices Section -->
+                <div id="hub-section-prices" style="display: none;">
+<div class="dashboard-header">
+                    <h2>Live Market Prices</h2>
+                    <p>Auto-synced every 5 minutes from the cloud.</p>
+                </div>
+                
+                <div class="mobile-scroll-indicator">
+                    <i class="fa-solid fa-arrows-left-right"></i> Swipe table horizontally to view full prices & levels
+                </div>
+                <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                    <h3>Nifty 50 Stocks</h3>
+                    <table class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Current Price (₹)</th>
+                                <th>Intrinsic Value (₹)</th>
+                                <th>Support 1</th>
+                                <th>Resistance 1</th>
+                                <th>Last Updated</th>
+                                <th>Interactive Chart</th>
+                            </tr>
+                        </thead>
+                        <tbody id="market-data-body-stocks">
+                            <tr><td colspan="6" class="loading">Loading live data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mobile-scroll-indicator">
+                    <i class="fa-solid fa-arrows-left-right"></i> Swipe table horizontally to view full prices & levels
+                </div>
+                <div class="table-container glass-card full-width">
+                    <h3>MCX Commodities</h3>
+                    <table class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Current Price (₹)</th>
+                                <th>Intrinsic Value (₹)</th>
+                                <th>Support 1</th>
+                                <th>Resistance 1</th>
+                                <th>Last Updated</th>
+                                <th>Interactive Chart</th>
+                            </tr>
+                        </thead>
+                        <tbody id="market-data-body-commodities">
+                            <tr><td colspan="6" class="loading">Loading live data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+
+                <!-- 3. Alert Zone Section -->
+                <div id="hub-section-alerts" style="display: none;">
+<div class="dashboard-header">
                     <h2>🔥 Assets in the Alert Zone</h2>
                     <p>These assets are currently testing a critical Support or Resistance level.</p>
                 </div>
@@ -623,30 +552,158 @@
                         </tbody>
                     </table>
                 </div>
+                </div>
             </section>
 
-            <!-- Paper Trading Tab -->
-            <section id="trade-tab" class="tab-content">
-                <div class="dashboard-header">
-                    <h2>Paper Trading & Advisory</h2>
-                    <p>Practice trading with a virtual balance or track daily 6:00 PM IST automated advisory signals.</p>
+            <!-- Backward compatibility aliases for DOM selectors and URLs -->
+            <div id="dashboard-tab" style="display:none;" aria-hidden="true"></div>
+            <div id="circuits-tab" style="display:none;" aria-hidden="true"></div>
+            <div id="alerts-tab" style="display:none;" aria-hidden="true"></div>
+
+            <!-- 🎯 Nifty 50 Golden Cross & Deep Value Scanner Tab -->
+            <section id="nifty-tab" class="tab-content">
+                <!-- Header Banner -->
+                <div class="nifty-header-card full-width">
+                    <div class="nifty-title-area">
+                        <h2><i class="fa-solid fa-gem" style="color: #f59e0b;"></i> Nifty 50 Golden Cross & Oversold Value Scanner</h2>
+                        <p>High-probability institutional setups combining <strong>50/200 EMA Golden Crossovers</strong>, <strong>Oversold RSI (&lt;35-40)</strong>, <strong>Bollinger Band Mean Reversion</strong>, and <strong>deep 52-Week Discounts</strong> across Indian blue-chips.</p>
+                    </div>
+                    <div class="nifty-controls-right">
+                        <div class="pulse-pill">
+                            <span class="pulse-dot"></span>
+                            <span>NSE Live Scanner</span>
+                        </div>
+                        <button class="circuit-refresh-btn" id="nifty-refresh-btn" onclick="fetchNiftyOpportunities(true)" title="Rescan Nifty 50 Technicals">
+                            <i class="fa-solid fa-arrows-rotate"></i> <span>Rescan Now</span>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Sub-Navigation View Switcher: Paper Trading Terminal vs 6 PM Advisory Signals -->
-                <div class="circuit-subnav-container" style="margin-bottom: 2rem;">
-                    <button class="circuit-subnav-btn active" id="btn-subnav-trade-terminal" onclick="switchPaperTradingSubView('terminal')">
-                        <i class="fa-solid fa-wallet"></i>
-                        <span>Paper Trading Terminal</span>
+                <!-- 4 KPI Summary Cards -->
+                <div class="nifty-kpi-grid">
+                    <div class="nifty-kpi-card">
+                        <div class="nifty-kpi-label"><i class="fa-solid fa-trophy" style="color: #fbbf24;"></i> High Win-Rate Setups</div>
+                        <div class="nifty-kpi-value" id="nifty-kpi-high-prob">--</div>
+                        <div class="nifty-kpi-sub">80%+ Confluence Probability</div>
+                    </div>
+                    <div class="nifty-kpi-card">
+                        <div class="nifty-kpi-label"><i class="fa-solid fa-star" style="color: #f59e0b;"></i> Golden Crossovers</div>
+                        <div class="nifty-kpi-value" id="nifty-kpi-golden" style="color: #fbbf24;">--</div>
+                        <div class="nifty-kpi-sub">50 EMA &gt; 200 EMA Bullish</div>
+                    </div>
+                    <div class="nifty-kpi-card">
+                        <div class="nifty-kpi-label"><i class="fa-solid fa-chart-line-down" style="color: #38bdf8;"></i> Deeply Oversold Gems</div>
+                        <div class="nifty-kpi-value" id="nifty-kpi-oversold" style="color: #38bdf8;">--</div>
+                        <div class="nifty-kpi-sub">RSI &lt; 40 Value Reversal Floor</div>
+                    </div>
+                    <div class="nifty-kpi-card">
+                        <div class="nifty-kpi-label"><i class="fa-solid fa-tag" style="color: #34d399;"></i> Top 10 Avg Discount</div>
+                        <div class="nifty-kpi-value" id="nifty-kpi-avg-discount" style="color: #34d399;">--</div>
+                        <div class="nifty-kpi-sub">Off 52-Week High Range</div>
+                    </div>
+                </div>
+
+                <!-- Controls, Filters, Search & Sort Toolbar -->
+                <div class="nifty-toolbar">
+                    <div class="nifty-filters">
+                        <button class="circuit-filter-pill active" onclick="filterNiftyCategory('ALL', this)">🔥 All Setups (<span id="nifty-cnt-all">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('GOLDEN', this)">🌟 Golden Cross (<span id="nifty-cnt-golden">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('OVERSOLD', this)">📉 Deeply Oversold (<span id="nifty-cnt-oversold">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('DISCOUNT', this)">🏷️ Deep Discount &gt;15% (<span id="nifty-cnt-discount">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('ELITE', this)">🏆 90%+ Elite Win Prob (<span id="nifty-cnt-elite">0</span>)</button>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <div class="circuit-search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="nifty-search-input" placeholder="Search stock (Reliance, Adani...)" oninput="handleNiftySearch(this.value)">
+                        </div>
+
+                        <select id="nifty-sort-select" onchange="sortNiftyOpportunities(this.value)" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 7px 12px; border-radius: 20px; font-size: 0.85rem; outline: none; cursor: pointer;">
+                            <option value="prob">🏆 Highest Win Probability</option>
+                            <option value="discount">🏷️ Deepest 52W Discount</option>
+                            <option value="rsi">📉 Lowest RSI (Most Oversold)</option>
+                            <option value="upside">🚀 Highest Potential Upside</option>
+                            <option value="name">🔤 Stock Name (A-Z)</option>
+                        </select>
+
+                        <div class="view-toggle-group" style="display: flex; gap: 4px; background: rgba(0,0,0,0.2); padding: 3px; border-radius: 20px; border: 1px solid var(--glass-border);">
+                            <button class="view-toggle-pill active" id="btn-nifty-view-cards" onclick="switchNiftyView('cards')" style="padding: 4px 10px; border-radius: 16px; font-size: 0.78rem; border: none; cursor: pointer; color: var(--text-secondary);"><i class="fa-solid fa-grip"></i> Cards</button>
+                            <button class="view-toggle-pill" id="btn-nifty-view-table" onclick="switchNiftyView('table')" style="padding: 4px 10px; border-radius: 16px; font-size: 0.78rem; border: none; cursor: pointer; color: var(--text-secondary);"><i class="fa-solid fa-table"></i> Table</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cards View -->
+                <div id="nifty-cards-container" class="nifty-cards-grid">
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; color: var(--text-secondary);">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block; color: #fbbf24;"></i>
+                        Scanning Nifty 50 stocks for Golden Crossovers and Oversold opportunities...
+                    </div>
+                </div>
+
+                <!-- Table View -->
+                <div id="nifty-table-container" class="table-container full-width" style="display: none; margin-bottom: 2rem;">
+                    <table class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Stock</th>
+                                <th>CMP (₹)</th>
+                                <th>Win Prob</th>
+                                <th>Golden Cross (50 vs 200 EMA)</th>
+                                <th>RSI (14)</th>
+                                <th>52W High (Discount)</th>
+                                <th>Action &amp; Targets</th>
+                                <th style="text-align: right;">Trade / Inspect</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nifty-table-body">
+                            <tr><td colspan="8" class="loading">Loading Nifty 50 technical setups...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer Update Note -->
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-secondary); padding: 0.5rem 0.25rem;">
+                    <div><i class="fa-solid fa-clock"></i> <span id="nifty-updated-note">Updated recently via TradingView NSE Screener</span></div>
+                    <div><span style="color: #fbbf24;">●</span> Quantitative multi-indicator confluence score (50/200 EMA + RSI + BB + 52W Range)</div>
+                </div>
+            </section>
+
+            <!-- Circuit Limits Tab -->
+            
+
+            <!-- Alerts Tab -->
+            
+
+            <!-- Paper Trading Tab -->
+                        <!-- Paper Trading & Investing Tab -->
+            <section id="trade-tab" class="tab-content">
+                <div class="dashboard-header">
+                    <h2>Paper Trading & Wealth Investing</h2>
+                    <p>Practice MCX commodity futures trading with standardized risk-parity margin, or build long-term equity wealth by purchasing individual Nifty 50 shares.</p>
+                </div>
+
+                <!-- Sub-Navigation View Switcher: Commodities, Investing, Advisory Signals -->
+                <div class="circuit-subnav-container" style="margin-bottom: 1.75rem;">
+                    <button class="circuit-subnav-btn active" id="btn-subnav-trade-commodities" onclick="switchPaperTradingSubView('commodities')">
+                        <i class="fa-solid fa-oil-well" style="color:#f59e0b;"></i>
+                        <span>⚡ Commodity Trading (MCX F&O)</span>
+                    </button>
+                    <button class="circuit-subnav-btn" id="btn-subnav-trade-investing" onclick="switchPaperTradingSubView('investing')">
+                        <i class="fa-solid fa-seedling" style="color:#4ade80;"></i>
+                        <span>💼 Stock Investing (Cash Delivery)</span>
                     </button>
                     <button class="circuit-subnav-btn" id="btn-subnav-trade-advisory" onclick="switchPaperTradingSubView('advisory')">
-                        <i class="fa-solid fa-crosshairs"></i>
-                        <span>Advisory Signals (1:30 PM & 6:00 PM)</span>
+                        <i class="fa-solid fa-crosshairs" style="color:#818cf8;"></i>
+                        <span>🎯 Advisory Signals (1:30 & 6:00 PM)</span>
                         <span class="subnav-badge" id="advisory-badge-count">Signals</span>
                     </button>
                 </div>
 
-                <!-- Advisory Signals & Multi-Session Tracker Subview -->
+                <!-- Advisory Signals Subview -->
                 <div id="trade-view-advisory" style="display: none;">
+<div id="trade-view-advisory" style="display: none;">
                     <!-- 🎯 6:00 PM IST Advisory Signals & Paper Trade Tracker -->
                     <div id="advisory-tracker-section" class="glass-card full-width" style="margin-bottom: 2.5rem; border: 1px solid rgba(99, 102, 241, 0.35); background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1rem;">
@@ -781,187 +838,260 @@
             </div>
 
             <!-- Virtual Paper Trading Terminal Subview (Active by Default) -->
-            <div id="trade-view-terminal">
-                <div id="trade-login-prompt" style="text-align: center; margin: 4rem 0;">
-                    <h3 style="color: var(--text-secondary);">Please log in via the Account tab to access Paper Trading.</h3>
                 </div>
 
-                <div id="trade-dashboard-content" style="display: none; width: 100%;">
-                    <!-- Paper Trading Dashboard -->
-                    <div class="glass-card full-width" style="margin-bottom: 2rem;">
-                        <div class="paper-net-worth-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div>
-                                <h3 style="margin: 0; color: var(--text-secondary); font-size: 1rem;">Net Worth</h3>
-                                <h1 id="virtual-net-worth" style="margin: 0.5rem 0 0 0; font-size: 2.5rem; color: #4ade80;">₹...</h1>
-                            </div>
-                            <div class="paper-net-worth-actions" style="display: flex; gap: 1rem;">
-                                <button onclick="editVirtualBalance()" style="background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.3); color: var(--text-primary); padding: 6px 12px; border-radius: 4px; cursor: pointer;">
-                                    <i class="fa-solid fa-pen-to-square"></i> Edit Cash
-                                </button>
-                                <button onclick="resetPaperTradingAccount()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fb7185; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
-                                    <i class="fa-solid fa-rotate-right"></i> Reset Account
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="paper-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                            <div>
-                                <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Available Margin</h4>
-                                <p id="virtual-available-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
-                            </div>
-                            <div>
-                                <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Used Margin (15%)</h4>
-                                <p id="virtual-used-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
-                            </div>
-                            <div>
-                                <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Current Portfolio Value</h4>
-                                <p id="virtual-portfolio-value" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
-                            </div>
-                            <div>
-                                <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Total P&L</h4>
-                                <p id="virtual-total-pl" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
-                            </div>
-                        </div>
+                <!-- Account / Trading Views Wrapper -->
+                <div id="trade-view-terminal">
+                    <div id="trade-login-prompt" style="text-align: center; margin: 4rem 0;">
+                        <h3 style="color: var(--text-secondary);">Please log in via the Account tab to access Paper Trading & Investing.</h3>
                     </div>
 
-                    <!-- Portfolio Holdings -->
-                    <div style="margin-bottom: 2rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <h2 style="margin: 0;">Your Portfolio</h2>
-                            <div class="view-toggle-bar" style="margin-bottom: 0;">
-                                <button class="view-toggle-pill active" data-mode="cards" onclick="setMobileViewMode('cards')"><i class="fa-solid fa-mobile-screen"></i> Cards</button>
-                                <button class="view-toggle-pill" data-mode="table" onclick="setMobileViewMode('table')"><i class="fa-solid fa-table"></i> Table</button>
+                    <div id="trade-dashboard-content" style="display: none; width: 100%;">
+                        <!-- Account Portfolio Overview Card -->
+                        <div class="glass-card full-width" style="margin-bottom: 2rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                                <div>
+                                    <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-secondary);">Virtual Account Balance & Net Worth</h3>
+                                    <h1 id="virtual-net-worth" style="margin: 0.5rem 0 0 0; font-size: 2.2rem; color: #4ade80;">₹...</h1>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                    <button onclick="editVirtualBalance()" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #c7d2fe; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                        <i class="fa-solid fa-pen-to-square"></i> Edit Cash
+                                    </button>
+                                    <button onclick="resetPaperTradingAccount()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fb7185; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                        <i class="fa-solid fa-rotate-right"></i> Reset Account
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="paper-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                                <div>
+                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Available Cash / Margin</h4>
+                                    <p id="virtual-available-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Used Margin / Invested</h4>
+                                    <p id="virtual-used-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Current Portfolio Value</h4>
+                                    <p id="virtual-portfolio-value" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Total Unrealized P&L</h4>
+                                    <p id="virtual-total-pl" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Stocks Portfolio -->
-                        <div class="table-container glass-card full-width" style="margin-bottom: 1rem;">
-                            <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-chart-line" style="color:#60a5fa; margin-right:8px;"></i> Stocks</h3>
-                            <div class="desktop-table-view">
-                                <table class="market-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Asset</th>
-                                            <th>Shares</th>
-                                            <th>Avg Price</th>
-                                            <th>Current Price</th>
-                                            <th>Total Value</th>
-                                            <th>P&L</th>
-                                            <th style="text-align: right;">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="portfolio-stocks-body">
-                                        <tr><td colspan="7" class="loading">Loading portfolio...</td></tr>
-                                    </tbody>
-                                </table>
+                        <!-- ========================================================= -->
+                        <!-- MODULE 1: ⚡ COMMODITY TRADING TERMINAL (MCX F&O) -->
+                        <!-- ========================================================= -->
+                        <div id="trade-module-commodities">
+                            <!-- Commodity Module Banner -->
+                            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(30, 41, 59, 0.6)); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                                <div>
+                                    <div style="font-weight: 700; color: #fbbf24; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fa-solid fa-bolt"></i> MCX Commodity Futures Terminal (Standardized Risk Parity)
+                                    </div>
+                                    <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 4px; line-height: 1.4;">
+                                        Calibrated contract sizes requiring approximately <strong>₹1.2 Lakh – ₹1.5 Lakh</strong> capital per lot: <strong>Crude Oil 50 bbl</strong> (₹50/pt), <strong>Natural Gas 1250 mmBtu</strong> (₹1250/pt), <strong>Gold 10 units</strong> (₹10/pt), <strong>Silver 5 units</strong> (₹5/pt), <strong>Copper 1250 kg</strong> (₹1250/pt). Two-way trading (Long & Short) with 8%–35% margin leverage.
+                                    </div>
+                                </div>
+                                <div class="view-toggle-bar" style="margin-bottom: 0;">
+                                    <button class="view-toggle-pill active" data-mode="cards" onclick="setMobileViewMode('cards')"><i class="fa-solid fa-mobile-screen"></i> Cards</button>
+                                    <button class="view-toggle-pill" data-mode="table" onclick="setMobileViewMode('table')"><i class="fa-solid fa-table"></i> Table</button>
+                                </div>
                             </div>
-                            <div id="portfolio-stocks-cards" class="mobile-cards-feed">
-                                <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">No active stock holdings.</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Commodities Portfolio -->
-                        <div class="table-container glass-card full-width">
-                            <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-oil-well" style="color:#f59e0b; margin-right:8px;"></i> Commodities</h3>
-                            <div class="desktop-table-view">
-                                <table class="market-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Asset</th>
-                                            <th>Quantity</th>
-                                            <th>Avg Price</th>
-                                            <th>Current Price</th>
-                                            <th>Total Value</th>
-                                            <th>P&L</th>
-                                            <th style="text-align: right;">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="portfolio-commodities-body">
-                                        <tr><td colspan="7" class="loading">Loading portfolio...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div id="portfolio-commodities-cards" class="mobile-cards-feed">
-                                <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">No active commodity holdings.</div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Pending Orders -->
-                    <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-clock" style="color:#a855f7; margin-right:8px;"></i> Pending Limit Orders</h3>
-                        <div class="desktop-table-view">
-                            <table class="market-table">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Asset</th>
-                                        <th>Type</th>
-                                        <th>Quantity</th>
-                                        <th>Limit Price</th>
-                                        <th>Total Value</th>
-                                        <th style="text-align: right;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="pending-orders-body">
-                                    <tr><td colspan="7" class="loading">Loading pending orders...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div id="pending-orders-cards" class="mobile-cards-feed">
-                            <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">No pending limit or stop orders.</div>
-                        </div>
-                    </div>
+                            <!-- Commodity Portfolio Holdings -->
+                            <div class="table-container glass-card full-width" style="margin-bottom: 1.5rem;">
+                                <h3 style="color: #fbbf24; font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-oil-well" style="color:#f59e0b; margin-right:8px;"></i> Active Commodity Futures Positions</h3>
+                                <div class="desktop-table-view">
+                                    <table class="market-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Asset</th>
+                                                <th>Quantity / Lots</th>
+                                                <th>Avg Price</th>
+                                                <th>Current Price</th>
+                                                <th>Notional Value</th>
+                                                <th>P&L</th>
+                                                <th style="text-align: right;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="portfolio-commodities-body">
+                                            <tr><td colspan="7" class="loading">Loading commodity positions...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="portfolio-commodities-cards" class="mobile-cards-feed">
+                                    <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">No active commodity futures positions.</div>
+                                </div>
+                            </div>
 
-                    <!-- Trading Terminal -->
-                    <div style="margin-bottom: 2rem;">
-                        <h2 style="margin-bottom: 1rem;">Trade Assets</h2>
-                        <div class="table-container glass-card full-width" style="margin-bottom: 1rem;">
-                            <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-chart-line" style="color:#60a5fa; margin-right:8px;"></i> Stocks</h3>
-                            <div class="desktop-table-view">
-                                <table class="market-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Asset</th>
-                                            <th>Type</th>
-                                            <th>Live Price</th>
-                                            <th style="text-align: right;">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="trade-market-stocks-body">
-                                        <tr><td colspan="4" class="loading">Loading market data...</td></tr>
-                                    </tbody>
-                                </table>
+                            <!-- Commodity Pending Orders -->
+                            <div class="table-container glass-card full-width" style="margin-bottom: 1.5rem;">
+                                <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-clock" style="color:#f59e0b; margin-right:8px;"></i> Commodity Pending Limit & Stop Orders</h3>
+                                <div class="desktop-table-view">
+                                    <table class="market-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Asset</th>
+                                                <th>Type</th>
+                                                <th>Quantity</th>
+                                                <th>Trigger Price</th>
+                                                <th>Notional Value</th>
+                                                <th style="text-align: right;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="pending-commodity-orders-body">
+                                            <tr><td colspan="7" class="loading">Loading pending orders...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="pending-commodity-orders-cards" class="mobile-cards-feed">
+                                    <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">No pending commodity orders.</div>
+                                </div>
                             </div>
-                            <div id="trade-market-stocks-cards" class="mobile-cards-feed">
-                                <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">Loading market stocks...</div>
+
+                            <!-- Commodity Trading Terminal -->
+                            <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                                <h3 style="color: #fbbf24; font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-bolt" style="color:#f59e0b; margin-right:8px;"></i> MCX Commodity Futures Markets (Standardized Risk Parity)</h3>
+                                <div class="desktop-table-view">
+                                    <table class="market-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Asset</th>
+                                                <th>Contract Size / Multiplier</th>
+                                                <th>Live Market Price</th>
+                                                <th>Capital / Margin Required</th>
+                                                <th style="text-align: right;">Trade Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="trade-market-commodities-body">
+                                            <tr><td colspan="5" class="loading">Loading MCX contracts...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="trade-market-commodities-cards" class="mobile-cards-feed">
+                                    <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">Loading market commodities...</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="table-container glass-card full-width">
-                            <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-oil-well" style="color:#f59e0b; margin-right:8px;"></i> Commodities</h3>
-                            <div class="desktop-table-view">
-                                <table class="market-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Asset</th>
-                                            <th>Type</th>
-                                            <th>Live Price</th>
-                                            <th style="text-align: right;">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="trade-market-commodities-body">
-                                        <tr><td colspan="4" class="loading">Loading market data...</td></tr>
-                                    </tbody>
-                                </table>
+
+                        <!-- ========================================================= -->
+                        <!-- MODULE 2: 💼 STOCK INVESTING (100% CASH / DELIVERY) -->
+                        <!-- ========================================================= -->
+                        <div id="trade-module-investing" style="display: none;">
+                            <!-- Stock Investing Banner -->
+                            <div style="background: linear-gradient(135deg, rgba(74, 222, 128, 0.12), rgba(30, 41, 59, 0.6)); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                                <div>
+                                    <div style="font-weight: 700; color: #4ade80; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fa-solid fa-seedling"></i> Individual Stock Wealth Investing (100% Cash Delivery)
+                                    </div>
+                                    <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 4px; line-height: 1.4;">
+                                        Build long-term equity wealth by purchasing individual shares starting from <strong>1 Share</strong> (step 1). 100% cash paid from virtual balance with zero derivative leverage, zero forced F&O lots, and no contract expiry.
+                                    </div>
+                                </div>
+                                <div class="view-toggle-bar" style="margin-bottom: 0;">
+                                    <button class="view-toggle-pill active" data-mode="cards" onclick="setMobileViewMode('cards')"><i class="fa-solid fa-mobile-screen"></i> Cards</button>
+                                    <button class="view-toggle-pill" data-mode="table" onclick="setMobileViewMode('table')"><i class="fa-solid fa-table"></i> Table</button>
+                                </div>
                             </div>
-                            <div id="trade-market-commodities-cards" class="mobile-cards-feed">
-                                <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">Loading market commodities...</div>
+
+                            <!-- Stock Search & Quick Actions Bar -->
+                            <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 260px; position: relative;">
+                                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"></i>
+                                    <input type="text" id="stock-invest-search" placeholder="Search 50 Nifty stocks (e.g., Reliance, TCS, Infosys, HDFC)..." oninput="filterStockInvestingTable()" style="width: 100%; padding: 10px 14px 10px 38px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0, 0, 0, 0.25); color: white; font-size: 0.9rem;">
+                                </div>
+                            </div>
+
+                            <!-- Stock Investment Holdings Portfolio -->
+                            <div class="table-container glass-card full-width" style="margin-bottom: 1.5rem;">
+                                <h3 style="color: #4ade80; font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-seedling" style="color:#4ade80; margin-right:8px;"></i> Stock Investment Holdings (Delivery / Cash)</h3>
+                                <div class="desktop-table-view">
+                                    <table class="market-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Asset</th>
+                                                <th>Shares Owned</th>
+                                                <th>Avg Buy Price</th>
+                                                <th>Current Price</th>
+                                                <th>Invested Value</th>
+                                                <th>Total Return</th>
+                                                <th style="text-align: right;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="portfolio-stocks-body">
+                                            <tr><td colspan="7" class="loading">Loading stock holdings...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="portfolio-stocks-cards" class="mobile-cards-feed">
+                                    <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">No active stock investments.</div>
+                                </div>
+                            </div>
+
+                            <!-- Stock Pending Orders -->
+                            <div class="table-container glass-card full-width" style="margin-bottom: 1.5rem;">
+                                <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-clock" style="color:#4ade80; margin-right:8px;"></i> Stock Buy/Sell Limit Orders</h3>
+                                <div class="desktop-table-view">
+                                    <table class="market-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Asset</th>
+                                                <th>Type</th>
+                                                <th>Shares</th>
+                                                <th>Limit Price</th>
+                                                <th>Order Value</th>
+                                                <th style="text-align: right;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="pending-stock-orders-body">
+                                            <tr><td colspan="7" class="loading">Loading pending stock orders...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="pending-stock-orders-cards" class="mobile-cards-feed">
+                                    <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">No pending stock orders.</div>
+                                </div>
+                            </div>
+
+                            <!-- Stock Investing Terminal -->
+                            <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
+                                <h3 style="color: #60a5fa; font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-chart-line" style="color:#60a5fa; margin-right:8px;"></i> Nifty 50 Blue-Chip Stock Terminal (Buy from 1 Share)</h3>
+                                <div class="desktop-table-view">
+                                    <table class="market-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Stock Name</th>
+                                                <th>Intrinsic Value</th>
+                                                <th>Live Market Price</th>
+                                                <th>Key S/R Levels</th>
+                                                <th style="text-align: right;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="trade-market-stocks-body">
+                                            <tr><td colspan="5" class="loading">Loading Nifty 50 stocks...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="trade-market-stocks-cards" class="mobile-cards-feed">
+                                    <div class="loading" style="text-align: center; padding: 1rem; color: var(--text-secondary);">Loading market stocks...</div>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Fallback hidden containers for legacy scripts -->
+                        <tbody id="pending-orders-body" style="display:none;" aria-hidden="true"></tbody>
+                        <div id="pending-orders-cards" style="display:none;" aria-hidden="true"></div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
             <!-- Account Tab -->
             <section id="admin-tab" class="tab-content">
@@ -1114,8 +1244,9 @@
     <!-- Trade Modal -->
     <div id="trade-modal" class="modal hidden">
         <div class="modal-content glass-card">
-            <h2 id="trade-modal-title" style="margin-bottom: 0.5rem;">Trade Asset</h2>
-            <p id="trade-modal-price" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem; color: var(--text-primary);">₹0.00</p>
+            <h2 id="trade-modal-title" style="margin-bottom: 0.35rem;">Trade Asset</h2>
+            <div id="trade-modal-subtitle" style="font-size: 0.85rem; color: #a5b4fc; margin-bottom: 0.75rem;">MCX Futures Contract</div>
+            <p id="trade-modal-price" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.25rem; color: var(--text-primary);">₹0.00</p>
             
             <div style="display: flex; flex-direction: column; gap: 1rem;">
                 <label>
@@ -1130,16 +1261,16 @@
                     <input type="number" id="trade-limit-price" step="0.05" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; font-size: 1.2rem;">
                 </label>
                 <label>
-                    <span style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Quantity</span>
+                    <span id="trade-qty-label" style="display:block; margin-bottom: 0.5rem; color: var(--text-secondary);">Quantity</span>
                     <input type="number" id="trade-qty" value="1" min="1" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; font-size: 1.2rem;">
                 </label>
                 
                 <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.9rem;">
-                    <span style="color: var(--text-secondary);">Total Exposure Value:</span>
+                    <span id="trade-total-label" style="color: var(--text-secondary);">Total Value:</span>
                     <strong id="trade-total-value">₹0.00</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 1rem;">
-                    <span style="color: var(--text-secondary);">Margin Required (15%):</span>
+                    <span id="trade-margin-label" style="color: var(--text-secondary);">Margin Required:</span>
                     <strong id="trade-margin-value" style="color: #a855f7;">₹0.00</strong>
                 </div>
 
@@ -1340,10 +1471,92 @@ function syncMarketDataWithCircuits() {
 }
 window.syncMarketDataWithCircuits = syncMarketDataWithCircuits;
 
+let activeMarketHubSubView = 'circuits';
+
+function switchMarketHubSubView(subview) {
+    activeMarketHubSubView = subview;
+    const secCircuits = document.getElementById('hub-section-circuits');
+    const secPrices = document.getElementById('hub-section-prices');
+    const secAlerts = document.getElementById('hub-section-alerts');
+
+    const btnCircuits = document.getElementById('btn-hub-circuits');
+    const btnPrices = document.getElementById('btn-hub-prices');
+    const btnAlerts = document.getElementById('btn-hub-alerts');
+    const btnAll = document.getElementById('btn-hub-all');
+
+    [btnCircuits, btnPrices, btnAlerts, btnAll].forEach(b => { if (b) b.classList.remove('active'); });
+
+    if (subview === 'circuits') {
+        if (secCircuits) secCircuits.style.display = 'block';
+        if (secPrices) secPrices.style.display = 'none';
+        if (secAlerts) secAlerts.style.display = 'none';
+        if (btnCircuits) btnCircuits.classList.add('active');
+        if (typeof fetchCircuitsData === 'function') fetchCircuitsData();
+    } else if (subview === 'prices') {
+        if (secCircuits) secCircuits.style.display = 'none';
+        if (secPrices) secPrices.style.display = 'block';
+        if (secAlerts) secAlerts.style.display = 'none';
+        if (btnPrices) btnPrices.classList.add('active');
+        if (typeof renderMarketTable === 'function') renderMarketTable();
+    } else if (subview === 'alerts') {
+        if (secCircuits) secCircuits.style.display = 'none';
+        if (secPrices) secPrices.style.display = 'none';
+        if (secAlerts) secAlerts.style.display = 'block';
+        if (btnAlerts) btnAlerts.classList.add('active');
+        if (typeof renderAlertTable === 'function') renderAlertTable();
+    } else if (subview === 'all') {
+        if (secCircuits) secCircuits.style.display = 'block';
+        if (secPrices) secPrices.style.display = 'block';
+        if (secAlerts) secAlerts.style.display = 'block';
+        if (btnAll) btnAll.classList.add('active');
+        if (typeof fetchCircuitsData === 'function') fetchCircuitsData();
+        if (typeof renderMarketTable === 'function') renderMarketTable();
+        if (typeof renderAlertTable === 'function') renderAlertTable();
+    }
+}
+window.switchMarketHubSubView = switchMarketHubSubView;
+
+async function refreshMarketHub() {
+    const timeEl = document.getElementById('market-hub-updated-time');
+    const btn = document.getElementById('market-hub-refresh-btn');
+    if (timeEl) timeEl.textContent = 'Syncing...';
+    if (btn) btn.classList.add('spinning');
+
+    try {
+        await Promise.all([
+            typeof fetchCircuitsData === 'function' ? fetchCircuitsData(true) : Promise.resolve(),
+            typeof fetchMarketData === 'function' ? fetchMarketData() : Promise.resolve()
+        ]);
+        if (timeEl) timeEl.textContent = 'Updated: ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    } catch(e) {
+        console.error("Error refreshing market hub:", e);
+        if (timeEl) timeEl.textContent = 'Sync error';
+    } finally {
+        if (btn) btn.classList.remove('spinning');
+    }
+}
+window.refreshMarketHub = refreshMarketHub;
+
 function switchTab(btn, targetId) {
     if (!btn && typeof event !== 'undefined' && event && event.target) {
         btn = event.target.closest('.tab-btn') || event.target;
     }
+    
+    // Backward compatibility mapping for merged tabs
+    if (targetId === 'circuits-tab') {
+        targetId = 'market-hub-tab';
+        btn = document.getElementById('market-hub-tab-btn') || btn;
+        switchMarketHubSubView('circuits');
+    } else if (targetId === 'dashboard-tab') {
+        targetId = 'market-hub-tab';
+        btn = document.getElementById('market-hub-tab-btn') || btn;
+        switchMarketHubSubView('prices');
+    } else if (targetId === 'alerts-tab') {
+        targetId = 'market-hub-tab';
+        btn = document.getElementById('market-hub-tab-btn') || btn;
+        switchMarketHubSubView('alerts');
+    }
+
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     
@@ -1358,23 +1571,29 @@ function switchTab(btn, targetId) {
     
     const now = Date.now();
     // Fast tab switching: render instantly from memory cache if fresh, otherwise fetch in background
-    if (targetId === 'dashboard-tab' || targetId === 'alerts-tab' || targetId === 'trade-tab') {
+    if (targetId === 'market-hub-tab') {
+        if (!lastCircuitsFetchTime || (now - lastCircuitsFetchTime > 45000)) {
+            if (typeof fetchCircuitsData === 'function') fetchCircuitsData();
+        } else {
+            if (typeof renderCircuitsTable === 'function') renderCircuitsTable();
+        }
         if (!lastMarketFetchTime || (now - lastMarketFetchTime > 60000)) {
             if (typeof fetchMarketData === 'function') fetchMarketData();
         } else {
             if (typeof renderMarketTable === 'function') renderMarketTable();
             if (typeof renderAlertTable === 'function') renderAlertTable();
-            if (targetId === 'trade-tab') {
-                if (typeof activePaperTradingSubView !== 'undefined' && activePaperTradingSubView === 'advisory') {
-                    if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker();
-                } else {
-                    if (typeof renderTradeMarket === 'function') renderTradeMarket();
-                    if (typeof renderPortfolio === 'function') renderPortfolio();
-                }
-            }
         }
-        if (!lastCircuitsFetchTime || (now - lastCircuitsFetchTime > 45000)) {
-            if (typeof fetchCircuitsData === 'function') fetchCircuitsData();
+    }
+    
+    if (targetId === 'trade-tab') {
+        if (!lastMarketFetchTime || (now - lastMarketFetchTime > 60000)) {
+            if (typeof fetchMarketData === 'function') fetchMarketData();
+        }
+        if (typeof activePaperTradingSubView !== 'undefined' && activePaperTradingSubView === 'advisory') {
+            if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker();
+        } else {
+            if (typeof renderTradeMarket === 'function') renderTradeMarket();
+            if (typeof renderPortfolio === 'function') renderPortfolio();
         }
     }
     
@@ -1386,19 +1605,6 @@ function switchTab(btn, targetId) {
         }
     }
 
-    if (targetId === 'circuits-tab') {
-        if (!lastCircuitsFetchTime || (now - lastCircuitsFetchTime > 45000)) {
-            if (typeof fetchCircuitsData === 'function') fetchCircuitsData();
-        } else {
-            if (typeof renderCircuitsTable === 'function') renderCircuitsTable();
-        }
-        if (!circuitsHistoryFullData || (now - lastHistoryFetchTime > 120000)) {
-            if (typeof fetchCircuitsHistory === 'function') fetchCircuitsHistory();
-        } else {
-            if (typeof renderCircuitsHistoryTable === 'function') renderCircuitsHistoryTable();
-        }
-    }
-    
     if (targetId === 'admin-tab') {
         if (typeof fetchSubscribers === 'function') fetchSubscribers();
     }
@@ -1415,23 +1621,29 @@ function initApp() {
     try { fetchCircuitsHistory(); } catch(e) { console.error("Fetch circuits history error:", e); }
     try { setupAuth(); } catch(e) { console.error("Auth setup error:", e); }
     
-    // Check URL hash routing (e.g. #circuits, #dashboard, #trade, #alerts, #nifty)
+    // Check URL hash routing (e.g. #circuits, #dashboard, #trade, #alerts, #nifty, #hub)
     const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+    const hubBtn = document.getElementById('market-hub-tab-btn');
     if (hash === 'circuits' || hash === 'circuit' || hash === 'circuits-tab') {
-        const btn = document.querySelector('button[onclick*="circuits-tab"]');
-        if (btn) switchTab(btn, 'circuits-tab');
-    } else if (hash === 'dashboard' || hash === 'market' || hash === 'dashboard-tab') {
-        const btn = document.querySelector('button[onclick*="dashboard-tab"]');
-        if (btn) switchTab(btn, 'dashboard-tab');
+        if (hubBtn) switchTab(hubBtn, 'market-hub-tab');
+        switchMarketHubSubView('circuits');
+    } else if (hash === 'dashboard' || hash === 'market' || hash === 'prices' || hash === 'dashboard-tab') {
+        if (hubBtn) switchTab(hubBtn, 'market-hub-tab');
+        switchMarketHubSubView('prices');
+    } else if (hash === 'alerts' || hash === 'alert' || hash === 'alerts-tab') {
+        if (hubBtn) switchTab(hubBtn, 'market-hub-tab');
+        switchMarketHubSubView('alerts');
+    } else if (hash === 'hub' || hash === 'market-hub' || hash === 'markethub') {
+        if (hubBtn) switchTab(hubBtn, 'market-hub-tab');
+        switchMarketHubSubView('circuits');
     } else if (hash === 'nifty' || hash === 'crossover' || hash === 'oversold' || hash === 'nifty-tab') {
         const btn = document.querySelector('button[onclick*="nifty-tab"]');
         if (btn) switchTab(btn, 'nifty-tab');
-    } else if (hash === 'alerts' || hash === 'alert' || hash === 'alerts-tab') {
-        const btn = document.querySelector('button[onclick*="alerts-tab"]');
-        if (btn) switchTab(btn, 'alerts-tab');
-    } else if (hash === 'trade' || hash === 'trade-tab') {
-        const btn = document.querySelector('button[onclick*="trade-tab"]');
+    } else if (hash === 'trade' || hash === 'investing' || hash === 'commodities' || hash === 'trade-tab') {
+        const btn = document.getElementById('trade-tab-btn') || document.querySelector('button[onclick*="trade-tab"]');
         if (btn) switchTab(btn, 'trade-tab');
+        if (hash === 'investing') switchPaperTradingSubView('investing');
+        else if (hash === 'commodities') switchPaperTradingSubView('commodities');
     } else if (hash === 'copilot' || hash === 'chat' || hash === 'copilot-tab') {
         const btn = document.querySelector('button[onclick*="copilot-tab"]');
         if (btn) switchTab(btn, 'copilot-tab');
@@ -3601,10 +3813,14 @@ window.cancelPendingOrder = async function(orderId) {
 }
 
 function renderPendingOrders(orders) {
-    const tbody = document.getElementById('pending-orders-body');
-    const cardsFeed = document.getElementById('pending-orders-cards');
-    if (!tbody) return;
-    
+    const tbodyOld = document.getElementById('pending-orders-body');
+    const tbodyComm = document.getElementById('pending-commodity-orders-body') || tbodyOld;
+    const tbodyStock = document.getElementById('pending-stock-orders-body') || tbodyOld;
+
+    const cardsOld = document.getElementById('pending-orders-cards');
+    const cardsComm = document.getElementById('pending-commodity-orders-cards') || cardsOld;
+    const cardsStock = document.getElementById('pending-stock-orders-cards') || cardsOld;
+
     const activeOrders = [...(orders || []).filter(o => o.status === 'PENDING' || o.status === 'PENDING_STOP')];
 
     // Automatically incorporate Target & Stop-Loss from active advisory trades
@@ -3641,46 +3857,45 @@ function renderPendingOrders(orders) {
         }
     }
 
-    if (activeOrders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No pending limit or stop orders.</td></tr>`;
-        if (cardsFeed) cardsFeed.innerHTML = `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No pending limit or stop orders.</div>`;
-        return;
-    }
+    const commOrders = activeOrders.filter(o => isCommoditySymbol(o.symbol));
+    const stockOrders = activeOrders.filter(o => !isCommoditySymbol(o.symbol));
 
-    tbody.innerHTML = activeOrders.map(tx => {
-        const date = new Date(tx.created_at).toLocaleString('en-IN', { 
-            year: 'numeric', month: 'short', day: 'numeric', 
-            hour: '2-digit', minute:'2-digit' 
-        });
-        
-        const marketItem = marketData.find(item => item.symbol === tx.symbol);
-        const name = marketItem ? marketItem.name : tx.symbol;
-        
-        const totalValue = tx.quantity * tx.limit_price;
-        const color = tx.transaction_type === 'BUY' ? '#4ade80' : '#fb7185';
-        
-        const orderTypeLabel = tx.status === 'PENDING_STOP' ? `Stop Loss (${tx.transaction_type})` : `Target Limit (${tx.transaction_type})`;
-        const actionBtn = tx.is_advisory 
-            ? `<span style="font-size:0.75rem; color:#818cf8; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.35); padding:3px 8px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-robot"></i> Advisory</span>`
-            : `<button onclick="cancelPendingOrder('${tx.id}')" class="trade-btn sell-btn btn-small" style="background: rgba(239, 68, 68, 0.1) !important; color: #fb7185 !important; border-color: rgba(239, 68, 68, 0.3) !important;">Cancel</button>`;
-        
-        return `
-            <tr>
-                <td style="color:var(--text-secondary); font-size: 0.9rem;">${date}</td>
-                <td><strong>${name}</strong> <small style="color:var(--text-secondary)">(${tx.symbol})</small></td>
-                <td style="color: ${color}; font-weight: bold;">${orderTypeLabel}</td>
-                <td>${tx.quantity.toLocaleString('en-IN')}</td>
-                <td style="font-weight:600">₹${parseFloat(tx.limit_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                <td style="font-weight:600; color:var(--text-secondary)">₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                <td style="text-align: right;">
-                    ${actionBtn}
-                </td>
-            </tr>
-        `;
-    }).join('');
+    const buildTableRows = (list) => {
+        if (!list || list.length === 0) {
+            return `<tr><td colspan="7" class="loading" style="padding: 1.5rem !important;">No pending limit or stop orders.</td></tr>`;
+        }
+        return list.map(tx => {
+            const date = new Date(tx.created_at).toLocaleString('en-IN', { 
+                month: 'short', day: 'numeric', 
+                hour: '2-digit', minute:'2-digit' 
+            });
+            const marketItem = marketData.find(item => item.symbol === tx.symbol);
+            const name = marketItem ? marketItem.name : tx.symbol;
+            const totalValue = tx.quantity * tx.limit_price;
+            const color = tx.transaction_type === 'BUY' ? '#4ade80' : '#fb7185';
+            const orderTypeLabel = tx.status === 'PENDING_STOP' ? `Stop Loss (${tx.transaction_type})` : `Target Limit (${tx.transaction_type})`;
+            const actionBtn = tx.is_advisory 
+                ? `<span style="font-size:0.75rem; color:#818cf8; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.35); padding:3px 8px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-robot"></i> Advisory</span>`
+                : `<button onclick="cancelPendingOrder('${tx.id}')" class="trade-btn sell-btn btn-small" style="background: rgba(239, 68, 68, 0.1) !important; color: #fb7185 !important; border-color: rgba(239, 68, 68, 0.3) !important;">Cancel</button>`;
+            return `
+                <tr>
+                    <td style="color:var(--text-secondary); font-size: 0.9rem;">${date}</td>
+                    <td><strong>${name}</strong> <small style="color:var(--text-secondary)">(${tx.symbol})</small></td>
+                    <td style="color: ${color}; font-weight: bold;">${orderTypeLabel}</td>
+                    <td>${tx.quantity.toLocaleString('en-IN')}</td>
+                    <td style="font-weight:600">₹${parseFloat(tx.limit_price).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td style="font-weight:600; color:var(--text-secondary)">₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td style="text-align: right;">${actionBtn}</td>
+                </tr>
+            `;
+        }).join('');
+    };
 
-    if (cardsFeed) {
-        cardsFeed.innerHTML = activeOrders.map(tx => {
+    const buildCards = (list) => {
+        if (!list || list.length === 0) {
+            return `<div style="text-align:center; padding:1.2rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No pending orders.</div>`;
+        }
+        return list.map(tx => {
             const date = new Date(tx.created_at).toLocaleString('en-IN', { 
                 month: 'short', day: 'numeric', 
                 hour: '2-digit', minute:'2-digit' 
@@ -3692,7 +3907,7 @@ function renderPendingOrders(orders) {
             const orderTypeLabel = tx.status === 'PENDING_STOP' ? `Stop Loss (${tx.transaction_type})` : `Target Limit (${tx.transaction_type})`;
             const actionBtn = tx.is_advisory 
                 ? `<span style="font-size:0.75rem; color:#818cf8; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.35); padding:3px 8px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-robot"></i> Advisory Trigger</span>`
-                : `<button onclick="cancelPendingOrder('${tx.id}')" class="trade-btn sell-btn btn-small" style="background: rgba(239, 68, 68, 0.15) !important; color: #fb7185 !important; border: 1px solid rgba(239, 68, 68, 0.3) !important; padding: 4px 12px; font-size: 0.8rem;">Cancel Order</button>`;
+                : `<button onclick="cancelPendingOrder('${tx.id}')" class="trade-btn sell-btn btn-small" style="background: rgba(239, 68, 68, 0.15) !important; color: #fb7185 !important; border: 1px solid rgba(239, 68, 68, 0.3) !important; padding: 4px 12px; font-size: 0.8rem;">Cancel</button>`;
 
             return `
                 <div class="mobile-trading-card">
@@ -3729,57 +3944,72 @@ function renderPendingOrders(orders) {
                 </div>
             `;
         }).join('');
-    }
+    };
+
+    if (tbodyComm) tbodyComm.innerHTML = buildTableRows(commOrders);
+    if (cardsComm) cardsComm.innerHTML = buildCards(commOrders);
+
+    if (tbodyStock) tbodyStock.innerHTML = buildTableRows(stockOrders);
+    if (cardsStock) cardsStock.innerHTML = buildCards(stockOrders);
+
+    if (tbodyOld) tbodyOld.innerHTML = buildTableRows(activeOrders);
+    if (cardsOld) cardsOld.innerHTML = buildCards(activeOrders);
 }
 
-function renderOrderHistory(txData) {
-    const tbody = document.getElementById('order-history-body');
-    if (!tbody) return;
+const COMMODITY_SYMBOLS = ['CRUDEOIL', 'NATURALGAS', 'GOLD', 'SILVER', 'COPPER', 'CRUDEOILM', 'NATURALGASM', 'SILVERMIC', 'GOLDM', 'GOLDTEN', 'COPPERM'];
 
-    if (!txData || txData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="loading" style="padding: 2rem !important;">No order history found.</td></tr>`;
-        return;
-    }
-
-    const reversedData = [...txData].reverse();
-
-    tbody.innerHTML = reversedData.map(tx => {
-        const date = new Date(tx.timestamp).toLocaleString('en-IN', { 
-            year: 'numeric', month: 'short', day: 'numeric', 
-            hour: '2-digit', minute:'2-digit', second:'2-digit' 
-        });
-        
-        const marketItem = marketData.find(item => item.symbol === tx.symbol);
-        const name = marketItem ? marketItem.name : tx.symbol;
-        
-        const totalValue = tx.quantity * tx.price;
-        const color = tx.transaction_type === 'BUY' ? '#4ade80' : '#fb7185';
-        
-        return `
-            <tr>
-                <td style="color:var(--text-secondary); font-size:0.9rem;">${date}</td>
-                <td><strong>${name}</strong> <small style="color:var(--text-secondary)">(${tx.symbol})</small></td>
-                <td style="color:${color}; font-weight:bold;">${tx.transaction_type}</td>
-                <td>${tx.quantity}</td>
-                <td>₹${tx.price.toFixed(2)}</td>
-                <td>₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-            </tr>
-        `;
-    }).join('');
+function isCommoditySymbol(symbol) {
+    if (!symbol) return false;
+    const clean = symbol.replace('-FUT', '').toUpperCase();
+    return COMMODITY_SYMBOLS.includes(clean);
 }
+window.isCommoditySymbol = isCommoditySymbol;
+
+const LOT_SIZES = {
+    'GOLD': 10,         // Gold: 10 units (100g)
+    'SILVER': 5,        // Silver: 5 units (5 kg)
+    'CRUDEOIL': 50,     // Crude Oil: 50 units (50 bbl)
+    'NATURALGAS': 1250, // Natural Gas: 1250 units (1250 mmBtu)
+    'COPPER': 1250      // Copper: 1250 units (1250 kg)
+};
+
+function getLotSize(symbol) {
+    const base = symbol.replace('-FUT', '').toUpperCase();
+    if (isCommoditySymbol(base)) {
+        return LOT_SIZES[base] || 1;
+    }
+    // Stock Investing: 1 share minimum individual purchase
+    return 1;
+}
+window.getLotSize = getLotSize;
+
+const COMMODITY_MARGIN_RATES = {
+    'CRUDEOIL': 0.25,    // 50 bbl @ ~₹9,800 -> ~₹1.22L margin
+    'NATURALGAS': 0.35,  // 1250 mmBtu @ ~₹293 -> ~₹1.28L margin
+    'SILVER': 0.15,      // 5 kg @ ~₹194,300 -> ~₹1.45L margin
+    'GOLD': 0.10,        // 10 units (100g) @ ~₹143,700 -> ~₹1.44L margin
+    'COPPER': 0.08       // 1250 kg @ ~₹1,406 -> ~₹1.40L margin
+};
+
+function getAssetMarginRate(symbol) {
+    const base = symbol.replace('-FUT', '').replace('.NS', '').toUpperCase();
+    if (COMMODITY_MARGIN_RATES[base]) return COMMODITY_MARGIN_RATES[base];
+    if (isCommoditySymbol(base)) return 0.20;
+    // Stocks: 100% Cash / Delivery (no margin leverage)
+    return 1.0;
+}
+window.getAssetMarginRate = getAssetMarginRate;
 
 function renderTradeMarket() {
     const tbodyStocks = document.getElementById('trade-market-stocks-body');
     const tbodyCommodities = document.getElementById('trade-market-commodities-body');
     const cardsStocks = document.getElementById('trade-market-stocks-cards');
     const cardsCommodities = document.getElementById('trade-market-commodities-cards');
-    if (!tbodyStocks || !tbodyCommodities) return;
+    if (!tbodyStocks && !tbodyCommodities) return;
     
-    if (marketData.length === 0) {
-        tbodyStocks.innerHTML = `<tr><td colspan="4" class="loading">No market data available to trade.</td></tr>`;
-        tbodyCommodities.innerHTML = `<tr><td colspan="4" class="loading">No market data available to trade.</td></tr>`;
-        if (cardsStocks) cardsStocks.innerHTML = `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary);">No market data available.</div>`;
-        if (cardsCommodities) cardsCommodities.innerHTML = `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary);">No market data available.</div>`;
+    if (!marketData || marketData.length === 0) {
+        if (tbodyStocks) tbodyStocks.innerHTML = `<tr><td colspan="5" class="loading">No market data available.</td></tr>`;
+        if (tbodyCommodities) tbodyCommodities.innerHTML = `<tr><td colspan="5" class="loading">No market data available.</td></tr>`;
         return;
     }
     
@@ -3788,176 +4018,226 @@ function renderTradeMarket() {
     const stockCards = [];
     const commodityCards = [];
 
+    // Filter stocks and commodities cleanly
     marketData.forEach(item => {
-        if (item.asset_type === 'Commodity' || item.asset_type === 'Stock') return;
-        
-        let badgeClass = 'type-stock';
-        if (item.asset_type === 'Commodity') badgeClass = 'type-commodity';
-        else if (item.asset_type.includes('Future')) badgeClass = 'type-future';
-        else if (item.asset_type.includes('Option')) badgeClass = 'type-option';
-        
+        const isComm = (item.asset_type && item.asset_type.includes('Commodity')) || isCommoditySymbol(item.symbol);
         const price = getSynchronizedCommodityPrice(item.symbol, item.current_price);
-        
-        const rowHtml = `
-            <tr>
-                <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
-                <td><span class="type-badge ${badgeClass}">${item.asset_type.toUpperCase()}</span></td>
-                <td style="font-weight:600">₹${price.toFixed(2)}</td>
-                <td style="text-align: right;">
-                    <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${price})">Trade</button>
-                </td>
-            </tr>
-        `;
+        if (!price || isNaN(price)) return;
 
-        const cardHtml = `
-            <div class="mobile-trading-card" style="padding: 0.75rem 0.9rem;">
-                <div class="mobile-card-top" style="align-items: center;">
-                    <div class="mobile-card-title-group">
-                        <div class="mobile-card-asset-name" style="font-size: 0.95rem;">
-                            <span>${item.name}</span>
-                            <span style="font-size:0.72rem; color:#94a3b8; font-weight:400;">(${item.symbol})</span>
+        if (isComm) {
+            // Only show primary contracts (skip deprecated mini/micros)
+            const cleanSym = item.symbol.replace('-FUT', '').toUpperCase();
+            if (['CRUDEOILM', 'NATURALGASM', 'SILVERMIC', 'GOLDM', 'GOLDTEN', 'COPPERM'].includes(cleanSym)) return;
+
+            const lotSize = getLotSize(item.symbol);
+            const mRate = getAssetMarginRate(item.symbol);
+            const notional = price * lotSize;
+            const marginReq = notional * mRate;
+
+            const rowHtml = `
+                <tr>
+                    <td>
+                        <strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>
+                        <div style="font-size:0.75rem; color:#818cf8; margin-top:2px;">MCX Futures Contract</div>
+                    </td>
+                    <td>
+                        <strong style="color:#f8fafc;">${lotSize} units / lot</strong>
+                        <div style="font-size:0.72rem; color:#94a3b8;">1 pt = ₹${lotSize}</div>
+                    </td>
+                    <td style="font-weight:700; color:#f8fafc;">₹${price.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td>
+                        <strong style="color:#fbbf24;">₹${marginReq.toLocaleString('en-IN', {minimumFractionDigits:0, maximumFractionDigits:0})}</strong>
+                        <div style="font-size:0.72rem; color:#94a3b8;">${(mRate * 100).toFixed(0)}% Margin | Notional: ₹${notional.toLocaleString('en-IN', {maximumFractionDigits:0})}</div>
+                    </td>
+                    <td style="text-align: right;">
+                        <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${price})" style="background: linear-gradient(135deg, #f59e0b, #d97706); padding:6px 14px; font-weight:700;">Trade Future</button>
+                    </td>
+                </tr>
+            `;
+
+            const cardHtml = `
+                <div class="mobile-trading-card" style="padding: 0.85rem 1rem; border-left: 3px solid #f59e0b;">
+                    <div class="mobile-card-top" style="align-items: center;">
+                        <div class="mobile-card-title-group">
+                            <div class="mobile-card-asset-name" style="font-size: 0.95rem; font-weight:700;">
+                                <span>${item.name}</span>
+                                <span style="font-size:0.72rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:1px 6px; border-radius:4px; margin-left:4px;">${lotSize} units/lot</span>
+                            </div>
+                            <div class="mobile-card-meta">${item.symbol} · 1 pt = ₹${lotSize}</div>
                         </div>
-                        <div class="mobile-card-meta"><span class="type-badge ${badgeClass}" style="font-size:0.65rem; padding:1px 6px;">${item.asset_type.toUpperCase()}</span></div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1rem; font-weight: 700; color: #f8fafc;">₹${price.toLocaleString('en-IN', {minimumFractionDigits:2})}</div>
+                            <div style="font-size: 0.72rem; color: #fbbf24;">Margin: ₹${marginReq.toLocaleString('en-IN', {maximumFractionDigits:0})}</div>
+                        </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <span style="font-size: 0.95rem; font-weight: 700; color: #f8fafc;">₹${price.toFixed(2)}</span>
-                        <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${price})" style="padding: 5px 14px; font-size: 0.82rem;">Trade</button>
+                    <div style="display:flex; justify-content:flex-end; margin-top:0.6rem;">
+                        <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${price})" style="background: linear-gradient(135deg, #f59e0b, #d97706); padding:5px 16px; font-weight:700; width:100%;">Trade Future</button>
                     </div>
                 </div>
-            </div>
-        `;
-
-        if (item.asset_type.includes('Commodity')) {
+            `;
             commodityRows.push(rowHtml);
             commodityCards.push(cardHtml);
         } else {
+            // Stock Equity Investing
+            let intrinsicHtml = '<span style="color:var(--text-secondary)">--</span>';
+            if (item.intrinsic_value) {
+                const isUndervalued = parseFloat(item.current_price) < parseFloat(item.intrinsic_value);
+                const color = isUndervalued ? '#4ade80' : 'var(--text-primary)';
+                intrinsicHtml = `<span style="color:${color}; font-weight: ${isUndervalued ? '600' : 'normal'}">₹${parseFloat(item.intrinsic_value).toFixed(2)}</span>`;
+            }
+
+            const rowHtml = `
+                <tr class="stock-invest-row" data-search="${(item.name + ' ' + item.symbol).toLowerCase()}">
+                    <td>
+                        <strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>
+                        <div style="font-size:0.72rem; color:#4ade80; margin-top:2px;">Equity Delivery (Min: 1 Share)</div>
+                    </td>
+                    <td>${intrinsicHtml}</td>
+                    <td style="font-weight:700; color:#f8fafc;">₹${price.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    <td style="font-size:0.8rem;">
+                        <span style="color:#fb7185;">S1: ₹${parseFloat(item.s1 || 0).toFixed(1)}</span> · 
+                        <span style="color:#4ade80;">R1: ₹${parseFloat(item.r1 || 0).toFixed(1)}</span>
+                    </td>
+                    <td style="text-align: right;">
+                        <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${price})" style="background: linear-gradient(135deg, #10b981, #059669); padding:6px 14px; font-weight:700;">Invest</button>
+                    </td>
+                </tr>
+            `;
+
+            const cardHtml = `
+                <div class="mobile-trading-card stock-invest-card" data-search="${(item.name + ' ' + item.symbol).toLowerCase()}" style="padding: 0.85rem 1rem; border-left: 3px solid #10b981;">
+                    <div class="mobile-card-top" style="align-items: center;">
+                        <div class="mobile-card-title-group">
+                            <div class="mobile-card-asset-name" style="font-size: 0.95rem; font-weight:700;">
+                                <span>${item.name}</span>
+                                <span style="font-size:0.72rem; color:#94a3b8; font-weight:400;">(${item.symbol})</span>
+                            </div>
+                            <div class="mobile-card-meta"><span style="color:#4ade80;">Equity Cash</span> · Intrinsic: ${intrinsicHtml}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1rem; font-weight: 700; color: #f8fafc;">₹${price.toLocaleString('en-IN', {minimumFractionDigits:2})}</div>
+                            <div style="font-size: 0.72rem; color: #94a3b8;">1 Share Min</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; margin-top:0.6rem;">
+                        <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${price})" style="background: linear-gradient(135deg, #10b981, #059669); padding:5px 16px; font-weight:700; width:100%;">Invest in Shares</button>
+                    </div>
+                </div>
+            `;
             stockRows.push(rowHtml);
             stockCards.push(cardHtml);
         }
     });
 
-    tbodyStocks.innerHTML = stockRows.length > 0 
-        ? stockRows.join('') 
-        : `<tr><td colspan="4" class="loading">No stocks available.</td></tr>`;
-        
-    tbodyCommodities.innerHTML = commodityRows.length > 0 
-        ? commodityRows.join('') 
-        : `<tr><td colspan="4" class="loading">No commodities available.</td></tr>`;
-
-    if (cardsStocks) {
-        cardsStocks.innerHTML = stockCards.length > 0 
-            ? stockCards.join('') 
-            : `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No stocks available.</div>`;
+    if (tbodyCommodities) {
+        tbodyCommodities.innerHTML = commodityRows.length > 0 ? commodityRows.join('') : `<tr><td colspan="5" class="loading">No commodities available.</td></tr>`;
     }
     if (cardsCommodities) {
-        cardsCommodities.innerHTML = commodityCards.length > 0 
-            ? commodityCards.join('') 
-            : `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No commodities available.</div>`;
+        cardsCommodities.innerHTML = commodityCards.length > 0 ? commodityCards.join('') : `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary);">No commodities available.</div>`;
+    }
+
+    if (tbodyStocks) {
+        tbodyStocks.innerHTML = stockRows.length > 0 ? stockRows.join('') : `<tr><td colspan="5" class="loading">No stocks available.</td></tr>`;
+    }
+    if (cardsStocks) {
+        cardsStocks.innerHTML = stockCards.length > 0 ? stockCards.join('') : `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary);">No stocks available.</div>`;
     }
 }
+window.renderTradeMarket = renderTradeMarket;
 
-const LOT_SIZES = {
-    'GOLD': 10,
-    'SILVER': 5,
-    'CRUDEOIL': 50,
-    'NATURALGAS': 1250,
-    'COPPER': 1250,
-    'NIFTY': 25,
-    'BANKNIFTY': 15,
-    'ADANIENT.NS': 309,
-    'ADANIPORTS.NS': 475,
-    'APOLLOHOSP.NS': 125,
-    'ASIANPAINT.NS': 250,
-    'AXISBANK.NS': 625,
-    'BAJAJ-AUTO.NS': 75,
-    'BAJFINANCE.NS': 750,
-    'BAJAJFINSV.NS': 300,
-    'BPCL.NS': 1975,
-    'BHARTIARTL.NS': 475,
-    'BRITANNIA.NS': 125,
-    'CIPLA.NS': 425,
-    'COALINDIA.NS': 1350,
-    'DIVISLAB.NS': 100,
-    'DRREDDY.NS': 625,
-    'EICHERMOT.NS': 100,
-    'GRASIM.NS': 250,
-    'HCLTECH.NS': 400,
-    'HDFCBANK.NS': 650,
-    'HDFCLIFE.NS': 1100,
-    'HEROMOTOCO.NS': 150,
-    'HINDALCO.NS': 700,
-    'HINDUNILVR.NS': 300,
-    'ICICIBANK.NS': 700,
-    'ITC.NS': 1725,
-    'INDUSINDBK.NS': 700,
-    'INFY.NS': 400,
-    'JSWSTEEL.NS': 675,
-    'KOTAKBANK.NS': 2000,
-    'LTIM.NS': 250,
-    'LT.NS': 175,
-    'M&M.NS': 200,
-    'MARUTI.NS': 50,
-    'NTPC.NS': 1500,
-    'NESTLEIND.NS': 500,
-    'ONGC.NS': 2250,
-    'POWERGRID.NS': 1900,
-    'RELIANCE.NS': 500,
-    'SBILIFE.NS': 375,
-    'SBIN.NS': 750,
-    'SUNPHARMA.NS': 350,
-    'TCS.NS': 225,
-    'TATACONSUM.NS': 550,
-    'TATAMOTORS.NS': 1425,
-    'TATASTEEL.NS': 2750,
-    'TECHM.NS': 600,
-    'TITAN.NS': 175,
-    'SHRIRAMFIN.NS': 825,
-    'ULTRACEMCO.NS': 50,
-    'WIPRO.NS': 3000
-};
-
-function getLotSize(symbol) {
-    const base = symbol.replace('-FUT', '');
-    return LOT_SIZES[base] || 1;
+function filterStockInvestingTable() {
+    const q = (document.getElementById('stock-invest-search')?.value || '').trim().toLowerCase();
+    document.querySelectorAll('.stock-invest-row').forEach(row => {
+        const text = row.getAttribute('data-search') || '';
+        row.style.display = (!q || text.includes(q)) ? '' : 'none';
+    });
+    document.querySelectorAll('.stock-invest-card').forEach(card => {
+        const text = card.getAttribute('data-search') || '';
+        card.style.display = (!q || text.includes(q)) ? '' : 'none';
+    });
 }
-
-const COMMODITY_MARGIN_RATES = {
-    'CRUDEOIL': 0.25,    // 50 bbl @ ~₹9,800 -> ~₹1.22L margin
-    'NATURALGAS': 0.35,  // 1250 mmBtu @ ~₹293 -> ~₹1.28L margin
-    'SILVER': 0.15,      // 5 kg @ ~₹194,300 -> ~₹1.45L margin
-    'GOLD': 0.10,        // 10 units (100g) @ ~₹143,700 -> ~₹1.44L margin
-    'COPPER': 0.08,      // 1250 kg @ ~₹1,406 -> ~₹1.40L margin
-    'NIFTY': 0.10,
-    'BANKNIFTY': 0.10
-};
-
-function getAssetMarginRate(symbol) {
-    const base = symbol.replace('-FUT', '').replace('.NS', '');
-    if (COMMODITY_MARGIN_RATES[base]) return COMMODITY_MARGIN_RATES[base];
-    if (COMMODITY_MARGIN_RATES[symbol]) return COMMODITY_MARGIN_RATES[symbol];
-    return 0.15; // default 15% for F&O
-}
+window.filterStockInvestingTable = filterStockInvestingTable;
 
 function openTradeModal(symbol, name, price) {
+    const isComm = isCommoditySymbol(symbol);
     const syncPrice = getSynchronizedCommodityPrice(symbol, price);
-    const lotSize = getLotSize(symbol);
-    const marginRate = getAssetMarginRate(symbol);
-    activeTradeAsset = { symbol, name, price: parseFloat(syncPrice), lotSize, marginRate };
+    const lotSize = isComm ? (LOT_SIZES[symbol.replace('-FUT','').toUpperCase()] || 1) : 1;
+    const marginRate = isComm ? getAssetMarginRate(symbol) : 1.0;
+    activeTradeAsset = { symbol, name, price: parseFloat(syncPrice), lotSize, marginRate, isCommodity: isComm };
     
-    document.getElementById('trade-modal-title').textContent = `Trade ${name} (Lot Size: ${lotSize})`;
-    document.getElementById('trade-modal-price').textContent = `₹${activeTradeAsset.price.toFixed(2)}`;
-    
+    const titleEl = document.getElementById('trade-modal-title');
+    const subtitleEl = document.getElementById('trade-modal-subtitle');
+    const priceEl = document.getElementById('trade-modal-price');
     const qtyInput = document.getElementById('trade-qty');
-    qtyInput.value = lotSize;
-    qtyInput.step = lotSize;
-    qtyInput.min = lotSize;
+    const qtyLabel = document.getElementById('trade-qty-label');
+    const totalLabel = document.getElementById('trade-total-label');
+    const marginLabel = document.getElementById('trade-margin-label');
+    const buyBtn = document.getElementById('trade-buy-btn');
+    const sellBtn = document.getElementById('trade-sell-btn');
+
+    if (priceEl) priceEl.textContent = `₹${activeTradeAsset.price.toFixed(2)}`;
+
+    if (isComm) {
+        if (titleEl) titleEl.textContent = `Trade ${name} Future`;
+        if (subtitleEl) subtitleEl.textContent = `MCX Futures Contract (Lot Size: ${lotSize} units | 1 pt = ₹${lotSize})`;
+        if (qtyLabel) qtyLabel.textContent = `Quantity (Multiple of ${lotSize} units)`;
+        if (totalLabel) totalLabel.textContent = `Contract Notional Value:`;
+        if (marginLabel) marginLabel.textContent = `Margin Required (${(marginRate * 100).toFixed(0)}%):`;
+
+        qtyInput.value = lotSize;
+        qtyInput.step = lotSize;
+        qtyInput.min = lotSize;
+
+        if (buyBtn) {
+            buyBtn.textContent = 'BUY / LONG';
+            buyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            buyBtn.disabled = false;
+        }
+        if (sellBtn) {
+            sellBtn.textContent = 'SELL / SHORT';
+            sellBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            sellBtn.disabled = false;
+        }
+    } else {
+        if (titleEl) titleEl.textContent = `Invest in ${name}`;
+        if (subtitleEl) subtitleEl.textContent = `Individual Equity Shares (100% Cash / Delivery · Min: 1 Share)`;
+        if (qtyLabel) qtyLabel.textContent = `Number of Shares (Min: 1)`;
+        if (totalLabel) totalLabel.textContent = `Total Investment (Cash Required):`;
+        if (marginLabel) marginLabel.textContent = `Margin: 100% Cash Delivery`;
+
+        qtyInput.value = 1;
+        qtyInput.step = 1;
+        qtyInput.min = 1;
+
+        if (buyBtn) {
+            buyBtn.textContent = 'BUY / INVEST (CASH)';
+            buyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            buyBtn.disabled = false;
+        }
+
+        const holding = userPortfolio[symbol]?.shares || 0;
+        if (sellBtn) {
+            if (holding > 0) {
+                sellBtn.textContent = `SELL SHARES (${holding} owned)`;
+                sellBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                sellBtn.disabled = false;
+            } else {
+                sellBtn.textContent = `SELL (0 Shares Owned)`;
+                sellBtn.style.background = 'rgba(255,255,255,0.08)';
+                sellBtn.disabled = true;
+            }
+        }
+    }
     
-    const totalValue = activeTradeAsset.price * lotSize;
-    const requiredMargin = totalValue * marginRate;
-    document.getElementById('trade-total-value').textContent = `₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-    document.getElementById('trade-margin-value').textContent = `₹${requiredMargin.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})} (${(marginRate * 100).toFixed(0)}% Margin)`;
+    // Update total and margin
+    const totalVal = activeTradeAsset.price * (parseInt(qtyInput.value) || 1);
+    const reqMargin = totalVal * marginRate;
+    document.getElementById('trade-total-value').textContent = `₹${totalVal.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    document.getElementById('trade-margin-value').textContent = isComm 
+        ? `₹${reqMargin.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})} (${(marginRate * 100).toFixed(0)}% Margin)`
+        : `₹${totalVal.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})} (100% Cash Paid)`;
+
     document.getElementById('trade-status-msg').textContent = '';
-    
     document.getElementById('trade-modal').classList.remove('hidden');
 }
 
@@ -4233,6 +4513,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const qty = parseInt(document.getElementById('trade-qty').value);
         if (isNaN(qty) || qty <= 0) return;
         
+        if (type === 'SELL' && !activeTradeAsset.isCommodity) {
+            const holding = userPortfolio[activeTradeAsset.symbol]?.shares || 0;
+            if (holding < qty) {
+                statusMsg.textContent = `You only own ${holding} shares of this stock. Short selling is not allowed in Stock Cash Investing.`;
+                statusMsg.style.color = '#fb7185';
+                buyBtn.disabled = false;
+                sellBtn.disabled = false;
+                return;
+            }
+        }
+
         if (qty % activeTradeAsset.lotSize !== 0) {
             document.getElementById('trade-status-msg').textContent = `Quantity must be a multiple of lot size (${activeTradeAsset.lotSize}).`;
             document.getElementById('trade-status-msg').style.color = 'var(--accent-red)';
@@ -4294,28 +4585,45 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 // activePaperTradingSubView initialized at top
 
+activePaperTradingSubView = 'commodities';
+
 function switchPaperTradingSubView(subview) {
+    if (subview === 'terminal') subview = 'commodities'; // backward compatibility
     activePaperTradingSubView = subview;
-    const terminalView = document.getElementById('trade-view-terminal');
-    const advisoryView = document.getElementById('trade-view-advisory');
-    const btnTerminal = document.getElementById('btn-subnav-trade-terminal');
+
+    const modCommodities = document.getElementById('trade-module-commodities');
+    const modInvesting = document.getElementById('trade-module-investing');
+    const modAdvisory = document.getElementById('trade-view-advisory');
+
+    const btnCommodities = document.getElementById('btn-subnav-trade-commodities');
+    const btnInvesting = document.getElementById('btn-subnav-trade-investing');
     const btnAdvisory = document.getElementById('btn-subnav-trade-advisory');
 
-    if (subview === 'advisory') {
-        if (terminalView) terminalView.style.display = 'none';
-        if (advisoryView) advisoryView.style.display = 'block';
-        if (btnTerminal) btnTerminal.classList.remove('active');
-        if (btnAdvisory) btnAdvisory.classList.add('active');
-        loadAdvisoryTracker();
-    } else {
-        if (advisoryView) advisoryView.style.display = 'none';
-        if (terminalView) terminalView.style.display = 'block';
-        if (btnAdvisory) btnAdvisory.classList.remove('active');
-        if (btnTerminal) btnTerminal.classList.add('active');
+    [btnCommodities, btnInvesting, btnAdvisory].forEach(b => { if (b) b.classList.remove('active'); });
+
+    if (subview === 'commodities') {
+        if (modCommodities) modCommodities.style.display = 'block';
+        if (modInvesting) modInvesting.style.display = 'none';
+        if (modAdvisory) modAdvisory.style.display = 'none';
+        if (btnCommodities) btnCommodities.classList.add('active');
         if (typeof renderTradeMarket === 'function') renderTradeMarket();
-        if (typeof renderTradePortfolio === 'function') renderTradePortfolio();
+        if (typeof renderPortfolio === 'function') renderPortfolio();
+    } else if (subview === 'investing') {
+        if (modCommodities) modCommodities.style.display = 'none';
+        if (modInvesting) modInvesting.style.display = 'block';
+        if (modAdvisory) modAdvisory.style.display = 'none';
+        if (btnInvesting) btnInvesting.classList.add('active');
+        if (typeof renderTradeMarket === 'function') renderTradeMarket();
+        if (typeof renderPortfolio === 'function') renderPortfolio();
+    } else if (subview === 'advisory') {
+        if (modCommodities) modCommodities.style.display = 'none';
+        if (modInvesting) modInvesting.style.display = 'none';
+        if (modAdvisory) modAdvisory.style.display = 'block';
+        if (btnAdvisory) btnAdvisory.classList.add('active');
+        if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker();
     }
 }
+window.switchPaperTradingSubView = switchPaperTradingSubView;
 
 // ==========================================
 // 🎯 6:00 PM IST ADVISORY SIGNALS & PAPER TRADE TRACKER
@@ -4690,7 +4998,7 @@ function renderAdvisoryTradesTable() {
                     <div style="font-size:0.75rem; color:#93c5fd;">Stood aside (Trap Avoided)</div>
                 </div>
             `;
-        } else if (c15.status === 'PENDING_615') {
+        } else if (c15.status === 'PENDING_615' || c15.status === 'PENDING_615_CHECK') {
             const tradeDate = new Date(t.date);
             const isPast = !isNaN(tradeDate.getTime()) && (new Date().toDateString() !== tradeDate.toDateString()) && (new Date() > tradeDate);
             if (isPast) {
@@ -4841,7 +5149,7 @@ function renderAdvisoryTradesTable() {
             else if (c15.status === 'BREAKDOWN_ENTERED') checkLabel = 'London Breakdown';
             else if (c15.status === 'GAP_FADE_ENTERED') checkLabel = 'Gap Fade Entered';
             else if (c15.status === 'EXTENSION_CONFIRMED') checkLabel = 'Limit Broken (Stood Aside)';
-            else if (c15.status === 'PENDING_615') {
+            else if (c15.status === 'PENDING_615' || c15.status === 'PENDING_615_CHECK') {
                 const tradeDate = new Date(t.date);
                 const isPast = !isNaN(tradeDate.getTime()) && (new Date().toDateString() !== tradeDate.toDateString()) && (new Date() > tradeDate);
                 checkLabel = isPast ? 'Window Lapsed (Stood Aside)' : 'Awaiting Confirmation';
