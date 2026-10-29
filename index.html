@@ -33,6 +33,7 @@
             <nav class="tabs">
                 <button class="tab-btn active" onclick="switchTab(this, 'subscribe-tab')">Subscribe</button>
                 <button class="tab-btn" onclick="switchTab(this, 'dashboard-tab')">Live Market</button>
+                <button class="tab-btn" onclick="switchTab(this, 'nifty-tab')" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-gem" style="margin-right: 5px; color: #f59e0b;"></i> Golden Cross & Value</button>
                 <button class="tab-btn" onclick="switchTab(this, 'circuits-tab')" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24;">⚡ Circuit Limits</button>
                 <button class="tab-btn" onclick="switchTab(this, 'alerts-tab')">🔥 Alert Zone</button>
                 <button class="tab-btn" onclick="switchTab(this, 'trade-tab')" style="background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3); color: #4ade80;">📈 Paper Trading</button>
@@ -130,6 +131,116 @@
                             <tr><td colspan="6" class="loading">Loading live data...</td></tr>
                         </tbody>
                     </table>
+                </div>
+            </section>
+
+            <!-- 🎯 Nifty 50 Golden Cross & Deep Value Scanner Tab -->
+            <section id="nifty-tab" class="tab-content">
+                <!-- Header Banner -->
+                <div class="nifty-header-card full-width">
+                    <div class="nifty-title-area">
+                        <h2><i class="fa-solid fa-gem" style="color: #f59e0b;"></i> Nifty 50 Golden Cross & Oversold Value Scanner</h2>
+                        <p>High-probability institutional setups combining <strong>50/200 EMA Golden Crossovers</strong>, <strong>Oversold RSI (&lt;35-40)</strong>, <strong>Bollinger Band Mean Reversion</strong>, and <strong>deep 52-Week Discounts</strong> across Indian blue-chips.</p>
+                    </div>
+                    <div class="nifty-controls-right">
+                        <div class="pulse-pill">
+                            <span class="pulse-dot"></span>
+                            <span>NSE Live Scanner</span>
+                        </div>
+                        <button class="circuit-refresh-btn" id="nifty-refresh-btn" onclick="fetchNiftyOpportunities(true)" title="Rescan Nifty 50 Technicals">
+                            <i class="fa-solid fa-arrows-rotate"></i> <span>Rescan Now</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 KPI Summary Cards -->
+                <div class="nifty-kpi-grid">
+                    <div class="nifty-kpi-card">
+                        <div class="nifty-kpi-label"><i class="fa-solid fa-trophy" style="color: #fbbf24;"></i> High Win-Rate Setups</div>
+                        <div class="nifty-kpi-value" id="nifty-kpi-high-prob">--</div>
+                        <div class="nifty-kpi-sub">80%+ Confluence Probability</div>
+                    </div>
+                    <div class="nifty-kpi-card">
+                        <div class="nifty-kpi-label"><i class="fa-solid fa-star" style="color: #f59e0b;"></i> Golden Crossovers</div>
+                        <div class="nifty-kpi-value" id="nifty-kpi-golden" style="color: #fbbf24;">--</div>
+                        <div class="nifty-kpi-sub">50 EMA &gt; 200 EMA Bullish</div>
+                    </div>
+                    <div class="nifty-kpi-card">
+                        <div class="nifty-kpi-label"><i class="fa-solid fa-chart-line-down" style="color: #38bdf8;"></i> Deeply Oversold Gems</div>
+                        <div class="nifty-kpi-value" id="nifty-kpi-oversold" style="color: #38bdf8;">--</div>
+                        <div class="nifty-kpi-sub">RSI &lt; 40 Value Reversal Floor</div>
+                    </div>
+                    <div class="nifty-kpi-card">
+                        <div class="nifty-kpi-label"><i class="fa-solid fa-tag" style="color: #34d399;"></i> Top 10 Avg Discount</div>
+                        <div class="nifty-kpi-value" id="nifty-kpi-avg-discount" style="color: #34d399;">--</div>
+                        <div class="nifty-kpi-sub">Off 52-Week High Range</div>
+                    </div>
+                </div>
+
+                <!-- Controls, Filters, Search & Sort Toolbar -->
+                <div class="nifty-toolbar">
+                    <div class="nifty-filters">
+                        <button class="circuit-filter-pill active" onclick="filterNiftyCategory('ALL', this)">🔥 All Setups (<span id="nifty-cnt-all">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('GOLDEN', this)">🌟 Golden Cross (<span id="nifty-cnt-golden">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('OVERSOLD', this)">📉 Deeply Oversold (<span id="nifty-cnt-oversold">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('DISCOUNT', this)">🏷️ Deep Discount &gt;15% (<span id="nifty-cnt-discount">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('ELITE', this)">🏆 90%+ Elite Win Prob (<span id="nifty-cnt-elite">0</span>)</button>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <div class="circuit-search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="nifty-search-input" placeholder="Search stock (Reliance, Adani...)" oninput="handleNiftySearch(this.value)">
+                        </div>
+
+                        <select id="nifty-sort-select" onchange="sortNiftyOpportunities(this.value)" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 7px 12px; border-radius: 20px; font-size: 0.85rem; outline: none; cursor: pointer;">
+                            <option value="prob">🏆 Highest Win Probability</option>
+                            <option value="discount">🏷️ Deepest 52W Discount</option>
+                            <option value="rsi">📉 Lowest RSI (Most Oversold)</option>
+                            <option value="upside">🚀 Highest Potential Upside</option>
+                            <option value="name">🔤 Stock Name (A-Z)</option>
+                        </select>
+
+                        <div class="view-toggle-group" style="display: flex; gap: 4px; background: rgba(0,0,0,0.2); padding: 3px; border-radius: 20px; border: 1px solid var(--glass-border);">
+                            <button class="view-toggle-pill active" id="btn-nifty-view-cards" onclick="switchNiftyView('cards')" style="padding: 4px 10px; border-radius: 16px; font-size: 0.78rem; border: none; cursor: pointer; color: var(--text-secondary);"><i class="fa-solid fa-grip"></i> Cards</button>
+                            <button class="view-toggle-pill" id="btn-nifty-view-table" onclick="switchNiftyView('table')" style="padding: 4px 10px; border-radius: 16px; font-size: 0.78rem; border: none; cursor: pointer; color: var(--text-secondary);"><i class="fa-solid fa-table"></i> Table</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cards View -->
+                <div id="nifty-cards-container" class="nifty-cards-grid">
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; color: var(--text-secondary);">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block; color: #fbbf24;"></i>
+                        Scanning Nifty 50 stocks for Golden Crossovers and Oversold opportunities...
+                    </div>
+                </div>
+
+                <!-- Table View -->
+                <div id="nifty-table-container" class="table-container full-width" style="display: none; margin-bottom: 2rem;">
+                    <table class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Stock</th>
+                                <th>CMP (₹)</th>
+                                <th>Win Prob</th>
+                                <th>Golden Cross (50 vs 200 EMA)</th>
+                                <th>RSI (14)</th>
+                                <th>52W High (Discount)</th>
+                                <th>Action &amp; Targets</th>
+                                <th style="text-align: right;">Trade / Inspect</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nifty-table-body">
+                            <tr><td colspan="8" class="loading">Loading Nifty 50 technical setups...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer Update Note -->
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-secondary); padding: 0.5rem 0.25rem;">
+                    <div><i class="fa-solid fa-clock"></i> <span id="nifty-updated-note">Updated recently via TradingView NSE Screener</span></div>
+                    <div><span style="color: #fbbf24;">●</span> Quantitative multi-indicator confluence score (50/200 EMA + RSI + BB + 52W Range)</div>
                 </div>
             </section>
 
@@ -1129,6 +1240,12 @@ let allHistoryEvents = [];
 let activeHistoryPeriod = 30;
 let activeHistoryViewMode = 'intraday';
 let activePaperTradingSubView = 'terminal';
+let niftyOpportunitiesData = null;
+let activeNiftyFilter = 'ALL';
+let activeNiftySort = 'prob';
+let activeNiftyView = 'cards';
+let activeNiftySearchQuery = '';
+let lastNiftyFetchTime = 0;
 
 function switchTab(btn, targetId) {
     if (!btn && typeof event !== 'undefined' && event && event.target) {
@@ -1165,6 +1282,14 @@ function switchTab(btn, targetId) {
         }
     }
     
+    if (targetId === 'nifty-tab') {
+        if (!lastNiftyFetchTime || (now - lastNiftyFetchTime > 60000)) {
+            if (typeof fetchNiftyOpportunities === 'function') fetchNiftyOpportunities();
+        } else {
+            if (typeof renderNiftyOpportunities === 'function') renderNiftyOpportunities();
+        }
+    }
+
     if (targetId === 'circuits-tab') {
         if (!lastCircuitsFetchTime || (now - lastCircuitsFetchTime > 45000)) {
             if (typeof fetchCircuitsData === 'function') fetchCircuitsData();
@@ -1189,11 +1314,12 @@ function initApp() {
     try { setupSubscribeForm(); } catch(e) { console.error("Form setup error:", e); }
     try { setupUnsubscribeForm(); } catch(e) { console.error("Unsub Form setup error:", e); }
     try { fetchMarketData(); } catch(e) { console.error("Fetch data error:", e); }
+    try { fetchNiftyOpportunities(); } catch(e) { console.error("Fetch nifty error:", e); }
     try { fetchCircuitsData(); } catch(e) { console.error("Fetch circuits error:", e); }
     try { fetchCircuitsHistory(); } catch(e) { console.error("Fetch circuits history error:", e); }
     try { setupAuth(); } catch(e) { console.error("Auth setup error:", e); }
     
-    // Check URL hash routing (e.g. #circuits, #dashboard, #trade, #alerts)
+    // Check URL hash routing (e.g. #circuits, #dashboard, #trade, #alerts, #nifty)
     const hash = (window.location.hash || '').replace('#', '').toLowerCase();
     if (hash === 'circuits' || hash === 'circuit' || hash === 'circuits-tab') {
         const btn = document.querySelector('button[onclick*="circuits-tab"]');
@@ -1201,6 +1327,9 @@ function initApp() {
     } else if (hash === 'dashboard' || hash === 'market' || hash === 'dashboard-tab') {
         const btn = document.querySelector('button[onclick*="dashboard-tab"]');
         if (btn) switchTab(btn, 'dashboard-tab');
+    } else if (hash === 'nifty' || hash === 'crossover' || hash === 'oversold' || hash === 'nifty-tab') {
+        const btn = document.querySelector('button[onclick*="nifty-tab"]');
+        if (btn) switchTab(btn, 'nifty-tab');
     } else if (hash === 'alerts' || hash === 'alert' || hash === 'alerts-tab') {
         const btn = document.querySelector('button[onclick*="alerts-tab"]');
         if (btn) switchTab(btn, 'alerts-tab');
@@ -1652,6 +1781,372 @@ function renderCircuitsTable() {
     }).join('');
     
     tbody.innerHTML = rowsHtml;
+}
+
+// ==========================================
+// 🎯 NIFTY 50 GOLDEN CROSSOVER & OVERSOLD VALUE SCANNER
+// ==========================================
+
+async function fetchNiftyOpportunities(forceNetwork = false) {
+    const cardsContainer = document.getElementById('nifty-cards-container');
+    const refreshBtn = document.getElementById('nifty-refresh-btn');
+    
+    if (forceNetwork && refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = `<i class="fa-solid fa-arrows-rotate fa-spin"></i> <span>Scanning...</span>`;
+    }
+    
+    // Fast cache check (60s memory cache)
+    if (!forceNetwork && niftyOpportunitiesData && niftyOpportunitiesData.stocks && (Date.now() - lastNiftyFetchTime < 60000)) {
+        renderNiftyOpportunities();
+        return;
+    }
+    
+    const candidateUrls = [
+        'nifty_crossover_oversold.json?t=' + Date.now(),
+        'https://venuinturiphoos.github.io/commodity-alerts/nifty_crossover_oversold.json?t=' + Date.now()
+    ];
+    
+    let loadedData = null;
+    for (const url of candidateUrls) {
+        try {
+            const res = await fetch(url, { cache: 'no-store' });
+            if (res.ok) {
+                loadedData = await res.json();
+                break;
+            }
+        } catch(e) {
+            console.warn("Could not fetch Nifty data from", url, e);
+        }
+    }
+    
+    if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> <span>Rescan Now</span>`;
+    }
+    
+    if (!loadedData || !loadedData.stocks) {
+        if (cardsContainer && (!niftyOpportunitiesData || !niftyOpportunitiesData.stocks)) {
+            cardsContainer.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #fb7185;">Could not load Nifty 50 scanner data. Please click Rescan Now.</div>`;
+        }
+        return;
+    }
+    
+    niftyOpportunitiesData = loadedData;
+    lastNiftyFetchTime = Date.now();
+    
+    // Update KPI Summary Metrics
+    const s = loadedData.summary || {};
+    const kpiHigh = document.getElementById('nifty-kpi-high-prob');
+    const kpiGolden = document.getElementById('nifty-kpi-golden');
+    const kpiOversold = document.getElementById('nifty-kpi-oversold');
+    const kpiDiscount = document.getElementById('nifty-kpi-avg-discount');
+    const updatedNote = document.getElementById('nifty-updated-note');
+    
+    if (kpiHigh) kpiHigh.textContent = `${s.high_win_prob_count || 0} Setups`;
+    if (kpiGolden) kpiGolden.textContent = `${s.golden_cross_count || 0} Stocks`;
+    if (kpiOversold) kpiOversold.textContent = `${s.oversold_count || 0} Stocks`;
+    if (kpiDiscount) kpiDiscount.textContent = `-${s.avg_discount_top_10 || 0}%`;
+    if (updatedNote) updatedNote.textContent = `Updated: ${loadedData.last_updated || 'Live'}`;
+    
+    // Update Filter Button Count Labels
+    const stocks = loadedData.stocks || [];
+    const cntAll = document.getElementById('nifty-cnt-all');
+    const cntGolden = document.getElementById('nifty-cnt-golden');
+    const cntOversold = document.getElementById('nifty-cnt-oversold');
+    const cntDiscount = document.getElementById('nifty-cnt-discount');
+    const cntElite = document.getElementById('nifty-cnt-elite');
+    
+    if (cntAll) cntAll.textContent = stocks.length;
+    if (cntGolden) cntGolden.textContent = stocks.filter(x => x.is_golden).length;
+    if (cntOversold) cntOversold.textContent = stocks.filter(x => x.rsi < 40).length;
+    if (cntDiscount) cntDiscount.textContent = stocks.filter(x => x.discount_pct >= 15).length;
+    if (cntElite) cntElite.textContent = stocks.filter(x => x.win_probability >= 90).length;
+    
+    renderNiftyOpportunities();
+}
+
+function filterNiftyCategory(category, btn) {
+    activeNiftyFilter = category;
+    const pills = document.querySelectorAll('#nifty-tab .circuit-filter-pill');
+    pills.forEach(p => p.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderNiftyOpportunities();
+}
+
+function handleNiftySearch(val) {
+    activeNiftySearchQuery = (val || '').trim().toLowerCase();
+    renderNiftyOpportunities();
+}
+
+function sortNiftyOpportunities(sortVal) {
+    activeNiftySort = sortVal || 'prob';
+    renderNiftyOpportunities();
+}
+
+function switchNiftyView(viewMode) {
+    activeNiftyView = viewMode;
+    const btnCards = document.getElementById('btn-nifty-view-cards');
+    const btnTable = document.getElementById('btn-nifty-view-table');
+    const cardsEl = document.getElementById('nifty-cards-container');
+    const tableEl = document.getElementById('nifty-table-container');
+    
+    if (viewMode === 'table') {
+        if (cardsEl) cardsEl.style.display = 'none';
+        if (tableEl) tableEl.style.display = 'block';
+        if (btnCards) btnCards.classList.remove('active');
+        if (btnTable) btnTable.classList.add('active');
+    } else {
+        if (tableEl) tableEl.style.display = 'none';
+        if (cardsEl) cardsEl.style.display = 'grid';
+        if (btnTable) btnTable.classList.remove('active');
+        if (btnCards) btnCards.classList.add('active');
+    }
+}
+
+function renderNiftyOpportunities() {
+    if (!niftyOpportunitiesData || !niftyOpportunitiesData.stocks) return;
+    const cardsContainer = document.getElementById('nifty-cards-container');
+    const tableBody = document.getElementById('nifty-table-body');
+    if (!cardsContainer && !tableBody) return;
+    
+    let filtered = niftyOpportunitiesData.stocks.filter(s => {
+        // Category Filter
+        if (activeNiftyFilter === 'GOLDEN' && !s.is_golden) return false;
+        if (activeNiftyFilter === 'OVERSOLD' && s.rsi >= 40) return false;
+        if (activeNiftyFilter === 'DISCOUNT' && s.discount_pct < 15) return false;
+        if (activeNiftyFilter === 'ELITE' && s.win_probability < 90) return false;
+        
+        // Search Query
+        if (activeNiftySearchQuery) {
+            const sym = (s.symbol || '').toLowerCase();
+            const nm = (s.name || '').toLowerCase();
+            const fn = (s.full_name || '').toLowerCase();
+            const sec = (s.sector || '').toLowerCase();
+            if (!sym.includes(activeNiftySearchQuery) && !nm.includes(activeNiftySearchQuery) && !fn.includes(activeNiftySearchQuery) && !sec.includes(activeNiftySearchQuery)) {
+                return false;
+            }
+        }
+        return true;
+    });
+    
+    // Sort
+    filtered.sort((a, b) => {
+        if (activeNiftySort === 'discount') return b.discount_pct - a.discount_pct;
+        if (activeNiftySort === 'rsi') return a.rsi - b.rsi;
+        if (activeNiftySort === 'upside') return (b.trade_plan?.potential_upside_t1 || 0) - (a.trade_plan?.potential_upside_t1 || 0);
+        if (activeNiftySort === 'name') return a.name.localeCompare(b.name);
+        // Default: win_probability desc, then discount_pct desc
+        return (b.win_probability - a.win_probability) || (b.discount_pct - a.discount_pct);
+    });
+    
+    // Render Cards View
+    if (cardsContainer) {
+        if (filtered.length === 0) {
+            cardsContainer.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; color: var(--text-secondary); background: var(--glass-bg); border-radius: 14px; border: 1px solid var(--glass-border);">No Nifty 50 stocks matched the selected filter. Try selecting 'All Setups'.</div>`;
+        } else {
+            cardsContainer.innerHTML = filtered.map(item => {
+                const plan = item.trade_plan || {};
+                const isElite = item.win_probability >= 90;
+                const tierClass = isElite ? 'tier-elite' : (item.win_probability >= 82 ? 'tier-high' : 'tier-good');
+                const actionClass = (plan.action || '').toLowerCase().replace(/[^a-z]/g, '-');
+                const changeColor = item.change_pct >= 0 ? '#34d399' : '#fb7185';
+                const changeSign = item.change_pct >= 0 ? '+' : '';
+                
+                return `
+                    <div class="nifty-card ${isElite ? 'elite-setup' : ''}">
+                        <div class="nifty-card-top">
+                            <div class="nifty-asset-meta">
+                                <h3>${item.name} <small style="font-size:0.75rem; color:var(--text-secondary); font-weight:400;">(${item.symbol})</small></h3>
+                                <p>${item.full_name} • <span style="color:#a855f7;">${item.sector}</span></p>
+                            </div>
+                            <div class="nifty-win-badge ${tierClass}">
+                                <i class="fa-solid fa-bolt"></i> ${item.win_probability}% Win Prob
+                            </div>
+                        </div>
+                        
+                        <div class="nifty-price-row">
+                            <div>
+                                <div class="nifty-cmp-val">₹${item.close.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                                <div style="font-size: 0.78rem; color: ${changeColor}; font-weight: 600;">
+                                    ${changeSign}${item.change_pct}% (${changeSign}₹${item.change_abs})
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="nifty-discount-pill">
+                                    <i class="fa-solid fa-tag"></i> -${item.discount_pct}% Off 52W High
+                                </div>
+                                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 3px;">
+                                    52W High: ₹${item.price_52_week_high.toLocaleString('en-IN')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="nifty-metrics-grid">
+                            <div class="nifty-metric-item">
+                                <span>Crossover Status</span>
+                                <strong style="color: ${item.is_golden ? '#fbbf24' : (item.near_golden ? '#38bdf8' : 'var(--text-primary)')}; font-size:0.78rem;">
+                                    ${item.crossover_label}
+                                </strong>
+                                <small style="font-size:0.65rem; color:var(--text-secondary);">50E: ₹${item.ema_50} | 200E: ₹${item.ema_200}</small>
+                            </div>
+                            
+                            <div class="nifty-metric-item">
+                                <span>RSI (14-Day)</span>
+                                <strong style="color: ${item.rsi_color}; font-size:0.8rem;">
+                                    ${item.rsi} • ${item.rsi_badge}
+                                </strong>
+                                <small style="font-size:0.65rem; color:var(--text-secondary);">${item.rsi_curling_up ? '↗ Curling up from floor' : 'Testing momentum support'}</small>
+                            </div>
+                            
+                            <div class="nifty-metric-item">
+                                <span>Bollinger Floor</span>
+                                <strong style="color: ${item.near_bb_lower ? '#34d399' : 'var(--text-primary)'}; font-size:0.78rem;">
+                                    ₹${item.bb_lower.toLocaleString('en-IN')} ${item.near_bb_lower ? '🛡️ (Near Band)' : ''}
+                                </strong>
+                                <small style="font-size:0.65rem; color:var(--text-secondary);">Upper Band: ₹${item.bb_upper.toLocaleString('en-IN')}</small>
+                            </div>
+                            
+                            <div class="nifty-metric-item">
+                                <span>MACD Momentum</span>
+                                <strong style="color: ${item.macd_bullish ? '#34d399' : 'var(--text-secondary)'}; font-size:0.78rem;">
+                                    ${item.macd_status}
+                                </strong>
+                                <small style="font-size:0.65rem; color:var(--text-secondary);">Line: ${item.macd_line} | Sig: ${item.macd_signal}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="nifty-trade-box">
+                            <div class="nifty-trade-header">
+                                <span class="nifty-action-badge ${actionClass}">${plan.action}</span>
+                                <span style="font-size: 0.72rem; color: #a5b4fc; font-weight: 600;">R:R ${plan.risk_reward}</span>
+                            </div>
+                            
+                            <div class="nifty-trade-targets">
+                                <div class="nifty-target-cell">
+                                    <small>Suggested Entry</small>
+                                    <strong style="color: #f8fafc;">₹${plan.suggested_entry}</strong>
+                                </div>
+                                <div class="nifty-target-cell">
+                                    <small>Target 1 (+${plan.potential_upside_t1}%)</small>
+                                    <strong style="color: #34d399;">₹${plan.target_1}</strong>
+                                </div>
+                                <div class="nifty-target-cell">
+                                    <small>Stop Loss (-${plan.risk_pct}%)</small>
+                                    <strong style="color: #fb7185;">₹${plan.stop_loss}</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="nifty-rationale-quote">
+                                "${plan.rationale}"
+                            </div>
+                        </div>
+                        
+                        <div class="nifty-card-footer">
+                            <button class="trade-btn buy-btn" onclick="tradeStockFromNifty('${item.symbol}', '${item.name}', ${item.close})" style="flex: 1; padding: 7px 10px; font-size: 0.82rem;">
+                                <i class="fa-solid fa-arrow-trend-up"></i> Trade Paper
+                            </button>
+                            <button class="btn-small" onclick="openChartModal('${item.symbol}', '${item.name}', ${item.close}, null, ${plan.target_1}, ${plan.stop_loss})" style="padding: 7px 12px; font-size: 0.8rem; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 8px; cursor: pointer;">
+                                <i class="fa-solid fa-chart-candlestick"></i> Chart
+                            </button>
+                            <button class="btn-small" onclick="analyzeStockCopilot('${item.name}', ${item.close})" style="padding: 7px 12px; font-size: 0.8rem; background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(99, 102, 241, 0.2)); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; border-radius: 8px; cursor: pointer;" title="Ask Copilot Analysis">
+                                <i class="fa-solid fa-robot"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+    
+    // Render Table View
+    if (tableBody) {
+        if (filtered.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="8" class="loading">No stocks match your filter criteria.</td></tr>`;
+        } else {
+            tableBody.innerHTML = filtered.map(item => {
+                const plan = item.trade_plan || {};
+                const isElite = item.win_probability >= 90;
+                const tierClass = isElite ? 'tier-elite' : (item.win_probability >= 82 ? 'tier-high' : 'tier-good');
+                const actionClass = (plan.action || '').toLowerCase().replace(/[^a-z]/g, '-');
+                const changeColor = item.change_pct >= 0 ? '#34d399' : '#fb7185';
+                const changeSign = item.change_pct >= 0 ? '+' : '';
+                
+                return `
+                    <tr>
+                        <td>
+                            <strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>
+                            <div style="font-size:0.72rem; color:#a855f7;">${item.sector}</div>
+                        </td>
+                        <td>
+                            <strong style="font-size:0.95rem;">₹${item.close.toFixed(2)}</strong>
+                            <div style="font-size:0.72rem; color:${changeColor}; font-weight:600;">${changeSign}${item.change_pct}%</div>
+                        </td>
+                        <td>
+                            <span class="nifty-win-badge ${tierClass}" style="font-size:0.72rem; padding:2px 7px;">
+                                ${item.win_probability}%
+                            </span>
+                        </td>
+                        <td>
+                            <span style="color: ${item.is_golden ? '#fbbf24' : (item.near_golden ? '#38bdf8' : 'var(--text-secondary)')}; font-weight:600; font-size:0.8rem;">
+                                ${item.crossover_label}
+                            </span>
+                            <div style="font-size:0.68rem; color:var(--text-secondary);">50E: ₹${item.ema_50} | 200E: ₹${item.ema_200}</div>
+                        </td>
+                        <td>
+                            <strong style="color:${item.rsi_color}">${item.rsi}</strong>
+                            <div style="font-size:0.68rem; color:var(--text-secondary);">${item.rsi_badge}</div>
+                        </td>
+                        <td>
+                            <span class="nifty-discount-pill" style="font-size:0.72rem; padding:2px 6px;">
+                                -${item.discount_pct}%
+                            </span>
+                            <div style="font-size:0.68rem; color:var(--text-secondary); margin-top:2px;">52W High: ₹${item.price_52_week_high}</div>
+                        </td>
+                        <td>
+                            <span class="nifty-action-badge ${actionClass}" style="font-size:0.68rem; padding:1px 6px;">${plan.action}</span>
+                            <div style="font-size:0.72rem; color:#34d399; font-weight:600; margin-top:2px;">Target: ₹${plan.target_1} (+${plan.potential_upside_t1}%)</div>
+                            <div style="font-size:0.68rem; color:#fb7185;">SL: ₹${plan.stop_loss}</div>
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display:flex; justify-content:flex-end; gap:4px;">
+                                <button class="trade-btn buy-btn btn-small" onclick="tradeStockFromNifty('${item.symbol}', '${item.name}', ${item.close})" style="padding:4px 8px; font-size:0.75rem;">Trade</button>
+                                <button class="btn-small" onclick="openChartModal('${item.symbol}', '${item.name}', ${item.close}, null, ${plan.target_1}, ${plan.stop_loss})" style="padding:4px 8px; font-size:0.75rem; background:var(--glass-bg); border:1px solid var(--glass-border); color:var(--text-primary); border-radius:6px; cursor:pointer;"><i class="fa-solid fa-chart-candlestick"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+}
+
+function tradeStockFromNifty(symbol, name, price) {
+    const tradeBtn = document.querySelector('button[onclick*="trade-tab"]');
+    if (tradeBtn) switchTab(tradeBtn, 'trade-tab');
+    
+    if (typeof openTradeModal === 'function') {
+        setTimeout(() => {
+            openTradeModal(symbol, name, price);
+        }, 300);
+    }
+}
+
+function analyzeStockCopilot(name, price) {
+    const copilotBtn = document.getElementById('copilot-tab-btn') || document.querySelector('button[onclick*="copilot-tab"]');
+    if (copilotBtn) switchTab(copilotBtn, 'copilot-tab');
+    
+    setTimeout(() => {
+        const input = document.getElementById('chat-input') || document.getElementById('copilot-full-input');
+        if (input) {
+            input.value = `Analyze ${name} for Golden Crossover and Oversold swing trade setup`;
+            if (typeof handleCopilotSend === 'function') {
+                handleCopilotSend();
+            } else if (typeof handleChatInput === 'function') {
+                handleChatInput();
+            }
+        }
+    }, 300);
 }
 
 function updateCircuitsKPIs(data) {
@@ -4379,6 +4874,7 @@ window.setMobileViewMode = function(mode) {
 function startApp() {
     try { initApp(); } catch(e) { console.error("Init Error:", e); }
     try { if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker(); } catch(e) { console.error("Load Advisory Error:", e); }
+    try { if (typeof fetchNiftyOpportunities === 'function') fetchNiftyOpportunities(); } catch(e) { console.error("Load Nifty Error:", e); }
 }
 
 if (document.readyState === 'loading') {
@@ -4627,16 +5123,16 @@ if (document.readyState === 'loading') {
         // ========================================================
 
         const COPILOT_SPECS = {
-            'CRUDEOIL': { name: 'Crude Oil Mini', lot: 10, unit: 'bbl', icon: '🛢️', aliases: ['crude', 'crudeoil', 'oil', 'brent', 'wti', 'crudeoilm', 'crude mini'] },
-            'CRUDEOILM': { name: 'Crude Oil Mini', lot: 10, unit: 'bbl', icon: '🛢️', aliases: ['crudeoilm', 'crude mini'] },
-            'NATURALGAS': { name: 'Natural Gas Mini', lot: 250, unit: 'mmBtu', icon: '⚡', aliases: ['natural gas', 'naturalgas', 'natgas', 'ng', 'gas', 'naturalgasm', 'natgas mini'] },
-            'NATURALGASM': { name: 'Natural Gas Mini', lot: 250, unit: 'mmBtu', icon: '⚡', aliases: ['naturalgasm', 'natgas mini'] },
-            'COPPER': { name: 'Copper Mini', lot: 250, unit: 'kg', icon: '🪙', aliases: ['copper', 'cu', 'tamba', 'copperm', 'copper mini'] },
-            'COPPERM': { name: 'Copper Mini', lot: 250, unit: 'kg', icon: '🪙', aliases: ['copperm', 'copper mini'] },
-            'GOLD': { name: 'Gold (10g)', lot: 1, unit: '10g', icon: '🥇', aliases: ['gold', 'xau', 'sona', 'goldm', 'gold mini'] },
-            'GOLDM': { name: 'Gold Mini (10g)', lot: 1, unit: '10g', icon: '🥇', aliases: ['goldm', 'gold mini'] },
-            'SILVER': { name: 'Silver Micro', lot: 1, unit: '1kg', icon: '🥈', aliases: ['silver', 'xag', 'chandi', 'silvermic', 'silver micro'] },
-            'SILVERMIC': { name: 'Silver Micro', lot: 1, unit: '1kg', icon: '🥈', aliases: ['silvermic', 'silver micro'] }
+            'CRUDEOIL': { name: 'Crude Oil', lot: 10, unit: 'bbl', icon: '🛢️', aliases: ['crude', 'crudeoil', 'oil', 'brent', 'wti', 'crudeoilm', 'crude mini'] },
+            'CRUDEOILM': { name: 'Crude Oil', lot: 10, unit: 'bbl', icon: '🛢️', aliases: ['crudeoilm', 'crude mini'] },
+            'NATURALGAS': { name: 'Natural Gas', lot: 250, unit: 'mmBtu', icon: '⚡', aliases: ['natural gas', 'naturalgas', 'natgas', 'ng', 'gas', 'naturalgasm', 'natgas mini'] },
+            'NATURALGASM': { name: 'Natural Gas', lot: 250, unit: 'mmBtu', icon: '⚡', aliases: ['naturalgasm', 'natgas mini'] },
+            'COPPER': { name: 'Copper', lot: 250, unit: 'kg', icon: '🪙', aliases: ['copper', 'cu', 'tamba', 'copperm', 'copper mini'] },
+            'COPPERM': { name: 'Copper', lot: 250, unit: 'kg', icon: '🪙', aliases: ['copperm', 'copper mini'] },
+            'GOLD': { name: 'Gold', lot: 1, unit: '10g', icon: '🥇', aliases: ['gold', 'xau', 'sona', 'goldm', 'gold mini'] },
+            'GOLDM': { name: 'Gold', lot: 1, unit: '10g', icon: '🥇', aliases: ['goldm', 'gold mini'] },
+            'SILVER': { name: 'Silver', lot: 1, unit: '1kg', icon: '🥈', aliases: ['silver', 'xag', 'chandi', 'silvermic', 'silver micro'] },
+            'SILVERMIC': { name: 'Silver', lot: 1, unit: '1kg', icon: '🥈', aliases: ['silvermic', 'silver micro'] }
         };
 
         function toggleChat() {
