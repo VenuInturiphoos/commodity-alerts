@@ -6,32 +6,32 @@ from datetime import datetime
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'advisory_trades_tracker.json')
 USER_ACCOUNT = "venu.photos1@gmail.com"
 
-# MCX Mini / Micro Trading Lots (Personal Account Optimization)
+# MCX Risk-Parity Lot Sizes (Approx ₹1.2 Lakh to ₹1.5 Lakh Purchase/Margin Capital per Trade)
 LOT_SIZES = {
-    'CRUDEOIL': 10,     # Crude Oil Mini (10 bbl) - 1 pt = ₹10 (instead of 100 bbl)
-    'CRUDEOILM': 10,    # Crude Oil Mini (10 bbl) - 1 pt = ₹10
-    'NATURALGAS': 250,  # Natural Gas Mini (250 mmBtu) - 1 pt = ₹250 (instead of 1250 mmBtu)
-    'NATURALGASM': 250, # Natural Gas Mini (250 mmBtu) - 1 pt = ₹250
-    'SILVER': 1,        # Silver Micro (1 kg) - 1 pt = ₹1 (instead of 5 kg or 30 kg)
-    'SILVERMIC': 1,     # Silver Micro (1 kg) - 1 pt = ₹1
-    'GOLD': 1,          # Gold Ten (10 grams) - 1 pt = ₹1 (instead of 10 or 100 grams)
-    'GOLDM': 1,         # Gold Ten (10 grams) - 1 pt = ₹1
-    'GOLDTEN': 1,       # Gold Ten (10 grams) - 1 pt = ₹1
-    'COPPER': 250,      # Copper Mini (250 kg) - 1 pt = ₹250 (instead of 2500 kg)
-    'COPPERM': 250      # Copper Mini (250 kg) - 1 pt = ₹250
+    'CRUDEOIL': 50,     # Crude Oil (50 bbl) - 1 pt = ₹50 (~₹1.22L margin)
+    'CRUDEOILM': 50,
+    'NATURALGAS': 1250, # Natural Gas (1250 mmBtu) - 1 pt = ₹1250 (~₹1.28L margin)
+    'NATURALGASM': 1250,
+    'SILVER': 5,        # Silver (5 kg) - 1 pt = ₹5 (~₹1.45L margin)
+    'SILVERMIC': 5,
+    'GOLD': 10,         # Gold (10 x 10g = 100g) - 1 pt = ₹10 (~₹1.44L margin)
+    'GOLDM': 10,
+    'GOLDTEN': 10,
+    'COPPER': 1250,     # Copper (1250 kg) - 1 pt = ₹1250 (~₹1.40L margin)
+    'COPPERM': 1250
 }
 
-# MCX Standard Initial Margin Requirements (SPAN + Exposure Margin)
+# MCX Standard Initial Margin Requirements (SPAN + Exposure Margin adjusted for ~₹1.2L-₹1.5L purchase cost)
 MARGIN_RATES = {
-    'CRUDEOIL': 0.20,    # 20% margin
-    'CRUDEOILM': 0.20,
-    'NATURALGAS': 0.20,  # 20% margin
-    'NATURALGASM': 0.20,
-    'SILVER': 0.12,      # 12% margin (Micro/Mini)
-    'SILVERMIC': 0.12,
-    'COPPER': 0.15,      # 15% margin
-    'COPPERM': 0.15,
-    'GOLD': 0.10,        # 10% margin (10g / Mini)
+    'CRUDEOIL': 0.25,    # 25% margin (~₹1.22 Lakh)
+    'CRUDEOILM': 0.25,
+    'NATURALGAS': 0.35,  # 35% margin (~₹1.28 Lakh)
+    'NATURALGASM': 0.35,
+    'SILVER': 0.15,      # 15% margin (~₹1.45 Lakh)
+    'SILVERMIC': 0.15,
+    'COPPER': 0.08,      # 8% margin (~₹1.40 Lakh)
+    'COPPERM': 0.08,
+    'GOLD': 0.10,        # 10% margin (~₹1.44 Lakh)
     'GOLDM': 0.10,
     'GOLDTEN': 0.10
 }
@@ -936,7 +936,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 chg = crude['change_pct']
                 lc = crude['lower_circuit']
                 uc = crude['upper_circuit']
-                lot_size = LOT_SIZES.get('CRUDEOILM', 10)
+                lot_size = LOT_SIZES.get('CRUDEOIL', 50)
 
                 # Fade overreaction if near circuit or spike > 1.2%
                 if 'NEAR' in crude['status'] or 'HIT' in crude['status'] or abs(chg) >= 1.5:
@@ -953,7 +953,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         "time_615": "08:15 PM IST",
                         "time_exit": "11:30 PM IST",
                         "symbol": "CRUDEOIL",
-                        "name": "Crude Oil Mini",
+                        "name": "Crude Oil",
                         "lot_size": lot_size,
                         "event_context": "Wednesday EIA Petroleum Inventory Spike Fade",
                         "suggestion_6pm": {
@@ -1005,7 +1005,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 chg = natgas['change_pct']
                 lc = natgas['lower_circuit']
                 uc = natgas['upper_circuit']
-                lot_size = LOT_SIZES.get('NATURALGASM', 250)
+                lot_size = LOT_SIZES.get('NATURALGAS', 1250)
 
                 if 'NEAR' in natgas['status'] or 'HIT' in natgas['status'] or abs(chg) >= 2.0:
                     action = "BUY" if chg < 0 else "SELL"
@@ -1021,7 +1021,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         "time_615": "08:15 PM IST",
                         "time_exit": "11:30 PM IST",
                         "symbol": "NATURALGAS",
-                        "name": "Natural Gas Mini",
+                        "name": "Natural Gas",
                         "lot_size": lot_size,
                         "event_context": "Thursday EIA Storage Report Spike Fade",
                         "suggestion_6pm": {
