@@ -1675,6 +1675,35 @@ class PriceChecker:
         print(f"Exported {len(circuits)} commodity circuit limits to web/circuits_data.json at {now_ist}")
         self._last_circuits_data_time = now_ts
         self._cached_circuits_data = out_data
+
+        # Automatically archive daily authentic MCX prices to build persistent 100% genuine MCX history
+        try:
+            today_key = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%Y-%m-%d')
+            archive_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'mcx_daily_history.json')
+            mcx_hist = {}
+            if os.path.exists(archive_path):
+                try:
+                    with open(archive_path, 'r') as hf:
+                        mcx_hist = json.load(hf)
+                except Exception:
+                    mcx_hist = {}
+            
+            day_data = mcx_hist.get(today_key, {})
+            for c in circuits:
+                sym = c['symbol']
+                day_data[sym] = {
+                    'prev_close': c.get('prev_close'),
+                    'open': c.get('open_price'),
+                    'high': c.get('day_high'),
+                    'low': c.get('day_low'),
+                    'close': c.get('current_price'),
+                    'timestamp': now_ts
+                }
+            mcx_hist[today_key] = day_data
+            with open(archive_path, 'w') as hf:
+                json.dump(mcx_hist, hf, indent=2)
+        except Exception as eh:
+            print(f"Daily MCX archive notice: {eh}")
         
         try:
             self.generate_circuits_history_30d(tv_quotes)
@@ -1782,6 +1811,16 @@ class PriceChecker:
 
                     last_yahoo_close = float(df['Close'].iloc[-1]) if not df.empty and df['Close'].iloc[-1] > 0 else 1.0
                     multiplier = (mcx_ref_price / last_yahoo_close) if (mcx_ref_price > 0 and last_yahoo_close > 0) else 1.0
+
+                    # Persistent MCX daily archive: use 100% genuine MCX exchange prices for any recorded dates
+                    mcx_archive_data = {}
+                    archive_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'mcx_daily_history.json')
+                    if os.path.exists(archive_path):
+                        try:
+                            with open(archive_path, 'r') as hf:
+                                mcx_archive_data = json.load(hf)
+                        except Exception:
+                            pass
                     
                     for idx, row in df.iterrows():
                         date_key = idx.strftime('%Y-%m-%d')
@@ -1808,12 +1847,18 @@ class PriceChecker:
                         day_name = idx.strftime('%a')
                         is_within_30d = bool(idx >= pd.Timestamp(cutoff_30d, tz=df.index.tz))
                         
-                        # Scale prices to Indian MCX Rupee (₹) contract terms
+                        # Use genuine MCX exchange prices: Live Feed (today) > Daily Archive > Dynamic MCX scaling
+                        archived_mcx = mcx_archive_data.get(date_key, {}).get(sym)
                         if is_today and quote and quote.get('prev_close') and float(quote['prev_close']) > 0:
                             p_close = round(float(quote['prev_close']), 2)
                             high = round(float(quote.get('high', quote['prev_close'])), 2)
                             low = round(float(quote.get('low', quote['prev_close'])), 2)
                             close = round(float(quote.get('close', quote['prev_close'])), 2)
+                        elif archived_mcx and archived_mcx.get('prev_close') and archived_mcx.get('close'):
+                            p_close = round(float(archived_mcx['prev_close']), 2)
+                            high = round(float(archived_mcx.get('high', archived_mcx['prev_close'])), 2)
+                            low = round(float(archived_mcx.get('low', archived_mcx['prev_close'])), 2)
+                            close = round(float(archived_mcx.get('close', archived_mcx['prev_close'])), 2)
                         else:
                             p_close = round(float(row['PrevClose']) * multiplier, 2)
                             high = round(float(row['High']) * multiplier, 2)
