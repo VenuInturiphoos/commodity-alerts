@@ -748,7 +748,8 @@ class PriceChecker:
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             }
-            cols = ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume', 'description', 'expiration', 'name']
+            cols = ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume', 'description', 'expiration', 'name',
+                    'RSI', 'ADX', 'ATR', 'average_volume_10d_calc', 'EMA20', 'EMA50']
             payload = {
                 'filter': [{'left': 'exchange', 'operation': 'equal', 'right': 'MCX'}],
                 'columns': cols
@@ -845,7 +846,13 @@ class PriceChecker:
                             'prev_close': prev_close,
                             'description': chosen_data.get('description'),
                             'expiry': exp_str,
-                            'contract_desc': chosen_data.get('description')
+                            'contract_desc': chosen_data.get('description'),
+                            'rsi_14': float(chosen_data['RSI']) if chosen_data.get('RSI') is not None else None,
+                            'adx_14': float(chosen_data['ADX']) if chosen_data.get('ADX') is not None else None,
+                            'atr_14': float(chosen_data['ATR']) if chosen_data.get('ATR') is not None else None,
+                            'avg_volume_10d': float(chosen_data['average_volume_10d_calc']) if chosen_data.get('average_volume_10d_calc') is not None else None,
+                            'ema_20': float(chosen_data['EMA20']) if chosen_data.get('EMA20') is not None else None,
+                            'ema_50': float(chosen_data['EMA50']) if chosen_data.get('EMA50') is not None else None
                         }
                 return quotes
                 
@@ -855,7 +862,8 @@ class PriceChecker:
                 return {}
             fallback_payload = {
                 'symbols': {'tickers': tickers},
-                'columns': ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume', 'description']
+                'columns': ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume', 'description',
+                            'RSI', 'ADX', 'ATR', 'average_volume_10d_calc', 'EMA20', 'EMA50']
             }
             resp_fb = requests.post(url, json=fallback_payload, headers=headers, timeout=10)
             if resp_fb.status_code != 200:
@@ -885,7 +893,13 @@ class PriceChecker:
                         'change_abs': change_abs,
                         'volume': d.get('volume'),
                         'prev_close': prev_close,
-                        'description': d.get('description')
+                        'description': d.get('description'),
+                        'rsi_14': float(d['RSI']) if d.get('RSI') is not None else None,
+                        'adx_14': float(d['ADX']) if d.get('ADX') is not None else None,
+                        'atr_14': float(d['ATR']) if d.get('ATR') is not None else None,
+                        'avg_volume_10d': float(d['average_volume_10d_calc']) if d.get('average_volume_10d_calc') is not None else None,
+                        'ema_20': float(d['EMA20']) if d.get('EMA20') is not None else None,
+                        'ema_50': float(d['EMA50']) if d.get('EMA50') is not None else None
                     }
             return quotes
         except Exception as e:
@@ -1660,7 +1674,13 @@ class PriceChecker:
                 "band_position_pct": band_pos,
                 "status": status,
                 "status_color": status_color,
-                "status_text": status_text
+                "status_text": status_text,
+                "rsi_14": quote.get('rsi_14') if quote else None,
+                "adx_14": quote.get('adx_14') if quote else None,
+                "atr_14": quote.get('atr_14') if quote else None,
+                "avg_volume_10d": quote.get('avg_volume_10d') if quote else None,
+                "ema_20": quote.get('ema_20') if quote else None,
+                "ema_50": quote.get('ema_50') if quote else None
             })
             
         out_data = {

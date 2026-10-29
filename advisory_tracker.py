@@ -224,24 +224,39 @@ def record_live_9am_advisory(commodities_list):
         gap_pts = round(cur_p - p_close, 2)
         gap_pct = round((gap_pts / p_close) * 100, 2) if p_close > 0 else 0.0
 
+        # Technical Indicators from Scanner (RSI, ADX, ATR, Volume)
+        rsi = item.get('rsi_14')
+        adx = item.get('adx_14')
+        atr = item.get('atr_14')
+        atr_buf = round(1.2 * atr, 2) if (atr and atr > 0) else None
+
         # Action Logic:
         # 1. Significant Gap Up (>= +0.75%)
         if gap_pct >= 0.75:
             # If Wide CPR -> Fade back to Previous Day Close (Gap Fill)
             if cpr_width_pct >= 0.30:
-                action = "SELL"
-                entry_text = "SELL / GAP FADE (SHORT)"
-                rationale = f"Significant opening gap up (+{gap_pct:.2f}%). Wide CPR ({cpr_width_pct:.2f}%) indicates high probability gap fill towards Prev Day Close (₹{p_close:,.2f})."
-                sl = round(max(cur_p, r1) * 1.004, 2)
-                tgt = p_close
-                c15_status = "GAP_FADE_ENTERED"
-                c15_detail = f"Fading opening gap up towards PDC ₹{p_close:,.2f}."
+                if rsi is not None and rsi < 40:
+                    action = "STAND_ASIDE"
+                    entry_text = "STAND ASIDE / RSI OVERSOLD"
+                    rationale = f"Gap fade short blocked by RSI filter ({rsi:.1f} < 40). Momentum is already suppressed; risk of short squeeze."
+                    sl = None
+                    tgt = None
+                    c15_status = "RSI_FILTER_STAND_ASIDE"
+                    c15_detail = f"RSI {rsi:.1f} warned against shorting."
+                else:
+                    action = "SELL"
+                    entry_text = "SELL / GAP FADE (SHORT)"
+                    rationale = f"Significant opening gap up (+{gap_pct:.2f}%). Wide CPR ({cpr_width_pct:.2f}%) indicates high probability gap fill towards Prev Day Close (₹{p_close:,.2f})." + (f" (ATR Stop: ₹{atr_buf:,.2f})" if atr_buf else "")
+                    sl = round(max(cur_p, r1) + atr_buf, 2) if atr_buf else round(max(cur_p, r1) * 1.004, 2)
+                    tgt = p_close
+                    c15_status = "GAP_FADE_ENTERED"
+                    c15_detail = f"Fading opening gap up towards PDC ₹{p_close:,.2f}."
             else:
                 # Narrow CPR -> Momentum continuation
                 action = "BUY"
                 entry_text = "BUY / GAP MOMENTUM"
-                rationale = f"Narrow CPR ({cpr_width_pct:.2f}%) expansion gap up (+{gap_pct:.2f}%). Riding opening momentum."
-                sl = round(min(cur_p, pivot) * 0.996, 2)
+                rationale = f"Narrow CPR ({cpr_width_pct:.2f}%) expansion gap up (+{gap_pct:.2f}%). Riding opening momentum." + (f" (ATR Stop: ₹{atr_buf:,.2f})" if atr_buf else "")
+                sl = round(min(cur_p, pivot) - atr_buf, 2) if atr_buf else round(min(cur_p, pivot) * 0.996, 2)
                 tgt = r2
                 c15_status = "GAP_MOMENTUM_ENTERED"
                 c15_detail = f"Riding opening breakout momentum towards R2 ₹{r2:,.2f}."
@@ -301,19 +316,28 @@ def record_live_9am_advisory(commodities_list):
         elif gap_pct <= -0.75:
             # If Wide CPR -> Fade back to Previous Day Close (Gap Fill Bounce)
             if cpr_width_pct >= 0.30:
-                action = "BUY"
-                entry_text = "BUY / GAP FADE (BOUNCE)"
-                rationale = f"Significant opening gap down ({gap_pct:.2f}%). Wide CPR ({cpr_width_pct:.2f}%) indicates high probability gap fill bounce towards Prev Day Close (₹{p_close:,.2f})."
-                sl = round(min(cur_p, s1) * 0.996, 2)
-                tgt = p_close
-                c15_status = "GAP_FADE_ENTERED"
-                c15_detail = f"Fading opening gap down towards PDC ₹{p_close:,.2f}."
+                if rsi is not None and rsi > 60:
+                    action = "STAND_ASIDE"
+                    entry_text = "STAND ASIDE / RSI MOMENTUM"
+                    rationale = f"Gap fade bounce blocked by RSI filter ({rsi:.1f} > 60). Downward momentum is active; avoiding knife-catching."
+                    sl = None
+                    tgt = None
+                    c15_status = "RSI_FILTER_STAND_ASIDE"
+                    c15_detail = f"RSI {rsi:.1f} warned against dip-buying."
+                else:
+                    action = "BUY"
+                    entry_text = "BUY / GAP FADE (BOUNCE)"
+                    rationale = f"Significant opening gap down ({gap_pct:.2f}%). Wide CPR ({cpr_width_pct:.2f}%) indicates high probability gap fill bounce towards Prev Day Close (₹{p_close:,.2f})." + (f" (ATR Stop: ₹{atr_buf:,.2f})" if atr_buf else "")
+                    sl = round(min(cur_p, s1) - atr_buf, 2) if atr_buf else round(min(cur_p, s1) * 0.996, 2)
+                    tgt = p_close
+                    c15_status = "GAP_FADE_ENTERED"
+                    c15_detail = f"Fading opening gap down towards PDC ₹{p_close:,.2f}."
             else:
                 # Narrow CPR -> Momentum continuation down
                 action = "SELL"
                 entry_text = "SELL / GAP FLUSH"
-                rationale = f"Narrow CPR ({cpr_width_pct:.2f}%) breakdown gap down ({gap_pct:.2f}%). Riding opening short momentum."
-                sl = round(max(cur_p, pivot) * 1.004, 2)
+                rationale = f"Narrow CPR ({cpr_width_pct:.2f}%) breakdown gap down ({gap_pct:.2f}%). Riding opening short momentum." + (f" (ATR Stop: ₹{atr_buf:,.2f})" if atr_buf else "")
+                sl = round(max(cur_p, pivot) + atr_buf, 2) if atr_buf else round(max(cur_p, pivot) * 1.004, 2)
                 tgt = s2
                 c15_status = "GAP_MOMENTUM_ENTERED"
                 c15_detail = f"Riding opening flush momentum towards S2 ₹{s2:,.2f}."
@@ -462,6 +486,14 @@ def record_live_130pm_advisory(commodities_list):
         chg_pct = item['change_pct']
         lot_size = LOT_SIZES.get(sym, 1)
 
+        # Technical Indicators from Scanner (RSI, ADX, ATR, Volume)
+        rsi = item.get('rsi_14')
+        adx = item.get('adx_14')
+        atr = item.get('atr_14')
+        vol = item.get('volume', 0) or 0
+        avg_vol = item.get('avg_volume_10d', 0) or 0
+        vol_ratio = round(vol / avg_vol, 2) if (avg_vol > 0 and vol > 0) else None
+
         trade_id = f"ADV-{today_str.replace(' ', '')}-1330-{sym}"
         if trade_id in existing_today_ids:
             continue
@@ -525,6 +557,18 @@ def record_live_130pm_advisory(commodities_list):
                     "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
                     "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Avoided Trap 🛡️", "pnl_display": "₹0.00", "summary": f"Counter-trend BUY blocked by Daily CPR Trend Filter. Capital protected." }
                 }
+            elif adx is not None and adx < 18.0:
+                # ADX Trend Strength Filter: Avoid False Breakouts in Choppy Regime
+                entry = {
+                    "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                    "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "lot_size": lot_size, "event_context": f"Low Trend Strength (ADX: {adx:.1f} < 18)",
+                    "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / WEAK TREND (ADX < 18)", "rationale": f"ADX is {adx:.1f} (below 18 threshold). Market is range-bound without directional impulse; breakout trade blocked to avoid chop.", "reference_price": cur_p, "stop_loss": None, "target": None },
+                    "check_615": { "checked": True, "status": "WEAK_ADX_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": f"Low ADX {adx:.1f} avoided fake breakout." },
+                    "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                    "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Avoided Fakeout 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: ADX {adx:.1f} indicates choppy, directionless market." }
+                }
             elif item_sector in already_called_sectors:
                 # Sector Correlation Guard
                 entry = {
@@ -540,7 +584,8 @@ def record_live_130pm_advisory(commodities_list):
             else:
                 # Valid Trend-Aligned Breakout: Enter on Retest of Broken Asian High (Support)
                 support_entry = day_h
-                tight_sl = round(day_h - max(range_pts * 0.25, day_h * 0.003), 2)
+                atr_sl_dist = round(1.2 * atr, 2) if (atr and atr > 0) else max(range_pts * 0.25, day_h * 0.003)
+                tight_sl = round(day_h - atr_sl_dist, 2)
                 tgt = round(day_h + (range_pts * 1.2), 2)
                 is_at_support = abs(cur_p - support_entry) / support_entry <= 0.002
                 entry_p = cur_p if is_at_support else support_entry
@@ -603,6 +648,18 @@ def record_live_130pm_advisory(commodities_list):
                     "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
                     "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Avoided Trap 🛡️", "pnl_display": "₹0.00", "summary": f"Counter-trend SELL blocked by Daily CPR Trend Filter. Capital protected." }
                 }
+            elif adx is not None and adx < 18.0:
+                # ADX Trend Strength Filter: Avoid False Breakdowns in Choppy Regime
+                entry = {
+                    "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                    "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "lot_size": lot_size, "event_context": f"Low Trend Strength (ADX: {adx:.1f} < 18)",
+                    "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / WEAK TREND (ADX < 18)", "rationale": f"ADX is {adx:.1f} (below 18 threshold). Market is range-bound without directional impulse; breakdown trade blocked to avoid chop.", "reference_price": cur_p, "stop_loss": None, "target": None },
+                    "check_615": { "checked": True, "status": "WEAK_ADX_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": f"Low ADX {adx:.1f} avoided fake breakdown." },
+                    "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                    "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Avoided Fakeout 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: ADX {adx:.1f} indicates choppy, directionless market." }
+                }
             elif item_sector in already_called_sectors:
                 # Sector Correlation Guard
                 entry = {
@@ -618,7 +675,8 @@ def record_live_130pm_advisory(commodities_list):
             else:
                 # Valid Trend-Aligned Breakdown: Enter on Bounce to Broken Asian Low (Resistance)
                 resistance_entry = day_l
-                tight_sl = round(day_l + max(range_pts * 0.25, day_l * 0.003), 2)
+                atr_sl_dist = round(1.2 * atr, 2) if (atr and atr > 0) else max(range_pts * 0.25, day_l * 0.003)
+                tight_sl = round(day_l + atr_sl_dist, 2)
                 tgt = round(day_l - (range_pts * 1.2), 2)
                 is_at_res = abs(cur_p - resistance_entry) / resistance_entry <= 0.002
                 entry_p = cur_p if is_at_res else resistance_entry
