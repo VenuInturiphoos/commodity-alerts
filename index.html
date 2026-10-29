@@ -779,7 +779,6 @@
                         </div>
                         <div class="circuit-filters" id="adv-session-filters" style="gap: 0.45rem;">
                             <button class="circuit-filter-pill active" id="adv-session-all" onclick="filterAdvisorySession('ALL', this)">All Sessions 🌐 (<span id="sess-badge-all">...</span>)</button>
-                            <button class="circuit-filter-pill" id="adv-session-trigger" onclick="filterAdvisorySession('TRIGGER', this)">⚡ Real-Time Triggers (<span id="sess-badge-trigger">...</span>)</button>
                             <button class="circuit-filter-pill" id="adv-session-9am" onclick="filterAdvisorySession('9AM', this)">09:01 AM Morning Pulse 🌅 (<span id="sess-badge-9am">...</span>)</button>
                             <button class="circuit-filter-pill" id="adv-session-1pm" onclick="filterAdvisorySession('1PM', this)">01:30 PM London Breakout 🏛️ (<span id="sess-badge-1pm">...</span>)</button>
                             <button class="circuit-filter-pill" id="adv-session-6pm" onclick="filterAdvisorySession('6PM', this)">06:00 PM US Pit Open 🔔 (<span id="sess-badge-6pm">...</span>)</button>
@@ -5088,9 +5087,6 @@ function getTradeSessionCategory(t) {
     const tTrig = (t.time_trigger || t.time_6pm || '').toLowerCase();
     const id = (t.id || '').toLowerCase();
     
-    if (sName.includes('real-time') || sName.includes('technical trigger') || sName.includes('trigger') || id.includes('trigger')) {
-        return 'TRIGGER';
-    }
     if (sName.includes('09:00') || sName.includes('09:01') || sName.includes('9:01') || sName.includes('morning') || tTrig.includes('09:00') || tTrig.includes('09:01') || id.includes('-0900-') || id.includes('-0901-')) {
         return '9AM';
     }
@@ -5107,9 +5103,8 @@ function getTradeSessionCategory(t) {
 }
 
 function updateSessionStatsBadges(trades) {
-    const sessions = ['TRIGGER', '9AM', '1PM', '6PM', '8PM'];
+    const sessions = ['9AM', '1PM', '6PM', '8PM'];
     const sessNames = {
-        'TRIGGER': '⚡ Real-Time Technical Triggers',
         '9AM': '09:01 AM Morning Pulse',
         '1PM': '01:30 PM London Breakout',
         '6PM': '06:00 PM US Pit Open',
