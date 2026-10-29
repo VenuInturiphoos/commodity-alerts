@@ -364,7 +364,7 @@
       "time_6pm": "09:01 AM IST",
       "time_validation": "09:15 AM IST",
       "time_615": "09:15 AM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "02:27 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
       "lot_size": 50,
@@ -390,21 +390,24 @@
         "quantity": 50,
         "entry_price": 9668.0,
         "entry_time": "09:01 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 9629.33,
+        "exit_time": "02:27 PM IST",
+        "pnl_points": -38.67,
+        "pnl_inr": -1933.5,
+        "status": "CLOSED",
         "target": 9798.0,
-        "stop_loss": 9629.33
+        "stop_loss": 9629.33,
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 9629.33,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+        "outcome": "WRONG",
+        "badge": "Stop Loss Hit \ud83d\uded1 (02:27 PM IST)",
+        "pnl_display": "\u20b9-1,933.50",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:27 PM IST. Entry: \u20b99,668.00 -> Exit: \u20b99,629.33 (\u20b9-1,933.50).",
+        "exit_time": "02:27 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
       }
     },
     {
@@ -2153,23 +2156,23 @@
       }
     }
   ],
-  "last_updated": "29 Oct 2026, 02:16 PM IST",
+  "last_updated": "29 Oct 2026, 02:27 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000,
   "summary": {
     "total_signals": 43,
     "executed_count": 18,
     "correct_count": 5,
-    "wrong_count": 8,
+    "wrong_count": 9,
     "protected_count": 25,
-    "win_rate_pct": 38.5,
-    "total_pnl_inr": -2995.0,
-    "avg_trade_pnl_inr": -166.39,
-    "active_trades_count": 4,
+    "win_rate_pct": 35.7,
+    "total_pnl_inr": -4928.5,
+    "avg_trade_pnl_inr": -273.81,
+    "active_trades_count": 3,
     "starting_cash_inr": 1000000,
-    "current_cash_inr": 997005.0,
+    "current_cash_inr": 995071.5,
     "used_margin_inr": 0.0,
-    "available_cash_inr": 997005.0,
-    "net_worth_inr": 997005.0
+    "available_cash_inr": 995071.5,
+    "net_worth_inr": 995071.5
   }
 }
