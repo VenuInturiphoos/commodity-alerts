@@ -38,7 +38,9 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "target": 293.1,
+        "stop_loss": 274.41
       },
       "eod_outcome": {
         "session_close": null,
@@ -312,7 +314,7 @@
         "action_text": "SELL @ RESISTANCE \u20b9143,202.00",
         "rationale": "Trend-aligned European breakdown (Macro Bearish below CPR). Entering at Resistance \u20b9143,202.00 with tight SL.",
         "reference_price": 143202.0,
-        "stop_loss": 143631.61,
+        "stop_loss": 143250.0,
         "target": 142340.4
       },
       "check_615": {
@@ -334,7 +336,9 @@
         "pnl_inr": 0.0,
         "status": "ACTIVE",
         "target": 142340.4,
-        "stop_loss": 143631.61
+        "stop_loss": 143250.0,
+        "trailing_sl_active": true,
+        "original_sl": 143631.61
       },
       "eod_outcome": {
         "session_close": null,
@@ -2458,7 +2462,7 @@
       }
     }
   ],
-  "last_updated": "29 Oct 2026, 08:01 PM IST",
+  "last_updated": "29 Oct 2026, 09:41 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000,
   "summary": {
