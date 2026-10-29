@@ -879,11 +879,11 @@
 
                         <!-- Fallback hidden containers for legacy scripts -->
                         <div id="trade-module-commodities" style="display:none;" aria-hidden="true">
-                            <tbody id="portfolio-commodities-body"></tbody>
+                            <table><tbody id="portfolio-commodities-body"></tbody></table>
                             <div id="portfolio-commodities-cards"></div>
-                            <tbody id="pending-commodity-orders-body"></tbody>
+                            <table><tbody id="pending-commodity-orders-body"></tbody></table>
                             <div id="pending-commodity-orders-cards"></div>
-                            <tbody id="trade-market-commodities-body"></tbody>
+                            <table><tbody id="trade-market-commodities-body"></tbody></table>
                             <div id="trade-market-commodities-cards"></div>
                         </div>
 
@@ -2396,6 +2396,32 @@ async function loadStockInvestmentsTracker() {
             renderNiftyDailyPickHeroCard(stockInvestmentsData.today_pick);
         }
 
+        // Populate top KPI cards immediately from tracker summary
+        if (stockInvestmentsData.summary) {
+            const sum = stockInvestmentsData.summary;
+            const availEl = document.getElementById('virtual-available-margin');
+            const usedEl = document.getElementById('virtual-used-margin');
+            const portEl = document.getElementById('virtual-portfolio-value');
+            const plEl = document.getElementById('virtual-total-pl');
+            const netWorthEl = document.getElementById('virtual-net-worth');
+            
+            const usedMargin = Number(sum.active_capital_invested_inr || 0);
+            const portVal = Number(sum.current_portfolio_value_inr || 0);
+            const baseCash = (currentUser && userBalance > 0) ? userBalance : Number(sum.starting_cash_inr || 1000000);
+            const availCash = Math.max(0, baseCash - usedMargin + Number(sum.realized_pnl_inr || 0));
+            const netWorth = availCash + portVal;
+            const pl = Number(sum.total_pnl_inr || 0);
+
+            if (availEl) availEl.textContent = '₹' + availCash.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (usedEl) usedEl.textContent = '₹' + usedMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (portEl) portEl.textContent = '₹' + portVal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (netWorthEl) netWorthEl.textContent = '₹' + netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (plEl) {
+                plEl.textContent = (pl >= 0 ? '+₹' : '-₹') + Math.abs(pl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                plEl.style.color = pl >= 0 ? '#4ade80' : '#fb7185';
+            }
+        }
+
         // Render holdings & top metrics into Paper Trading Stock Investing module
         if (typeof renderPortfolio === 'function') {
             renderPortfolio();
@@ -3644,7 +3670,7 @@ function renderPortfolio() {
     const tbodyCommodities = document.getElementById('portfolio-commodities-body');
     const cardsStocks = document.getElementById('portfolio-stocks-cards');
     const cardsCommodities = document.getElementById('portfolio-commodities-cards');
-    if (!tbodyStocks || !tbodyCommodities) return;
+    if (!tbodyStocks) return;
     
     let totalInvested = 0;
     let currentPortfolioValue = 0;
@@ -3889,13 +3915,17 @@ function renderPortfolio() {
         }
     }
     
-    tbodyStocks.innerHTML = stockRows.length > 0 
-        ? stockRows.join('') 
-        : `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No active stock holdings.</td></tr>`;
+    if (tbodyStocks) {
+        tbodyStocks.innerHTML = stockRows.length > 0 
+            ? stockRows.join('') 
+            : `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No active stock holdings.</td></tr>`;
+    }
         
-    tbodyCommodities.innerHTML = commodityRows.length > 0 
-        ? commodityRows.join('') 
-        : `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No active commodity holdings.</td></tr>`;
+    if (tbodyCommodities) {
+        tbodyCommodities.innerHTML = commodityRows.length > 0 
+            ? commodityRows.join('') 
+            : `<tr><td colspan="7" class="loading" style="padding: 2rem !important;">No active commodity holdings.</td></tr>`;
+    }
 
     if (cardsStocks) {
         cardsStocks.innerHTML = stockCards.length > 0
