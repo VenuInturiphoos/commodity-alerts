@@ -114,13 +114,13 @@ def save_tracker(tracker_data):
                 eod['summary'] = '15-minute confirmation check elapsed without executed entry. 100% capital protected in cash.'
     
     # Strictly distinguish executed positions from protected / filtered signals
-    executed_trades = [t for t in trades if t.get('paper_trade', {}).get('action') in ['BUY', 'SELL'] and t.get('eod_outcome', {}).get('outcome') in ['CORRECT', 'WRONG']]
+    executed_trades = [t for t in trades if t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']]
     correct_count = sum(1 for t in executed_trades if t.get('eod_outcome', {}).get('outcome') == 'CORRECT')
-    wrong_count = sum(1 for t in executed_trades if t.get('eod_outcome', {}).get('outcome') == 'WRONG')
+    wrong_count = sum(1 for t in executed_trades if t.get('eod_outcome', {}).get('outcome') in ['WRONG', 'INCORRECT'])
     total_executed = len(executed_trades)
-    win_rate = round((correct_count / total_executed * 100), 1) if total_executed > 0 else 0.0
+    win_rate = round((correct_count / (correct_count + wrong_count) * 100), 1) if (correct_count + wrong_count) > 0 else 0.0
     
-    protected_count = sum(1 for t in trades if t.get('eod_outcome', {}).get('outcome') == 'PROTECTED' or t.get('paper_trade', {}).get('action') == 'STAND_ASIDE')
+    protected_count = sum(1 for t in trades if t.get('paper_trade', {}).get('action') == 'STAND_ASIDE' or (t.get('eod_outcome', {}).get('outcome') == 'PROTECTED' and t.get('paper_trade', {}).get('action') not in ['BUY', 'SELL']))
     total_pnl = sum(t.get('paper_trade', {}).get('pnl_inr', 0.0) for t in trades if t.get('paper_trade', {}).get('status') == 'CLOSED')
     active_count = sum(1 for t in trades if t.get('paper_trade', {}).get('status') == 'ACTIVE')
     
