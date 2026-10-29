@@ -112,6 +112,13 @@ def main():
     except Exception as e:
         print(f"Error checking advisory targets/stops: {e}")
 
+    # Real-Time Continuous Technical Confluence Scanner (Mon - Fri, 09:05 AM - 10:45 PM IST)
+    try:
+        from advisory_tracker import evaluate_realtime_technical_triggers
+        evaluate_realtime_technical_triggers(checker, alerter)
+    except Exception as e:
+        print(f"Error evaluating real-time technical triggers: {e}")
+
     # Check and trigger 09:01 AM IST Morning Market Pulse & Opening Gap Advisory (Mon - Fri)
     try:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))

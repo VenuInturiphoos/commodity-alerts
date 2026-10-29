@@ -1582,6 +1582,300 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
         return True
     return False
 
+def evaluate_realtime_technical_triggers(checker, alerter=None):
+    """
+    Called on every continuous loop cycle during MCX market hours (09:05 AM to 10:45 PM IST, Mon-Fri).
+    Continuously monitors live technical indicators (ADX trend strength, RSI momentum/divergence,
+    ATR dynamic buffers, volume ratios, and circuit boundaries) across all MCX commodities.
+    When a genuine high-probability technical confluence setup appears anywhere during the day:
+    - Enforces portfolio risk caps (Max daily loss ₹15,000)
+    - Enforces maximum concurrent active commodity positions (Max 2 positions)
+    - Enforces symbol cooldown (2 hours between trades on same asset, max 2 trades/day)
+    - Enforces sector correlation guard (Bullion, Energy, Base Metals)
+    - Enters paper trade with dynamic ATR-calibrated stop loss and 1.8x+ target
+    - Logs execution into advisory_trades_tracker.json
+    - Dispatches instant email notification
+    """
+    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+    today_str = now_dt.strftime('%d %b %Y')
+    now_time_str = now_dt.strftime('%I:%M %p IST')
+    
+    # Market day check (Mon - Fri)
+    if now_dt.weekday() >= 5:
+        return False
+        
+    # Active intraday window: 09:05 AM to 10:45 PM IST
+    hour = now_dt.hour
+    minute = now_dt.minute
+    is_in_window = (hour == 9 and minute >= 5) or (10 <= hour < 22) or (hour == 22 and minute <= 45)
+    if not is_in_window:
+        return False
+
+    tracker = load_tracker()
+    trades = tracker.get('trades', [])
+    
+    # 1. Portfolio Circuit Breaker: Max Daily Loss Cap (₹15,000)
+    today_realized_loss = sum(abs(t.get('paper_trade', {}).get('pnl_inr', 0.0)) 
+                              for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('pnl_inr', 0.0) < 0)
+    if today_realized_loss >= 15000.0:
+        return False
+
+    # 2. Maximum Concurrent Open Positions Cap (Max 2 Active Commodity Positions)
+    active_commodity_trades = [
+        t for t in trades 
+        if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
+    ]
+    if len(active_commodity_trades) >= 2:
+        return False
+
+    # Fetch live commodity quotes & technical metrics
+    circuits_res = checker.generate_circuits_data()
+    commodities = circuits_res.get('commodities', []) if circuits_res else []
+    if not commodities:
+        return False
+
+    SECTORS = {
+        'GOLD': 'BULLION',
+        'SILVER': 'BULLION',
+        'COPPER': 'BASE_METALS',
+        'ZINC': 'BASE_METALS',
+        'ALUMINIUM': 'BASE_METALS',
+        'CRUDEOIL': 'ENERGY',
+        'NATURALGAS': 'ENERGY'
+    }
+    
+    active_sectors = {
+        SECTORS.get(t.get('symbol')) for t in active_commodity_trades
+        if t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
+    }
+
+    new_trades = []
+    alerts_to_send = []
+
+    for item in commodities:
+        # Check if we already reached max concurrent positions during this pass
+        if len(active_commodity_trades) + len(new_trades) >= 2:
+            break
+
+        sym = item.get('symbol')
+        if not sym or sym not in LOT_SIZES:
+            continue
+
+        item_sector = SECTORS.get(sym, 'OTHER')
+        if item_sector in active_sectors:
+            continue
+
+        # Check symbol trade count and cooldown today
+        sym_today_trades = [t for t in trades if t.get('date') == today_str and t.get('symbol') == sym]
+        if len(sym_today_trades) >= 2:
+            continue  # Max 2 trades per commodity per day
+
+        # Check 120-minute cooldown from last trade on this symbol
+        if sym_today_trades:
+            last_t = sym_today_trades[0]
+            last_entry_time = last_t.get('paper_trade', {}).get('entry_time') or last_t.get('time_trigger')
+            if last_entry_time:
+                try:
+                    clean_time = last_entry_time.replace(' IST', '').strip()
+                    t_struct = datetime.strptime(f"{today_str} {clean_time}", "%d %b %Y %I:%M %p").replace(tzinfo=pytz.timezone('Asia/Kolkata'))
+                    diff_mins = (now_dt - t_struct).total_seconds() / 60.0
+                    if diff_mins < 120:
+                        continue  # In 2-hour cooldown period
+                except Exception:
+                    pass
+
+        cur_p = float(item.get('current_price') or 0)
+        day_h = float(item.get('day_high') or cur_p)
+        day_l = float(item.get('day_low') or cur_p)
+        p_close = float(item.get('prev_close') or cur_p)
+        chg_pct = float(item.get('change_pct') or 0)
+        dist_uc = float(item.get('dist_to_uc_pct') or 99)
+        dist_lc = float(item.get('dist_to_lc_pct') or 99)
+        uc = float(item.get('upper_circuit') or (p_close * 1.04))
+        lc = float(item.get('lower_circuit') or (p_close * 0.96))
+        
+        rsi = item.get('rsi_14')
+        adx = item.get('adx_14')
+        atr = item.get('atr_14')
+        ema20 = item.get('ema_20')
+        ema50 = item.get('ema_50')
+        vol = item.get('volume', 0) or 0
+        avg_vol = item.get('avg_volume_10d', 0) or 0
+        vol_ratio = (vol / avg_vol) if (avg_vol > 0 and vol > 0) else None
+
+        if cur_p <= 0:
+            continue
+
+        atr_val = atr if (atr and atr > 0) else (cur_p * 0.008)
+        lot_size = LOT_SIZES.get(sym, 1)
+        name = COMMODITY_DISPLAY_NAMES.get(sym, item.get('name', sym))
+
+        triggered = False
+        action = None
+        setup_name = ""
+        rationale = ""
+        sl = None
+        tgt = None
+
+        # --- SETUP 1: Circuit Boundary Rebound / Mean Reversion ---
+        # A. Bullish Reversal at Lower Band / Deep Oversold
+        if (dist_lc <= 1.0 or (rsi is not None and rsi <= 26.0)) and (cur_p >= day_l * 1.0025):
+            triggered = True
+            action = "BUY"
+            setup_name = "Circuit Floor Rebound (Mean Reversion)"
+            sl = round(min(day_l, lc) * 0.997, 2)
+            tgt = round(cur_p + max(1.8 * atr_val, abs(p_close - cur_p) * 0.5), 2)
+            rationale = (f"Price tested Lower Circuit zone ({dist_lc:.2f}% away) or oversold RSI ({rsi:.1f} <= 26) "
+                         f"and confirmed +0.25% bounce off day low ₹{day_l:,.2f}. High probability mean-reversion.")
+
+        # B. Bearish Rejection at Upper Band / Deep Overbought
+        elif (dist_uc <= 1.0 or (rsi is not None and rsi >= 74.0)) and (cur_p <= day_h * 0.9975):
+            triggered = True
+            action = "SELL"
+            setup_name = "Circuit Ceiling Rejection (Mean Reversion)"
+            sl = round(max(day_h, uc) * 1.003, 2)
+            tgt = round(cur_p - max(1.8 * atr_val, abs(cur_p - p_close) * 0.5), 2)
+            rationale = (f"Price tested Upper Circuit zone ({dist_uc:.2f}% away) or overbought RSI ({rsi:.1f} >= 74) "
+                         f"and confirmed -0.25% pullback off day high ₹{day_h:,.2f}. High probability exhaustion fade.")
+
+        # --- SETUP 2: Volatility Breakout with ADX Momentum ---
+        # A. Bullish Day-High Breakout
+        elif (cur_p >= day_h * 0.999) and (chg_pct >= 0.40) and (adx is not None and adx >= 22.0) and (rsi is None or (52 <= rsi <= 76)):
+            if vol_ratio is None or vol_ratio >= 0.35:
+                triggered = True
+                action = "BUY"
+                setup_name = "Day-High Volatility Breakout"
+                sl = round(cur_p - (1.3 * atr_val), 2)
+                tgt = round(cur_p + (2.4 * atr_val), 2)
+                rationale = (f"Breaking Day High ₹{day_h:,.2f} with strong trend momentum (ADX {adx:.1f} >= 22 | "
+                             f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: +{chg_pct:.2f}%). Riding directional impulse.")
+
+        # B. Bearish Day-Low Breakdown
+        elif (cur_p <= day_l * 1.001) and (chg_pct <= -0.40) and (adx is not None and adx >= 22.0) and (rsi is None or (24 <= rsi <= 48)):
+            if vol_ratio is None or vol_ratio >= 0.35:
+                triggered = True
+                action = "SELL"
+                setup_name = "Day-Low Volatility Breakdown"
+                sl = round(cur_p + (1.3 * atr_val), 2)
+                tgt = round(cur_p - (2.4 * atr_val), 2)
+                rationale = (f"Breaking Day Low ₹{day_l:,.2f} with strong trend breakdown (ADX {adx:.1f} >= 22 | "
+                             f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: {chg_pct:.2f}%). Riding directional impulse.")
+
+        # --- SETUP 3: EMA 20/50 Golden / Death Trend Cross ---
+        elif (ema20 is not None and ema50 is not None) and (adx is not None and adx >= 20.0):
+            # Bullish Cross
+            if (ema20 > ema50) and (cur_p >= ema20) and (rsi is not None and 50.0 <= rsi <= 65.0) and (chg_pct >= 0.20):
+                triggered = True
+                action = "BUY"
+                setup_name = "EMA 20/50 Bullish Trend Confluence"
+                sl = round(ema20 - (1.1 * atr_val), 2)
+                tgt = round(cur_p + (2.0 * atr_val), 2)
+                rationale = (f"20 EMA (₹{ema20:,.2f}) > 50 EMA (₹{ema50:,.2f}) with ADX {adx:.1f} >= 20 and "
+                             f"healthy RSI {rsi:.1f}. Trend continuation in effect.")
+
+            # Bearish Cross
+            elif (ema20 < ema50) and (cur_p <= ema20) and (rsi is not None and 35.0 <= rsi <= 50.0) and (chg_pct <= -0.20):
+                triggered = True
+                action = "SELL"
+                setup_name = "EMA 20/50 Bearish Trend Confluence"
+                sl = round(ema20 + (1.1 * atr_val), 2)
+                tgt = round(cur_p - (2.0 * atr_val), 2)
+                rationale = (f"20 EMA (₹{ema20:,.2f}) < 50 EMA (₹{ema50:,.2f}) with ADX {adx:.1f} >= 20 and "
+                             f"healthy RSI {rsi:.1f}. Downward trend continuation in effect.")
+
+        if triggered and action and sl and tgt:
+            trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{sym}"
+            if any(t.get('id') == trade_id for t in trades):
+                continue
+
+            entry_obj = {
+                "id": trade_id,
+                "date": today_str,
+                "session_name": f"Real-Time Technical Trigger ({setup_name})",
+                "time_trigger": now_time_str,
+                "time_6pm": now_time_str,
+                "time_validation": now_time_str,
+                "time_615": now_time_str,
+                "time_exit": "11:30 PM IST",
+                "symbol": sym,
+                "name": name,
+                "lot_size": lot_size,
+                "event_context": f"Indicator Confluence: {setup_name}",
+                "suggestion_6pm": {
+                    "status": "REALTIME_TRIGGER",
+                    "action_text": f"{action} @ ₹{cur_p:,.2f}",
+                    "rationale": rationale,
+                    "reference_price": cur_p,
+                    "stop_loss": sl,
+                    "target": tgt
+                },
+                "check_615": {
+                    "checked": True,
+                    "status": "TECHNICAL_TRIGGER_ENTERED",
+                    "price_615": cur_p,
+                    "action_taken": f"Entered {action} {lot_size} units @ ₹{cur_p:,.2f}",
+                    "detail": f"{setup_name}: {rationale}"
+                },
+                "paper_trade": {
+                    "user": USER_ACCOUNT,
+                    "action": action,
+                    "quantity": lot_size,
+                    "entry_price": cur_p,
+                    "entry_time": now_time_str,
+                    "exit_price": None,
+                    "exit_time": None,
+                    "pnl_points": 0.0,
+                    "pnl_inr": 0.0,
+                    "status": "ACTIVE",
+                    "target": tgt,
+                    "stop_loss": sl,
+                    "margin_required_inr": round(cur_p * lot_size * MARGIN_RATES.get(sym, 0.15), 2)
+                },
+                "eod_outcome": {
+                    "session_close": None,
+                    "circuit_limit": None,
+                    "outcome": "PENDING",
+                    "badge": "Active Trigger ⚡",
+                    "pnl_display": "Ticking Live...",
+                    "summary": f"{setup_name} active: {action} @ ₹{cur_p:,.2f} (Target: ₹{tgt:,.2f}, SL: ₹{sl:,.2f})."
+                }
+            }
+            new_trades.append(entry_obj)
+            active_sectors.add(item_sector)
+
+            # Real-time notification email
+            subject = f"⚡ [REAL-TIME TECHNICAL TRIGGER] {name} {action} @ ₹{cur_p:,.2f} ({now_time_str})"
+            body = (
+                f"⚡ <b>REAL-TIME TECHNICAL CONFLUENCE TRIGGER</b>\n"
+                f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                f"• <b>Asset</b>: {name} ({sym})\n"
+                f"• <b>Signal</b>: <b>{action} {lot_size} units @ ₹{cur_p:,.2f}</b>\n"
+                f"• <b>Setup</b>: {setup_name}\n"
+                f"• <b>Technical Rationale</b>: {rationale}\n"
+                f"• <b>Stop-Loss</b>: ₹{sl:,.2f} (Dynamic Volatility Risk Cap)\n"
+                f"• <b>Target</b>: ₹{tgt:,.2f} (Asymmetric Upside)\n"
+                f"• <b>Status</b>: Active paper trade running. Automatic trailing breakeven & auto-exit enabled.\n\n"
+                f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+            )
+            alerts_to_send.append({'subject': subject, 'body': body})
+            print(f"⚡ Technical Trigger Fired: {name} {action} @ ₹{cur_p:,.2f} ({setup_name})")
+
+    if new_trades:
+        tracker['trades'] = new_trades + trades
+        save_tracker(tracker)
+        print(f"Recorded {len(new_trades)} new real-time technical trigger trades into advisory tracker.")
+        
+        if alerter and alerts_to_send:
+            for al in alerts_to_send:
+                try:
+                    alerter.send_alert(al['subject'], al['body'])
+                except Exception as e:
+                    print(f"Error sending technical trigger alert: {e}")
+        return True
+
+    return False
+
 def exit_and_evaluate_eod_trades(checker, alerter):
     """
     Called at 11:15 PM – 11:30 PM IST.
