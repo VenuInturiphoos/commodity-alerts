@@ -92,6 +92,19 @@ def main():
     except Exception as e:
         print(f"Error scanning Nifty 50 Golden Cross & Oversold opportunities: {e}")
 
+    # Check and trigger Daily Golden Crossover Stock Investment (~₹30,000 Allocation)
+    try:
+        now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
+        from stock_investment_tracker import scan_and_execute_daily_stock_investment, update_live_stock_investments
+        # Execute morning purchase on weekdays between 9:15 AM and 11:30 AM IST (or when first run of the day)
+        if now_ist.weekday() < 5 and ((now_ist.hour == 9 and now_ist.minute >= 15) or now_ist.hour >= 10):
+            print("\n--- Checking Daily Golden Crossover Stock Investment (~₹30k Sizing) ---")
+            scan_and_execute_daily_stock_investment()
+        # Always update live MTM and target/stop triggers of existing stock holdings
+        update_live_stock_investments()
+    except Exception as e:
+        print(f"Error in daily stock investment engine: {e}")
+
     # Monitor active advisory paper trades for Target and Stop-Loss triggers
     try:
         from advisory_tracker import check_and_execute_intraday_targets_and_stops

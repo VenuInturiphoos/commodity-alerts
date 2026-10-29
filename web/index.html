@@ -603,6 +603,9 @@
                     </div>
                 </div>
 
+                <!-- 🌟 Today's Daily Golden Cross Investment Hero Card (~₹30,000 Sizing) -->
+                <div id="nifty-daily-pick-container" style="margin-top: 1.5rem; margin-bottom: 1.5rem;"></div>
+
                 <!-- Controls, Filters, Search & Sort Toolbar -->
                 <div class="nifty-toolbar">
                     <div class="nifty-filters">
@@ -2459,6 +2462,135 @@ function analyzeStockCopilot(name, price) {
     }, 300);
 }
 
+// ==========================================
+// 🌟 AUTOMATED DAILY GOLDEN CROSS STOCK INVESTMENT TRACKER
+// ==========================================
+let stockInvestmentsData = null;
+
+async function loadStockInvestmentsTracker() {
+    try {
+        let res = null;
+        const rawUrl = 'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/stock_investments_tracker.json?t=' + Date.now();
+        try {
+            res = await fetch('stock_investments_tracker.json?t=' + Date.now(), { cache: 'no-store' });
+            if (!res.ok) throw new Error("Local fetch returned status " + res.status);
+        } catch (localErr) {
+            console.log("Local stock tracker fetch failed, falling back to raw GitHub:", localErr.message);
+            res = await fetch(rawUrl, { cache: 'no-store' });
+        }
+        if (!res || !res.ok) return;
+        stockInvestmentsData = await res.json();
+        
+        // Render hero card in Golden Crossover tab
+        if (stockInvestmentsData.today_pick) {
+            renderNiftyDailyPickHeroCard(stockInvestmentsData.today_pick);
+        }
+        
+        // Render holdings into Paper Trading Stock Investing module
+        if (typeof renderPortfolio === 'function') {
+            renderPortfolio();
+        }
+    } catch (e) {
+        console.error("Error loading stock investments tracker:", e);
+    }
+}
+window.loadStockInvestmentsTracker = loadStockInvestmentsTracker;
+
+function renderNiftyDailyPickHeroCard(pick) {
+    const container = document.getElementById('nifty-daily-pick-container');
+    if (!container) return;
+    
+    if (!pick) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    const pnl = Number(pick.pnl_inr || 0);
+    const pnlPct = Number(pick.pnl_pct || 0);
+    const pnlColor = pnl >= 0 ? '#4ade80' : '#fb7185';
+    const pnlSign = pnl >= 0 ? '+' : '';
+    const statusBg = pick.status === 'TARGET_HIT' ? 'rgba(74, 222, 128, 0.2)' : (pick.status === 'STOP_LOSS_HIT' ? 'rgba(251, 113, 133, 0.2)' : 'rgba(245, 158, 11, 0.2)');
+    const statusBorder = pick.status === 'TARGET_HIT' ? 'rgba(74, 222, 128, 0.4)' : (pick.status === 'STOP_LOSS_HIT' ? 'rgba(251, 113, 133, 0.4)' : 'rgba(245, 158, 11, 0.4)');
+    const statusColor = pick.status === 'TARGET_HIT' ? '#4ade80' : (pick.status === 'STOP_LOSS_HIT' ? '#fb7185' : '#fbbf24');
+    const statusLabel = pick.status === 'TARGET_HIT' ? '🎯 TARGET HIT' : (pick.status === 'STOP_LOSS_HIT' ? '🛡️ STOP LOSS HIT' : '🟢 ACTIVE / HOLDING');
+
+    const varianceVal = Number(pick.variance_from_30k || 0);
+    const varianceText = varianceVal >= 0 ? `+₹${varianceVal.toFixed(2)}` : `-₹${Math.abs(varianceVal).toFixed(2)}`;
+
+    container.innerHTML = `
+        <div class="glass-card full-width" style="border: 1px solid rgba(245, 158, 11, 0.45); background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border-radius: 14px; padding: 1.25rem 1.5rem; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1rem;">
+                <div>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; text-transform: uppercase;">
+                        <i class="fa-solid fa-crown"></i> Today's Daily Golden Cross Investment (~₹30,000 Sizing)
+                    </div>
+                    <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
+                        <h2 style="margin: 0; font-size: 1.45rem; color: #f8fafc; font-weight: 800;">${pick.full_name || pick.name}</h2>
+                        <span style="color: #94a3b8; font-size: 0.9rem; font-weight: 600;">(${pick.symbol})</span>
+                        <span style="font-size: 0.75rem; color: ${statusColor}; background: ${statusBg}; border: 1px solid ${statusBorder}; padding: 2px 8px; border-radius: 4px; font-weight: 700;">${statusLabel}</span>
+                    </div>
+                    <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">
+                        <i class="fa-regular fa-calendar-check" style="color: #818cf8; margin-right: 4px;"></i> Executed at Start of Day (${pick.date}) · ${pick.sector || 'Indian Equities'} · 50 EMA (₹${pick.ema_50}) &gt; 200 EMA (₹${pick.ema_200})
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Automated Capital Allocated</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #4ade80; margin: 2px 0;">₹${Number(pick.invested_value).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    <div style="font-size: 0.78rem; color: #cbd5e1;">
+                        <strong style="color: #f8fafc;">${pick.shares} Shares</strong> @ ₹${Number(pick.entry_price).toFixed(2)} 
+                        <span style="color: #a5b4fc; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); padding: 1px 6px; border-radius: 4px; margin-left: 4px;">Target: ₹30k (${varianceText})</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metric Confluence Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-top: 1rem; margin-bottom: 1rem;">
+                <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
+                    <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Win Probability</div>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: #fbbf24; margin-top: 2px;">${pick.win_probability}% 🔥</div>
+                    <div style="font-size: 0.68rem; color: #a5b4fc;">Elite Confluence</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
+                    <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">52W Peak Discount</div>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: #38bdf8; margin-top: 2px;">-${pick.discount_pct}%</div>
+                    <div style="font-size: 0.68rem; color: #94a3b8;">Value Dip</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
+                    <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">RSI Indicator</div>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: #f97316; margin-top: 2px;">${pick.rsi}</div>
+                    <div style="font-size: 0.68rem; color: #fb923c;">Oversold Floor</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
+                    <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Target 1 / Target 2</div>
+                    <div style="font-size: 1.05rem; font-weight: 800; color: #4ade80; margin-top: 2px;">₹${pick.target_1}</div>
+                    <div style="font-size: 0.68rem; color: #86efac;">T2: ₹${pick.target_2} (+${pick.potential_upside_t2 || 17}%)</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
+                    <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Protective Stop-Loss</div>
+                    <div style="font-size: 1.05rem; font-weight: 800; color: #fb7185; margin-top: 2px;">₹${pick.stop_loss}</div>
+                    <div style="font-size: 0.68rem; color: #fda4af;">-${pick.risk_pct || 4.5}% risk floor</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
+                    <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Live MTM Return</div>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: ${pnlColor}; margin-top: 2px;">${pnlSign}₹${Math.abs(pnl).toFixed(2)}</div>
+                    <div style="font-size: 0.68rem; color: ${pnlColor}; font-weight: 600;">${pnlSign}${pnlPct.toFixed(2)}% Return</div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 0.85rem;">
+                <div style="font-size: 0.8rem; color: #cbd5e1; max-width: 75%; line-height: 1.4;">
+                    <i class="fa-solid fa-lightbulb" style="color: #fbbf24; margin-right: 5px;"></i> <strong>Daily Selection Thesis:</strong> ${pick.rationale}
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button class="trade-btn buy-btn btn-small" onclick="switchPaperTradingSubView('investing'); const tradeBtn = document.querySelector('button[onclick*=\"trade-tab\"]'); if (tradeBtn) switchTab(tradeBtn, 'trade-tab');" style="background: linear-gradient(135deg, #10b981, #059669); padding: 7px 14px; font-weight: 700; font-size: 0.82rem;">
+                        <i class="fa-solid fa-seedling"></i> View in Stock Portfolio
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 function updateCircuitsKPIs(data) {
     if (!data || data.length === 0) return;
     
@@ -3724,6 +3856,115 @@ function renderPortfolio() {
             stockCards.push(cardHtml);
         }
     }
+
+    // Include automated Daily Golden Cross SIP stock investments
+    if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.investments) {
+        for (const inv of stockInvestmentsData.investments) {
+            if (inv.status !== 'ACTIVE') continue;
+            // Avoid duplicate if user already has it in userPortfolio
+            if (userPortfolio && userPortfolio[inv.symbol] && userPortfolio[inv.symbol].shares !== 0) continue;
+
+            const currentPrice = getSynchronizedCommodityPrice(inv.symbol, inv.current_price || inv.entry_price);
+            const costBasis = Number(inv.invested_value || 0);
+            const currentValue = Number(inv.shares || 1) * currentPrice;
+            const pl = currentValue - costBasis;
+            const plPercent = costBasis > 0 ? (pl / costBasis) * 100 : 0;
+            const isProfit = pl >= 0;
+            const color = isProfit ? '#4ade80' : '#fb7185';
+            const sign = isProfit ? '+' : '';
+
+            totalInvested += costBasis;
+            currentPortfolioValue += currentValue;
+            totalPl += pl;
+
+            const targetSlBadge = `
+                <div style="display:flex; gap:6px; margin-top:4px; font-size:0.75rem; flex-wrap:wrap;">
+                    <span style="color:#4ade80; background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.3); padding:1px 6px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-bullseye"></i> TGT: ₹${inv.target_1}</span>
+                    <span style="color:#fb7185; background:rgba(251,113,133,0.12); border:1px solid rgba(251,113,133,0.3); padding:1px 6px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-shield"></i> SL: ₹${inv.stop_loss}</span>
+                </div>
+            `;
+
+            const varianceVal = Number(inv.variance_from_30k || 0);
+            const varianceText = varianceVal >= 0 ? `+₹${varianceVal.toFixed(2)}` : `-₹${Math.abs(varianceVal).toFixed(2)}`;
+
+            const rowHtml = `
+                <tr style="background: rgba(245, 158, 11, 0.03);">
+                    <td>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <strong>${inv.name}</strong> <small style="color:var(--text-secondary)">(${inv.symbol})</small>
+                            <span style="color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:700;"><i class="fa-solid fa-crown"></i> Golden Cross SIP</span>
+                        </div>
+                        <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Purchased at Start of Day: ${inv.date}</div>
+                        ${targetSlBadge}
+                    </td>
+                    <td><strong style="color:#f8fafc; font-size:0.92rem;">${inv.shares} Shares</strong></td>
+                    <td>₹${Number(inv.entry_price).toFixed(2)}</td>
+                    <td style="font-weight:700; color:#f8fafc;">₹${currentPrice.toFixed(2)}</td>
+                    <td style="font-weight: bold;">
+                        ₹${costBasis.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}
+                        <div style="font-size:0.7rem; color:#a5b4fc;">Target: ₹30k (${varianceText})</div>
+                    </td>
+                    <td style="color: ${color}; font-weight: bold;">${sign}₹${pl.toFixed(2)} <br><small>(${sign}${plPercent.toFixed(2)}%)</small></td>
+                    <td style="text-align: right;">
+                        <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${inv.symbol}', '${inv.name}', ${currentPrice})" style="background: linear-gradient(135deg, #10b981, #059669); padding:5px 12px; font-size:0.8rem; font-weight:700;">Invest More</button>
+                    </td>
+                </tr>
+            `;
+
+            const cardHtml = `
+                <div class="mobile-trading-card" style="border-left: 3px solid #fbbf24;">
+                    <div class="mobile-card-top">
+                        <div class="mobile-card-title-group">
+                            <div class="mobile-card-asset-name">
+                                <span>${inv.name}</span>
+                                <span style="font-size:0.75rem; color:#94a3b8; font-weight:400;">(${inv.symbol})</span>
+                            </div>
+                            <div class="mobile-card-meta"><span style="color:#fbbf24; font-weight:700;">🌟 Daily Golden Cross SIP</span> · ${inv.shares} Shares (${inv.date})</div>
+                        </div>
+                        <div>
+                            <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${inv.symbol}', '${inv.name}', ${currentPrice})" style="padding: 5px 12px; font-size: 0.8rem; background: linear-gradient(135deg, #10b981, #059669);">Invest More</button>
+                        </div>
+                    </div>
+
+                    <div class="mobile-card-grid-2" style="margin-top:-2px;">
+                        <div class="mobile-cell-item" style="border-left: 3px solid #fb7185;">
+                            <span class="mobile-cell-label"><i class="fa-solid fa-shield"></i> Stop Loss</span>
+                            <span class="mobile-cell-val" style="color:#fb7185;">₹${inv.stop_loss}</span>
+                        </div>
+                        <div class="mobile-cell-item" style="border-left: 3px solid #4ade80;">
+                            <span class="mobile-cell-label"><i class="fa-solid fa-bullseye"></i> Target 1</span>
+                            <span class="mobile-cell-val" style="color:#4ade80;">₹${inv.target_1}</span>
+                        </div>
+                    </div>
+
+                    <div class="mobile-card-grid-3">
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Buy Price</span>
+                            <span class="mobile-cell-val">₹${Number(inv.entry_price).toFixed(2)}</span>
+                        </div>
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Live Price</span>
+                            <span class="mobile-cell-val">₹${currentPrice.toFixed(2)}</span>
+                        </div>
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Invested</span>
+                            <span class="mobile-cell-val">₹${costBasis.toLocaleString('en-IN', {maximumFractionDigits:0})}</span>
+                        </div>
+                    </div>
+
+                    <div class="mobile-card-bottom" style="margin-top: 2px;">
+                        <span style="font-size:0.75rem; color:#94a3b8; font-weight:600;">Unrealized P&L:</span>
+                        <span style="color:${color}; font-weight:800; font-size:1rem;">
+                            ${sign}₹${pl.toFixed(2)} <span style="font-size:0.8rem; font-weight:600;">(${sign}${plPercent.toFixed(2)}%)</span>
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            stockRows.push(rowHtml);
+            stockCards.push(cardHtml);
+        }
+    }
     
     tbodyStocks.innerHTML = stockRows.length > 0 
         ? stockRows.join('') 
@@ -4613,6 +4854,7 @@ function switchPaperTradingSubView(subview) {
         if (modAdvisory) modAdvisory.style.display = 'none';
         if (btnInvesting) btnInvesting.classList.add('active');
         if (typeof renderTradeMarket === 'function') renderTradeMarket();
+        if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker();
         if (typeof renderPortfolio === 'function') renderPortfolio();
     } else if (subview === 'advisory') {
         if (viewTerminal) viewTerminal.style.display = 'none';
@@ -5302,6 +5544,7 @@ function startApp() {
     try { initApp(); } catch(e) { console.error("Init Error:", e); }
     try { if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker(); } catch(e) { console.error("Load Advisory Error:", e); }
     try { if (typeof fetchNiftyOpportunities === 'function') fetchNiftyOpportunities(); } catch(e) { console.error("Load Nifty Error:", e); }
+    try { if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker(); } catch(e) { console.error("Load Stock Investments Error:", e); }
 }
 
 if (document.readyState === 'loading') {
