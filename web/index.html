@@ -1247,6 +1247,99 @@ let activeNiftyView = 'cards';
 let activeNiftySearchQuery = '';
 let lastNiftyFetchTime = 0;
 
+// ==========================================
+// 🔄 Synchronized Real-Time Commodity Price System
+// Guarantees 100% price parity between Circuit Limits,
+// Paper Trading Terminal, Portfolio P&L, Trade Modal & Advisory Tracker
+// ==========================================
+function getSynchronizedCommodityPrice(symbol, defaultPrice = 0) {
+    if (!symbol) return Number(defaultPrice) || 0;
+    const cleanSym = String(symbol).replace('-FUT', '').toUpperCase();
+    
+    // 1. Authoritative: Live Exchange quote from rawCircuitsData
+    if (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData) && rawCircuitsData.length > 0) {
+        const cItem = rawCircuitsData.find(c => {
+            const cs = (c.symbol || '').toUpperCase();
+            return cs === cleanSym || cs === String(symbol).toUpperCase();
+        });
+        if (cItem && cItem.current_price !== undefined && cItem.current_price !== null && !isNaN(Number(cItem.current_price))) {
+            return Number(cItem.current_price);
+        }
+    }
+    
+    // 2. Fallback: Supabase marketData
+    if (typeof marketData !== 'undefined' && Array.isArray(marketData) && marketData.length > 0) {
+        const mItem = marketData.find(m => {
+            const ms = (m.symbol || '').toUpperCase();
+            return ms === String(symbol).toUpperCase() || ms === cleanSym;
+        });
+        if (mItem && mItem.current_price !== undefined && mItem.current_price !== null && !isNaN(Number(mItem.current_price))) {
+            return Number(mItem.current_price);
+        }
+    }
+    
+    return Number(defaultPrice) || 0;
+}
+window.getSynchronizedCommodityPrice = getSynchronizedCommodityPrice;
+
+function syncMarketDataWithCircuits() {
+    if (!Array.isArray(rawCircuitsData) || rawCircuitsData.length === 0) return;
+    if (!Array.isArray(marketData)) marketData = [];
+
+    // Filter out deprecated / obsolete mini/micro commodities
+    const obsoletePrefixes = ['CRUDEOILM', 'NATURALGASM', 'SILVERMIC', 'GOLDM', 'GOLDTEN', 'COPPERM'];
+    marketData = marketData.filter(item => {
+        const s = (item.symbol || '').toUpperCase();
+        return !obsoletePrefixes.some(obs => s === obs || s === `${obs}-FUT`);
+    });
+
+    rawCircuitsData.forEach(cItem => {
+        const baseSym = (cItem.symbol || '').toUpperCase();
+        const futSym = `${baseSym}-FUT`;
+        const price = Number(cItem.current_price);
+        if (!price || isNaN(price)) return;
+
+        // Spot entry
+        let spot = marketData.find(m => (m.symbol || '').toUpperCase() === baseSym);
+        if (spot) {
+            spot.current_price = price;
+            if (cItem.change_pct !== undefined) spot.change_pct = cItem.change_pct;
+            if (cItem.change_abs !== undefined) spot.change_abs = cItem.change_abs;
+            spot.name = cItem.name || spot.name;
+        } else {
+            marketData.push({
+                symbol: baseSym,
+                name: cItem.name,
+                asset_type: 'Commodity',
+                current_price: price,
+                change_pct: cItem.change_pct || 0,
+                change_abs: cItem.change_abs || 0,
+                last_updated: new Date().toISOString()
+            });
+        }
+
+        // Future entry
+        let fut = marketData.find(m => (m.symbol || '').toUpperCase() === futSym);
+        if (fut) {
+            fut.current_price = price;
+            if (cItem.change_pct !== undefined) fut.change_pct = cItem.change_pct;
+            if (cItem.change_abs !== undefined) fut.change_abs = cItem.change_abs;
+            fut.name = `${cItem.name} Future`;
+        } else {
+            marketData.push({
+                symbol: futSym,
+                name: `${cItem.name} Future`,
+                asset_type: 'Commodity Future',
+                current_price: price,
+                change_pct: cItem.change_pct || 0,
+                change_abs: cItem.change_abs || 0,
+                last_updated: new Date().toISOString()
+            });
+        }
+    });
+}
+window.syncMarketDataWithCircuits = syncMarketDataWithCircuits;
+
 function switchTab(btn, targetId) {
     if (!btn && typeof event !== 'undefined' && event && event.target) {
         btn = event.target.closest('.tab-btn') || event.target;
@@ -1276,9 +1369,12 @@ function switchTab(btn, targetId) {
                     if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker();
                 } else {
                     if (typeof renderTradeMarket === 'function') renderTradeMarket();
-                    if (typeof renderTradePortfolio === 'function') renderTradePortfolio();
+                    if (typeof renderPortfolio === 'function') renderPortfolio();
                 }
             }
+        }
+        if (!lastCircuitsFetchTime || (now - lastCircuitsFetchTime > 45000)) {
+            if (typeof fetchCircuitsData === 'function') fetchCircuitsData();
         }
     }
     
@@ -1396,13 +1492,9 @@ async function fetchCircuitsData(forceNetwork = false) {
             const tvEndpoint = 'https://scanner.tradingview.com/futures/scan';
             const commodityMap = {
                 'GOLD': { ticker: 'MCX:GOLD1!', name: 'Gold', dpl_initial: 0.03, dpl_max: 0.06, category: 'Bullion', unit: '10 g' },
-                'GOLDM': { ticker: 'MCX:GOLDM1!', name: 'Gold (10g) / Mini', dpl_initial: 0.03, dpl_max: 0.06, category: 'Bullion', unit: '10 g' },
                 'SILVER': { ticker: 'MCX:SILVER1!', name: 'Silver', dpl_initial: 0.04, dpl_max: 0.06, category: 'Bullion', unit: '1 kg' },
-                'SILVERMIC': { ticker: 'MCX:SILVERMIC1!', name: 'Silver Micro', dpl_initial: 0.04, dpl_max: 0.06, category: 'Bullion', unit: '1 kg' },
                 'CRUDEOIL': { ticker: 'MCX:CRUDEOIL1!', name: 'Crude Oil', dpl_initial: 0.04, dpl_max: 0.07, category: 'Energy', unit: '1 bbl' },
-                'CRUDEOILM': { ticker: 'MCX:CRUDEOILM1!', name: 'Crude Oil Mini', dpl_initial: 0.04, dpl_max: 0.07, category: 'Energy', unit: '10 bbl' },
-                'NATURALGAS': { ticker: 'MCX:NATURALGASX2026', name: 'Natural Gas', dpl_initial: 0.06, dpl_max: 0.09, category: 'Energy', unit: '1 mmBtu' },
-                'NATURALGASM': { ticker: 'MCX:NATURALGASM1!', name: 'Natural Gas Mini', dpl_initial: 0.06, dpl_max: 0.09, category: 'Energy', unit: '250 mmBtu' },
+                'NATURALGAS': { ticker: 'MCX:NATURALGAS1!', name: 'Natural Gas', dpl_initial: 0.06, dpl_max: 0.09, category: 'Energy', unit: '1 mmBtu' },
                 'COPPER': { ticker: 'MCX:COPPER1!', name: 'Copper', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' }
             };
             
@@ -1580,6 +1672,7 @@ async function fetchCircuitsData(forceNetwork = false) {
         // 3. Render and trigger visual feedback
         if (rawCircuitsData && rawCircuitsData.length > 0) {
             lastCircuitsFetchTime = Date.now();
+            syncMarketDataWithCircuits();
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             if (updatedEl) {
                 if (hasLiveTicks) {
@@ -1591,6 +1684,15 @@ async function fetchCircuitsData(forceNetwork = false) {
             renderCircuitsTable();
             if (typeof activePaperTradingSubView !== 'undefined' && activePaperTradingSubView === 'advisory' && typeof renderAdvisoryTradesTable === 'function') {
                 renderAdvisoryTradesTable();
+            }
+            if (typeof renderTradeMarket === 'function') {
+                renderTradeMarket();
+            }
+            if (typeof renderPortfolio === 'function') {
+                renderPortfolio();
+            }
+            if (typeof renderMarketTable === 'function') {
+                renderMarketTable();
             }
             
             // Visual glow pulse on table card without forced synchronous reflow
@@ -2913,19 +3015,28 @@ async function fetchMarketData() {
 
         if (error) throw error;
         
-        const EXCLUDED_SYMBOLS = ['LEAD', 'ZINC', 'ALUMINIUM', 'ELECTRICITY', 'LEAD-FUT', 'ZINC-FUT', 'ALUMINIUM-FUT', 'ELECTRICITY-FUT'];
+        const EXCLUDED_SYMBOLS = [
+            'LEAD', 'ZINC', 'ALUMINIUM', 'ELECTRICITY', 'LEAD-FUT', 'ZINC-FUT', 'ALUMINIUM-FUT', 'ELECTRICITY-FUT',
+            'CRUDEOILM', 'NATURALGASM', 'SILVERMIC', 'GOLDM', 'GOLDTEN', 'COPPERM',
+            'CRUDEOILM-FUT', 'NATURALGASM-FUT', 'SILVERMIC-FUT', 'GOLDM-FUT', 'GOLDTEN-FUT', 'COPPERM-FUT'
+        ];
         marketData = (data || []).filter(item => {
             const sym = (item.symbol || '').toUpperCase();
             return !EXCLUDED_SYMBOLS.includes(sym) && !EXCLUDED_SYMBOLS.some(ex => sym.startsWith(ex));
         });
         
+        // Synchronize with authoritative exchange circuit quotes
+        syncMarketDataWithCircuits();
+        
         lastMarketFetchTime = Date.now();
-        // Render both tables
+        // Render all views with synced pricing
         renderMarketTable();
         renderAlertTable();
         if (typeof renderTradeMarket === 'function') {
-            const tradeTab = document.getElementById('trade-tab');
-            if (tradeTab && tradeTab.classList.contains('active')) renderTradeMarket();
+            renderTradeMarket();
+        }
+        if (typeof renderPortfolio === 'function') {
+            renderPortfolio();
         }
         if (typeof activePaperTradingSubView !== 'undefined' && activePaperTradingSubView === 'advisory' && typeof renderAdvisoryTradesTable === 'function') {
             renderAdvisoryTradesTable();
@@ -3289,7 +3400,7 @@ function renderPortfolio() {
         if (data.shares === 0) continue;
         
         const marketItem = marketData.find(item => item.symbol === symbol);
-        const currentPrice = marketItem ? parseFloat(marketItem.current_price) : 0;
+        const currentPrice = getSynchronizedCommodityPrice(symbol, marketItem ? marketItem.current_price : 0);
         const avgPrice = data.avgPrice;
         
         const isLong = data.shares > 0;
@@ -3470,6 +3581,8 @@ function renderPortfolio() {
         plEl.style.color = plColor;
     }
 }
+window.renderTradePortfolio = renderPortfolio;
+window.renderPortfolio = renderPortfolio;
 
 window.cancelPendingOrder = async function(orderId) {
     if (String(orderId).startsWith('adv-')) {
@@ -3683,13 +3796,15 @@ function renderTradeMarket() {
         else if (item.asset_type.includes('Future')) badgeClass = 'type-future';
         else if (item.asset_type.includes('Option')) badgeClass = 'type-option';
         
+        const price = getSynchronizedCommodityPrice(item.symbol, item.current_price);
+        
         const rowHtml = `
             <tr>
                 <td><strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small></td>
                 <td><span class="type-badge ${badgeClass}">${item.asset_type.toUpperCase()}</span></td>
-                <td style="font-weight:600">₹${parseFloat(item.current_price).toFixed(2)}</td>
+                <td style="font-weight:600">₹${price.toFixed(2)}</td>
                 <td style="text-align: right;">
-                    <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${item.current_price})">Trade</button>
+                    <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${price})">Trade</button>
                 </td>
             </tr>
         `;
@@ -3705,8 +3820,8 @@ function renderTradeMarket() {
                         <div class="mobile-card-meta"><span class="type-badge ${badgeClass}" style="font-size:0.65rem; padding:1px 6px;">${item.asset_type.toUpperCase()}</span></div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <span style="font-size: 0.95rem; font-weight: 700; color: #f8fafc;">₹${parseFloat(item.current_price).toFixed(2)}</span>
-                        <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${item.current_price})" style="padding: 5px 14px; font-size: 0.82rem;">Trade</button>
+                        <span style="font-size: 0.95rem; font-weight: 700; color: #f8fafc;">₹${price.toFixed(2)}</span>
+                        <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${item.symbol}', '${item.name}', ${price})" style="padding: 5px 14px; font-size: 0.82rem;">Trade</button>
                     </div>
                 </div>
             </div>
@@ -3743,16 +3858,10 @@ function renderTradeMarket() {
 
 const LOT_SIZES = {
     'GOLD': 1,
-    'GOLDM': 1,
     'SILVER': 1,
-    'SILVERMIC': 1,
-    'SILVERM': 5,
     'CRUDEOIL': 10,
-    'CRUDEOILM': 10,
     'NATURALGAS': 250,
-    'NATURALGASM': 250,
     'COPPER': 250,
-    'COPPERM': 250,
     'NIFTY': 25,
     'BANKNIFTY': 15,
     'ADANIENT.NS': 309,
@@ -3814,16 +3923,10 @@ function getLotSize(symbol) {
 
 const COMMODITY_MARGIN_RATES = {
     'CRUDEOIL': 0.20,
-    'CRUDEOILM': 0.20,
     'NATURALGAS': 0.20,
-    'NATURALGASM': 0.20,
     'SILVER': 0.12,
-    'SILVERMIC': 0.12,
-    'SILVERM': 0.12,
     'COPPER': 0.15,
-    'COPPERM': 0.15,
     'GOLD': 0.10,
-    'GOLDM': 0.10,
     'NIFTY': 0.10,
     'BANKNIFTY': 0.10
 };
@@ -3836,9 +3939,10 @@ function getAssetMarginRate(symbol) {
 }
 
 function openTradeModal(symbol, name, price) {
+    const syncPrice = getSynchronizedCommodityPrice(symbol, price);
     const lotSize = getLotSize(symbol);
     const marginRate = getAssetMarginRate(symbol);
-    activeTradeAsset = { symbol, name, price: parseFloat(price), lotSize, marginRate };
+    activeTradeAsset = { symbol, name, price: parseFloat(syncPrice), lotSize, marginRate };
     
     document.getElementById('trade-modal-title').textContent = `Trade ${name} (Lot Size: ${lotSize})`;
     document.getElementById('trade-modal-price').textContent = `₹${activeTradeAsset.price.toFixed(2)}`;
@@ -4013,6 +4117,7 @@ window.executeTrade = async function(symbol, type, qty, price, orderType = 'MARK
 let activeExitAsset = null;
 
 window.exitPosition = function(symbol, name, currentPrice, currentShares, isLong) {
+    currentPrice = getSynchronizedCommodityPrice(symbol, currentPrice);
     activeExitAsset = { symbol, name, currentPrice, currentShares, isLong };
     
     document.getElementById('exit-modal-title').textContent = `Close ${isLong ? 'Long' : 'Short'} Position in ${name}`;
@@ -4109,6 +4214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!activeTradeAsset) return;
             const qty = parseInt(qtyInput.value) || 0;
             const price = orderTypeSelect.value === 'LIMIT' ? (parseFloat(limitPriceInput.value) || activeTradeAsset.price) : activeTradeAsset.price;
+            const total = qty * price;
             const mRate = activeTradeAsset.marginRate || getAssetMarginRate(activeTradeAsset.symbol);
             document.getElementById('trade-total-value').textContent = `₹${total.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
             document.getElementById('trade-margin-value').textContent = `₹${(total * mRate).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})} (${(mRate * 100).toFixed(0)}% Margin)`;
@@ -4468,10 +4574,15 @@ function renderAdvisoryTradesTable() {
         const c15 = t.check_615 || {};
         const outcome = t.eod_outcome || {};
 
-        // Find live market data from Supabase marketData or rawCircuitsData
-        const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) ? marketData.find(m => m.symbol === t.symbol) : null;
-        const circuitItem = (!mktItem && typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) ? rawCircuitsData.find(c => c.symbol === t.symbol) : null;
-        const liveSource = mktItem || circuitItem;
+        // Find live market data: prioritized from rawCircuitsData (authoritative exchange feed), then marketData
+        const cleanSym = (t.symbol || '').replace('-FUT', '').toUpperCase();
+        const circuitItem = (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) 
+            ? rawCircuitsData.find(c => (c.symbol || '').toUpperCase() === cleanSym || (c.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase()) 
+            : null;
+        const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) 
+            ? marketData.find(m => (m.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase() || (m.symbol || '').toUpperCase() === cleanSym) 
+            : null;
+        const liveSource = circuitItem || mktItem;
 
         // Current Price column computation
         let curPriceHtml = '<span style="color:#64748b; font-size:0.8rem;">--</span>';
@@ -4672,9 +4783,15 @@ function renderAdvisoryTradesTable() {
             const c15 = t.check_615 || {};
             const outcome = t.eod_outcome || {};
 
-            const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) ? marketData.find(m => m.symbol === t.symbol) : null;
-            const circuitItem = (!mktItem && typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) ? rawCircuitsData.find(c => c.symbol === t.symbol) : null;
-            const liveSource = mktItem || circuitItem;
+            // Find live market data: prioritized from rawCircuitsData (authoritative exchange feed), then marketData
+            const cleanSym = (t.symbol || '').replace('-FUT', '').toUpperCase();
+            const circuitItem = (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) 
+                ? rawCircuitsData.find(c => (c.symbol || '').toUpperCase() === cleanSym || (c.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase()) 
+                : null;
+            const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) 
+                ? marketData.find(m => (m.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase() || (m.symbol || '').toUpperCase() === cleanSym) 
+                : null;
+            const liveSource = circuitItem || mktItem;
 
             let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
             if (outcome.outcome === 'WRONG') {
