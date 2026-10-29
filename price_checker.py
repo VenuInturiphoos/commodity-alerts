@@ -1683,14 +1683,24 @@ class PriceChecker:
             
         return out_data
 
-    def generate_circuits_history_30d(self, tv_quotes=None):
-        """Identifies all circuit limit and near-circuit events across the past 30 days and computes reversal outcomes."""
+    def generate_circuits_history_30d(self, tv_quotes=None, force=False):
+        """Identifies all circuit limit and near-circuit events across the past 30 days and computes reversal outcomes in actual Indian MCX Rupee prices."""
         try:
             now_ts = time.time()
             out_30d_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_history_30d.json')
-            if (now_ts - getattr(self, '_last_history_data_time', 0) < 60) and os.path.exists(out_30d_path):
+            if not force and (now_ts - getattr(self, '_last_history_data_time', 0) < 60) and os.path.exists(out_30d_path):
                 print("Circuits 30d history freshly generated (<60s ago). Skipping redundant pass.")
                 return
+
+            if not self.commodities:
+                try:
+                    cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json')
+                    if os.path.exists(cfg_path):
+                        with open(cfg_path, 'r') as cf:
+                            cfg = json.load(cf)
+                            self.commodities = cfg.get('commodities', {})
+                except Exception:
+                    pass
 
             if tv_quotes is None:
                 tv_quotes = self.fetch_tradingview_commodity_quotes()
@@ -1738,6 +1748,40 @@ class PriceChecker:
                     
                     slab = conf['slab']
                     near_threshold = slab * 0.80
+
+                    # Dynamic MCX Indian Rupee reference quote & conversion multiplier
+                    quote = tv_quotes.get(sym) if tv_quotes else None
+                    mcx_ref_price = 0.0
+                    if quote and quote.get('prev_close') and float(quote['prev_close']) > 0:
+                        mcx_ref_price = float(quote['prev_close'])
+                    elif quote and quote.get('close') and float(quote['close']) > 0:
+                        mcx_ref_price = float(quote['close'])
+
+                    if mcx_ref_price <= 0:
+                        circuits_data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_data.json')
+                        if os.path.exists(circuits_data_path):
+                            try:
+                                with open(circuits_data_path, 'r') as cdf:
+                                    cdata = json.load(cdf)
+                                    for item in cdata.get('commodities', []):
+                                        if item.get('symbol') == sym:
+                                            mcx_ref_price = float(item.get('prev_close') or item.get('current_price') or 0.0)
+                                            break
+                            except Exception:
+                                pass
+
+                    DEFAULT_MCX_REF = {
+                        'CRUDEOIL': 9798.0,
+                        'NATURALGAS': 293.1,
+                        'GOLD': 143705.0,
+                        'SILVER': 194325.0,
+                        'COPPER': 1406.6
+                    }
+                    if mcx_ref_price <= 0:
+                        mcx_ref_price = DEFAULT_MCX_REF.get(sym, 1.0)
+
+                    last_yahoo_close = float(df['Close'].iloc[-1]) if not df.empty and df['Close'].iloc[-1] > 0 else 1.0
+                    multiplier = (mcx_ref_price / last_yahoo_close) if (mcx_ref_price > 0 and last_yahoo_close > 0) else 1.0
                     
                     for idx, row in df.iterrows():
                         date_key = idx.strftime('%Y-%m-%d')
@@ -1745,7 +1789,6 @@ class PriceChecker:
                         
                         # For the current in-progress day, validate strictly against live MCX exchange quote
                         if is_today:
-                            quote = tv_quotes.get(sym) if tv_quotes else None
                             if quote and quote.get('prev_close') and quote.get('low') and quote.get('high'):
                                 mcx_pc = float(quote['prev_close'])
                                 mcx_low = float(quote['low'])
@@ -1764,10 +1807,18 @@ class PriceChecker:
                         date_str = idx.strftime('%d %b %Y')
                         day_name = idx.strftime('%a')
                         is_within_30d = bool(idx >= pd.Timestamp(cutoff_30d, tz=df.index.tz))
-                        p_close = row['PrevClose']
-                        high = row['High']
-                        low = row['Low']
-                        close = row['Close']
+                        
+                        # Scale prices to Indian MCX Rupee (₹) contract terms
+                        if is_today and quote and quote.get('prev_close') and float(quote['prev_close']) > 0:
+                            p_close = round(float(quote['prev_close']), 2)
+                            high = round(float(quote.get('high', quote['prev_close'])), 2)
+                            low = round(float(quote.get('low', quote['prev_close'])), 2)
+                            close = round(float(quote.get('close', quote['prev_close'])), 2)
+                        else:
+                            p_close = round(float(row['PrevClose']) * multiplier, 2)
+                            high = round(float(row['High']) * multiplier, 2)
+                            low = round(float(row['Low']) * multiplier, 2)
+                            close = round(float(row['Close']) * multiplier, 2)
                         
                         high_move = (high - p_close) / p_close
                         low_move = (low - p_close) / p_close
@@ -1798,10 +1849,10 @@ class PriceChecker:
                                 except Exception:
                                     pass
                         
-                        has_next = pd.notna(row['NextClose'])
-                        next_close = round(float(row['NextClose']), 2) if has_next else None
-                        next_date = str(row['NextDate']) if (pd.notna(row['NextDate']) and row['NextDate'] is not None and str(row['NextDate']).lower() != 'nan') else "Next Session"
-                        next_day = str(row['NextDay']) if (pd.notna(row['NextDay']) and row['NextDay'] is not None and str(row['NextDay']).lower() != 'nan') else "--"
+                        has_next = pd.notna(row['NextClose']) and not is_today
+                        next_close = round(float(row['NextClose']) * multiplier, 2) if has_next else None
+                        next_date = str(row['NextDate']) if (has_next and pd.notna(row['NextDate']) and row['NextDate'] is not None and str(row['NextDate']).lower() != 'nan') else ("Session in Progress" if is_today else "--")
+                        next_day = str(row['NextDay']) if (has_next and pd.notna(row['NextDay']) and row['NextDay'] is not None and str(row['NextDay']).lower() != 'nan') else "--"
                         next_move = round(((next_close - close) / close) * 100, 2) if has_next else None
                         
                         # Upper Extreme
