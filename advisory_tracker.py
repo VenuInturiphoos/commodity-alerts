@@ -10,8 +10,8 @@ USER_ACCOUNT = "venu.photos1@gmail.com"
 LOT_SIZES = {
     'CRUDEOIL': 50,     # Crude Oil (50 bbl) - 1 pt = ₹50 (~₹1.22L margin)
     'CRUDEOILM': 50,
-    'NATURALGAS': 1250, # Natural Gas (1250 mmBtu) - 1 pt = ₹1250 (~₹1.28L margin)
-    'NATURALGASM': 1250,
+    'NATURALGAS': 2500, # Natural Gas (2500 mmBtu) - 1 pt = ₹2500 (~₹1.30L margin)
+    'NATURALGASM': 2500,
     'SILVER': 5,        # Silver (5 kg) - 1 pt = ₹5 (~₹1.45L margin)
     'SILVERMIC': 5,
     'GOLD': 10,         # Gold (10 x 10g = 100g) - 1 pt = ₹10 (~₹1.44L margin)
@@ -25,8 +25,8 @@ LOT_SIZES = {
 MARGIN_RATES = {
     'CRUDEOIL': 0.25,    # 25% margin (~₹1.22 Lakh)
     'CRUDEOILM': 0.25,
-    'NATURALGAS': 0.35,  # 35% margin (~₹1.28 Lakh)
-    'NATURALGASM': 0.35,
+    'NATURALGAS': 0.18,  # 18% margin (~₹1.30 Lakh @ ₹290)
+    'NATURALGASM': 0.18,
     'SILVER': 0.15,      # 15% margin (~₹1.45 Lakh)
     'SILVERMIC': 0.15,
     'COPPER': 0.08,      # 8% margin (~₹1.40 Lakh)
@@ -1005,7 +1005,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 chg = natgas['change_pct']
                 lc = natgas['lower_circuit']
                 uc = natgas['upper_circuit']
-                lot_size = LOT_SIZES.get('NATURALGAS', 1250)
+                lot_size = LOT_SIZES.get('NATURALGAS', 2500)
 
                 if 'NEAR' in natgas['status'] or 'HIT' in natgas['status'] or abs(chg) >= 2.0:
                     action = "BUY" if chg < 0 else "SELL"
