@@ -703,7 +703,6 @@
 
                 <!-- Advisory Signals Subview -->
                 <div id="trade-view-advisory" style="display: none;">
-<div id="trade-view-advisory" style="display: none;">
                     <!-- 🎯 6:00 PM IST Advisory Signals & Paper Trade Tracker -->
                     <div id="advisory-tracker-section" class="glass-card full-width" style="margin-bottom: 2.5rem; border: 1px solid rgba(99, 102, 241, 0.35); background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1rem;">
@@ -837,11 +836,8 @@
                 </div>
             </div>
 
-            <!-- Virtual Paper Trading Terminal Subview (Active by Default) -->
-                </div>
-
-                <!-- Account / Trading Views Wrapper -->
-                <div id="trade-view-terminal">
+            <!-- Account / Trading Views Wrapper -->
+            <div id="trade-view-terminal">
                     <div id="trade-login-prompt" style="text-align: center; margin: 4rem 0;">
                         <h3 style="color: var(--text-secondary);">Please log in via the Account tab to access Paper Trading & Investing.</h3>
                     </div>
@@ -4594,6 +4590,7 @@ function switchPaperTradingSubView(subview) {
     const modCommodities = document.getElementById('trade-module-commodities');
     const modInvesting = document.getElementById('trade-module-investing');
     const modAdvisory = document.getElementById('trade-view-advisory');
+    const viewTerminal = document.getElementById('trade-view-terminal');
 
     const btnCommodities = document.getElementById('btn-subnav-trade-commodities');
     const btnInvesting = document.getElementById('btn-subnav-trade-investing');
@@ -4602,6 +4599,7 @@ function switchPaperTradingSubView(subview) {
     [btnCommodities, btnInvesting, btnAdvisory].forEach(b => { if (b) b.classList.remove('active'); });
 
     if (subview === 'commodities') {
+        if (viewTerminal) viewTerminal.style.display = 'block';
         if (modCommodities) modCommodities.style.display = 'block';
         if (modInvesting) modInvesting.style.display = 'none';
         if (modAdvisory) modAdvisory.style.display = 'none';
@@ -4609,6 +4607,7 @@ function switchPaperTradingSubView(subview) {
         if (typeof renderTradeMarket === 'function') renderTradeMarket();
         if (typeof renderPortfolio === 'function') renderPortfolio();
     } else if (subview === 'investing') {
+        if (viewTerminal) viewTerminal.style.display = 'block';
         if (modCommodities) modCommodities.style.display = 'none';
         if (modInvesting) modInvesting.style.display = 'block';
         if (modAdvisory) modAdvisory.style.display = 'none';
@@ -4616,6 +4615,7 @@ function switchPaperTradingSubView(subview) {
         if (typeof renderTradeMarket === 'function') renderTradeMarket();
         if (typeof renderPortfolio === 'function') renderPortfolio();
     } else if (subview === 'advisory') {
+        if (viewTerminal) viewTerminal.style.display = 'none';
         if (modCommodities) modCommodities.style.display = 'none';
         if (modInvesting) modInvesting.style.display = 'none';
         if (modAdvisory) modAdvisory.style.display = 'block';
@@ -4743,11 +4743,11 @@ async function loadAdvisoryTracker() {
         let res = null;
         const rawUrl = 'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_tracker.json?t=' + Date.now();
         try {
-            res = await fetch(rawUrl, { cache: 'no-store' });
-            if (!res.ok) throw new Error("Raw fetch returned " + res.status);
-        } catch (rawErr) {
-            console.log("Falling back to local tracker URL:", rawErr.message);
             res = await fetch('advisory_trades_tracker.json?t=' + Date.now(), { cache: 'no-store' });
+            if (!res.ok) throw new Error("Local fetch returned status " + res.status);
+        } catch (localErr) {
+            console.log("Local tracker fetch failed, falling back to raw GitHub:", localErr.message);
+            res = await fetch(rawUrl, { cache: 'no-store' });
         }
         if (!res || !res.ok) throw new Error("Status " + (res ? res.status : 'failed'));
         advisoryTrackerData = await res.json();
@@ -4821,7 +4821,9 @@ async function loadAdvisoryTracker() {
     } catch (e) {
         console.error("Error loading advisory tracker:", e);
         const tbody = document.getElementById('advisory-tracker-body');
-        if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="error">Failed to load advisory tracker data: ${e.message}</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="error" style="text-align:center; padding:2rem; color:#fb7185;"><i class="fa-solid fa-triangle-exclamation"></i> Failed to load advisory tracker data: ${e.message}<br><button onclick="loadAdvisoryTracker()" style="margin-top:10px; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:6px 14px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-arrows-rotate"></i> Retry</button></td></tr>`;
+        const cardsFeed = document.getElementById('advisory-cards-feed');
+        if (cardsFeed) cardsFeed.innerHTML = `<div style="text-align:center; padding:2rem; color:#fb7185; background:rgba(255,255,255,0.02); border-radius:10px;"><i class="fa-solid fa-triangle-exclamation"></i> Failed to load advisory cards: ${e.message}<br><button onclick="loadAdvisoryTracker()" style="margin-top:10px; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:6px 14px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-arrows-rotate"></i> Retry</button></div>`;
     }
 }
 
