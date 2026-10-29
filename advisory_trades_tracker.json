@@ -1,6 +1,55 @@
 {
   "trades": [
     {
+      "id": "ADV-29Oct2026-2000-NATURALGAS",
+      "date": "29 Oct 2026",
+      "session_name": "EIA NatGas Storage (8:00 PM)",
+      "time_trigger": "08:00 PM IST",
+      "time_6pm": "08:00 PM IST",
+      "time_validation": "08:15 PM IST",
+      "time_615": "08:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 2500,
+      "event_context": "Thursday EIA Storage Report Spike Fade",
+      "suggestion_6pm": {
+        "status": "EIA_FADE",
+        "action_text": "BUY / FADE STORAGE REPORT SPIKE",
+        "rationale": "High-probability retracement of EIA inventory knee-jerk spike.",
+        "reference_price": 280.7,
+        "stop_loss": 274.41,
+        "target": 293.1
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 280.7,
+        "action_taken": "Entered BUY 2500 units @ \u20b9280.70",
+        "detail": "EIA Natural Gas setup entered at 8:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 2500,
+        "entry_price": 280.7,
+        "entry_time": "08:00 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 275.51,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
       "id": "ADV-29Oct2026-1800-GOLD",
       "date": "29 Oct 2026",
       "session_name": "US Pit Open (6:00 PM)",
@@ -2409,19 +2458,19 @@
       }
     }
   ],
-  "last_updated": "29 Oct 2026, 07:03 PM IST",
+  "last_updated": "29 Oct 2026, 08:01 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000,
   "summary": {
-    "total_signals": 48,
-    "executed_count": 18,
+    "total_signals": 49,
+    "executed_count": 19,
     "correct_count": 7,
     "wrong_count": 9,
     "protected_count": 30,
     "win_rate_pct": 43.8,
     "total_pnl_inr": 13684.0,
-    "avg_trade_pnl_inr": 760.22,
-    "active_trades_count": 1,
+    "avg_trade_pnl_inr": 720.21,
+    "active_trades_count": 2,
     "starting_cash_inr": 1000000,
     "current_cash_inr": 1013684.0,
     "used_margin_inr": 0.0,
