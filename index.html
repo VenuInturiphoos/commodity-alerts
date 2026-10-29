@@ -355,8 +355,6 @@
                         <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('GOLD', this)">Gold</button>
                         <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('SILVER', this)">Silver</button>
                         <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('COPPER', this)">Copper</button>
-                        <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('ZINC', this)">Zinc</button>
-                        <button class="circuit-filter-pill" onclick="setHistoryCommodityFilter('ALUMINIUM', this)">Aluminium</button>
                     </div>
 
                     <!-- 30-Day History Table -->
@@ -1759,9 +1757,7 @@ async function fetchCircuitsData(forceNetwork = false) {
                 'SILVER': { ticker: 'MCX:SILVER1!', name: 'Silver', dpl_initial: 0.04, dpl_max: 0.06, category: 'Bullion', unit: '1 kg' },
                 'CRUDEOIL': { ticker: 'MCX:CRUDEOIL1!', name: 'Crude Oil', dpl_initial: 0.04, dpl_max: 0.07, category: 'Energy', unit: '1 bbl' },
                 'NATURALGAS': { ticker: 'MCX:NATURALGAS1!', name: 'Natural Gas', dpl_initial: 0.06, dpl_max: 0.09, category: 'Energy', unit: '1 mmBtu' },
-                'COPPER': { ticker: 'MCX:COPPER1!', name: 'Copper', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' },
-                'ZINC': { ticker: 'MCX:ZINC1!', name: 'Zinc', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' },
-                'ALUMINIUM': { ticker: 'MCX:ALUMINIUM1!', name: 'Aluminium', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' }
+                'COPPER': { ticker: 'MCX:COPPER1!', name: 'Copper', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' }
             };
             
             // Prefer resolved active contract tickers from circuits_data.json so client probe matches active contract
@@ -3025,7 +3021,7 @@ function renderCircuitsHistoryTable() {
         // Commodity filter
         let matchesCommodity = true;
         if (activeHistoryCommodity !== 'ALL') {
-            if (activeHistoryCommodity === 'BASE') matchesCommodity = (item.category === 'Base Metals');
+            if (activeHistoryCommodity === 'BASE' || activeHistoryCommodity === 'COPPER') matchesCommodity = (item.symbol === 'COPPER' || item.category === 'Base Metals');
             else matchesCommodity = item.symbol === activeHistoryCommodity;
         }
         
@@ -3463,7 +3459,7 @@ async function fetchMarketData() {
         if (error) throw error;
         
         const EXCLUDED_SYMBOLS = [
-            'LEAD', 'ELECTRICITY', 'LEAD-FUT', 'ELECTRICITY-FUT',
+            'LEAD', 'ZINC', 'ALUMINIUM', 'ELECTRICITY', 'LEAD-FUT', 'ZINC-FUT', 'ALUMINIUM-FUT', 'ELECTRICITY-FUT',
             'CRUDEOILM', 'NATURALGASM', 'SILVERMIC', 'GOLDM', 'GOLDTEN', 'COPPERM',
             'CRUDEOILM-FUT', 'NATURALGASM-FUT', 'SILVERMIC-FUT', 'GOLDM-FUT', 'GOLDTEN-FUT', 'COPPERM-FUT'
         ];
@@ -3517,9 +3513,7 @@ function renderMarketTable() {
             "SILVER": "SI=F",
             "CRUDEOIL": "CL=F",
             "NATURALGAS": "NG=F",
-            "COPPER": "HG=F",
-            "ZINC": "ZNC=F",
-            "ALUMINIUM": "ALI=F"
+            "COPPER": "HG=F"
         };
 
         return data.map(item => {
@@ -3584,9 +3578,7 @@ function renderAlertTable() {
         "SILVER": "SI=F",
         "CRUDEOIL": "CL=F",
         "NATURALGAS": "NG=F",
-        "COPPER": "HG=F",
-        "ZINC": "ZNC=F",
-        "ALUMINIUM": "ALI=F"
+        "COPPER": "HG=F"
     };
 
     const buildAlertRowsHtml = (data, emptyMessage) => {
@@ -4374,7 +4366,7 @@ function renderPendingOrders(orders) {
     if (cardsOld) cardsOld.innerHTML = buildCards(activeOrders);
 }
 
-const COMMODITY_SYMBOLS = ['CRUDEOIL', 'NATURALGAS', 'GOLD', 'SILVER', 'COPPER', 'ZINC', 'ALUMINIUM', 'CRUDEOILM', 'NATURALGASM', 'SILVERMIC', 'GOLDM', 'GOLDTEN', 'COPPERM', 'ZINCMINI', 'ALUMINI'];
+const COMMODITY_SYMBOLS = ['CRUDEOIL', 'NATURALGAS', 'GOLD', 'SILVER', 'COPPER', 'CRUDEOILM', 'NATURALGASM', 'SILVERMIC', 'GOLDM', 'GOLDTEN', 'COPPERM'];
 
 function isCommoditySymbol(symbol) {
     if (!symbol) return false;
@@ -4388,9 +4380,7 @@ const LOT_SIZES = {
     'SILVER': 5,        // Silver: 5 units (5 kg)
     'CRUDEOIL': 50,     // Crude Oil: 50 units (50 bbl)
     'NATURALGAS': 2500, // Natural Gas: 2500 units (2500 mmBtu)
-    'COPPER': 1250,     // Copper: 1250 units (1250 kg)
-    'ZINC': 2500,       // Zinc: 2500 units (2500 kg @ ~₹410 -> ~₹1.33L margin)
-    'ALUMINIUM': 2500   // Aluminium: 2500 units (2500 kg @ ~₹330 -> ~₹1.32L margin)
+    'COPPER': 1250      // Copper: 1250 units (1250 kg)
 };
 
 function getLotSize(symbol) {
@@ -4408,9 +4398,7 @@ const COMMODITY_MARGIN_RATES = {
     'NATURALGAS': 0.18,  // 2500 mmBtu @ ~₹290 -> ~₹1.30L margin
     'SILVER': 0.15,      // 5 kg @ ~₹194,300 -> ~₹1.45L margin
     'GOLD': 0.10,        // 10 units (100g) @ ~₹143,700 -> ~₹1.44L margin
-    'COPPER': 0.08,      // 1250 kg @ ~₹1,406 -> ~₹1.40L margin
-    'ZINC': 0.13,        // 2500 kg @ ~₹410 -> ~₹1.33L margin
-    'ALUMINIUM': 0.16    // 2500 kg @ ~₹330 -> ~₹1.32L margin
+    'COPPER': 0.08       // 1250 kg @ ~₹1,406 -> ~₹1.40L margin
 };
 
 function getAssetMarginRate(symbol) {
@@ -6025,11 +6013,7 @@ if (document.readyState === 'loading') {
             'GOLD': { name: 'Gold', lot: 10, unit: '10g (100g)', icon: '🥇', aliases: ['gold', 'xau', 'sona', 'goldm', 'gold mini'] },
             'GOLDM': { name: 'Gold', lot: 10, unit: '10g (100g)', icon: '🥇', aliases: ['goldm', 'gold mini'] },
             'SILVER': { name: 'Silver', lot: 5, unit: '1kg (5kg)', icon: '🥈', aliases: ['silver', 'xag', 'chandi', 'silvermic', 'silver micro'] },
-            'SILVERMIC': { name: 'Silver', lot: 5, unit: '1kg (5kg)', icon: '🥈', aliases: ['silvermic', 'silver micro'] },
-            'ZINC': { name: 'Zinc', lot: 2500, unit: 'kg', icon: '🔩', aliases: ['zinc', 'zn', 'jasta', 'zincmini', 'zinc mini'] },
-            'ZINCMINI': { name: 'Zinc', lot: 2500, unit: 'kg', icon: '🔩', aliases: ['zincmini', 'zinc mini'] },
-            'ALUMINIUM': { name: 'Aluminium', lot: 2500, unit: 'kg', icon: '🪨', aliases: ['aluminium', 'aluminum', 'al', 'alumini', 'aluminium mini'] },
-            'ALUMINI': { name: 'Aluminium', lot: 2500, unit: 'kg', icon: '🪨', aliases: ['alumini', 'aluminium mini'] }
+            'SILVERMIC': { name: 'Silver', lot: 5, unit: '1kg (5kg)', icon: '🥈', aliases: ['silvermic', 'silver micro'] }
         };
 
         function toggleChat() {
