@@ -1534,7 +1534,9 @@ class PriceChecker:
             'CRUDEOILM': 'CRUDEOIL',
             'NATURALGASM': 'NATURALGAS',
             'SILVERMIC': 'SILVER',
-            'GOLDM': 'GOLD'
+            'GOLDM': 'GOLD',
+            'ZINCMINI': 'ZINC',
+            'ALUMINI': 'ALUMINIUM'
         }
         
         for symbol, data in self.commodities.items():
@@ -1740,6 +1742,8 @@ class PriceChecker:
                 'GOLD': {'name': 'Gold', 'symbol': 'GC=F', 'slab': 0.03, 'unit': '10 g', 'category': 'Bullion'},
                 'SILVER': {'name': 'Silver', 'symbol': 'SI=F', 'slab': 0.04, 'unit': '1 kg', 'category': 'Bullion'},
                 'COPPER': {'name': 'Copper', 'symbol': 'HG=F', 'slab': 0.04, 'unit': '1 kg', 'category': 'Base Metals'},
+                'ZINC': {'name': 'Zinc', 'symbol': 'ZNC=F', 'slab': 0.04, 'unit': '1 kg', 'category': 'Base Metals'},
+                'ALUMINIUM': {'name': 'Aluminium', 'symbol': 'ALI=F', 'slab': 0.04, 'unit': '1 kg', 'category': 'Base Metals'},
             }
             
             events = []
@@ -1804,7 +1808,9 @@ class PriceChecker:
                         'NATURALGAS': 293.1,
                         'GOLD': 143705.0,
                         'SILVER': 194325.0,
-                        'COPPER': 1406.6
+                        'COPPER': 1406.6,
+                        'ZINC': 410.2,
+                        'ALUMINIUM': 329.9
                     }
                     if mcx_ref_price <= 0:
                         mcx_ref_price = DEFAULT_MCX_REF.get(sym, 1.0)

@@ -18,7 +18,11 @@ LOT_SIZES = {
     'GOLDM': 10,
     'GOLDTEN': 10,
     'COPPER': 1250,     # Copper (1250 kg) - 1 pt = ₹1250 (~₹1.40L margin)
-    'COPPERM': 1250
+    'COPPERM': 1250,
+    'ZINC': 2500,       # Zinc (2500 kg) - 1 pt = ₹2500 (~₹1.33L margin)
+    'ZINCMINI': 2500,
+    'ALUMINIUM': 2500,  # Aluminium (2500 kg) - 1 pt = ₹2500 (~₹1.32L margin)
+    'ALUMINI': 2500
 }
 
 # MCX Standard Initial Margin Requirements (SPAN + Exposure Margin adjusted for ~₹1.2L-₹1.5L purchase cost)
@@ -31,6 +35,10 @@ MARGIN_RATES = {
     'SILVERMIC': 0.15,
     'COPPER': 0.08,      # 8% margin (~₹1.40 Lakh)
     'COPPERM': 0.08,
+    'ZINC': 0.13,        # 13% margin (~₹1.33 Lakh @ ₹410)
+    'ZINCMINI': 0.13,
+    'ALUMINIUM': 0.16,   # 16% margin (~₹1.32 Lakh @ ₹330)
+    'ALUMINI': 0.16,
     'GOLD': 0.10,        # 10% margin (~₹1.44 Lakh)
     'GOLDM': 0.10,
     'GOLDTEN': 0.10
@@ -47,7 +55,11 @@ COMMODITY_DISPLAY_NAMES = {
     'GOLDM': 'Gold',
     'GOLDTEN': 'Gold',
     'COPPER': 'Copper',
-    'COPPERM': 'Copper'
+    'COPPERM': 'Copper',
+    'ZINC': 'Zinc',
+    'ZINCMINI': 'Zinc',
+    'ALUMINIUM': 'Aluminium',
+    'ALUMINI': 'Aluminium'
 }
 
 DEFAULT_STARTING_CASH = 1000000.0  # ₹10,00,000 (10 Lakhs Virtual Cash)
@@ -475,6 +487,8 @@ def record_live_130pm_advisory(commodities_list):
             'GOLD': 'BULLION',
             'SILVER': 'BULLION',
             'COPPER': 'BASE_METALS',
+            'ZINC': 'BASE_METALS',
+            'ALUMINIUM': 'BASE_METALS',
             'CRUDEOIL': 'ENERGY',
             'NATURALGAS': 'ENERGY'
         }
