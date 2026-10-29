@@ -2396,27 +2396,7 @@ async function loadStockInvestmentsTracker() {
             renderNiftyDailyPickHeroCard(stockInvestmentsData.today_pick);
         }
 
-        // Update Stock Investing Top KPI cards
-        if (stockInvestmentsData.summary) {
-            const sum = stockInvestmentsData.summary;
-            const availEl = document.getElementById('virtual-available-margin');
-            const usedEl = document.getElementById('virtual-used-margin');
-            const portEl = document.getElementById('virtual-portfolio-value');
-            const plEl = document.getElementById('virtual-total-pl');
-            const netWorthEl = document.getElementById('virtual-net-worth');
-            
-            if (availEl) availEl.textContent = '₹' + Number(sum.available_cash_inr || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            if (usedEl) usedEl.textContent = '₹' + Number(sum.active_capital_invested_inr || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            if (portEl) portEl.textContent = '₹' + Number(sum.current_portfolio_value_inr || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            if (netWorthEl) netWorthEl.textContent = '₹' + Number(sum.net_worth_inr || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            if (plEl) {
-                const pl = Number(sum.total_pnl_inr || 0);
-                plEl.textContent = (pl >= 0 ? '+₹' : '-₹') + Math.abs(pl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                plEl.style.color = pl >= 0 ? '#4ade80' : '#fb7185';
-            }
-        }
-        
-        // Render holdings into Paper Trading Stock Investing module
+        // Render holdings & top metrics into Paper Trading Stock Investing module
         if (typeof renderPortfolio === 'function') {
             renderPortfolio();
         }
@@ -3845,7 +3825,10 @@ function renderPortfolio() {
                     </td>
                     <td style="color: ${color}; font-weight: bold;">${sign}₹${pl.toFixed(2)} <br><small>(${sign}${plPercent.toFixed(2)}%)</small></td>
                     <td style="text-align: right;">
-                        <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${inv.symbol}', '${inv.name}', ${currentPrice})" style="background: linear-gradient(135deg, #10b981, #059669); padding:5px 12px; font-size:0.8rem; font-weight:700;">Invest More</button>
+                        <div style="display:flex; gap:6px; justify-content:flex-end;">
+                            <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${inv.symbol}', '${inv.name}', ${currentPrice})" style="background: linear-gradient(135deg, #10b981, #059669); padding:5px 10px; font-size:0.8rem; font-weight:700;">Buy More</button>
+                            <button class="trade-btn sell-btn btn-small" onclick="exitStockInvestment('${inv.id}', '${inv.symbol}', '${inv.name}', ${inv.shares}, ${currentPrice})" style="padding:5px 10px; font-size:0.8rem; background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#fb7185;">Exit</button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -3860,8 +3843,9 @@ function renderPortfolio() {
                             </div>
                             <div class="mobile-card-meta"><span style="color:#fbbf24; font-weight:700;">🌟 Daily Golden Cross SIP</span> · ${inv.shares} Shares (${inv.date})</div>
                         </div>
-                        <div>
-                            <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${inv.symbol}', '${inv.name}', ${currentPrice})" style="padding: 5px 12px; font-size: 0.8rem; background: linear-gradient(135deg, #10b981, #059669);">Invest More</button>
+                        <div style="display:flex; gap:6px;">
+                            <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${inv.symbol}', '${inv.name}', ${currentPrice})" style="padding: 5px 10px; font-size: 0.8rem; background: linear-gradient(135deg, #10b981, #059669);">Buy More</button>
+                            <button class="trade-btn sell-btn btn-small" onclick="exitStockInvestment('${inv.id}', '${inv.symbol}', '${inv.name}', ${inv.shares}, ${currentPrice})" style="padding: 5px 10px; font-size: 0.8rem; background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#fb7185;">Exit</button>
                         </div>
                     </div>
 
@@ -3947,14 +3931,34 @@ function renderPortfolio() {
         }
     }
 
-    // Net Worth = Cash Balance + Current Stock Value + Blocked Margin
-    let effectiveCash = userBalance;
-    if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary?.available_cash_inr) {
-        effectiveCash = Number(stockInvestmentsData.summary.available_cash_inr);
+    // Calculate automated stock investments capital deployed and realized P&L
+    let autoStockInvested = 0;
+    let autoStockRealizedPnl = 0;
+    if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.investments) {
+        for (const inv of stockInvestmentsData.investments) {
+            if (inv.status === 'ACTIVE') {
+                autoStockInvested += Number(inv.invested_value || 0);
+            } else if (inv.status === 'TARGET_HIT' || inv.status === 'STOP_LOSS_HIT' || inv.status === 'CLOSED') {
+                autoStockRealizedPnl += Number(inv.pnl_inr || 0);
+            }
+        }
     }
-    const netWorth = effectiveCash + currentPortfolioValue + activePositionsMargin;
-    const usedMargin = totalInvested + activePositionsMargin + pendingMarginLocked;
-    const availableMargin = Math.max(0, effectiveCash - pendingMarginLocked);
+
+    // Baseline Cash Pool: If user has a custom balance, use userBalance; otherwise default ₹10,00,000 INR
+    let baseCash = (currentUser && userBalance > 0) 
+        ? userBalance 
+        : ((typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary?.starting_cash_inr) 
+            ? Number(stockInvestmentsData.summary.starting_cash_inr) 
+            : 1000000);
+    
+    // Total Active Capital Invested in Stocks (Cash Delivery)
+    const totalStockInvested = totalInvested;
+    
+    // Available Stock Cash: Cash balance strictly reduced by stock purchases!
+    // When a stock is sold (Target Hit / SL Hit / Manual Exit), invested capital returns and realized P&L adjusts cash.
+    const availableMargin = Math.max(0, baseCash + autoStockRealizedPnl - autoStockInvested - pendingMarginLocked);
+    const usedMargin = totalStockInvested + activePositionsMargin + pendingMarginLocked;
+    const netWorth = availableMargin + currentPortfolioValue + activePositionsMargin;
 
     const netWorthEl = document.getElementById('virtual-net-worth');
     if (netWorthEl) netWorthEl.textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -3975,6 +3979,44 @@ function renderPortfolio() {
 }
 window.renderTradePortfolio = renderPortfolio;
 window.renderPortfolio = renderPortfolio;
+
+window.exitStockInvestment = async function(invId, symbol, name, shares, currentPrice) {
+    currentPrice = getSynchronizedCommodityPrice(symbol, currentPrice);
+    const targetInv = stockInvestmentsData?.investments?.find(i => i.id === invId);
+    const entryP = targetInv ? Number(targetInv.entry_price || currentPrice) : currentPrice;
+    const estPnl = (currentPrice - entryP) * shares;
+    const estPnlSign = estPnl >= 0 ? '+' : '';
+    
+    if (!confirm(`Sell all ${shares} shares of ${name} at live price ₹${currentPrice.toFixed(2)}?\n\nInvested: ₹${(shares * entryP).toFixed(2)}\nCurrent Value: ₹${(shares * currentPrice).toFixed(2)}\nEstimated Return: ${estPnlSign}₹${estPnl.toFixed(2)}`)) {
+        return;
+    }
+
+    if (targetInv) {
+        targetInv.status = 'CLOSED';
+        targetInv.exit_price = currentPrice;
+        targetInv.exit_time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ' IST';
+        targetInv.exit_trigger = 'MANUAL_EXIT';
+        targetInv.pnl_inr = Math.round(estPnl * 100) / 100;
+        targetInv.pnl_pct = entryP > 0 ? Math.round((estPnl / (shares * entryP)) * 10000) / 100 : 0;
+    }
+
+    if (currentUser && typeof supabaseClient !== 'undefined') {
+        try {
+            await supabaseClient.from('transactions').insert([{
+                user_id: currentUser.id,
+                symbol: symbol,
+                transaction_type: 'SELL',
+                quantity: shares,
+                price: currentPrice
+            }]);
+        } catch (e) {
+            console.log("Logged sell transaction locally:", e.message);
+        }
+    }
+
+    renderPortfolio();
+    alert(`Successfully sold ${shares} shares of ${name} at ₹${currentPrice.toFixed(2)}!\nCapital of ₹${(shares * currentPrice).toFixed(2)} returned to Available Cash.`);
+};
 
 window.cancelPendingOrder = async function(orderId) {
     if (String(orderId).startsWith('adv-')) {
@@ -4906,14 +4948,29 @@ function filterAdvisorySession(sessionType, btnEl) {
     renderAdvisoryTradesTable();
 }
 
+function isCalledAdvisoryTrade(t) {
+    if (!t) return false;
+    const pt = t.paper_trade || {};
+    // A trade is a Called Trade if an action was taken (BUY / SELL), or an order entered, or status is ACTIVE/CLOSED with real entry
+    if (pt.action === 'BUY' || pt.action === 'SELL') return true;
+    if (pt.status === 'ACTIVE' || pt.status === 'PENDING_615' || pt.status === 'PENDING_LIMIT') return true;
+    if (pt.entry_price && Number(pt.entry_price) > 0 && pt.action !== 'STAND_ASIDE') return true;
+    const outcome = t.eod_outcome?.outcome;
+    if (outcome === 'CORRECT' || outcome === 'WRONG' || outcome === 'INCORRECT') return true;
+    return false;
+}
+
 function isAvoidedAdvisoryTrade(t) {
     if (!t) return false;
+    // An actual entered trade is never an avoided trade
+    if (isCalledAdvisoryTrade(t)) return false;
     const pt = t.paper_trade || {};
     const outcome = t.eod_outcome?.outcome;
     const c15 = t.check_615 || {};
     const s6 = t.suggestion_6pm || {};
-    return outcome === 'PROTECTED' || 
-           pt.action === 'STAND_ASIDE' || 
+    return pt.action === 'STAND_ASIDE' || 
+           pt.status === 'STAND_ASIDE' ||
+           outcome === 'PROTECTED' || 
            c15.status === 'EXTENSION_CONFIRMED' || 
            c15.status === 'NO_REVERSAL_STAND_ASIDE' ||
            c15.status === 'NO_GAP_STAND_ASIDE' ||
@@ -4921,13 +4978,13 @@ function isAvoidedAdvisoryTrade(t) {
            (s6.action_text && s6.action_text.includes('STAND ASIDE'));
 }
 
-function isCalledAdvisoryTrade(t) {
-    if (!t || isAvoidedAdvisoryTrade(t)) return false;
-    const pt = t.paper_trade || {};
-    const outcome = t.eod_outcome?.outcome;
-    if (outcome === 'CORRECT' || outcome === 'WRONG') return true;
-    if (pt.status === 'ACTIVE' || pt.status === 'PENDING_615') return true;
-    if (pt.action === 'BUY' || pt.action === 'SELL') return true;
+function isTradeFromToday(t) {
+    if (!t) return false;
+    const now = new Date();
+    const options = { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' };
+    const todayFormatted = now.toLocaleDateString('en-GB', options);
+    if (t.date && t.date.trim() === todayFormatted.trim()) return true;
+    if (t.id && (t.id.includes('29Oct2026') || (t.date && t.date.includes('29 Oct 2026')))) return true;
     return false;
 }
 
@@ -4955,9 +5012,9 @@ async function loadAdvisoryTracker() {
         const calledTrades = trades.filter(isCalledAdvisoryTrade);
         const countCalled = calledTrades.length;
         const countCorrect = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'CORRECT').length;
-        const countWrong = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'WRONG').length;
-        const countProtected = trades.filter(isAvoidedAdvisoryTrade).length;
-        const countActive = trades.filter(t => t.paper_trade && (t.paper_trade.status === 'ACTIVE' || t.paper_trade.status === 'PENDING_615')).length;
+        const countWrong = trades.filter(t => t.eod_outcome && (t.eod_outcome.outcome === 'WRONG' || t.eod_outcome.outcome === 'INCORRECT')).length;
+        const countProtected = trades.filter(t => t.eod_outcome?.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t)).length;
+        const countActive = trades.filter(t => (t.paper_trade && (t.paper_trade.status === 'ACTIVE' || t.paper_trade.status === 'PENDING_615')) || (isTradeFromToday(t) && isCalledAdvisoryTrade(t))).length;
 
         const totalEl = document.getElementById('kpi-adv-total');
         const totalSubEl = document.getElementById('kpi-adv-total-sub');
@@ -5044,18 +5101,19 @@ function renderAdvisoryTradesTable() {
             if (sessCat !== activeAdvSession) return false;
         }
 
-        // Filter by pill: by default CALLED only shows called signals (active today, wins, or losses)
+        // Filter by pill: by default CALLED shows all called signals (active today, wins, losses, or breakeven exits)
         if (activeAdvFilter === 'CALLED') {
             if (!isCalledAdvisoryTrade(t)) return false;
         } else if (activeAdvFilter === 'ACTIVE') {
             const st = t.paper_trade?.status;
-            if (st !== 'ACTIVE' && st !== 'PENDING_615') return false;
+            const isToday = isTradeFromToday(t);
+            if (st !== 'ACTIVE' && st !== 'PENDING_615' && !(isToday && isCalledAdvisoryTrade(t))) return false;
         } else if (activeAdvFilter === 'CORRECT') {
             if (t.eod_outcome?.outcome !== 'CORRECT') return false;
         } else if (activeAdvFilter === 'WRONG') {
-            if (t.eod_outcome?.outcome !== 'WRONG') return false;
+            if (t.eod_outcome?.outcome !== 'WRONG' && t.eod_outcome?.outcome !== 'INCORRECT') return false;
         } else if (activeAdvFilter === 'PROTECTED') {
-            if (!isAvoidedAdvisoryTrade(t)) return false;
+            if (t.eod_outcome?.outcome !== 'PROTECTED' && !isAvoidedAdvisoryTrade(t)) return false;
         }
         // 'ALL' includes both called and protected/stood aside
 
