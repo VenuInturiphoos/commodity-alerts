@@ -85,6 +85,13 @@ def main():
     except Exception as e:
         print(f"Error generating circuits data & history: {e}")
 
+    try:
+        print("Scanning Nifty 50 Golden Cross & Oversold stocks...")
+        from nifty_scanner import scan_nifty50_opportunities
+        scan_nifty50_opportunities()
+    except Exception as e:
+        print(f"Error scanning Nifty 50 Golden Cross & Oversold opportunities: {e}")
+
     # Monitor active advisory paper trades for Target and Stop-Loss triggers
     try:
         from advisory_tracker import check_and_execute_intraday_targets_and_stops

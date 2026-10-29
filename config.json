@@ -19,30 +19,10 @@
       "category": "Bullion",
       "unit": "10 g"
     },
-    "GOLDM": {
-      "name": "Gold (10g) / Mini",
-      "yf_symbol": "GC=F",
-      "tv_ticker": "MCX:GOLDM1!",
-      "mcx_multiplier": 0.373273,
-      "dpl_initial": 0.03,
-      "dpl_max": 0.06,
-      "category": "Bullion",
-      "unit": "10 g"
-    },
     "SILVER": {
       "name": "Silver",
       "yf_symbol": "SI=F",
       "tv_ticker": "MCX:SILVER1!",
-      "mcx_multiplier": 38.536532,
-      "dpl_initial": 0.04,
-      "dpl_max": 0.06,
-      "category": "Bullion",
-      "unit": "1 kg"
-    },
-    "SILVERMIC": {
-      "name": "Silver Micro",
-      "yf_symbol": "SI=F",
-      "tv_ticker": "MCX:SILVERMIC1!",
       "mcx_multiplier": 38.536532,
       "dpl_initial": 0.04,
       "dpl_max": 0.06,
@@ -59,16 +39,6 @@
       "category": "Energy",
       "unit": "1 bbl"
     },
-    "CRUDEOILM": {
-      "name": "Crude Oil Mini",
-      "yf_symbol": "CL=F",
-      "tv_ticker": "MCX:CRUDEOILM1!",
-      "mcx_multiplier": 1.000049,
-      "dpl_initial": 0.04,
-      "dpl_max": 0.07,
-      "category": "Energy",
-      "unit": "10 bbl"
-    },
     "NATURALGAS": {
       "name": "Natural Gas",
       "yf_symbol": "NG=F",
@@ -78,16 +48,6 @@
       "dpl_max": 0.09,
       "category": "Energy",
       "unit": "1 mmBtu"
-    },
-    "NATURALGASM": {
-      "name": "Natural Gas Mini",
-      "yf_symbol": "NG=F",
-      "tv_ticker": "MCX:NATURALGASM1!",
-      "mcx_multiplier": 1.004089,
-      "dpl_initial": 0.06,
-      "dpl_max": 0.09,
-      "category": "Energy",
-      "unit": "250 mmBtu"
     },
     "COPPER": {
       "name": "Copper",

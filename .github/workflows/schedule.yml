@@ -52,7 +52,7 @@ jobs:
             echo "=== Intraday 1-Minute Check #$i at $(date -u) ==="
             python main.py
             
-            git add web/near_alerts.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json web/alerts_state.json web/advisory_trades_tracker.json
+            git add web/near_alerts.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json web/alerts_state.json web/advisory_trades_tracker.json web/nifty_crossover_oversold.json
             if ! git diff --staged --quiet; then
               git commit -m "Auto-update near alerts and circuit limits data" || true
               git pull --rebase origin main || true

@@ -37,17 +37,17 @@ MARGIN_RATES = {
 }
 
 COMMODITY_DISPLAY_NAMES = {
-    'CRUDEOIL': 'Crude Oil Mini',
-    'CRUDEOILM': 'Crude Oil Mini',
-    'NATURALGAS': 'Natural Gas Mini',
-    'NATURALGASM': 'Natural Gas Mini',
-    'SILVER': 'Silver Micro',
-    'SILVERMIC': 'Silver Micro',
-    'GOLD': 'Gold (10g)',
-    'GOLDM': 'Gold (10g)',
-    'GOLDTEN': 'Gold (10g)',
-    'COPPER': 'Copper Mini',
-    'COPPERM': 'Copper Mini'
+    'CRUDEOIL': 'Crude Oil',
+    'CRUDEOILM': 'Crude Oil',
+    'NATURALGAS': 'Natural Gas',
+    'NATURALGASM': 'Natural Gas',
+    'SILVER': 'Silver',
+    'SILVERMIC': 'Silver',
+    'GOLD': 'Gold',
+    'GOLDM': 'Gold',
+    'GOLDTEN': 'Gold',
+    'COPPER': 'Copper',
+    'COPPERM': 'Copper'
 }
 
 DEFAULT_STARTING_CASH = 1000000.0  # ₹10,00,000 (10 Lakhs Virtual Cash)
