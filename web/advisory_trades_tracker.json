@@ -67,7 +67,7 @@
         "action_text": "BUY / GAP FADE (BOUNCE)",
         "rationale": "Significant opening gap down (-0.76%). Wide CPR (0.53%) indicates high probability gap fill bounce towards Prev Day Close (\u20b9194,325.00).",
         "reference_price": 192844.0,
-        "stop_loss": 192072.62,
+        "stop_loss": 192844.0,
         "target": 194325.0
       },
       "check_615": {
@@ -87,7 +87,11 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "trailing_sl_active": true,
+        "original_sl": 192072.62,
+        "stop_loss": 192844.0,
+        "target": 194325.0
       },
       "eod_outcome": {
         "session_close": null,
@@ -136,7 +140,9 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "target": 9798.0,
+        "stop_loss": 9629.33
       },
       "eod_outcome": {
         "session_close": null,
@@ -185,7 +191,9 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "target": 293.1,
+        "stop_loss": 289.44
       },
       "eod_outcome": {
         "session_close": null,
@@ -1891,7 +1899,7 @@
       }
     }
   ],
-  "last_updated": "29 Oct 2026, 09:01 AM IST",
+  "last_updated": "29 Oct 2026, 10:39 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000,
   "summary": {
