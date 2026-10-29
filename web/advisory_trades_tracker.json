@@ -57,7 +57,7 @@
       "time_6pm": "09:01 AM IST",
       "time_validation": "09:15 AM IST",
       "time_615": "09:15 AM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "11:22 AM IST",
       "symbol": "SILVER",
       "name": "Silver",
       "lot_size": 5,
@@ -83,23 +83,26 @@
         "quantity": 5,
         "entry_price": 192844.0,
         "entry_time": "09:01 AM IST",
-        "exit_price": null,
-        "exit_time": null,
+        "exit_price": 192844.0,
+        "exit_time": "11:22 AM IST",
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "status": "CLOSED",
         "trailing_sl_active": true,
         "original_sl": 192072.62,
         "stop_loss": 192844.0,
-        "target": 194325.0
+        "target": 194325.0,
+        "exit_trigger": "TRAILING_BREAKEVEN_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 192844.0,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+        "outcome": "PROTECTED",
+        "badge": "Breakeven Exit \ud83d\udee1\ufe0f (11:22 AM IST)",
+        "pnl_display": "+\u20b90.00",
+        "summary": "Trailing Stop Triggered (Breakeven) \ud83d\udee1\ufe0f at 11:22 AM IST. Entry: \u20b9192,844.00 -> Exit: \u20b9192,844.00 (+\u20b90.00).",
+        "exit_time": "11:22 AM IST",
+        "exit_trigger": "TRAILING_BREAKEVEN_HIT"
       }
     },
     {
@@ -1899,7 +1902,7 @@
       }
     }
   ],
-  "last_updated": "29 Oct 2026, 10:39 AM IST",
+  "last_updated": "29 Oct 2026, 11:22 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000,
   "summary": {
@@ -1907,11 +1910,11 @@
     "executed_count": 12,
     "correct_count": 5,
     "wrong_count": 7,
-    "protected_count": 22,
+    "protected_count": 23,
     "win_rate_pct": 41.7,
     "total_pnl_inr": -2995.0,
     "avg_trade_pnl_inr": -249.58,
-    "active_trades_count": 3,
+    "active_trades_count": 2,
     "starting_cash_inr": 1000000,
     "current_cash_inr": 997005.0,
     "used_margin_inr": 0.0,
