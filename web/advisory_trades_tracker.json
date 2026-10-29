@@ -1,6 +1,251 @@
 {
   "trades": [
     {
+      "id": "ADV-29Oct2026-0901-GOLD",
+      "date": "29 Oct 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 1,
+      "event_context": "Normal Open (-0.04%) | CPR: 0.02%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (-0.04%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 143653.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 143653.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-29Oct2026-0901-SILVER",
+      "date": "29 Oct 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 1,
+      "event_context": "MCX Open Gap (-0.76%) | CPR: 0.53%",
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "BUY / GAP FADE (BOUNCE)",
+        "rationale": "Significant opening gap down (-0.76%). Wide CPR (0.53%) indicates high probability gap fill bounce towards Prev Day Close (\u20b9194,325.00).",
+        "reference_price": 192844.0,
+        "stop_loss": 192072.62,
+        "target": 194325.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "GAP_FADE_ENTERED",
+        "price_615": 192844.0,
+        "action_taken": "Entered BUY 1 units @ \u20b9192,844.00",
+        "detail": "Fading opening gap down towards PDC \u20b9194,325.00."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1,
+        "entry_price": 192844.0,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
+      "id": "ADV-29Oct2026-0901-CRUDEOIL",
+      "date": "29 Oct 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 10,
+      "event_context": "MCX Open Gap (-1.33%) | CPR: 0.89%",
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "BUY / GAP FADE (BOUNCE)",
+        "rationale": "Significant opening gap down (-1.33%). Wide CPR (0.89%) indicates high probability gap fill bounce towards Prev Day Close (\u20b99,798.00).",
+        "reference_price": 9668.0,
+        "stop_loss": 9629.33,
+        "target": 9798.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "GAP_FADE_ENTERED",
+        "price_615": 9668.0,
+        "action_taken": "Entered BUY 10 units @ \u20b99,668.00",
+        "detail": "Fading opening gap down towards PDC \u20b99,798.00."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 10,
+        "entry_price": 9668.0,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
+      "id": "ADV-29Oct2026-0901-NATURALGAS",
+      "date": "29 Oct 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 250,
+      "event_context": "MCX Open Gap (-0.85%) | CPR: 0.56%",
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "BUY / GAP FADE (BOUNCE)",
+        "rationale": "Significant opening gap down (-0.85%). Wide CPR (0.56%) indicates high probability gap fill bounce towards Prev Day Close (\u20b9293.10).",
+        "reference_price": 290.6,
+        "stop_loss": 289.44,
+        "target": 293.1
+      },
+      "check_615": {
+        "checked": true,
+        "status": "GAP_FADE_ENTERED",
+        "price_615": 290.6,
+        "action_taken": "Entered BUY 250 units @ \u20b9290.60",
+        "detail": "Fading opening gap down towards PDC \u20b9293.10."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 250,
+        "entry_price": 290.6,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
+      "id": "ADV-29Oct2026-0901-COPPER",
+      "date": "29 Oct 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPER",
+      "name": "Copper",
+      "lot_size": 250,
+      "event_context": "Normal Open (+0.15%) | CPR: 0.05%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (+0.15%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 1399.5,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 1399.5,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
       "id": "ADV-28Oct2026-1800-GOLD",
       "date": "28 Oct 2026",
       "session_name": "US Pit Open (6:00 PM)",
@@ -16,7 +261,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / SAFE RANGE",
-        "rationale": "Asset within standard range (±1.5%). No statistical circuit edge; capital protected in cash.",
+        "rationale": "Asset within standard range (\u00b11.5%). No statistical circuit edge; capital protected in cash.",
         "reference_price": 143731,
         "stop_loss": 139813.86,
         "target": 144138
@@ -44,8 +289,8 @@
         "session_close": null,
         "circuit_limit": 139813.86,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on normal range. 100% capital preserved in cash."
       }
     },
@@ -65,7 +310,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / SAFE RANGE",
-        "rationale": "Asset within standard range (±1.5%). No statistical circuit edge; capital protected in cash.",
+        "rationale": "Asset within standard range (\u00b11.5%). No statistical circuit edge; capital protected in cash.",
         "reference_price": 194367,
         "stop_loss": 188848.32,
         "target": 196717
@@ -93,8 +338,8 @@
         "session_close": null,
         "circuit_limit": 188848.32,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on normal range. 100% capital preserved in cash."
       }
     },
@@ -142,8 +387,8 @@
         "session_close": 9797,
         "circuit_limit": 9877.92,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -163,7 +408,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / SAFE RANGE",
-        "rationale": "Asset within standard range (±1.5%). No statistical circuit edge; capital protected in cash.",
+        "rationale": "Asset within standard range (\u00b11.5%). No statistical circuit edge; capital protected in cash.",
         "reference_price": 294,
         "stop_loss": 271.1,
         "target": 288.4
@@ -191,8 +436,8 @@
         "session_close": null,
         "circuit_limit": 271.1,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on normal range. 100% capital preserved in cash."
       }
     },
@@ -212,7 +457,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / SAFE RANGE",
-        "rationale": "Asset within standard range (±1.5%). No statistical circuit edge; capital protected in cash.",
+        "rationale": "Asset within standard range (\u00b11.5%). No statistical circuit edge; capital protected in cash.",
         "reference_price": 1406,
         "stop_loss": 1349.14,
         "target": 1405.35
@@ -240,8 +485,8 @@
         "session_close": null,
         "circuit_limit": 1349.14,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on normal range. 100% capital preserved in cash."
       }
     },
@@ -270,7 +515,7 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 9770,
-        "action_taken": "Entered SELL 10 units @ ₹9,770.00",
+        "action_taken": "Entered SELL 10 units @ \u20b99,770.00",
         "detail": "EIA Inventory setup entered at 8:00 PM IST."
       },
       "paper_trade": {
@@ -290,9 +535,9 @@
         "session_close": 9810,
         "circuit_limit": 9877.92,
         "outcome": "WRONG",
-        "badge": "Wrong ❌ (11:30 PM)",
-        "pnl_display": "₹-400.00",
-        "summary": "11:30 PM session close exit. Entry: ₹9,770.00 -> Exit: ₹9,810.00 (-40.00 pts | ₹-400.00).",
+        "badge": "Wrong \u274c (11:30 PM)",
+        "pnl_display": "\u20b9-400.00",
+        "summary": "11:30 PM session close exit. Entry: \u20b99,770.00 -> Exit: \u20b99,810.00 (-40.00 pts | \u20b9-400.00).",
         "exit_time": "11:30 PM IST",
         "exit_trigger": "EOD_SQUAREOFF"
       }
@@ -313,7 +558,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / COUNTER-TREND TRAP",
-        "rationale": "Macro trend is Bearish (below CPR ₹143,594.00 | -0.33%). High Asian range breakout is a classic Bull Trap. Avoided.",
+        "rationale": "Macro trend is Bearish (below CPR \u20b9143,594.00 | -0.33%). High Asian range breakout is a classic Bull Trap. Avoided.",
         "reference_price": 143659,
         "stop_loss": null,
         "target": null
@@ -341,8 +586,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Counter-trend BUY blocked by Daily CPR Trend Filter. Capital protected."
       }
     },
@@ -358,11 +603,11 @@
       "symbol": "SILVER",
       "name": "Silver",
       "lot_size": 1,
-      "event_context": "Range-Bound Asian Range [₹194,853.00 – ₹196,010.00]",
+      "event_context": "Range-Bound Asian Range [\u20b9194,853.00 \u2013 \u20b9196,010.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹194,853.00 – ₹196,010.00]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9194,853.00 \u2013 \u20b9196,010.00]. Standing aside awaiting range breakout.",
         "reference_price": 195419,
         "stop_loss": null,
         "target": null
@@ -390,8 +635,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside on range-bound asset. Capital protected."
       }
     },
@@ -407,11 +652,11 @@
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
       "lot_size": 10,
-      "event_context": "Range-Bound Asian Range [₹9,617.00 – ₹9,744.00]",
+      "event_context": "Range-Bound Asian Range [\u20b99,617.00 \u2013 \u20b99,744.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹9,617.00 – ₹9,744.00]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b99,617.00 \u2013 \u20b99,744.00]. Standing aside awaiting range breakout.",
         "reference_price": 9689,
         "stop_loss": null,
         "target": null
@@ -439,8 +684,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside on range-bound asset. Capital protected."
       }
     },
@@ -460,7 +705,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / LIQUIDITY SWEEP TRAP",
-        "rationale": "Macro trend is Bullish (above CPR ₹293.65 | +1.39%). Low Asian range breakdown is a classic institutional Liquidity Sweep. Avoided.",
+        "rationale": "Macro trend is Bullish (above CPR \u20b9293.65 | +1.39%). Low Asian range breakdown is a classic institutional Liquidity Sweep. Avoided.",
         "reference_price": 292.4,
         "stop_loss": null,
         "target": null
@@ -488,8 +733,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Counter-trend SELL blocked by Daily CPR Trend Filter. Capital protected."
       }
     },
@@ -505,11 +750,11 @@
       "symbol": "COPPER",
       "name": "Copper",
       "lot_size": 250,
-      "event_context": "London Bullish Breakout (Trend Aligned: CPR Top ₹1,405.42)",
+      "event_context": "London Bullish Breakout (Trend Aligned: CPR Top \u20b91,405.42)",
       "suggestion_6pm": {
         "status": "LONDON_BREAKOUT",
-        "action_text": "BUY @ SUPPORT ₹1,408.30",
-        "rationale": "Trend-aligned European breakout (Macro Bullish above CPR). Entering at Support ₹1,408.30 with tight SL.",
+        "action_text": "BUY @ SUPPORT \u20b91,408.30",
+        "rationale": "Trend-aligned European breakout (Macro Bullish above CPR). Entering at Support \u20b91,408.30 with tight SL.",
         "reference_price": 1408.3,
         "stop_loss": 1404.08,
         "target": 1415.2
@@ -518,8 +763,8 @@
         "checked": true,
         "status": "BREAKOUT_ENTERED",
         "price_615": 1407.2,
-        "action_taken": "BUY 250 units @ Support ₹1,407.20",
-        "detail": "Support Retest order at Asian High ₹1,408.30 with tight SL ₹1,404.08."
+        "action_taken": "BUY 250 units @ Support \u20b91,407.20",
+        "detail": "Support Retest order at Asian High \u20b91,408.30 with tight SL \u20b91,404.08."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -540,9 +785,9 @@
         "session_close": 1404.08,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Stop Loss Hit 🛑 (02:16 PM IST)",
-        "pnl_display": "₹-780.00",
-        "summary": "Stop-Loss Triggered 🛑 at 02:16 PM IST. Entry: ₹1,407.20 -> Exit: ₹1,404.08 (-3.12 pts × ₹250 = ₹-780.00).",
+        "badge": "Stop Loss Hit \ud83d\uded1 (02:16 PM IST)",
+        "pnl_display": "\u20b9-780.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:16 PM IST. Entry: \u20b91,407.20 -> Exit: \u20b91,404.08 (-3.12 pts \u00d7 \u20b9250 = \u20b9-780.00).",
         "exit_time": "02:16 PM IST",
         "exit_trigger": "STOP_LOSS_HIT"
       }
@@ -591,8 +836,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -640,8 +885,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -661,7 +906,7 @@
       "suggestion_6pm": {
         "status": "MORNING_GAP_TRADE",
         "action_text": "SELL / GAP FADE (SHORT)",
-        "rationale": "Significant opening gap up (+1.28%). Wide CPR (0.90%) indicates high probability gap fill pullback towards Prev Day Close (₹9,498.00).",
+        "rationale": "Significant opening gap up (+1.28%). Wide CPR (0.90%) indicates high probability gap fill pullback towards Prev Day Close (\u20b99,498.00).",
         "reference_price": 9620,
         "stop_loss": 9658.5,
         "target": 9498
@@ -670,8 +915,8 @@
         "checked": true,
         "status": "GAP_FADE_ENTERED",
         "price_615": 9620,
-        "action_taken": "Entered SELL 10 units @ ₹9,620.00",
-        "detail": "Fading opening gap up towards PDC ₹9,498.00."
+        "action_taken": "Entered SELL 10 units @ \u20b99,620.00",
+        "detail": "Fading opening gap up towards PDC \u20b99,498.00."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -691,9 +936,9 @@
         "session_close": 9658.5,
         "circuit_limit": null,
         "outcome": "INCORRECT",
-        "badge": "SL Triggered 🛑",
-        "pnl_display": "₹-385.00",
-        "summary": "Stop-Loss Triggered 🛑 at 09:21 AM IST. Entry: ₹9,620.00 -> Exit: ₹9,658.50 (-38.50 pts × ₹10 = ₹-385.00)."
+        "badge": "SL Triggered \ud83d\uded1",
+        "pnl_display": "\u20b9-385.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 09:21 AM IST. Entry: \u20b99,620.00 -> Exit: \u20b99,658.50 (-38.50 pts \u00d7 \u20b910 = \u20b9-385.00)."
       }
     },
     {
@@ -712,7 +957,7 @@
       "suggestion_6pm": {
         "status": "MORNING_GAP_TRADE",
         "action_text": "SELL / GAP FADE (SHORT)",
-        "rationale": "Significant opening gap up (+1.49%). Wide CPR (1.03%) indicates high probability gap fill towards Prev Day Close (₹288.40).",
+        "rationale": "Significant opening gap up (+1.49%). Wide CPR (1.03%) indicates high probability gap fill towards Prev Day Close (\u20b9288.40).",
         "reference_price": 292.7,
         "stop_loss": 293.87,
         "target": 288.4
@@ -721,8 +966,8 @@
         "checked": true,
         "status": "GAP_FADE_ENTERED",
         "price_615": 292.7,
-        "action_taken": "Entered SELL 250 units @ ₹292.70",
-        "detail": "Fading opening gap up towards PDC ₹288.40."
+        "action_taken": "Entered SELL 250 units @ \u20b9292.70",
+        "detail": "Fading opening gap up towards PDC \u20b9288.40."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -743,9 +988,9 @@
         "session_close": 293.87,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Stop Loss Hit 🛑 (11:47 AM IST)",
-        "pnl_display": "₹-292.50",
-        "summary": "Stop-Loss Triggered 🛑 at 11:47 AM IST. Entry: ₹292.70 -> Exit: ₹293.87 (-1.17 pts × ₹250 = ₹-292.50).",
+        "badge": "Stop Loss Hit \ud83d\uded1 (11:47 AM IST)",
+        "pnl_display": "\u20b9-292.50",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 11:47 AM IST. Entry: \u20b9292.70 -> Exit: \u20b9293.87 (-1.17 pts \u00d7 \u20b9250 = \u20b9-292.50).",
         "exit_time": "11:47 AM IST",
         "exit_trigger": "STOP_LOSS_HIT"
       }
@@ -766,7 +1011,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / NO CLEAR GAP",
-        "rationale": "Opening gap (-0.06%) within neutral zone (±0.75%). No opening edge.",
+        "rationale": "Opening gap (-0.06%) within neutral zone (\u00b10.75%). No opening edge.",
         "reference_price": 1404.5,
         "stop_loss": null,
         "target": null
@@ -796,8 +1041,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "NEUTRAL",
-        "badge": "Stand Aside ⏸️",
-        "pnl_display": "₹0.00",
+        "badge": "Stand Aside \u23f8\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "No trade triggered. Opening gap (-0.06%) within neutral zone."
       }
     },
@@ -817,7 +1062,7 @@
       "suggestion_6pm": {
         "status": "LONDON_BREAKDOWN",
         "action_text": "SELL / LONDON BREAKDOWN",
-        "rationale": "European open volume breaking below morning Asian range [₹142,196.00 – ₹143,303.00].",
+        "rationale": "European open volume breaking below morning Asian range [\u20b9142,196.00 \u2013 \u20b9143,303.00].",
         "reference_price": 142203,
         "stop_loss": 142749.5,
         "target": 140867.6
@@ -826,7 +1071,7 @@
         "checked": true,
         "status": "BREAKDOWN_ENTERED",
         "price_615": 142203,
-        "action_taken": "Entered SELL 1 units @ ₹142,203.00",
+        "action_taken": "Entered SELL 1 units @ \u20b9142,203.00",
         "detail": "London breakdown confirmed outside Asian morning range."
       },
       "paper_trade": {
@@ -848,9 +1093,9 @@
         "session_close": 142749.5,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Stop Loss Hit 🛑 (06:01 PM IST)",
-        "pnl_display": "₹-546.50",
-        "summary": "Stop-Loss Triggered 🛑 at 06:01 PM IST. Entry: ₹142,203.00 -> Exit: ₹142,749.50 (₹-546.50).",
+        "badge": "Stop Loss Hit \ud83d\uded1 (06:01 PM IST)",
+        "pnl_display": "\u20b9-546.50",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 06:01 PM IST. Entry: \u20b9142,203.00 -> Exit: \u20b9142,749.50 (\u20b9-546.50).",
         "exit_time": "06:01 PM IST",
         "exit_trigger": "STOP_LOSS_HIT"
       }
@@ -871,7 +1116,7 @@
       "suggestion_6pm": {
         "status": "LONDON_BREAKDOWN",
         "action_text": "SELL / LONDON BREAKDOWN",
-        "rationale": "European open volume breaking below morning Asian range [₹191,516.00 – ₹195,195.00].",
+        "rationale": "European open volume breaking below morning Asian range [\u20b9191,516.00 \u2013 \u20b9195,195.00].",
         "reference_price": 191779,
         "stop_loss": 193355.5,
         "target": 187101.2
@@ -880,7 +1125,7 @@
         "checked": true,
         "status": "BREAKDOWN_ENTERED",
         "price_615": 191779,
-        "action_taken": "Entered SELL 1 units @ ₹191,779.00",
+        "action_taken": "Entered SELL 1 units @ \u20b9191,779.00",
         "detail": "London breakdown confirmed outside Asian morning range."
       },
       "paper_trade": {
@@ -902,9 +1147,9 @@
         "session_close": 193355.5,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Stop Loss Hit 🛑 (03:31 PM IST)",
-        "pnl_display": "₹-1,576.50",
-        "summary": "Stop-Loss Triggered 🛑 at 03:31 PM IST. Entry: ₹191,779.00 -> Exit: ₹193,355.50 (₹-1,576.50).",
+        "badge": "Stop Loss Hit \ud83d\uded1 (03:31 PM IST)",
+        "pnl_display": "\u20b9-1,576.50",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 03:31 PM IST. Entry: \u20b9191,779.00 -> Exit: \u20b9193,355.50 (\u20b9-1,576.50).",
         "exit_time": "03:31 PM IST",
         "exit_trigger": "STOP_LOSS_HIT"
       }
@@ -925,7 +1170,7 @@
       "suggestion_6pm": {
         "status": "LONDON_BREAKDOWN",
         "action_text": "SELL / LONDON BREAKDOWN",
-        "rationale": "European open volume breaking below morning Asian range [₹1,391.05 – ₹1,400.30].",
+        "rationale": "European open volume breaking below morning Asian range [\u20b91,391.05 \u2013 \u20b91,400.30].",
         "reference_price": 1391.7,
         "stop_loss": 1395.67,
         "target": 1379.95
@@ -934,7 +1179,7 @@
         "checked": true,
         "status": "BREAKDOWN_ENTERED",
         "price_615": 1391.7,
-        "action_taken": "Entered SELL 250 units @ ₹1,391.70",
+        "action_taken": "Entered SELL 250 units @ \u20b91,391.70",
         "detail": "London breakdown confirmed outside Asian morning range."
       },
       "paper_trade": {
@@ -956,9 +1201,9 @@
         "session_close": 1395.67,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Stop Loss Hit 🛑 (02:26 PM IST)",
-        "pnl_display": "₹-992.50",
-        "summary": "Stop-Loss Triggered 🛑 at 02:26 PM IST. Entry: ₹1,391.70 -> Exit: ₹1,395.67 (-3.97 pts × ₹250 = ₹-992.50).",
+        "badge": "Stop Loss Hit \ud83d\uded1 (02:26 PM IST)",
+        "pnl_display": "\u20b9-992.50",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:26 PM IST. Entry: \u20b91,391.70 -> Exit: \u20b91,395.67 (-3.97 pts \u00d7 \u20b9250 = \u20b9-992.50).",
         "exit_time": "02:26 PM IST",
         "exit_trigger": "STOP_LOSS_HIT"
       }
@@ -1007,8 +1252,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -1056,8 +1301,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -1077,7 +1322,7 @@
       "suggestion_6pm": {
         "status": "MORNING_GAP_TRADE",
         "action_text": "BUY / GAP FADE (BOUNCE)",
-        "rationale": "Significant opening gap down (-1.25%). Wide CPR (0.72%) indicates high probability gap fill bounce towards Prev Day Close (₹9,723.00).",
+        "rationale": "Significant opening gap down (-1.25%). Wide CPR (0.72%) indicates high probability gap fill bounce towards Prev Day Close (\u20b99,723.00).",
         "reference_price": 9601,
         "stop_loss": 9562.6,
         "target": 9723
@@ -1086,8 +1331,8 @@
         "checked": true,
         "status": "GAP_FADE_ENTERED",
         "price_615": 9601,
-        "action_taken": "Entered BUY 10 units @ ₹9,601.00",
-        "detail": "Fading opening gap down towards PDC ₹9,723.00."
+        "action_taken": "Entered BUY 10 units @ \u20b99,601.00",
+        "detail": "Fading opening gap down towards PDC \u20b99,723.00."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1107,9 +1352,9 @@
         "session_close": 9723,
         "circuit_limit": null,
         "outcome": "CORRECT",
-        "badge": "Target Achieved 🎯",
-        "pnl_display": "+₹1,220.00",
-        "summary": "Target Achieved 🎯 at 12:41 PM IST. Entry: ₹9,601.00 -> Exit: ₹9,723.00 (+₹1,220.00)."
+        "badge": "Target Achieved \ud83c\udfaf",
+        "pnl_display": "+\u20b91,220.00",
+        "summary": "Target Achieved \ud83c\udfaf at 12:41 PM IST. Entry: \u20b99,601.00 -> Exit: \u20b99,723.00 (+\u20b91,220.00)."
       }
     },
     {
@@ -1156,8 +1401,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -1205,8 +1450,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -1254,8 +1499,8 @@
         "session_close": 249.6,
         "circuit_limit": 237.26,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1284,7 +1529,7 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 243.3,
-        "action_taken": "Entered BUY 250 units @ ₹243.30",
+        "action_taken": "Entered BUY 250 units @ \u20b9243.30",
         "detail": "Entered at 8:00 PM IST."
       },
       "paper_trade": {
@@ -1303,9 +1548,9 @@
         "session_close": 249.6,
         "circuit_limit": 237.26,
         "outcome": "CORRECT",
-        "badge": "Correct ✅",
-        "pnl_display": "+₹1,575.00",
-        "summary": "11:30 PM session close exit. Entry: ₹243.30 -> Exit: ₹249.60 (+6.30 pts | +₹7,875.00)."
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b91,575.00",
+        "summary": "11:30 PM session close exit. Entry: \u20b9243.30 -> Exit: \u20b9249.60 (+6.30 pts | +\u20b97,875.00)."
       }
     },
     {
@@ -1333,7 +1578,7 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 241.6,
-        "action_taken": "Entered SELL 250 units @ ₹241.60",
+        "action_taken": "Entered SELL 250 units @ \u20b9241.60",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
@@ -1352,9 +1597,9 @@
         "session_close": 249.6,
         "circuit_limit": 267.54,
         "outcome": "WRONG",
-        "badge": "Wrong ❌",
-        "pnl_display": "₹-2,000.00",
-        "summary": "11:30 PM session close exit. Entry: ₹241.60 -> Exit: ₹249.60 (-8.00 pts | ₹-10,000.00)."
+        "badge": "Wrong \u274c",
+        "pnl_display": "\u20b9-2,000.00",
+        "summary": "11:30 PM session close exit. Entry: \u20b9241.60 -> Exit: \u20b9249.60 (-8.00 pts | \u20b9-10,000.00)."
       }
     },
     {
@@ -1373,7 +1618,7 @@
       "suggestion_6pm": {
         "status": "LONDON_BREAKOUT",
         "action_text": "BUY / LONDON BREAKOUT",
-        "rationale": "European open volume breaking above morning Asian range [₹142,132.00 – ₹142,888.00].",
+        "rationale": "European open volume breaking above morning Asian range [\u20b9142,132.00 \u2013 \u20b9142,888.00].",
         "reference_price": 142734,
         "stop_loss": 142510,
         "target": 143795.2
@@ -1382,7 +1627,7 @@
         "checked": true,
         "status": "BREAKOUT_ENTERED",
         "price_615": 142734,
-        "action_taken": "Entered BUY 1 units @ ₹142,734.00",
+        "action_taken": "Entered BUY 1 units @ \u20b9142,734.00",
         "detail": "London breakout confirmed outside Asian morning range."
       },
       "paper_trade": {
@@ -1401,9 +1646,9 @@
         "session_close": 143002,
         "circuit_limit": null,
         "outcome": "CORRECT",
-        "badge": "Correct ✅",
-        "pnl_display": "+₹268.00",
-        "summary": "11:30 PM session close exit. Entry: ₹142,734.00 -> Exit: ₹143,002.00 (+268.00 pts | +₹2,680.00)."
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b9268.00",
+        "summary": "11:30 PM session close exit. Entry: \u20b9142,734.00 -> Exit: \u20b9143,002.00 (+268.00 pts | +\u20b92,680.00)."
       }
     },
     {
@@ -1422,7 +1667,7 @@
       "suggestion_6pm": {
         "status": "LONDON_BREAKOUT",
         "action_text": "BUY / LONDON BREAKOUT",
-        "rationale": "European open volume breaking above morning Asian range [₹1,377.50 – ₹1,389.45].",
+        "rationale": "European open volume breaking above morning Asian range [\u20b91,377.50 \u2013 \u20b91,389.45].",
         "reference_price": 1389.25,
         "stop_loss": 1383.47,
         "target": 1403.79
@@ -1431,7 +1676,7 @@
         "checked": true,
         "status": "BREAKOUT_ENTERED",
         "price_615": 1389.25,
-        "action_taken": "Entered BUY 250 units @ ₹1,389.25",
+        "action_taken": "Entered BUY 250 units @ \u20b91,389.25",
         "detail": "London breakout confirmed outside Asian morning range."
       },
       "paper_trade": {
@@ -1450,9 +1695,9 @@
         "session_close": 1392.8,
         "circuit_limit": null,
         "outcome": "CORRECT",
-        "badge": "Correct ✅",
-        "pnl_display": "+₹887.50",
-        "summary": "11:30 PM session close exit. Entry: ₹1,389.25 -> Exit: ₹1,392.80 (+3.55 pts | +₹8,875.00)."
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b9887.50",
+        "summary": "11:30 PM session close exit. Entry: \u20b91,389.25 -> Exit: \u20b91,392.80 (+3.55 pts | +\u20b98,875.00)."
       }
     },
     {
@@ -1477,7 +1722,7 @@
         "checked": true,
         "status": "DIRECT_ENTRY",
         "price_615": 3.16,
-        "action_taken": "Entered SELL 250 units @ ₹3.16",
+        "action_taken": "Entered SELL 250 units @ \u20b93.16",
         "detail": "Direct trade executed at 6:00 PM IST."
       },
       "paper_trade": {
@@ -1496,9 +1741,9 @@
         "session_close": 3.05,
         "circuit_limit": 2.96,
         "outcome": "CORRECT",
-        "badge": "Correct ✅",
-        "pnl_display": "+₹27.50",
-        "summary": "Pre-6 PM fade captured +0.11 pts retracement into 11:30 PM session close (0.11 pts × 1,250 = +₹137.50)."
+        "badge": "Correct \u2705",
+        "pnl_display": "+\u20b927.50",
+        "summary": "Pre-6 PM fade captured +0.11 pts retracement into 11:30 PM session close (0.11 pts \u00d7 1,250 = +\u20b9137.50)."
       }
     },
     {
@@ -1542,8 +1787,8 @@
         "session_close": 195719,
         "circuit_limit": 191615.04,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute rule successfully protected capital by preventing premature counter-trend knife-catching."
       }
     },
@@ -1559,11 +1804,11 @@
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
       "lot_size": 10,
-      "event_context": "Range-Bound Asian Range [₹9,595.00 – ₹9,763.00]",
+      "event_context": "Range-Bound Asian Range [\u20b99,595.00 \u2013 \u20b99,763.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹9,595.00 – ₹9,763.00]. Morning gap fade already booked at 12:41 PM (+₹6,100).",
+        "rationale": "Trading within morning Asian range [\u20b99,595.00 \u2013 \u20b99,763.00]. Morning gap fade already booked at 12:41 PM (+\u20b96,100).",
         "reference_price": 9750,
         "stop_loss": null,
         "target": null
@@ -1591,8 +1836,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside on range-bound asset at 1:30 PM. Morning target was already achieved."
       }
     },
@@ -1608,11 +1853,11 @@
       "symbol": "NATURALGAS",
       "name": "Natural Gas",
       "lot_size": 250,
-      "event_context": "Range-Bound Asian Range [₹244.00 – ₹248.70]",
+      "event_context": "Range-Bound Asian Range [\u20b9244.00 \u2013 \u20b9248.70]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹244.00 – ₹248.70]. Awaiting 6:00 PM US pit open volume.",
+        "rationale": "Trading within morning Asian range [\u20b9244.00 \u2013 \u20b9248.70]. Awaiting 6:00 PM US pit open volume.",
         "reference_price": 246,
         "stop_loss": null,
         "target": null
@@ -1640,29 +1885,29 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside on range-bound asset at 1:30 PM. Awaiting 6:00 PM US open."
       }
     }
   ],
-  "last_updated": "28 Oct 2026, 11:58 PM IST",
+  "last_updated": "29 Oct 2026, 09:01 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000,
   "summary": {
-    "total_signals": 33,
+    "total_signals": 38,
     "executed_count": 12,
     "correct_count": 5,
     "wrong_count": 7,
-    "protected_count": 20,
+    "protected_count": 22,
     "win_rate_pct": 41.7,
-    "total_pnl_inr": -2995,
+    "total_pnl_inr": -2995.0,
     "avg_trade_pnl_inr": -249.58,
-    "active_trades_count": 0,
+    "active_trades_count": 3,
     "starting_cash_inr": 1000000,
-    "current_cash_inr": 997005,
-    "used_margin_inr": 0,
-    "available_cash_inr": 997005,
-    "net_worth_inr": 997005
+    "current_cash_inr": 997005.0,
+    "used_margin_inr": 0.0,
+    "available_cash_inr": 997005.0,
+    "net_worth_inr": 997005.0
   }
 }
