@@ -2662,6 +2662,12 @@ function renderNiftyDailyPickHeroCard(pick) {
                     <div style="font-size: 1.15rem; font-weight: 800; color: ${pnlColor}; margin-top: 2px;">${pnlSign}₹${Math.abs(pnl).toFixed(2)}</div>
                     <div style="font-size: 0.68rem; color: ${pnlColor}; font-weight: 600;">${pnlSign}${pnlPct.toFixed(2)}% Return</div>
                 </div>
+                ${pick.time_machine ? `
+                <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 8px; padding: 0.7rem 0.85rem;">
+                    <div style="font-size: 0.72rem; color: #a78bfa; font-weight: 600;">🎲 Monte Carlo Replay</div>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: #c4b5fd; margin-top: 2px;">${pick.time_machine.p_target_pct}% Win</div>
+                    <div style="font-size: 0.68rem; color: #ddd6fe;">3k Runs · ${pick.time_machine.expected_r >= 0 ? '+' : ''}${pick.time_machine.expected_r}R</div>
+                </div>` : ''}
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 0.85rem;">
@@ -5526,6 +5532,10 @@ function renderAdvisoryTradesTable() {
                     </div>
                     <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${t.date} | ${t.symbol}</div>
                     <div style="font-size:0.7rem; color:#818cf8; margin-top:2px;">${t.event_context || ''}</div>
+                    ${t.time_machine ? `
+                        <div style="font-size:0.68rem; margin-top:3px; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine (3,000 empirical replays): ${t.time_machine.summary || ''}">
+                            🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
+                        </div>` : ''}
                 </td>
                 <td>
                     <div style="font-size:0.85rem; font-weight:600; color:#f1f5f9;">${s6.action_text || '--'}</div>
@@ -5670,6 +5680,10 @@ function renderAdvisoryTradesTable() {
                                 </span>
                             </div>
                             <div class="mobile-card-meta">${t.date} · ${t.symbol} ${t.event_context ? '· ' + t.event_context : ''}</div>
+                            ${t.time_machine ? `
+                                <div style="font-size:0.68rem; margin-top:3px; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine: ${t.time_machine.summary || ''}">
+                                    🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
+                                </div>` : ''}
                         </div>
                         <div class="mobile-card-badges">
                             ${outcomeBadge}
