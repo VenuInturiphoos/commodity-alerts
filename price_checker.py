@@ -1651,6 +1651,7 @@ class PriceChecker:
                 "category": category,
                 "unit": unit,
                 "ticker": ticker,
+                "tv_chart_symbol": f"MCX:{symbol}1!",
                 "expiry": expiry,
                 "contract_desc": contract_desc,
                 "current_price": close,
