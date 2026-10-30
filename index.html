@@ -5484,6 +5484,14 @@ function renderAdvisoryTradesTable() {
             } else {
                 check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Confirmation</span>`;
             }
+        } else if (c15.status === 'EVENT_GUARD_STAND_ASIDE') {
+            check615Html = `<span style="color:#f59e0b; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-newspaper"></i> Event Blackout (Protected)</span>`;
+        } else if (c15.status === 'WICK_TRAP_STAND_ASIDE') {
+            check615Html = `<span style="color:#a78bfa; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-filter"></i> Wick Trap Rejected</span>`;
+        } else if (c15.status === 'SIM_GUARD_STAND_ASIDE') {
+            check615Html = `<span style="color:#f43f5e; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-dice"></i> Simulation Guard</span>`;
+        } else if (c15.status === 'RISK_GUARD_STAND_ASIDE') {
+            check615Html = `<span style="color:#38bdf8; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-shield"></i> Risk Engine Block</span>`;
         } else if (c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') {
             check615Html = `<span style="color:#60a5fa; font-size:0.8rem;"><i class="fa-solid fa-ban"></i> Stood Aside (Protected)</span>`;
         }
@@ -5636,6 +5644,10 @@ function renderAdvisoryTradesTable() {
                 const isPast = !isNaN(tradeDate.getTime()) && (new Date().toDateString() !== tradeDate.toDateString()) && (new Date() > tradeDate);
                 checkLabel = isPast ? 'Window Lapsed (Stood Aside)' : 'Awaiting Confirmation';
             }
+            else if (c15.status === 'EVENT_GUARD_STAND_ASIDE') checkLabel = 'Event Blackout (Protected)';
+            else if (c15.status === 'WICK_TRAP_STAND_ASIDE') checkLabel = 'Wick Trap Rejected';
+            else if (c15.status === 'SIM_GUARD_STAND_ASIDE') checkLabel = 'Simulation Guard';
+            else if (c15.status === 'RISK_GUARD_STAND_ASIDE') checkLabel = 'Risk Guard Block';
             else if (c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') checkLabel = 'Stood Aside (Protected)';
 
             const executedText = pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price
