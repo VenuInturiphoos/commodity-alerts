@@ -1,6 +1,349 @@
 {
   "trades": [
     {
+      "id": "ADV-30Oct2026-1800-GOLD",
+      "date": "30 Oct 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 10,
+      "event_context": "Safe Normal Range (No Circuit Edge)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / SAFE RANGE",
+        "rationale": "Asset within standard range (\u00b11.5%). No statistical circuit edge; capital protected in cash.",
+        "reference_price": 140802.0,
+        "stop_loss": 138318.12,
+        "target": 142596.0
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615_CHECK",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close to verify safe range holds...",
+        "detail": "15-minute verification scheduled for 6:15 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 140802.0,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 140802.0,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 138318.12,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on normal range. 100% capital preserved in cash."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-1800-SILVER",
+      "date": "30 Oct 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "N/A",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 5,
+      "event_context": "Pre-6 PM Lower Circuit Test (Asian/EU Fade Setup)",
+      "suggestion_6pm": {
+        "status": "DIRECT_FADE",
+        "action_text": "BUY / FADE THE MOVE",
+        "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+        "reference_price": 182678.0,
+        "stop_loss": 181147.38,
+        "target": 189453.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 182678.0,
+        "action_taken": "Entered BUY 5 units @ \u20b9182,678.00",
+        "detail": "Direct trade executed at 6:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 5,
+        "entry_price": 182678.0,
+        "entry_time": "06:00 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 181874.88,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-1800-CRUDEOIL",
+      "date": "30 Oct 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 50,
+      "event_context": "Safe Normal Range (No Circuit Edge)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / SAFE RANGE",
+        "rationale": "Asset within standard range (\u00b11.5%). No statistical circuit edge; capital protected in cash.",
+        "reference_price": 9856.0,
+        "stop_loss": 9320.64,
+        "target": 9709.0
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615_CHECK",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close to verify safe range holds...",
+        "detail": "15-minute verification scheduled for 6:15 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 9856.0,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 9856.0,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 9320.64,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on normal range. 100% capital preserved in cash."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-1800-NATURALGAS",
+      "date": "30 Oct 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 2500,
+      "event_context": "Safe Normal Range (No Circuit Edge)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / SAFE RANGE",
+        "rationale": "Asset within standard range (\u00b11.5%). No statistical circuit edge; capital protected in cash.",
+        "reference_price": 275.5,
+        "stop_loss": 264.89,
+        "target": 281.8
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615_CHECK",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close to verify safe range holds...",
+        "detail": "15-minute verification scheduled for 6:15 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 275.5,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 275.5,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 264.89,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on normal range. 100% capital preserved in cash."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-1800-COPPER",
+      "date": "30 Oct 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPER",
+      "name": "Copper",
+      "lot_size": 1250,
+      "event_context": "Safe Normal Range (No Circuit Edge)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / SAFE RANGE",
+        "rationale": "Asset within standard range (\u00b11.5%). No statistical circuit edge; capital protected in cash.",
+        "reference_price": 1380.8,
+        "stop_loss": 1338.67,
+        "target": 1394.45
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615_CHECK",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close to verify safe range holds...",
+        "detail": "15-minute verification scheduled for 6:15 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 1380.8,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 1380.8,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 1338.67,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on normal range. 100% capital preserved in cash."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-1800-ZINC",
+      "date": "30 Oct 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ZINC",
+      "name": "Zinc",
+      "lot_size": 2500,
+      "event_context": "Safe Normal Range (No Circuit Edge)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / SAFE RANGE",
+        "rationale": "Asset within standard range (\u00b11.5%). No statistical circuit edge; capital protected in cash.",
+        "reference_price": 410.5,
+        "stop_loss": 393.07,
+        "target": 409.45
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615_CHECK",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close to verify safe range holds...",
+        "detail": "15-minute verification scheduled for 6:15 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 410.5,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 410.5,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 393.07,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on normal range. 100% capital preserved in cash."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-1800-ALUMINIUM",
+      "date": "30 Oct 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ALUMINIUM",
+      "name": "Aluminium",
+      "lot_size": 2500,
+      "event_context": "Safe Normal Range (No Circuit Edge)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / SAFE RANGE",
+        "rationale": "Asset within standard range (\u00b11.5%). No statistical circuit edge; capital protected in cash.",
+        "reference_price": 329.45,
+        "stop_loss": 316.27,
+        "target": 329.45
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615_CHECK",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close to verify safe range holds...",
+        "detail": "15-minute verification scheduled for 6:15 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 329.45,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 329.45,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 316.27,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on normal range. 100% capital preserved in cash."
+      }
+    },
+    {
       "id": "ADV-30Oct2026-1330-GOLD",
       "date": "30 Oct 2026",
       "session_name": "London Breakout (1:30 PM)",
@@ -3184,22 +3527,22 @@
       }
     }
   ],
-  "last_updated": "30 Oct 2026, 01:28 PM IST",
+  "last_updated": "30 Oct 2026, 06:01 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000,
   "summary": {
-    "total_signals": 63,
-    "executed_count": 19,
+    "total_signals": 70,
+    "executed_count": 20,
     "correct_count": 9,
     "wrong_count": 9,
-    "protected_count": 44,
+    "protected_count": 50,
     "win_rate_pct": 50.0,
     "total_pnl_inr": 22004.0,
-    "avg_trade_pnl_inr": 1158.11,
-    "active_trades_count": 0,
+    "avg_trade_pnl_inr": 1100.2,
+    "active_trades_count": 1,
     "starting_cash_inr": 1000000,
     "current_cash_inr": 1022004.0,
-    "used_margin_inr": 0,
+    "used_margin_inr": 0.0,
     "available_cash_inr": 1022004.0,
     "net_worth_inr": 1022004.0
   },
