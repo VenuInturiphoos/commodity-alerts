@@ -2595,7 +2595,9 @@ function renderNiftyDailyPickHeroCard(pick) {
     const pnl = Number(pick.pnl_inr || 0);
     const pnlPct = Number(pick.pnl_pct || 0);
     const pnlColor = pnl >= 0 ? '#4ade80' : '#fb7185';
-    const pnlSign = pnl >= 0 ? '+' : '';
+    const pnlSign = pnl > 0 ? '+' : (pnl < 0 ? '-' : '');
+    const pnlText = `${pnlSign}₹${Math.abs(pnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    const pnlPctText = `${pnlPct > 0 ? '+' : ''}${pnlPct.toFixed(2)}% Return`;
     const statusBg = pick.status === 'TARGET_HIT' ? 'rgba(74, 222, 128, 0.2)' : (pick.status === 'STOP_LOSS_HIT' ? 'rgba(251, 113, 133, 0.2)' : 'rgba(245, 158, 11, 0.2)');
     const statusBorder = pick.status === 'TARGET_HIT' ? 'rgba(74, 222, 128, 0.4)' : (pick.status === 'STOP_LOSS_HIT' ? 'rgba(251, 113, 133, 0.4)' : 'rgba(245, 158, 11, 0.4)');
     const statusColor = pick.status === 'TARGET_HIT' ? '#4ade80' : (pick.status === 'STOP_LOSS_HIT' ? '#fb7185' : '#fbbf24');
@@ -2659,8 +2661,8 @@ function renderNiftyDailyPickHeroCard(pick) {
                 </div>
                 <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
                     <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Live MTM Return</div>
-                    <div style="font-size: 1.15rem; font-weight: 800; color: ${pnlColor}; margin-top: 2px;">${pnlSign}₹${Math.abs(pnl).toFixed(2)}</div>
-                    <div style="font-size: 0.68rem; color: ${pnlColor}; font-weight: 600;">${pnlSign}${pnlPct.toFixed(2)}% Return</div>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: ${pnlColor}; margin-top: 2px;">${pnlText}</div>
+                    <div style="font-size: 0.68rem; color: ${pnlColor}; font-weight: 600;">${pnlPctText}</div>
                 </div>
                 ${pick.time_machine ? `
                 <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 8px; padding: 0.7rem 0.85rem;">
