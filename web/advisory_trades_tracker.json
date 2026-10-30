@@ -1,6 +1,349 @@
 {
   "trades": [
     {
+      "id": "ADV-30Oct2026-1330-GOLD",
+      "date": "30 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 10,
+      "event_context": "ORB Bar-Close & Wick Trap Guard",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / WICK TRAP GUARD",
+        "rationale": "ORB Timer Block: Low volume breakdown: Volume ratio (0.78x) is below 0.80x average OR volume threshold.",
+        "reference_price": 141248.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "WICK_TRAP_STAND_ASIDE",
+        "price_615": 141248.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Low volume breakdown: Volume ratio (0.78x) is below 0.80x average OR volume threshold."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Trap Avoided \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Low volume breakdown: Volume ratio (0.78x) is below 0.80x average OR volume threshold."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-1330-SILVER",
+      "date": "30 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 5,
+      "event_context": "ORB Bar-Close & Wick Trap Guard",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / WICK TRAP GUARD",
+        "rationale": "ORB Timer Block: Low volume breakdown: Volume ratio (0.46x) is below 0.80x average OR volume threshold.",
+        "reference_price": 184285.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "WICK_TRAP_STAND_ASIDE",
+        "price_615": 184285.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Low volume breakdown: Volume ratio (0.46x) is below 0.80x average OR volume threshold."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Trap Avoided \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Low volume breakdown: Volume ratio (0.46x) is below 0.80x average OR volume threshold."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-1330-CRUDEOIL",
+      "date": "30 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 50,
+      "event_context": "Range-Bound Asian Range [\u20b99,760.00 \u2013 \u20b99,894.00]",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b99,760.00 \u2013 \u20b99,894.00]. Standing aside awaiting range breakout.",
+        "reference_price": 9870.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 9870.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Inside Asian morning range. Awaiting breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside on range-bound asset. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-1330-NATURALGAS",
+      "date": "30 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 2500,
+      "event_context": "Counter-Trend Bull Trap Avoided (Daily Bearish: -0.67%)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / COUNTER-TREND TRAP",
+        "rationale": "Macro trend is Bearish (below CPR \u20b9278.00 | -0.67%). High Asian range breakout is a classic Bull Trap. Avoided.",
+        "reference_price": 279.9,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "BULL_TRAP_AVOIDED",
+        "price_615": 279.9,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Counter-trend BUY blocked by Macro CPR Filter."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Counter-trend BUY blocked by Daily CPR Trend Filter. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-1330-COPPER",
+      "date": "30 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPER",
+      "name": "Copper",
+      "lot_size": 1250,
+      "event_context": "ORB Bar-Close & Wick Trap Guard",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / WICK TRAP GUARD",
+        "rationale": "ORB Timer Block: Low volume breakdown: Volume ratio (0.49x) is below 0.80x average OR volume threshold.",
+        "reference_price": 1383.55,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "WICK_TRAP_STAND_ASIDE",
+        "price_615": 1383.55,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Low volume breakdown: Volume ratio (0.49x) is below 0.80x average OR volume threshold."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Trap Avoided \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Low volume breakdown: Volume ratio (0.49x) is below 0.80x average OR volume threshold."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-1330-ZINC",
+      "date": "30 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ZINC",
+      "name": "Zinc",
+      "lot_size": 2500,
+      "event_context": "Low Trend Strength (ADX: 16.5 < 18)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / WEAK TREND (ADX < 18)",
+        "rationale": "ADX is 16.5 (below 18 threshold). Market is range-bound without directional impulse; breakdown trade blocked to avoid chop.",
+        "reference_price": 407.75,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "WEAK_ADX_STAND_ASIDE",
+        "price_615": 407.75,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Low ADX 16.5 avoided fake breakdown."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Fakeout \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: ADX 16.5 indicates choppy, directionless market."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-1330-ALUMINIUM",
+      "date": "30 Oct 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ALUMINIUM",
+      "name": "Aluminium",
+      "lot_size": 2500,
+      "event_context": "ORB Bar-Close & Wick Trap Guard",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / WICK TRAP GUARD",
+        "rationale": "ORB Timer Block: Low volume breakdown: Volume ratio (0.41x) is below 0.80x average OR volume threshold.",
+        "reference_price": 328.65,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "WICK_TRAP_STAND_ASIDE",
+        "price_615": 328.65,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Low volume breakdown: Volume ratio (0.41x) is below 0.80x average OR volume threshold."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Trap Avoided \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Low volume breakdown: Volume ratio (0.41x) is below 0.80x average OR volume threshold."
+      }
+    },
+    {
       "id": "ADV-30Oct2026-0901-GOLD",
       "date": "30 Oct 2026",
       "session_name": "Morning Pulse (09:01 AM)",
@@ -2841,15 +3184,15 @@
       }
     }
   ],
-  "last_updated": "30 Oct 2026, 09:01 AM IST",
+  "last_updated": "30 Oct 2026, 01:28 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000,
   "summary": {
-    "total_signals": 56,
+    "total_signals": 63,
     "executed_count": 19,
     "correct_count": 9,
     "wrong_count": 9,
-    "protected_count": 37,
+    "protected_count": 44,
     "win_rate_pct": 50.0,
     "total_pnl_inr": 22004.0,
     "avg_trade_pnl_inr": 1158.11,
