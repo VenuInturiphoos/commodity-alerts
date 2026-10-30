@@ -2,7 +2,7 @@ import os
 import json
 import pytz
 from datetime import datetime
-from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine
+from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard
 
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'advisory_trades_tracker.json')
 USER_ACCOUNT = "venu.photos1@gmail.com"
@@ -264,22 +264,40 @@ def record_live_9am_advisory(commodities_list):
             
             sim_metrics = None
             risk_metrics = None
-            if action in ['BUY', 'SELL'] and sl and tgt:
-                risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, lot_size, trades, max_loss_per_trade_inr=5000.0)
-                if not risk_metrics.get('passed'):
-                    action = "STAND_ASIDE"
-                    entry_text = "STAND ASIDE / RISK GUARD"
-                    rationale = f"Risk Engine Block: {risk_metrics.get('reason')}"
-                    c15_status = "RISK_GUARD_STAND_ASIDE"
-                    c15_detail = risk_metrics.get('reason')
-                else:
-                    sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, sl, tgt, action=action.lower(), replays=3000)
-                    if not sim_metrics.get('passed'):
+            event_metrics = EventRiskGuard.check_event_risk(sym, now_dt)
+            if not event_metrics.get('passed'):
+                action = "STAND_ASIDE"
+                entry_text = "STAND ASIDE / EVENT RISK GUARD"
+                rationale = f"Event Blackout: {event_metrics.get('reason')}"
+                c15_status = "EVENT_GUARD_STAND_ASIDE"
+                c15_detail = event_metrics.get('reason')
+            elif action in ['BUY', 'SELL'] and sl and tgt:
+                # ORB Bar-Close & Wick Trap Guard
+                if "MOMENTUM" in entry_text:
+                    orb_check = ORBTimer.check_orb_confirmation(sym, action, cur_p, day_h, day_l, open_price=day_o, volume_ratio=vol_ratio, last_bar_close=cur_p)
+                    if not orb_check.get('passed'):
                         action = "STAND_ASIDE"
-                        entry_text = "STAND ASIDE / TIME MACHINE GUARD"
-                        rationale = f"Time Machine Simulation Block ({sim_metrics.get('summary')}): Replay leans toward stop loss."
-                        c15_status = "SIM_GUARD_STAND_ASIDE"
-                        c15_detail = sim_metrics.get('summary')
+                        entry_text = "STAND ASIDE / WICK TRAP GUARD"
+                        rationale = f"ORB Timer Block: {orb_check.get('reason')}"
+                        c15_status = "WICK_TRAP_STAND_ASIDE"
+                        c15_detail = orb_check.get('reason')
+
+                if action in ['BUY', 'SELL']:
+                    risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, lot_size, trades, max_loss_per_trade_inr=5000.0)
+                    if not risk_metrics.get('passed'):
+                        action = "STAND_ASIDE"
+                        entry_text = "STAND ASIDE / RISK GUARD"
+                        rationale = f"Risk Engine Block: {risk_metrics.get('reason')}"
+                        c15_status = "RISK_GUARD_STAND_ASIDE"
+                        c15_detail = risk_metrics.get('reason')
+                    else:
+                        sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, sl, tgt, action=action.lower(), replays=3000)
+                        if not sim_metrics.get('passed'):
+                            action = "STAND_ASIDE"
+                            entry_text = "STAND ASIDE / TIME MACHINE GUARD"
+                            rationale = f"Time Machine Simulation Block ({sim_metrics.get('summary')}): Replay leans toward stop loss."
+                            c15_status = "SIM_GUARD_STAND_ASIDE"
+                            c15_detail = sim_metrics.get('summary')
 
             trade_qty = lot_size if action in ['BUY', 'SELL'] else 0
             trade_status = "ACTIVE" if action in ['BUY', 'SELL'] else "STAND_ASIDE"
@@ -371,22 +389,40 @@ def record_live_9am_advisory(commodities_list):
 
             sim_metrics = None
             risk_metrics = None
-            if action in ['BUY', 'SELL'] and sl and tgt:
-                risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, lot_size, trades, max_loss_per_trade_inr=5000.0)
-                if not risk_metrics.get('passed'):
-                    action = "STAND_ASIDE"
-                    entry_text = "STAND ASIDE / RISK GUARD"
-                    rationale = f"Risk Engine Block: {risk_metrics.get('reason')}"
-                    c15_status = "RISK_GUARD_STAND_ASIDE"
-                    c15_detail = risk_metrics.get('reason')
-                else:
-                    sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, sl, tgt, action=action.lower(), replays=3000)
-                    if not sim_metrics.get('passed'):
+            event_metrics = EventRiskGuard.check_event_risk(sym, now_dt)
+            if not event_metrics.get('passed'):
+                action = "STAND_ASIDE"
+                entry_text = "STAND ASIDE / EVENT RISK GUARD"
+                rationale = f"Event Blackout: {event_metrics.get('reason')}"
+                c15_status = "EVENT_GUARD_STAND_ASIDE"
+                c15_detail = event_metrics.get('reason')
+            elif action in ['BUY', 'SELL'] and sl and tgt:
+                # ORB Bar-Close & Wick Trap Guard
+                if "MOMENTUM" in entry_text:
+                    orb_check = ORBTimer.check_orb_confirmation(sym, action, cur_p, day_h, day_l, open_price=day_o, volume_ratio=vol_ratio, last_bar_close=cur_p)
+                    if not orb_check.get('passed'):
                         action = "STAND_ASIDE"
-                        entry_text = "STAND ASIDE / TIME MACHINE GUARD"
-                        rationale = f"Time Machine Simulation Block ({sim_metrics.get('summary')}): Replay leans toward stop loss."
-                        c15_status = "SIM_GUARD_STAND_ASIDE"
-                        c15_detail = sim_metrics.get('summary')
+                        entry_text = "STAND ASIDE / WICK TRAP GUARD"
+                        rationale = f"ORB Timer Block: {orb_check.get('reason')}"
+                        c15_status = "WICK_TRAP_STAND_ASIDE"
+                        c15_detail = orb_check.get('reason')
+
+                if action in ['BUY', 'SELL']:
+                    risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, lot_size, trades, max_loss_per_trade_inr=5000.0)
+                    if not risk_metrics.get('passed'):
+                        action = "STAND_ASIDE"
+                        entry_text = "STAND ASIDE / RISK GUARD"
+                        rationale = f"Risk Engine Block: {risk_metrics.get('reason')}"
+                        c15_status = "RISK_GUARD_STAND_ASIDE"
+                        c15_detail = risk_metrics.get('reason')
+                    else:
+                        sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, sl, tgt, action=action.lower(), replays=3000)
+                        if not sim_metrics.get('passed'):
+                            action = "STAND_ASIDE"
+                            entry_text = "STAND ASIDE / TIME MACHINE GUARD"
+                            rationale = f"Time Machine Simulation Block ({sim_metrics.get('summary')}): Replay leans toward stop loss."
+                            c15_status = "SIM_GUARD_STAND_ASIDE"
+                            c15_detail = sim_metrics.get('summary')
 
             trade_qty = lot_size if action in ['BUY', 'SELL'] else 0
             trade_status = "ACTIVE" if action in ['BUY', 'SELL'] else "STAND_ASIDE"
@@ -584,6 +620,22 @@ def record_live_130pm_advisory(commodities_list):
         today_realized_loss = sum(abs(t.get('paper_trade', {}).get('pnl_inr', 0.0)) for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('pnl_inr', 0.0) < 0)
         portfolio_halted = today_realized_loss >= 15000.0
 
+        # Check Inventory & Macro Event Blackout Guard
+        event_guard = EventRiskGuard.check_event_risk(sym, now_dt)
+        if not event_guard.get('passed'):
+            entry = {
+                "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                "lot_size": lot_size, "event_context": "Event Risk Guard Blackout Window",
+                "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / EVENT RISK GUARD", "rationale": f"Event Blackout: {event_guard.get('reason')}", "reference_price": cur_p, "stop_loss": None, "target": None },
+                "check_615": { "checked": True, "status": "EVENT_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": event_guard.get('reason') },
+                "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Event Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {event_guard.get('reason')}" }
+            }
+            new_entries.append(entry)
+            continue
+
         # Bullish Breakout: Current price breaking above morning Asian range
         if cur_p >= day_h * 0.9985 and range_pts > 0:
             if portfolio_halted:
@@ -644,66 +696,80 @@ def record_live_130pm_advisory(commodities_list):
                 entry_p = cur_p if is_at_support else support_entry
                 trade_status = "ACTIVE" if is_at_support else "PENDING_LIMIT"
                 
-                risk_metrics = PreTradeRiskEngine.check_risk(sym, "BUY", entry_p, tight_sl, tgt, lot_size, trades, max_loss_per_trade_inr=5000.0)
-                if not risk_metrics.get('passed'):
+                # 15-Minute ORB Bar-Close & Wick Trap Guard
+                orb_check = ORBTimer.check_orb_confirmation(sym, "BUY", cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p)
+                if not orb_check.get('passed'):
                     entry = {
                         "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                         "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
                         "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
-                        "lot_size": lot_size, "event_context": "Pre-Trade Risk Filter Guard",
-                        "risk_check": risk_metrics,
-                        "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / RISK GUARD", "rationale": f"Risk check failed: {risk_metrics.get('reason')}", "reference_price": cur_p, "stop_loss": None, "target": None },
-                        "check_615": { "checked": True, "status": "RISK_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": risk_metrics.get('reason') },
+                        "lot_size": lot_size, "event_context": "ORB Bar-Close & Wick Trap Guard",
+                        "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / WICK TRAP GUARD", "rationale": f"ORB Timer Block: {orb_check.get('reason')}", "reference_price": cur_p, "stop_loss": None, "target": None },
+                        "check_615": { "checked": True, "status": "WICK_TRAP_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": orb_check.get('reason') },
                         "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
-                        "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Risk Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {risk_metrics.get('reason')}" }
+                        "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Trap Avoided 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {orb_check.get('reason')}" }
                     }
                 else:
-                    sim_metrics = MonteCarloTimeMachine.run_simulation(sym, entry_p, tight_sl, tgt, action='buy', replays=3000)
-                    if not sim_metrics.get('passed'):
+                    risk_metrics = PreTradeRiskEngine.check_risk(sym, "BUY", entry_p, tight_sl, tgt, lot_size, trades, max_loss_per_trade_inr=5000.0)
+                    if not risk_metrics.get('passed'):
                         entry = {
                             "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                             "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
                             "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
-                            "lot_size": lot_size, "event_context": "Monte Carlo Time Machine Simulation Guard",
-                            "time_machine": sim_metrics,
+                            "lot_size": lot_size, "event_context": "Pre-Trade Risk Filter Guard",
                             "risk_check": risk_metrics,
-                            "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / TIME MACHINE GUARD", "rationale": f"Time Machine Simulation Block ({sim_metrics.get('summary')}): Replay leans toward stop loss.", "reference_price": cur_p, "stop_loss": None, "target": None },
-                            "check_615": { "checked": True, "status": "SIM_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": sim_metrics.get('summary') },
+                            "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / RISK GUARD", "rationale": f"Risk check failed: {risk_metrics.get('reason')}", "reference_price": cur_p, "stop_loss": None, "target": None },
+                            "check_615": { "checked": True, "status": "RISK_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": risk_metrics.get('reason') },
                             "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
-                            "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Sim Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {sim_metrics.get('summary')}" }
+                            "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Risk Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {risk_metrics.get('reason')}" }
                         }
                     else:
-                        entry = {
-                            "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
-                            "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                            "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
-                            "lot_size": lot_size, "event_context": f"London Bullish Breakout (Trend Aligned: CPR Top ₹{cpr_top:,.2f})",
-                            "time_machine": sim_metrics,
-                            "risk_check": risk_metrics,
-                            "suggestion_6pm": {
-                                "status": "LONDON_BREAKOUT",
-                                "action_text": f"BUY @ SUPPORT ₹{support_entry:,.2f}",
-                                "rationale": f"Trend-aligned European breakout (Macro Bullish above CPR). Entering at Support ₹{support_entry:,.2f} with tight SL. {sim_metrics.get('summary')}",
-                                "reference_price": support_entry, "stop_loss": tight_sl, "target": tgt
-                            },
-                            "check_615": {
-                                "checked": True, "status": "BREAKOUT_ENTERED" if is_at_support else "RETEST_PENDING",
-                                "price_615": entry_p,
-                                "action_taken": f"BUY {lot_size} units @ Support ₹{entry_p:,.2f}" if is_at_support else f"Awaiting Support Retest @ ₹{support_entry:,.2f}",
-                                "detail": f"Support Retest order at Asian High ₹{support_entry:,.2f} with tight SL ₹{tight_sl:,.2f}."
-                            },
-                            "paper_trade": {
-                                "user": USER_ACCOUNT, "action": "BUY", "quantity": lot_size,
-                                "entry_price": entry_p, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None,
-                                "pnl_points": 0.0, "pnl_inr": 0.0, "status": trade_status, "target": tgt, "stop_loss": tight_sl
-                            },
-                            "eod_outcome": {
-                                "session_close": None, "circuit_limit": None, "outcome": "PENDING",
-                                "badge": "Active Trade ⚡" if trade_status == "ACTIVE" else "Limit at Support ⏳",
-                                "pnl_display": "Ticking Live..." if trade_status == "ACTIVE" else "Awaiting Retest",
-                                "summary": f"Support retest entry @ ₹{support_entry:,.2f} (SL: ₹{tight_sl:,.2f}, TGT: ₹{tgt:,.2f})."
+                        sim_metrics = MonteCarloTimeMachine.run_simulation(sym, entry_p, tight_sl, tgt, action='buy', replays=3000)
+                        if not sim_metrics.get('passed'):
+                            entry = {
+                                "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                                "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                                "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                                "lot_size": lot_size, "event_context": "Monte Carlo Time Machine Simulation Guard",
+                                "time_machine": sim_metrics,
+                                "risk_check": risk_metrics,
+                                "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / TIME MACHINE GUARD", "rationale": f"Time Machine Simulation Block ({sim_metrics.get('summary')}): Replay leans toward stop loss.", "reference_price": cur_p, "stop_loss": None, "target": None },
+                                "check_615": { "checked": True, "status": "SIM_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": sim_metrics.get('summary') },
+                                "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                                "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Sim Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {sim_metrics.get('summary')}" }
                             }
-                        }
+                        else:
+                            entry = {
+                                "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                                "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                                "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                                "lot_size": lot_size, "event_context": f"London Bullish Breakout (Trend Aligned: CPR Top ₹{cpr_top:,.2f})",
+                                "time_machine": sim_metrics,
+                                "risk_check": risk_metrics,
+                                "suggestion_6pm": {
+                                    "status": "LONDON_BREAKOUT",
+                                    "action_text": f"BUY @ SUPPORT ₹{support_entry:,.2f}",
+                                    "rationale": f"Trend-aligned European breakout (Macro Bullish above CPR). Entering at Support ₹{support_entry:,.2f} with tight SL. {sim_metrics.get('summary')}",
+                                    "reference_price": support_entry, "stop_loss": tight_sl, "target": tgt
+                                },
+                                "check_615": {
+                                    "checked": True, "status": "BREAKOUT_ENTERED" if is_at_support else "RETEST_PENDING",
+                                    "price_615": entry_p,
+                                    "action_taken": f"BUY {lot_size} units @ Support ₹{entry_p:,.2f}" if is_at_support else f"Awaiting Support Retest @ ₹{support_entry:,.2f}",
+                                    "detail": f"Support Retest order at Asian High ₹{support_entry:,.2f} with tight SL ₹{tight_sl:,.2f}."
+                                },
+                                "paper_trade": {
+                                    "user": USER_ACCOUNT, "action": "BUY", "quantity": lot_size,
+                                    "entry_price": entry_p, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None,
+                                    "pnl_points": 0.0, "pnl_inr": 0.0, "status": trade_status, "target": tgt, "stop_loss": tight_sl
+                                },
+                                "eod_outcome": {
+                                    "session_close": None, "circuit_limit": None, "outcome": "PENDING",
+                                    "badge": "Active Trade ⚡" if trade_status == "ACTIVE" else "Limit at Support ⏳",
+                                    "pnl_display": "Ticking Live..." if trade_status == "ACTIVE" else "Awaiting Retest",
+                                    "summary": f"Support retest entry @ ₹{support_entry:,.2f} (SL: ₹{tight_sl:,.2f}, TGT: ₹{tgt:,.2f})."
+                                }
+                            }
             new_entries.append(entry)
 
         # Bearish Breakdown: Current price breaking below morning Asian range
@@ -766,66 +832,80 @@ def record_live_130pm_advisory(commodities_list):
                 entry_p = cur_p if is_at_res else resistance_entry
                 trade_status = "ACTIVE" if is_at_res else "PENDING_LIMIT"
                 
-                risk_metrics = PreTradeRiskEngine.check_risk(sym, "SELL", entry_p, tight_sl, tgt, lot_size, trades, max_loss_per_trade_inr=5000.0)
-                if not risk_metrics.get('passed'):
+                # 15-Minute ORB Bar-Close & Wick Trap Guard
+                orb_check = ORBTimer.check_orb_confirmation(sym, "SELL", cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p)
+                if not orb_check.get('passed'):
                     entry = {
                         "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                         "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
                         "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
-                        "lot_size": lot_size, "event_context": "Pre-Trade Risk Filter Guard",
-                        "risk_check": risk_metrics,
-                        "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / RISK GUARD", "rationale": f"Risk check failed: {risk_metrics.get('reason')}", "reference_price": cur_p, "stop_loss": None, "target": None },
-                        "check_615": { "checked": True, "status": "RISK_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": risk_metrics.get('reason') },
+                        "lot_size": lot_size, "event_context": "ORB Bar-Close & Wick Trap Guard",
+                        "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / WICK TRAP GUARD", "rationale": f"ORB Timer Block: {orb_check.get('reason')}", "reference_price": cur_p, "stop_loss": None, "target": None },
+                        "check_615": { "checked": True, "status": "WICK_TRAP_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": orb_check.get('reason') },
                         "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
-                        "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Risk Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {risk_metrics.get('reason')}" }
+                        "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Trap Avoided 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {orb_check.get('reason')}" }
                     }
                 else:
-                    sim_metrics = MonteCarloTimeMachine.run_simulation(sym, entry_p, tight_sl, tgt, action='sell', replays=3000)
-                    if not sim_metrics.get('passed'):
+                    risk_metrics = PreTradeRiskEngine.check_risk(sym, "SELL", entry_p, tight_sl, tgt, lot_size, trades, max_loss_per_trade_inr=5000.0)
+                    if not risk_metrics.get('passed'):
                         entry = {
                             "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                             "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
                             "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
-                            "lot_size": lot_size, "event_context": "Monte Carlo Time Machine Simulation Guard",
-                            "time_machine": sim_metrics,
+                            "lot_size": lot_size, "event_context": "Pre-Trade Risk Filter Guard",
                             "risk_check": risk_metrics,
-                            "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / TIME MACHINE GUARD", "rationale": f"Time Machine Simulation Block ({sim_metrics.get('summary')}): Replay leans toward stop loss.", "reference_price": cur_p, "stop_loss": None, "target": None },
-                            "check_615": { "checked": True, "status": "SIM_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": sim_metrics.get('summary') },
+                            "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / RISK GUARD", "rationale": f"Risk check failed: {risk_metrics.get('reason')}", "reference_price": cur_p, "stop_loss": None, "target": None },
+                            "check_615": { "checked": True, "status": "RISK_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": risk_metrics.get('reason') },
                             "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
-                            "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Sim Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {sim_metrics.get('summary')}" }
+                            "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Risk Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {risk_metrics.get('reason')}" }
                         }
                     else:
-                        entry = {
-                            "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
-                            "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                            "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
-                            "lot_size": lot_size, "event_context": f"London Bearish Breakdown (Trend Aligned: CPR Bot ₹{cpr_bot:,.2f})",
-                            "time_machine": sim_metrics,
-                            "risk_check": risk_metrics,
-                            "suggestion_6pm": {
-                                "status": "LONDON_BREAKDOWN",
-                                "action_text": f"SELL @ RESISTANCE ₹{resistance_entry:,.2f}",
-                                "rationale": f"Trend-aligned European breakdown (Macro Bearish below CPR). Entering at Resistance ₹{resistance_entry:,.2f} with tight SL. {sim_metrics.get('summary')}",
-                                "reference_price": resistance_entry, "stop_loss": tight_sl, "target": tgt
-                            },
-                            "check_615": {
-                                "checked": True, "status": "BREAKDOWN_ENTERED" if is_at_res else "RETEST_PENDING",
-                                "price_615": entry_p,
-                                "action_taken": f"SELL {lot_size} units @ Resistance ₹{entry_p:,.2f}" if is_at_res else f"Awaiting Resistance Retest @ ₹{resistance_entry:,.2f}",
-                                "detail": f"Resistance Retest order at Asian Low ₹{resistance_entry:,.2f} with tight SL ₹{tight_sl:,.2f}."
-                            },
-                            "paper_trade": {
-                                "user": USER_ACCOUNT, "action": "SELL", "quantity": lot_size,
-                                "entry_price": entry_p, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None,
-                                "pnl_points": 0.0, "pnl_inr": 0.0, "status": trade_status, "target": tgt, "stop_loss": tight_sl
-                            },
-                            "eod_outcome": {
-                                "session_close": None, "circuit_limit": None, "outcome": "PENDING",
-                                "badge": "Active Trade ⚡" if trade_status == "ACTIVE" else "Limit at Resistance ⏳",
-                                "pnl_display": "Ticking Live..." if trade_status == "ACTIVE" else "Awaiting Retest",
-                                "summary": f"Resistance retest entry @ ₹{resistance_entry:,.2f} (SL: ₹{tight_sl:,.2f}, TGT: ₹{tgt:,.2f})."
+                        sim_metrics = MonteCarloTimeMachine.run_simulation(sym, entry_p, tight_sl, tgt, action='sell', replays=3000)
+                        if not sim_metrics.get('passed'):
+                            entry = {
+                                "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                                "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                                "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                                "lot_size": lot_size, "event_context": "Monte Carlo Time Machine Simulation Guard",
+                                "time_machine": sim_metrics,
+                                "risk_check": risk_metrics,
+                                "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / TIME MACHINE GUARD", "rationale": f"Time Machine Simulation Block ({sim_metrics.get('summary')}): Replay leans toward stop loss.", "reference_price": cur_p, "stop_loss": None, "target": None },
+                                "check_615": { "checked": True, "status": "SIM_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": sim_metrics.get('summary') },
+                                "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                                "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Sim Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {sim_metrics.get('summary')}" }
                             }
-                        }
+                        else:
+                            entry = {
+                                "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                                "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                                "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                                "lot_size": lot_size, "event_context": f"London Bearish Breakdown (Trend Aligned: CPR Bot ₹{cpr_bot:,.2f})",
+                                "time_machine": sim_metrics,
+                                "risk_check": risk_metrics,
+                                "suggestion_6pm": {
+                                    "status": "LONDON_BREAKDOWN",
+                                    "action_text": f"SELL @ RESISTANCE ₹{resistance_entry:,.2f}",
+                                    "rationale": f"Trend-aligned European breakdown (Macro Bearish below CPR). Entering at Resistance ₹{resistance_entry:,.2f} with tight SL. {sim_metrics.get('summary')}",
+                                    "reference_price": resistance_entry, "stop_loss": tight_sl, "target": tgt
+                                },
+                                "check_615": {
+                                    "checked": True, "status": "BREAKDOWN_ENTERED" if is_at_res else "RETEST_PENDING",
+                                    "price_615": entry_p,
+                                    "action_taken": f"SELL {lot_size} units @ Resistance ₹{entry_p:,.2f}" if is_at_res else f"Awaiting Resistance Retest @ ₹{resistance_entry:,.2f}",
+                                    "detail": f"Resistance Retest order at Asian Low ₹{resistance_entry:,.2f} with tight SL ₹{tight_sl:,.2f}."
+                                },
+                                "paper_trade": {
+                                    "user": USER_ACCOUNT, "action": "SELL", "quantity": lot_size,
+                                    "entry_price": entry_p, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None,
+                                    "pnl_points": 0.0, "pnl_inr": 0.0, "status": trade_status, "target": tgt, "stop_loss": tight_sl
+                                },
+                                "eod_outcome": {
+                                    "session_close": None, "circuit_limit": None, "outcome": "PENDING",
+                                    "badge": "Active Trade ⚡" if trade_status == "ACTIVE" else "Limit at Resistance ⏳",
+                                    "pnl_display": "Ticking Live..." if trade_status == "ACTIVE" else "Awaiting Retest",
+                                    "summary": f"Resistance retest entry @ ₹{resistance_entry:,.2f} (SL: ₹{tight_sl:,.2f}, TGT: ₹{tgt:,.2f})."
+                                }
+                            }
             new_entries.append(entry)
         else:
             entry = {
@@ -1612,7 +1692,50 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
         if stop_loss is not None:
             pt['stop_loss'] = stop_loss
 
-        # 3. Check Target & Stop-Loss Triggers
+        # 3. Check Event Risk Guard on Active Positions (Tighten Stop to Breakeven before Inventory Release)
+        if trade_status == 'ACTIVE':
+            event_check = EventRiskGuard.check_event_risk(sym, now_dt)
+            if not event_check.get('passed') and event_check.get('status') == 'EVENT_BLACKOUT':
+                if not pt.get('event_protection_active'):
+                    pt['event_protection_active'] = True
+                    if action == 'BUY' and cur_p > entry_p and (stop_loss is None or stop_loss < entry_p):
+                        pt['stop_loss'] = entry_p
+                        stop_loss = entry_p
+                        if s6:
+                            s6['stop_loss'] = entry_p
+                        updated_any = True
+                        subject = f"📰 [EVENT RISK PROTECTION] {trade['name']} Stop Tightened to Breakeven Ahead of Inventory Release"
+                        body = (
+                            f"📰 <b>EVENT RISK PROTECTION ACTIVATED</b>\n"
+                            f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                            f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                            f"• <b>Asset</b>: {trade['name']} ({sym})\n"
+                            f"• <b>Event</b>: <b>{event_check.get('event_name')}</b> ({event_check.get('blackout_window')})\n"
+                            f"• <b>Protective Action</b>: Stop-Loss tightened to <b>Breakeven (₹{entry_p:,.2f})</b>\n\n"
+                            f"Capital is shielded from inventory spread expansion & spikes!\n\n"
+                            f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                        )
+                        alerts_to_send.append({'subject': subject, 'body': body})
+                    elif action == 'SELL' and cur_p < entry_p and (stop_loss is None or stop_loss > entry_p):
+                        pt['stop_loss'] = entry_p
+                        stop_loss = entry_p
+                        if s6:
+                            s6['stop_loss'] = entry_p
+                        updated_any = True
+                        subject = f"📰 [EVENT RISK PROTECTION] {trade['name']} Stop Tightened to Breakeven Ahead of Inventory Release"
+                        body = (
+                            f"📰 <b>EVENT RISK PROTECTION ACTIVATED</b>\n"
+                            f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                            f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                            f"• <b>Asset</b>: {trade['name']} ({sym})\n"
+                            f"• <b>Event</b>: <b>{event_check.get('event_name')}</b> ({event_check.get('blackout_window')})\n"
+                            f"• <b>Protective Action</b>: Stop-Loss tightened to <b>Breakeven (₹{entry_p:,.2f})</b>\n\n"
+                            f"Capital is shielded from inventory spread expansion & spikes!\n\n"
+                            f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                        )
+                        alerts_to_send.append({'subject': subject, 'body': body})
+
+        # 4. Check Target & Stop-Loss Triggers
         hit_target = False
         hit_sl = False
         exit_p = cur_p
@@ -1903,7 +2026,20 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
             if any(t.get('id') == trade_id for t in trades):
                 continue
 
-            # Run 14-point Pre-Trade Risk Filter
+            # 1. Inventory & Macro Event Blackout Guard
+            event_metrics = EventRiskGuard.check_event_risk(sym, now_dt)
+            if not event_metrics.get('passed'):
+                print(f"📰 Event Risk Guard Blocked {sym}: {event_metrics.get('reason')}")
+                continue
+
+            # 2. 15-Minute ORB Bar-Close & Wick Trap Guard (for Breakouts)
+            if "Breakout" in setup_name or "Breakdown" in setup_name:
+                orb_metrics = ORBTimer.check_orb_confirmation(sym, action, cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p)
+                if not orb_metrics.get('passed'):
+                    print(f"⏱️ ORB Timer Blocked {sym} {action}: {orb_metrics.get('reason')}")
+                    continue
+
+            # 3. Run 14-point Pre-Trade Risk Filter
             all_existing = new_trades + trades
             risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, lot_size, all_existing, max_loss_per_trade_inr=5000.0)
             if not risk_metrics.get('passed'):

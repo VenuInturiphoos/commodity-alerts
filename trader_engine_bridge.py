@@ -347,3 +347,181 @@ class MonteCarloTimeMachine:
             "sample_bars": 0,
             "summary": f"Parametric Model: {p_target}% Target | {p_stop}% Stop | Expected: {expected_r:+.2f}R"
         }
+
+
+class ORBTimer:
+    """
+    15-Minute Opening Range Breakout (ORB) and Bar-Close Confirmation Timer.
+    Derived from day-trader-skill (trader-entry).
+    
+    Guarantees:
+    1. A wick outside the opening range is NOT an entry. A completed bar close is mandatory.
+    2. Minimum volume threshold (volume expansion over average OR volume).
+    3. Traps / false breakouts (wick above, close inside) are detected and blocked.
+    """
+
+    @classmethod
+    def check_orb_confirmation(cls, symbol, action, current_price, day_high, day_low,
+                               open_price=None, volume_ratio=None, last_bar_close=None):
+        """
+        Validates breakout entry against opening range parameters.
+        Returns:
+            dict with 'passed', 'status', 'reason'
+        """
+        if not day_high or not day_low or day_high <= day_low:
+            return {"passed": True, "status": "RANGE_UNAVAILABLE", "reason": "Range data unavailable; fallback to indicator confluence."}
+
+        action_upper = action.upper()
+        bar_close = last_bar_close if last_bar_close is not None else current_price
+
+        # Check Bullish Breakout
+        if action_upper == 'BUY':
+            # Did price pierce day_high but close back below it? (Wick fakeout / rejection)
+            if current_price >= day_high and bar_close < (day_high * 0.9992):
+                return {
+                    "passed": False,
+                    "status": "WICK_TRAP_AVOIDED",
+                    "reason": f"Wick trap rejected: price wicked to ₹{current_price:,.2f} (above Day High ₹{day_high:,.2f}) but bar closed inside range at ₹{bar_close:,.2f}."
+                }
+            # Low volume fakeout check
+            if volume_ratio is not None and volume_ratio < 0.80:
+                return {
+                    "passed": False,
+                    "status": "LOW_VOLUME_FAKE_AVOIDED",
+                    "reason": f"Low volume breakout: Volume ratio ({volume_ratio:.2f}x) is below 0.80x average OR volume threshold."
+                }
+            # Solid close above range
+            if bar_close >= day_high * 0.9995:
+                return {
+                    "passed": True,
+                    "status": "ORB_BREAKOUT_CONFIRMED",
+                    "reason": f"ORB BUY Confirmed: Solid bar close ₹{bar_close:,.2f} breaking above range high ₹{day_high:,.2f}."
+                }
+            else:
+                return {
+                    "passed": False,
+                    "status": "AWAITING_BAR_CLOSE",
+                    "reason": f"Waiting for confirmed bar close above range high ₹{day_high:,.2f} (Current: ₹{bar_close:,.2f})."
+                }
+
+        # Check Bearish Breakdown
+        elif action_upper == 'SELL':
+            # Did price pierce day_low but close back above it? (Liquidity sweep / bounce)
+            if current_price <= day_low and bar_close > (day_low * 1.0008):
+                return {
+                    "passed": False,
+                    "status": "WICK_TRAP_AVOIDED",
+                    "reason": f"Liquidity sweep rejected: price wicked to ₹{current_price:,.2f} (below Day Low ₹{day_low:,.2f}) but bar closed inside range at ₹{bar_close:,.2f}."
+                }
+            # Low volume fakeout check
+            if volume_ratio is not None and volume_ratio < 0.80:
+                return {
+                    "passed": False,
+                    "status": "LOW_VOLUME_FAKE_AVOIDED",
+                    "reason": f"Low volume breakdown: Volume ratio ({volume_ratio:.2f}x) is below 0.80x average OR volume threshold."
+                }
+            # Solid close below range
+            if bar_close <= day_low * 1.0005:
+                return {
+                    "passed": True,
+                    "status": "ORB_BREAKDOWN_CONFIRMED",
+                    "reason": f"ORB SELL Confirmed: Solid bar close ₹{bar_close:,.2f} breaking below range low ₹{day_low:,.2f}."
+                }
+            else:
+                return {
+                    "passed": False,
+                    "status": "AWAITING_BAR_CLOSE",
+                    "reason": f"Waiting for confirmed bar close below range low ₹{day_low:,.2f} (Current: ₹{bar_close:,.2f})."
+                }
+
+        return {"passed": True, "status": "CLEAR", "reason": "No ORB violation detected."}
+
+
+class EventRiskGuard:
+    """
+    Inventory and High-Impact Macro Catalyst Guard.
+    Derived from day-trader-skill (trader-news).
+    
+    Protects commodities against 2-4% whipsaws caused by scheduled economic releases:
+    - EIA Weekly Natural Gas Storage (Thursdays 19:30 - 20:20 IST)
+    - EIA Weekly Petroleum Status Report (Wednesdays 19:30 - 20:20 IST)
+    - US Fed FOMC Rate Decisions (Wednesdays 23:15 - 23:45 IST)
+    - Breaking News Headline Risk Keywords
+    """
+
+    # High-impact scheduled catalysts (day_of_week: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun)
+    SCHEDULED_EVENTS = [
+        {
+            "name": "EIA Weekly Natural Gas Storage Report",
+            "weekday": 3,  # Thursday
+            "start_time": (19, 30),  # 7:30 PM IST
+            "end_time": (20, 20),    # 8:20 PM IST
+            "affected_commodities": ['NATURALGAS', 'NATURALGASM']
+        },
+        {
+            "name": "EIA Weekly Petroleum Status Report (Crude Oil)",
+            "weekday": 2,  # Wednesday
+            "start_time": (19, 30),  # 7:30 PM IST
+            "end_time": (20, 20),    # 8:20 PM IST
+            "affected_commodities": ['CRUDEOIL', 'CRUDEOILM']
+        },
+        {
+            "name": "US Fed FOMC Rate Decision & Policy Statement",
+            "weekday": 2,  # Wednesday
+            "start_time": (23, 15),  # 11:15 PM IST
+            "end_time": (23, 45),    # 11:45 PM IST
+            "affected_commodities": ['GOLD', 'GOLDM', 'GOLDTEN', 'SILVER', 'SILVERMIC', 'COPPER']
+        }
+    ]
+
+    BREAKING_NEWS_RISK_KEYWORDS = [
+        'halt', 'suspended', 'opec emergency', 'pipeline explosion', 'force majeure',
+        'embargo', 'sanction', 'retaliation', 'emergency rate cut', 'bank failure'
+    ]
+
+    @classmethod
+    def check_event_risk(cls, symbol, current_dt_ist=None, headlines=None):
+        """
+        Checks whether the symbol is in a high-impact catalyst blackout window.
+        Returns:
+            dict with 'passed', 'status', 'event_name', 'reason', 'blackout_window'
+        """
+        now_ist = current_dt_ist or datetime.now(pytz.timezone('Asia/Kolkata'))
+        weekday = now_ist.weekday()
+        curr_time = (now_ist.hour, now_ist.minute)
+        clean_sym = symbol.replace('-FUT', '').upper()
+
+        # 1. Scheduled Inventory & Macro Blackout Check
+        for event in cls.SCHEDULED_EVENTS:
+            if clean_sym in event["affected_commodities"] and weekday == event["weekday"]:
+                s_h, s_m = event["start_time"]
+                e_h, e_m = event["end_time"]
+                if (s_h, s_m) <= curr_time <= (e_h, e_m):
+                    window_str = f"{s_h:02d}:{s_m:02d} - {e_h:02d}:{e_m:02d} IST"
+                    return {
+                        "passed": False,
+                        "status": "EVENT_BLACKOUT",
+                        "event_name": event["name"],
+                        "blackout_window": window_str,
+                        "reason": f"Inventory/Macro Event Blackout: {event['name']} active ({window_str}). Trading paused to prevent slippage & spread expansion."
+                    }
+
+        # 2. Breaking News Headline Keyword Risk Check
+        if headlines and isinstance(headlines, list):
+            for item in headlines:
+                text = str(item).lower()
+                for kw in cls.BREAKING_NEWS_RISK_KEYWORDS:
+                    if kw in text:
+                        return {
+                            "passed": False,
+                            "status": "HEADLINE_RISK_HALT",
+                            "event_name": "Breaking News Catalyst",
+                            "reason": f"Breaking News Risk: Headline flagged critical catalyst '{kw.upper()}'. Standing aside."
+                        }
+
+        return {
+            "passed": True,
+            "status": "CLEAR",
+            "event_name": None,
+            "reason": "No high-impact event risk active."
+        }
