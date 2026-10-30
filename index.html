@@ -2070,7 +2070,18 @@ function renderCircuitsTable() {
         const changeSign = isUp ? '+' : '';
         const changeColor = isUp ? '#4ade80' : '#fb7185';
         
-        const chartUrl = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(item.ticker || 'MCX:' + item.symbol + '1!')}`;
+        const mcxTvMap = {
+            'GOLD': 'MCX:GOLD1!',
+            'SILVER': 'MCX:SILVER1!',
+            'CRUDEOIL': 'MCX:CRUDEOIL1!',
+            'NATURALGAS': 'MCX:NATURALGAS1!',
+            'COPPER': 'MCX:COPPER1!',
+            'ZINC': 'MCX:ZINC1!',
+            'ALUMINIUM': 'MCX:ALUMINIUM1!'
+        };
+        const cleanSym = (item.symbol || '').replace('-FUT', '').replace('.NS', '').trim().toUpperCase();
+        const tvTicker = item.tv_chart_symbol || mcxTvMap[cleanSym] || (item.ticker && item.ticker.includes('1!') ? item.ticker : `MCX:${cleanSym}1!`);
+        const chartUrl = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tvTicker)}`;
         
         let statusBadgeClass = 'circuit-badge-normal';
         if (item.status.includes('LOCKED') || item.status.includes('HIT')) statusBadgeClass = 'circuit-badge-lock';
