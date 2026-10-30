@@ -400,13 +400,23 @@ def update_live_stock_investments():
     for inv in active:
         sym = inv.get('symbol')
         name = inv.get('name')
-        latest_price = price_map.get(sym) or price_map.get(name)
+        # Check specific ticker name first to avoid cross-demerger alias collisions
+        latest_price = price_map.get(name) or price_map.get(sym)
 
         if not latest_price or latest_price <= 0:
             continue
 
         latest_price = float(latest_price)
         entry_p = float(inv.get('entry_price', latest_price))
+
+        # Sanity check: prevent cross-ticker collision if price moves >20% instantaneously
+        if entry_p > 0 and abs(latest_price - entry_p) / entry_p > 0.20:
+            if name and price_map.get(name) and price_map.get(name) != latest_price:
+                latest_price = float(price_map.get(name))
+            elif name != sym and price_map.get(name) is None:
+                # Price is from an alias collision, skip corrupting trade
+                print(f"⚠️ Warning: Large price gap detected for {name} ({sym}) - entry: ₹{entry_p}, fetched: ₹{latest_price}. Skipping tick to prevent alias contamination.")
+                continue
         shares = int(inv.get('shares', 1))
         t1 = float(inv.get('target_1', entry_p * 1.10))
         t2 = float(inv.get('target_2', entry_p * 1.18))

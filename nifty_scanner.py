@@ -25,7 +25,7 @@ ALIAS_MAP = {
 REVERSE_ALIAS = {
     'BAJAJ_AUTO': 'BAJAJ-AUTO.NS',
     'TMCV': 'TATAMOTORS.NS',
-    'TMPV': 'TATAMOTORS.NS',
+    'TMPV': 'TMPV.NS',
     'LTI': 'LTIM.NS'
 }
 
