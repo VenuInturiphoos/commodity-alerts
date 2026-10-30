@@ -34,21 +34,24 @@
         "quantity": 10,
         "entry_price": 138600.0,
         "entry_time": "08:00 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 138458.0,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": -142.0,
+        "pnl_inr": -1420.0,
+        "status": "CLOSED",
         "target": 142596.0,
-        "stop_loss": 137764.85
+        "stop_loss": 137764.85,
+        "exit_trigger": "EOD_SQUAREOFF"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 138458.0,
         "circuit_limit": 138318.12,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+        "outcome": "WRONG",
+        "badge": "Wrong \u274c (11:30 PM)",
+        "pnl_display": "\u20b9-1,420.00",
+        "summary": "11:30 PM session close exit. Entry: \u20b9138,600.00 -> Exit: \u20b9138,458.00 (-142.00 pts | \u20b9-1,420.00).",
+        "exit_time": "11:30 PM IST",
+        "exit_trigger": "EOD_SQUAREOFF"
       }
     },
     {
@@ -3637,24 +3640,24 @@
       }
     }
   ],
-  "last_updated": "30 Oct 2026, 08:03 PM IST",
+  "last_updated": "30 Oct 2026, 11:16 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000,
   "summary": {
     "total_signals": 72,
     "executed_count": 22,
     "correct_count": 9,
-    "wrong_count": 11,
+    "wrong_count": 12,
     "protected_count": 50,
-    "win_rate_pct": 45.0,
-    "total_pnl_inr": 19587.8,
-    "avg_trade_pnl_inr": 890.35,
-    "active_trades_count": 1,
+    "win_rate_pct": 42.9,
+    "total_pnl_inr": 18167.8,
+    "avg_trade_pnl_inr": 825.81,
+    "active_trades_count": 0,
     "starting_cash_inr": 1000000,
-    "current_cash_inr": 1019587.8,
-    "used_margin_inr": 0.0,
-    "available_cash_inr": 1019587.8,
-    "net_worth_inr": 1019587.8
+    "current_cash_inr": 1018167.8,
+    "used_margin_inr": 0,
+    "available_cash_inr": 1018167.8,
+    "net_worth_inr": 1018167.8
   },
   "check_615_sent_date": "30 Oct 2026"
 }
