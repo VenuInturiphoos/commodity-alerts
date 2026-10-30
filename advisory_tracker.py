@@ -1903,8 +1903,13 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
         if item_sector in active_sectors:
             continue
 
-        # Check symbol trade count and cooldown today
-        sym_today_trades = [t for t in trades if t.get('date') == today_str and t.get('symbol') == sym]
+        # Check symbol trade count and cooldown today (only for actual executed BUY/SELL trades, not STAND_ASIDE)
+        sym_today_trades = [
+            t for t in trades 
+            if t.get('date') == today_str and t.get('symbol') == sym 
+            and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
+            and t.get('paper_trade', {}).get('quantity', 0) > 0
+        ]
         if len(sym_today_trades) >= 2:
             continue  # Max 2 trades per commodity per day
 
