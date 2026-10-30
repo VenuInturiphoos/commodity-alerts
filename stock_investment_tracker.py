@@ -21,6 +21,7 @@ import json
 import math
 import pytz
 from datetime import datetime
+from trader_engine_bridge import MonteCarloTimeMachine
 
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'stock_investments_tracker.json')
 NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'nifty_crossover_oversold.json')
@@ -259,6 +260,12 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
     target_1 = float(trade_plan.get('target_1', round(price * 1.10, 2)))
     target_2 = float(trade_plan.get('target_2', round(price * 1.18, 2)))
 
+    # Run Monte Carlo Time Machine simulation (3,000 empirical replays)
+    sim_stock_sym = chosen_stock.get('name', chosen_stock.get('symbol', ''))
+    if not sim_stock_sym.endswith('.NS') and not sim_stock_sym.endswith('.BO'):
+        sim_stock_sym = f"{sim_stock_sym}.NS"
+    sim_metrics = MonteCarloTimeMachine.run_simulation(sim_stock_sym, price, stop_loss, target_1, action='buy', replays=3000)
+
     inv_id = f"STOCK-INV-{date_compact}-{chosen_stock['name'].replace('.NS','')}"
 
     new_investment = {
@@ -284,6 +291,7 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         'potential_upside_t2': trade_plan.get('potential_upside_t2', round(((target_2 - price) / price) * 100, 1)),
         'risk_pct': trade_plan.get('risk_pct', round(((price - stop_loss) / price) * 100, 1)),
         'win_probability': chosen_stock.get('win_probability', 90),
+        'time_machine': sim_metrics,
         'rsi': chosen_stock.get('rsi'),
         'discount_pct': chosen_stock.get('discount_pct'),
         'ema_50': chosen_stock.get('ema_50'),
