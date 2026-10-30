@@ -1,6 +1,111 @@
 {
   "trades": [
     {
+      "id": "ADV-30Oct2026-2000-GOLD",
+      "date": "30 Oct 2026",
+      "session_name": "Evening Pit Review (8:00 PM)",
+      "time_trigger": "08:00 PM IST",
+      "time_6pm": "08:00 PM IST",
+      "time_validation": "08:15 PM IST",
+      "time_615": "08:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 10,
+      "event_context": "US Evening Lower Circuit Band Test",
+      "suggestion_6pm": {
+        "status": "EVENING_CIRCUIT",
+        "action_text": "BUY / EVENING CIRCUIT PLAY",
+        "rationale": "High evening liquidity test against circuit boundary.",
+        "reference_price": 138600.0,
+        "stop_loss": 137764.85,
+        "target": 142596.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 138600.0,
+        "action_taken": "Entered BUY 10 units @ \u20b9138,600.00",
+        "detail": "Entered at 8:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 10,
+        "entry_price": 138600.0,
+        "entry_time": "08:00 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 142596.0,
+        "stop_loss": 137764.85
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 138318.12,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active BUY position entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
+      "id": "ADV-30Oct2026-2000-SILVER",
+      "date": "30 Oct 2026",
+      "session_name": "Evening Pit Review (8:00 PM)",
+      "time_trigger": "08:00 PM IST",
+      "time_6pm": "08:00 PM IST",
+      "time_validation": "08:15 PM IST",
+      "time_615": "08:15 PM IST",
+      "time_exit": "08:03 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 5,
+      "event_context": "US Evening Lower Circuit Band Test",
+      "suggestion_6pm": {
+        "status": "EVENING_CIRCUIT",
+        "action_text": "BUY / EVENING CIRCUIT PLAY",
+        "rationale": "High evening liquidity test against circuit boundary.",
+        "reference_price": 180100.0,
+        "stop_loss": 181147.38,
+        "target": 189453.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 180100.0,
+        "action_taken": "Entered BUY 5 units @ \u20b9180,100.00",
+        "detail": "Entered at 8:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 5,
+        "entry_price": 180100.0,
+        "entry_time": "08:00 PM IST",
+        "exit_price": 181147.38,
+        "exit_time": "08:03 PM IST",
+        "pnl_points": 1047.38,
+        "pnl_inr": 5236.9,
+        "status": "CLOSED",
+        "target": 189453.0,
+        "stop_loss": 181147.38,
+        "exit_trigger": "STOP_LOSS_HIT"
+      },
+      "eod_outcome": {
+        "session_close": 181147.38,
+        "circuit_limit": 181874.88,
+        "outcome": "WRONG",
+        "badge": "Stop Loss Hit \ud83d\uded1 (08:03 PM IST)",
+        "pnl_display": "+\u20b95,236.90",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 08:03 PM IST. Entry: \u20b9180,100.00 -> Exit: \u20b9181,147.38 (+\u20b95,236.90).",
+        "exit_time": "08:03 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
+      }
+    },
+    {
       "id": "ADV-30Oct2026-1800-GOLD",
       "date": "30 Oct 2026",
       "session_name": "US Pit Open (6:00 PM)",
@@ -3532,24 +3637,24 @@
       }
     }
   ],
-  "last_updated": "30 Oct 2026, 06:38 PM IST",
+  "last_updated": "30 Oct 2026, 08:03 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 1000000,
   "summary": {
-    "total_signals": 70,
-    "executed_count": 20,
+    "total_signals": 72,
+    "executed_count": 22,
     "correct_count": 9,
-    "wrong_count": 10,
+    "wrong_count": 11,
     "protected_count": 50,
-    "win_rate_pct": 47.4,
-    "total_pnl_inr": 14350.9,
-    "avg_trade_pnl_inr": 717.55,
-    "active_trades_count": 0,
+    "win_rate_pct": 45.0,
+    "total_pnl_inr": 19587.8,
+    "avg_trade_pnl_inr": 890.35,
+    "active_trades_count": 1,
     "starting_cash_inr": 1000000,
-    "current_cash_inr": 1014350.9,
-    "used_margin_inr": 0,
-    "available_cash_inr": 1014350.9,
-    "net_worth_inr": 1014350.9
+    "current_cash_inr": 1019587.8,
+    "used_margin_inr": 0.0,
+    "available_cash_inr": 1019587.8,
+    "net_worth_inr": 1019587.8
   },
   "check_615_sent_date": "30 Oct 2026"
 }
