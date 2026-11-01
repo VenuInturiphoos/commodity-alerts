@@ -11,6 +11,7 @@ Standard library + requests (with SSL fallback).
 
 import os
 import json
+import math
 import random
 from datetime import datetime
 import urllib3
@@ -525,3 +526,46 @@ class EventRiskGuard:
             "event_name": None,
             "reason": "No high-impact event risk active."
         }
+
+
+class PositionSizer:
+    """
+    Adaptive Risk & Position Sizer derived from day-trader-skill (trader-budget).
+    Dynamically scales down lot size so that total rupee risk at stop-loss
+    fits strictly within max_risk_inr (default ₹5,000.00).
+    """
+
+    # Contract point value per unit
+    POINT_VALUE = {
+        'GOLD': 100.0,       # 1 point move on 1 kg / 10g quote = ₹100
+        'SILVER': 30.0,      # 1 point move on standard silver = ₹30 (mini/mic is 5/1)
+        'SILVERMIC': 1.0,    # 1 point move = ₹1
+        'CRUDEOIL': 100.0,   # 1 barrel = ₹100
+        'NATURALGAS': 1250.0,# 1 mmBtu = ₹1250
+        'COPPER': 2500.0,    # 1 kg quote = ₹2500
+        'ZINC': 5000.0,      # 1 kg quote = ₹5000
+        'ALUMINIUM': 5000.0  # 1 kg quote = ₹5000
+    }
+
+    @classmethod
+    def calculate_adaptive_lot(cls, symbol, entry, stop, default_lot, max_risk_inr=5000.0):
+        """
+        Calculates safe integer lot size where:
+        Total Risk = abs(entry - stop) * lot_size <= max_risk_inr
+        """
+        if entry <= 0 or stop <= 0 or entry == stop or default_lot <= 0:
+            return default_lot
+
+        risk_pts = abs(entry - stop)
+        total_risk_default = risk_pts * default_lot
+
+        if total_risk_default <= max_risk_inr:
+            return default_lot
+
+        # Scale down lot size to fit inside max_risk_inr
+        scaled_lot = math.floor(max_risk_inr / risk_pts)
+        if scaled_lot < 1:
+            # If even 1 standard lot exceeds max_risk_inr, return 0 (cannot afford risk)
+            return 0
+        return min(default_lot, scaled_lot)
+

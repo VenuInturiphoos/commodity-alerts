@@ -2,7 +2,7 @@ import os
 import json
 import pytz
 from datetime import datetime
-from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard
+from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer
 
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'advisory_trades_tracker.json')
 USER_ACCOUNT = "venu.photos1@gmail.com"
@@ -1008,7 +1008,14 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
         if pre_ev:
             direction = pre_ev.get('direction', 'LOWER')
             action = "BUY" if direction == 'LOWER' else "SELL"
-            sl = round(lc_price * 0.996 if direction == 'LOWER' else uc_price * 1.004, 2)
+            # Ensure BUY stop loss is strictly below min(entry, LC), and SELL stop is strictly above max(entry, UC)
+            if direction == 'LOWER':
+                sl = round(min(cur_p, lc_price) * 0.996, 2)
+            else:
+                sl = round(max(cur_p, uc_price) * 1.004, 2)
+
+            # Mandatory 15-Minute Rule: Never take instant blind fades at 6:00 PM US open rush.
+            # Require 6:15 PM candle close verification to confirm boundary holds.
             entry = {
                 "id": trade_id,
                 "date": today_str,
@@ -1016,46 +1023,46 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                 "time_trigger": "06:00 PM IST",
                 "time_6pm": "06:00 PM IST",
                 "time_validation": "06:15 PM IST",
-                "time_615": "N/A",
+                "time_615": "06:15 PM IST",
                 "time_exit": "11:30 PM IST",
                 "symbol": sym,
                 "name": name,
                 "lot_size": lot_size,
-                "event_context": f"Pre-6 PM {direction.title()} Circuit Test (Asian/EU Fade Setup)",
+                "event_context": f"Pre-6 PM {direction.title()} Circuit Test (15-Min Confirmation Enforced)",
                 "suggestion_6pm": {
-                    "status": "DIRECT_FADE",
-                    "action_text": f"{action} / FADE THE MOVE",
-                    "rationale": "Pre-6 PM limit tests have 100% historical reversal rate due to lack of US volume.",
+                    "status": "WAIT_615",
+                    "action_text": f"WAIT FOR 6:15 PM CANDLE CLOSE before entering {action}",
+                    "rationale": "High institutional volatility at US open. Awaiting 6:15 PM bar-close to confirm limit barrier holds.",
                     "reference_price": cur_p,
                     "stop_loss": sl,
                     "target": p_close
                 },
                 "check_615": {
-                    "checked": True,
-                    "status": "DIRECT_ENTRY",
-                    "price_615": cur_p,
-                    "action_taken": f"Entered {action} {lot_size} units @ ₹{cur_p:,.2f}",
-                    "detail": "Direct trade executed at 6:00 PM IST."
+                    "checked": False,
+                    "status": "PENDING_615",
+                    "price_615": None,
+                    "action_taken": "Awaiting 6:15 PM candle close verification...",
+                    "detail": "Action will be triggered dynamically at 6:15 PM IST."
                 },
                 "paper_trade": {
                     "user": USER_ACCOUNT,
                     "action": action,
                     "quantity": lot_size,
-                    "entry_price": cur_p,
-                    "entry_time": "06:00 PM IST",
+                    "entry_price": None,
+                    "entry_time": None,
                     "exit_price": None,
                     "exit_time": None,
                     "pnl_points": 0.0,
                     "pnl_inr": 0.0,
-                    "status": "ACTIVE"
+                    "status": "PENDING_615"
                 },
                 "eod_outcome": {
                     "session_close": None,
                     "circuit_limit": lc_price if direction == 'LOWER' else uc_price,
                     "outcome": "PENDING",
-                    "badge": "Active Trade ⚡",
-                    "pnl_display": "Ticking Live...",
-                    "summary": f"Active {action} position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                    "badge": "Awaiting 6:15 PM ⏳",
+                    "pnl_display": "Pending Confirmation",
+                    "summary": "15-minute confirmation check scheduled for 6:15 PM IST."
                 }
             }
             new_entries.append(entry)
@@ -1063,7 +1070,11 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
         elif 'LOCKED' in status or 'HIT' in status or 'NEAR' in status:
             direction = 'LOWER' if 'LOWER' in status else 'UPPER'
             action = "BUY" if direction == 'LOWER' else "SELL"
-            sl = round(lc_price * 0.996 if direction == 'LOWER' else uc_price * 1.004, 2)
+            # Ensure BUY stop loss is strictly below min(entry, LC), and SELL stop is strictly above max(entry, UC)
+            if direction == 'LOWER':
+                sl = round(min(cur_p, lc_price) * 0.996, 2)
+            else:
+                sl = round(max(cur_p, uc_price) * 1.004, 2)
             
             entry = {
                 "id": trade_id,
@@ -1345,8 +1356,77 @@ def record_live_8pm_advisory(commodities_list, day_name):
             cur_p = item['current_price']
             lc_price = item['lower_circuit']
             uc_price = item['upper_circuit']
+            tgt = item['prev_close']
             lot_size = LOT_SIZES.get(sym, 1)
-            sl = round(lc_price * 0.996 if direction == 'LOWER' else uc_price * 1.004, 2)
+
+            # Ensure BUY stop loss is strictly below min(entry, LC), and SELL stop is strictly above max(entry, UC)
+            if direction == 'LOWER':
+                sl = round(min(cur_p, lc_price) * 0.996, 2)
+            else:
+                sl = round(max(cur_p, uc_price) * 1.004, 2)
+
+            # 1. Adaptively scale lot size to fit strictly within ₹5,000 max risk cap
+            adaptive_lot = PositionSizer.calculate_adaptive_lot(sym, cur_p, sl, lot_size, max_risk_inr=5000.0)
+
+            # 2. Run PreTradeRiskEngine check
+            all_existing = new_entries + trades
+            risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=5000.0)
+
+            if adaptive_lot <= 0 or not risk_metrics.get('passed'):
+                # Risk Blocked: Stand Aside
+                reason = "Point risk exceeds ₹5,000 risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason')
+                entry = {
+                    "id": trade_id,
+                    "date": today_str,
+                    "session_name": "Evening Pit Review (8:00 PM)",
+                    "time_trigger": "08:00 PM IST",
+                    "time_6pm": "08:00 PM IST",
+                    "time_validation": "08:15 PM IST",
+                    "time_615": "08:15 PM IST",
+                    "time_exit": "11:30 PM IST",
+                    "symbol": sym,
+                    "name": item['name'],
+                    "lot_size": lot_size,
+                    "event_context": "Pre-Trade Risk Filter Guard",
+                    "suggestion_6pm": {
+                        "status": "STAND_ASIDE",
+                        "action_text": "STAND ASIDE / RISK GUARD",
+                        "rationale": f"Risk check failed: {reason}",
+                        "reference_price": cur_p,
+                        "stop_loss": None,
+                        "target": None
+                    },
+                    "check_615": {
+                        "checked": True,
+                        "status": "RISK_GUARD_STAND_ASIDE",
+                        "price_615": cur_p,
+                        "action_taken": "Stood Aside (0 Units)",
+                        "detail": reason
+                    },
+                    "paper_trade": {
+                        "user": USER_ACCOUNT,
+                        "action": "STAND_ASIDE",
+                        "quantity": 0,
+                        "entry_price": None,
+                        "entry_time": "08:00 PM IST",
+                        "exit_price": None,
+                        "exit_time": None,
+                        "pnl_points": 0.0,
+                        "pnl_inr": 0.0,
+                        "status": "STAND_ASIDE"
+                    },
+                    "eod_outcome": {
+                        "session_close": None,
+                        "circuit_limit": None,
+                        "outcome": "PROTECTED",
+                        "badge": "Risk Filter 🛡️",
+                        "pnl_display": "₹0.00",
+                        "summary": f"Stood aside: {reason}"
+                    }
+                }
+                new_entries.append(entry)
+                continue
+
             entry = {
                 "id": trade_id,
                 "date": today_str,
@@ -1358,7 +1438,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 "time_exit": "11:30 PM IST",
                 "symbol": sym,
                 "name": item['name'],
-                "lot_size": lot_size,
+                "lot_size": adaptive_lot,
                 "event_context": f"US Evening {direction.title()} Circuit Band Test",
                 "suggestion_6pm": {
                     "status": "EVENING_CIRCUIT",
@@ -1366,26 +1446,28 @@ def record_live_8pm_advisory(commodities_list, day_name):
                     "rationale": "High evening liquidity test against circuit boundary.",
                     "reference_price": cur_p,
                     "stop_loss": sl,
-                    "target": item['prev_close']
+                    "target": tgt
                 },
                 "check_615": {
                     "checked": True,
                     "status": "DIRECT_ENTRY",
                     "price_615": cur_p,
-                    "action_taken": f"Entered {action} {lot_size} units @ ₹{cur_p:,.2f}",
+                    "action_taken": f"Entered {action} {adaptive_lot} units @ ₹{cur_p:,.2f}",
                     "detail": "Entered at 8:00 PM IST."
                 },
                 "paper_trade": {
                     "user": USER_ACCOUNT,
                     "action": action,
-                    "quantity": lot_size,
+                    "quantity": adaptive_lot,
                     "entry_price": cur_p,
                     "entry_time": "08:00 PM IST",
                     "exit_price": None,
                     "exit_time": None,
                     "pnl_points": 0.0,
                     "pnl_inr": 0.0,
-                    "status": "ACTIVE"
+                    "status": "ACTIVE",
+                    "target": tgt,
+                    "stop_loss": sl
                 },
                 "eod_outcome": {
                     "session_close": None,
@@ -1393,7 +1475,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                     "outcome": "PENDING",
                     "badge": "Active Trade ⚡",
                     "pnl_display": "Ticking Live...",
-                    "summary": f"Active {action} position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                    "summary": f"Active {action} position ({adaptive_lot} units) entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
                 }
             }
             new_entries.append(entry)
@@ -1453,33 +1535,72 @@ def check_and_execute_615_confirmation(checker, alerter):
         trade['check_615']['price_615'] = cur_p
 
         if is_reversal:
-            # REVERSAL CONFIRMED: Enter paper trade!
             action = "BUY" if direction == 'LOWER' else "SELL"
-            sl = round(lc_p * 0.996 if direction == 'LOWER' else uc_p * 1.004, 2)
+            if direction == 'LOWER':
+                sl = round(min(cur_p, lc_p) * 0.996, 2)
+            else:
+                sl = round(max(cur_p, uc_p) * 1.004, 2)
+            tgt = prev_close
+
+            # 1. Adaptively scale lot size to fit strictly within ₹5,000 max risk cap
+            adaptive_lot = PositionSizer.calculate_adaptive_lot(sym, cur_p, sl, lot_size, max_risk_inr=5000.0)
             
-            trade['check_615']['status'] = "REVERSAL_CONFIRMED"
-            trade['check_615']['action_taken'] = f"15-min candle confirmed limit held. ENTERED {action} {lot_size} units @ ₹{cur_p:,.2f}"
-            trade['check_615']['detail'] = f"Price held inside band (₹{cur_p:,.2f} vs limit ₹{lc_p if direction=='LOWER' else uc_p:,.2f}). Reversal confirmed!"
-            
-            trade['paper_trade']['status'] = "ACTIVE"
-            trade['paper_trade']['action'] = action
-            trade['paper_trade']['entry_price'] = cur_p
-            trade['paper_trade']['entry_time'] = "06:15 PM IST"
-            
-            trade['eod_outcome']['outcome'] = "ACTIVE"
-            trade['eod_outcome']['badge'] = "Active Trade ⚡"
-            trade['eod_outcome']['pnl_display'] = "Ticking Live..."
-            trade['eod_outcome']['summary'] = f"Confirmed {action} position active for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
-            
-            msg = (
-                f"🟢 <b>[6:15 PM TRADE CONFIRMED] {trade['name'].upper()}</b>\n"
-                f"• 15-Minute Rule: <b>Limit Barrier Held Successfully</b>\n"
-                f"• Execution: <b>{action} {lot_size} units</b> @ ₹{cur_p:,.2f}\n"
-                f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{prev_close:,.2f}\n"
-                f"• Account: Virtual Paper Trade logged for {USER_ACCOUNT}\n"
-                f"• Auto-Exit: Position will be squared off at 11:30 PM IST."
-            )
-            alert_messages.append(msg)
+            # 2. Run PreTradeRiskEngine check
+            risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, trades, max_loss_per_trade_inr=5000.0)
+
+            if adaptive_lot <= 0 or not risk_metrics.get('passed'):
+                # RISK BLOCKED: Stand aside
+                reason = "Point risk exceeds ₹5,000 risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason')
+                trade['check_615']['status'] = "RISK_GUARD_STAND_ASIDE"
+                trade['check_615']['action_taken'] = f"Risk Engine Block: {reason}. Stood aside to preserve capital."
+                trade['check_615']['detail'] = reason
+                trade['paper_trade']['status'] = "STAND_ASIDE"
+                trade['paper_trade']['action'] = "STAND_ASIDE"
+                trade['paper_trade']['quantity'] = 0
+                trade['paper_trade']['entry_price'] = cur_p
+                trade['paper_trade']['exit_price'] = cur_p
+                trade['paper_trade']['pnl_inr'] = 0.0
+                trade['eod_outcome']['outcome'] = "PROTECTED"
+                trade['eod_outcome']['badge'] = "Risk Filter 🛡️"
+                trade['eod_outcome']['pnl_display'] = "₹0.00 (Protected)"
+                trade['eod_outcome']['summary'] = f"Risk engine blocked 6:15 PM entry: {reason}"
+                msg = (
+                    f"🛡️ <b>[6:15 PM RISK FILTER] {trade['name'].upper()}</b>\n"
+                    f"• Limit Held: ₹{cur_p:,.2f}, but trade blocked by Pre-Trade Risk Engine\n"
+                    f"• Reason: <b>{reason}</b>\n"
+                    f"• Action: Stood aside to protect ₹5,000 risk capital."
+                )
+                alert_messages.append(msg)
+            else:
+                # REVERSAL CONFIRMED & RISK PASSED: Enter paper trade!
+                trade['lot_size'] = adaptive_lot
+                trade['check_615']['status'] = "REVERSAL_CONFIRMED"
+                trade['check_615']['action_taken'] = f"15-min candle confirmed limit held. ENTERED {action} {adaptive_lot} units @ ₹{cur_p:,.2f}"
+                trade['check_615']['detail'] = f"Price held inside band (₹{cur_p:,.2f} vs limit ₹{lc_p if direction=='LOWER' else uc_p:,.2f}). Reversal confirmed!"
+                
+                trade['paper_trade']['status'] = "ACTIVE"
+                trade['paper_trade']['action'] = action
+                trade['paper_trade']['quantity'] = adaptive_lot
+                trade['paper_trade']['entry_price'] = cur_p
+                trade['paper_trade']['entry_time'] = "06:15 PM IST"
+                trade['paper_trade']['target'] = tgt
+                trade['paper_trade']['stop_loss'] = sl
+                
+                trade['eod_outcome']['outcome'] = "ACTIVE"
+                trade['eod_outcome']['badge'] = "Active Trade ⚡"
+                trade['eod_outcome']['pnl_display'] = "Ticking Live..."
+                trade['eod_outcome']['summary'] = f"Confirmed {action} position ({adaptive_lot} units) active for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                
+                msg = (
+                    f"🟢 <b>[6:15 PM TRADE CONFIRMED] {trade['name'].upper()}</b>\n"
+                    f"• 15-Minute Rule: <b>Limit Barrier Held Successfully</b>\n"
+                    f"• Execution: <b>{action} {adaptive_lot} units</b> @ ₹{cur_p:,.2f}\n"
+                    f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{prev_close:,.2f}\n"
+                    f"• Risk Audit: Max loss capped inside ₹5,000\n"
+                    f"• Account: Virtual Paper Trade logged for {USER_ACCOUNT}\n"
+                    f"• Auto-Exit: Position will be squared off at 11:30 PM IST."
+                )
+                alert_messages.append(msg)
 
         else:
             # CIRCUIT BROKEN / EXTENDED: Avoid false fade!
