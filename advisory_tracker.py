@@ -5,6 +5,8 @@ from datetime import datetime
 from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer
 
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'advisory_trades_tracker.json')
+NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'nifty_crossover_oversold.json')
+import math
 USER_ACCOUNT = "venu.photos1@gmail.com"
 
 # MCX Risk-Parity Lot Sizes (Approx ₹1.2 Lakh to ₹1.5 Lakh Purchase/Margin Capital per Trade)
@@ -1704,9 +1706,27 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
     if not relevant_trades:
         return False
 
-    circuits_res = checker.generate_circuits_data()
+    circuits_res = checker.generate_circuits_data() if checker else {}
     commodities_map = {c['symbol']: c for c in circuits_res.get('commodities', [])} if circuits_res else {}
-    if not commodities_map:
+
+    # Multi-Asset Support: Load live Nifty equity data alongside MCX commodities
+    equity_map = {}
+    if os.path.exists(NIFTY_JSON_FILE):
+        try:
+            with open(NIFTY_JSON_FILE, 'r') as f:
+                n_data = json.load(f)
+            for s in n_data.get('stocks', []):
+                sym_k = s.get('symbol')
+                name_k = s.get('name')
+                if sym_k:
+                    equity_map[sym_k.upper()] = s
+                    equity_map[sym_k.replace('.NS', '').upper()] = s
+                if name_k:
+                    equity_map[name_k.upper()] = s
+        except Exception as e:
+            print(f"Warning: Could not read nifty stocks for advisory price check: {e}")
+
+    if not commodities_map and not equity_map:
         return False
 
     updated_any = False
@@ -1714,13 +1734,25 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
 
     for trade in relevant_trades:
         sym = trade['symbol']
+        clean_sym = sym.replace('.NS', '').upper() if sym else ''
         c_item = commodities_map.get(sym)
-        if not c_item:
+        eq_item = equity_map.get(sym.upper()) or equity_map.get(clean_sym)
+
+        if c_item:
+            cur_p = float(c_item['current_price'])
+            day_h = float(c_item.get('day_high', cur_p))
+            day_l = float(c_item.get('day_low', cur_p))
+            is_equity = False
+        elif eq_item:
+            cur_p = float(eq_item.get('close', 0))
+            day_h = float(eq_item.get('price_52_week_high', cur_p))
+            day_l = float(eq_item.get('price_52_week_low', cur_p))
+            is_equity = True
+        else:
             continue
 
-        cur_p = float(c_item['current_price'])
-        day_h = float(c_item.get('day_high', cur_p))
-        day_l = float(c_item.get('day_low', cur_p))
+        if cur_p <= 0:
+            continue
         
         pt = trade['paper_trade']
         action = pt['action']
@@ -1834,7 +1866,7 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             pt['stop_loss'] = stop_loss
 
         # 3. Check Event Risk Guard on Active Positions (Tighten Stop to Breakeven before Inventory Release)
-        if trade_status == 'ACTIVE':
+        if trade_status == 'ACTIVE' and not is_equity:
             event_check = EventRiskGuard.check_event_risk(sym, now_dt)
             if not event_check.get('passed') and event_check.get('status') == 'EVENT_BLACKOUT':
                 if not pt.get('event_protection_active'):
@@ -1876,9 +1908,10 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         )
                         alerts_to_send.append({'subject': subject, 'body': body})
 
-        # 4. Check Target & Stop-Loss Triggers
+        # 4. Check Target & Stop-Loss & EOD Square-off Triggers
         hit_target = False
         hit_sl = False
+        hit_eod = False
         exit_p = cur_p
         reason = ""
 
@@ -1891,6 +1924,10 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 hit_sl = True
                 exit_p = stop_loss
                 reason = "Trailing Stop Triggered (Breakeven) 🛡️" if pt.get('trailing_sl_active') else "Stop-Loss Triggered 🛑"
+            elif is_equity and now_dt.hour == 15 and now_dt.minute >= 25:
+                hit_eod = True
+                exit_p = cur_p
+                reason = "Intraday EOD Square-off (03:25 PM) ⏰"
         elif action == 'SELL':
             if target and cur_p <= target:
                 hit_target = True
@@ -1900,14 +1937,18 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 hit_sl = True
                 exit_p = stop_loss
                 reason = "Trailing Stop Triggered (Breakeven) 🛡️" if pt.get('trailing_sl_active') else "Stop-Loss Triggered 🛑"
+            elif is_equity and now_dt.hour == 15 and now_dt.minute >= 25:
+                hit_eod = True
+                exit_p = cur_p
+                reason = "Intraday EOD Square-off (03:25 PM) ⏰"
 
-        if hit_target or hit_sl:
+        if hit_target or hit_sl or hit_eod:
             pnl_pts = (exit_p - entry_p) if action == 'BUY' else (entry_p - exit_p)
             pnl_inr = round(pnl_pts * lot_size, 2)
             
             pt['exit_price'] = exit_p
             pt['exit_time'] = now_time_str
-            pt['exit_trigger'] = "TARGET_HIT" if hit_target else ("TRAILING_BREAKEVEN_HIT" if pt.get('trailing_sl_active') else "STOP_LOSS_HIT")
+            pt['exit_trigger'] = "TARGET_HIT" if hit_target else ("EOD_SQUAREOFF" if hit_eod else ("TRAILING_BREAKEVEN_HIT" if pt.get('trailing_sl_active') else "STOP_LOSS_HIT"))
             pt['pnl_points'] = round(pnl_pts, 2)
             pt['pnl_inr'] = pnl_inr
             pt['status'] = "CLOSED"
@@ -1915,6 +1956,9 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             if hit_target:
                 outcome_val = "CORRECT"
                 badge_text = f"Target Achieved 🎯 ({now_time_str})"
+            elif hit_eod:
+                outcome_val = "CORRECT" if pnl_inr > 0 else ("WRONG" if pnl_inr < 0 else "PROTECTED")
+                badge_text = f"EOD Square-off ⏰ ({now_time_str})"
             elif pt.get('trailing_sl_active'):
                 outcome_val = "PROTECTED"
                 badge_text = f"Breakeven Exit 🛡️ ({now_time_str})"
@@ -1999,19 +2043,28 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
     if today_realized_loss >= 15000.0:
         return False
 
-    # 2. Maximum Concurrent Open Positions Cap (Max 2 Active Commodity Positions)
+    # 2. Maximum Concurrent Open Positions Cap (Max 2 Commodities, Max 2 Equities)
     active_commodity_trades = [
         t for t in trades 
         if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
+        and t.get('symbol') in LOT_SIZES
     ]
-    if len(active_commodity_trades) >= 2:
+    active_equity_trades = [
+        t for t in trades 
+        if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
+        and t.get('symbol') not in LOT_SIZES
+    ]
+    if len(active_commodity_trades) >= 2 and len(active_equity_trades) >= 2:
         return False
 
-    # Fetch live commodity quotes & technical metrics
-    circuits_res = checker.generate_circuits_data()
-    commodities = circuits_res.get('commodities', []) if circuits_res else []
-    if not commodities:
-        return False
+    new_trades = []
+    alerts_to_send = []
+
+    # =========================================================================
+    # PART 1: MCX COMMODITIES CONTINUOUS SCANNER
+    # =========================================================================
+    circuits_res = checker.generate_circuits_data() if checker else {}
+    commodities = circuits_res.get('commodities', []) if (checker and len(active_commodity_trades) < 2) else []
 
     SECTORS = {
         'GOLD': 'BULLION',
@@ -2028,12 +2081,9 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
         if t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
     }
 
-    new_trades = []
-    alerts_to_send = []
-
     for item in commodities:
         # Check if we already reached max concurrent positions during this pass
-        if len(active_commodity_trades) + len(new_trades) >= 2:
+        if len(active_commodity_trades) + sum(1 for t in new_trades if t.get('symbol') in LOT_SIZES) >= 2:
             break
 
         sym = item.get('symbol')
@@ -2274,6 +2324,216 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
             )
             alerts_to_send.append({'subject': subject, 'body': body})
             print(f"⚡ Technical Trigger Fired: {name} {action} @ ₹{cur_p:,.2f} ({setup_name}) | Replay: {mc_badge}")
+
+    # =========================================================================
+    # PART 2: REAL-TIME NIFTY F&O HIGH-BETA CONTINUOUS SCANNER (Phase 1 & Phase 2)
+    # Active Window: Mon-Fri, 09:15 AM to 03:20 PM IST
+    # Setups: 20-Day Breakout, Oversold Bollinger Bounce, Golden Cross Pullback
+    # Bracket Orders: Automatic 2R Target & Stop-Loss with <= ₹5,000 Risk Sizing
+    # =========================================================================
+    is_equity_window = (hour == 9 and minute >= 15) or (10 <= hour < 15) or (hour == 15 and minute <= 20)
+    cur_equity_positions = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') == 'EQUITY')
+
+    if is_equity_window and cur_equity_positions < 2:
+        if os.path.exists(NIFTY_JSON_FILE):
+            try:
+                with open(NIFTY_JSON_FILE, 'r') as nf:
+                    nifty_data = json.load(nf)
+                equity_stocks = nifty_data.get('stocks', [])
+            except Exception as e:
+                print(f"Warning: Could not read Nifty F&O scanner data: {e}")
+                equity_stocks = []
+
+            for s in equity_stocks:
+                cur_active_equity = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') == 'EQUITY')
+                if cur_active_equity >= 2:
+                    break
+
+                sym = s.get('symbol', '')
+                clean_sym = sym.replace('.NS', '').upper()
+                name = s.get('full_name') or s.get('name', clean_sym)
+                cur_p = float(s.get('close') or 0)
+                if cur_p <= 0:
+                    continue
+
+                # Check symbol cooldown today (max 2 trades per equity, 120-min cooldown)
+                eq_today_trades = [
+                    t for t in (trades + new_trades)
+                    if t.get('date') == today_str and (t.get('symbol') == sym or t.get('symbol') == clean_sym)
+                    and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
+                    and t.get('paper_trade', {}).get('quantity', 0) > 0
+                ]
+                if len(eq_today_trades) >= 2:
+                    continue
+
+                if eq_today_trades:
+                    last_t = eq_today_trades[0]
+                    last_entry_time = last_t.get('paper_trade', {}).get('entry_time') or last_t.get('time_trigger')
+                    if last_entry_time:
+                        try:
+                            clean_time = last_entry_time.replace(' IST', '').strip()
+                            t_struct = datetime.strptime(f"{today_str} {clean_time}", "%d %b %Y %I:%M %p").replace(tzinfo=pytz.timezone('Asia/Kolkata'))
+                            diff_mins = (now_dt - t_struct).total_seconds() / 60.0
+                            if diff_mins < 120:
+                                continue
+                        except Exception:
+                            pass
+
+                chg_pct = float(s.get('change_pct') or 0)
+                rsi = float(s.get('rsi') or 50)
+                high_52 = float(s.get('price_52_week_high') or cur_p)
+                discount_pct = float(s.get('discount_pct') or 0)
+                bb_lower = float(s.get('bb_lower') or (cur_p * 0.95))
+                is_golden = bool(s.get('is_golden'))
+                rsi_curling_up = bool(s.get('rsi_curling_up'))
+                near_bb = bool(s.get('near_bb_lower'))
+
+                eq_triggered = False
+                eq_action = None
+                eq_setup = ""
+                eq_sl = None
+                eq_tgt = None
+                eq_rationale = ""
+
+                # Setup A: 20-Day / High-Beta Volatility Breakout (Momentum Expansion)
+                if (cur_p >= high_52 * 0.985 or chg_pct >= 0.85) and (52.0 <= rsi <= 72.0):
+                    eq_triggered = True
+                    eq_action = "BUY"
+                    eq_setup = "20-Day / High-Beta Volatility Breakout"
+                    eq_sl = round(cur_p * 0.965, 2)  # 3.5% protective risk floor
+                    eq_tgt = round(cur_p + (2.0 * (cur_p - eq_sl)), 2)  # 2.0R asymmetric target (+7.0%)
+                    eq_rationale = (f"Breaking towards 20D/52W high (Chg: +{chg_pct:.2f}%) with strong RSI momentum ({rsi:.1f}). "
+                                    f"Riding directional institutional expansion with 2.0R bracket.")
+
+                # Setup B: Oversold Mean Reversion Bounce (Bollinger Band Mean Reversion)
+                elif (rsi <= 36.0) and (rsi_curling_up or near_bb or cur_p <= bb_lower * 1.01) and (discount_pct >= 15.0):
+                    eq_triggered = True
+                    eq_action = "BUY"
+                    eq_setup = "Oversold Mean Reversion Bounce"
+                    eq_sl = round(min(bb_lower, cur_p * 0.955), 2)  # 4.5% risk floor at Lower BB
+                    eq_tgt = round(cur_p + (2.2 * (cur_p - eq_sl)), 2)  # 2.2R mean reversion target (~+9.9%)
+                    eq_rationale = (f"Oversold accumulation RSI ({rsi:.1f} <= 36) bouncing off Lower Bollinger Band (₹{bb_lower:,.2f}) "
+                                    f"at a deep {discount_pct:.1f}% discount to 52W high. High probability mean-reversion.")
+
+                # Setup C: EMA 50/200 Golden Cross Trend Pullback
+                elif is_golden and (35.0 <= rsi <= 48.0):
+                    eq_triggered = True
+                    eq_action = "BUY"
+                    eq_setup = "EMA 50/200 Golden Cross Trend Pullback"
+                    eq_sl = round(cur_p * 0.955, 2)  # 4.5% protective stop
+                    eq_tgt = round(cur_p + (2.0 * (cur_p - eq_sl)), 2)  # 2.0R trend continuation target (+9.0%)
+                    eq_rationale = (f"50 EMA > 200 EMA Golden Cross confirmed with value pullback into demand zone (RSI: {rsi:.1f}). "
+                                    f"Trend continuation entry targeting 2.0R swing upside.")
+
+                if eq_triggered and eq_action and eq_sl and eq_tgt:
+                    trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{clean_sym}"
+                    if any(t.get('id') == trade_id for t in (trades + new_trades)):
+                        continue
+
+                    # Dynamic Risk Sizing: Max loss strictly <= ₹5,000, target capital ~₹35,000
+                    risk_per_share = abs(cur_p - eq_sl)
+                    if risk_per_share <= 0:
+                        continue
+                    cap_shares = math.floor(35000.0 / cur_p) if cur_p > 0 else 0
+                    risk_shares = math.floor(5000.0 / risk_per_share)
+                    eq_shares = min(cap_shares, risk_shares)
+                    if eq_shares < 1:
+                        continue
+                    if (risk_per_share * eq_shares) > 5000.0:
+                        eq_shares = math.floor(5000.0 / risk_per_share)
+                    if eq_shares < 1:
+                        continue
+
+                    # 14-Point Pre-Trade Risk Engine Check
+                    all_existing = new_trades + trades
+                    risk_metrics = PreTradeRiskEngine.check_risk(sym, eq_action, cur_p, eq_sl, eq_tgt, eq_shares, all_existing, max_loss_per_trade_inr=5000.0)
+                    if not risk_metrics.get('passed'):
+                        print(f"🛡️ Pre-Trade Risk Engine Blocked {clean_sym} {eq_action}: {risk_metrics.get('reason')}")
+                        continue
+
+                    # Monte Carlo Time Machine simulation (3,000 replays)
+                    sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, eq_sl, eq_tgt, action=eq_action.lower(), replays=3000)
+                    if not sim_metrics.get('passed'):
+                        print(f"🎲 Monte Carlo Time Machine Blocked {clean_sym} {eq_action}: {sim_metrics.get('summary')}")
+                        continue
+
+                    entry_obj = {
+                        "id": trade_id,
+                        "date": today_str,
+                        "session_name": f"Real-Time Technical Trigger ({eq_setup})",
+                        "time_trigger": now_time_str,
+                        "time_6pm": now_time_str,
+                        "time_validation": now_time_str,
+                        "time_615": now_time_str,
+                        "time_exit": "03:25 PM IST",
+                        "symbol": sym,
+                        "name": name,
+                        "lot_size": eq_shares,
+                        "asset_type": "EQUITY",
+                        "event_context": f"Nifty F&O Confluence: {eq_setup}",
+                        "time_machine": sim_metrics,
+                        "risk_check": risk_metrics,
+                        "suggestion_6pm": {
+                            "status": "REALTIME_TRIGGER",
+                            "action_text": f"{eq_action} @ ₹{cur_p:,.2f}",
+                            "rationale": f"{eq_rationale} {sim_metrics.get('summary', '')}",
+                            "reference_price": cur_p,
+                            "stop_loss": eq_sl,
+                            "target": eq_tgt
+                        },
+                        "check_615": {
+                            "checked": True,
+                            "status": "TECHNICAL_TRIGGER_ENTERED",
+                            "price_615": cur_p,
+                            "action_taken": f"Entered {eq_action} {eq_shares} shares @ ₹{cur_p:,.2f}",
+                            "detail": f"{eq_setup}: {eq_rationale} | {sim_metrics.get('summary', '')}"
+                        },
+                        "paper_trade": {
+                            "user": USER_ACCOUNT,
+                            "action": eq_action,
+                            "quantity": eq_shares,
+                            "entry_price": cur_p,
+                            "entry_time": now_time_str,
+                            "exit_price": None,
+                            "exit_time": None,
+                            "pnl_points": 0.0,
+                            "pnl_inr": 0.0,
+                            "status": "ACTIVE",
+                            "target": eq_tgt,
+                            "stop_loss": eq_sl,
+                            "margin_required_inr": round(cur_p * eq_shares * 0.20, 2)
+                        },
+                        "eod_outcome": {
+                            "session_close": None,
+                            "circuit_limit": None,
+                            "outcome": "PENDING",
+                            "badge": "Active Trigger ⚡",
+                            "pnl_display": "Ticking Live...",
+                            "summary": f"{eq_setup} active: {eq_action} @ ₹{cur_p:,.2f} (Target: ₹{eq_tgt:,.2f}, SL: ₹{eq_sl:,.2f}) | {sim_metrics.get('summary', '')}"
+                        }
+                    }
+                    new_trades.append(entry_obj)
+
+                    mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
+                    subject = f"⚡ [NIFTY F&O TRIGGER] {name} {eq_action} @ ₹{cur_p:,.2f} ({now_time_str})"
+                    body = (
+                        f"⚡ <b>REAL-TIME MULTI-ASSET TECHNICAL TRIGGER (NIFTY F&O)</b>\n"
+                        f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                        f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                        f"• <b>Asset Class</b>: Nifty F&O High-Beta Equity\n"
+                        f"• <b>Stock</b>: <b>{name} ({clean_sym})</b>\n"
+                        f"• <b>Signal</b>: <b>{eq_action} {eq_shares} shares @ ₹{cur_p:,.2f}</b>\n"
+                        f"• <b>Setup</b>: {eq_setup}\n"
+                        f"• <b>Technical Rationale</b>: {eq_rationale}\n"
+                        f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
+                        f"• <b>Stop-Loss</b>: ₹{eq_sl:,.2f} (Max Risk: -₹{abs(cur_p - eq_sl) * eq_shares:,.2f})\n"
+                        f"• <b>Target</b>: ₹{eq_tgt:,.2f} (Target Reward: +₹{abs(eq_tgt - cur_p) * eq_shares:,.2f})\n"
+                        f"• <b>Capital Allocated</b>: ₹{cur_p * eq_shares:,.2f} (Margin ~₹{round(cur_p * eq_shares * 0.20, 2):,.2f})\n"
+                        f"• <b>Status</b>: Active paper trade. Auto-trailing breakeven & 03:25 PM EOD squareoff enabled.\n\n"
+                        f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                    )
+                    alerts_to_send.append({'subject': subject, 'body': body})
+                    print(f"⚡ Nifty Equity Trigger Fired: {name} {eq_action} @ ₹{cur_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
 
     if new_trades:
         tracker['trades'] = new_trades + trades
