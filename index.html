@@ -5240,6 +5240,11 @@ async function loadAdvisoryTracker() {
         if (!res || !res.ok) throw new Error("Status " + (res ? res.status : 'failed'));
         advisoryTrackerData = await res.json();
         
+        // Ensure Nifty opportunities data is loaded for multi-asset equity ticker resolution
+        if (typeof loadNiftyOpportunities === 'function' && (!niftyOpportunitiesData || !niftyOpportunitiesData.stocks)) {
+            loadNiftyOpportunities(false);
+        }
+        
         // Update summary KPI cards
         const summary = advisoryTrackerData.summary || {};
         const trades = advisoryTrackerData.trades || [];
@@ -5373,15 +5378,28 @@ function renderAdvisoryTradesTable() {
         const c15 = t.check_615 || {};
         const outcome = t.eod_outcome || {};
 
-        // Find live market data: prioritized from rawCircuitsData (authoritative exchange feed), then marketData
-        const cleanSym = (t.symbol || '').replace('-FUT', '').toUpperCase();
+        // Find live market data: prioritized from rawCircuitsData (authoritative exchange feed), then marketData, then niftyOpportunitiesData
+        const cleanSym = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
         const circuitItem = (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) 
             ? rawCircuitsData.find(c => (c.symbol || '').toUpperCase() === cleanSym || (c.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase()) 
             : null;
         const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) 
             ? marketData.find(m => (m.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase() || (m.symbol || '').toUpperCase() === cleanSym) 
             : null;
-        const liveSource = circuitItem || mktItem;
+        let liveSource = circuitItem || mktItem;
+        if (!liveSource && typeof niftyOpportunitiesData !== 'undefined' && Array.isArray(niftyOpportunitiesData?.stocks)) {
+            const eqItem = niftyOpportunitiesData.stocks.find(s => 
+                (s.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase() || 
+                (s.symbol || '').replace('.NS', '').toUpperCase() === cleanSym || 
+                (s.name || '').toUpperCase() === cleanSym
+            );
+            if (eqItem) {
+                liveSource = {
+                    current_price: eqItem.close,
+                    change_pct: eqItem.change_pct
+                };
+            }
+        }
 
         // Current Price column computation
         let curPriceHtml = '<span style="color:#64748b; font-size:0.8rem;">--</span>';
@@ -5509,14 +5527,17 @@ function renderAdvisoryTradesTable() {
             check615Html = `<span style="color:#60a5fa; font-size:0.8rem;"><i class="fa-solid fa-ban"></i> Stood Aside (Protected)</span>`;
         }
 
+        const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && t.symbol.includes('.NS'));
         let paperTradeCell = `<span style="color:#94a3b8; font-size:0.8rem;">Stood Aside</span>`;
         if (pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price) {
             const actColor = pt.action === 'BUY' ? 'adv-action-buy' : 'adv-action-sell';
+            const unitLabel = isEqTrade ? 'shares' : 'units';
+            const multLabel = isEqTrade ? `1 pt = ₹${pt.quantity}` : `1 pt = ₹${t.lot_size || 1}`;
             paperTradeCell = `
                 <div>
                     <span class="adv-action-tag ${actColor}">${pt.action}</span>
-                    <strong style="color:#f8fafc; font-size:0.85rem; margin-left:4px;">${pt.quantity} units</strong>
-                    <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 5px; border-radius:4px; margin-left:4px; font-weight:600;">1 pt = ₹${t.lot_size || 1}</span>
+                    <strong style="color:#f8fafc; font-size:0.85rem; margin-left:4px;">${pt.quantity} ${unitLabel}</strong>
+                    <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 5px; border-radius:4px; margin-left:4px; font-weight:600;">${multLabel}</span>
                     <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2})} (${pt.entry_time || 'Trigger'})</div>
                 </div>
             `;
@@ -5542,6 +5563,10 @@ function renderAdvisoryTradesTable() {
             exitDetailHtml = `<div style="font-size:0.75rem; color:#64748b;">N/A (Avoided Trap)</div>`;
         }
 
+        const assetBadge = isEqTrade 
+            ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.4); color:#6ee7b7; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> NIFTY F&O</span>`
+            : `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-gem"></i> MCX</span>`;
+
         return `
             <tr>
                 <td>
@@ -5551,7 +5576,7 @@ function renderAdvisoryTradesTable() {
                             ${t.session_name || t.time_trigger || t.time_6pm || '06:00 PM IST'}
                         </span>
                     </div>
-                    <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${t.date} | ${t.symbol}</div>
+                    <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${t.date} | ${t.symbol} ${assetBadge}</div>
                     <div style="font-size:0.7rem; color:#818cf8; margin-top:2px;">${t.event_context || ''}</div>
                     ${t.time_machine ? `
                         <div style="font-size:0.68rem; margin-top:3px; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine (3,000 empirical replays): ${t.time_machine.summary || ''}">
@@ -5594,15 +5619,28 @@ function renderAdvisoryTradesTable() {
             const c15 = t.check_615 || {};
             const outcome = t.eod_outcome || {};
 
-            // Find live market data: prioritized from rawCircuitsData (authoritative exchange feed), then marketData
-            const cleanSym = (t.symbol || '').replace('-FUT', '').toUpperCase();
+            // Find live market data: prioritized from rawCircuitsData (authoritative exchange feed), then marketData, then niftyOpportunitiesData
+            const cleanSym = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
             const circuitItem = (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) 
                 ? rawCircuitsData.find(c => (c.symbol || '').toUpperCase() === cleanSym || (c.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase()) 
                 : null;
             const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) 
                 ? marketData.find(m => (m.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase() || (m.symbol || '').toUpperCase() === cleanSym) 
                 : null;
-            const liveSource = circuitItem || mktItem;
+            let liveSource = circuitItem || mktItem;
+            if (!liveSource && typeof niftyOpportunitiesData !== 'undefined' && Array.isArray(niftyOpportunitiesData?.stocks)) {
+                const eqItem = niftyOpportunitiesData.stocks.find(s => 
+                    (s.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase() || 
+                    (s.symbol || '').replace('.NS', '').toUpperCase() === cleanSym || 
+                    (s.name || '').toUpperCase() === cleanSym
+                );
+                if (eqItem) {
+                    liveSource = {
+                        current_price: eqItem.close,
+                        change_pct: eqItem.change_pct
+                    };
+                }
+            }
 
             let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
             if (outcome.outcome === 'WRONG') {
@@ -5663,8 +5701,15 @@ function renderAdvisoryTradesTable() {
             else if (c15.status === 'RISK_GUARD_STAND_ASIDE') checkLabel = 'Risk Guard Block';
             else if (c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') checkLabel = 'Stood Aside (Protected)';
 
+            const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && t.symbol.includes('.NS'));
+            const assetBadge = isEqTrade 
+                ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.4); color:#6ee7b7; padding:1px 5px; border-radius:3px;">NIFTY F&O</span>`
+                : `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 5px; border-radius:3px;">MCX</span>`;
+            const unitLabel = isEqTrade ? 'shares' : 'qty';
+            const multLabel = isEqTrade ? `1 pt = ₹${pt.quantity}` : `1 pt = ₹${t.lot_size || 1}`;
+
             const executedText = pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price
-                ? `${pt.action} ${pt.quantity} qty <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:1px 4px; border-radius:3px;">1 pt = ₹${t.lot_size || 1}</span><div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</div>`
+                ? `${pt.action} ${pt.quantity} ${unitLabel} <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:1px 4px; border-radius:3px;">${multLabel}</span><div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</div>`
                 : 'Stood Aside';
 
             const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || '11:30 PM';
@@ -5704,7 +5749,7 @@ function renderAdvisoryTradesTable() {
                                     ${t.session_name || t.time_trigger || '06:00 PM'}
                                 </span>
                             </div>
-                            <div class="mobile-card-meta">${t.date} · ${t.symbol} ${t.event_context ? '· ' + t.event_context : ''}</div>
+                            <div class="mobile-card-meta">${t.date} · ${t.symbol} ${assetBadge} ${t.event_context ? '· ' + t.event_context : ''}</div>
                             ${t.time_machine ? `
                                 <div style="font-size:0.68rem; margin-top:3px; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine: ${t.time_machine.summary || ''}">
                                     🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
