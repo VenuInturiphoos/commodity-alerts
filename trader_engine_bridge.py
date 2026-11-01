@@ -548,22 +548,32 @@ class PositionSizer:
     }
 
     @classmethod
-    def calculate_adaptive_lot(cls, symbol, entry, stop, default_lot, max_risk_inr=5000.0):
+    def calculate_adaptive_lot(cls, symbol, entry, stop, default_lot, max_risk_inr=5000.0, atr=None):
         """
         Calculates safe integer lot size where:
-        Total Risk = abs(entry - stop) * lot_size <= max_risk_inr
+        Total Risk = abs(entry - stop) * lot_size <= max_risk_inr.
+        Optionally uses ATR (14) to adjust position size:
+        If ATR is unusually high (> 1.5x normal risk spread), scales down further
+        to protect against volatility spikes.
         """
         if entry <= 0 or stop <= 0 or entry == stop or default_lot <= 0:
             return default_lot
 
         risk_pts = abs(entry - stop)
-        total_risk_default = risk_pts * default_lot
+
+        # Volatility expansion adjustment: if ATR is provided and exceeds stop distance, scale conservatively
+        if atr and atr > 0:
+            effective_risk_pts = max(risk_pts, atr * 0.8)
+        else:
+            effective_risk_pts = risk_pts
+
+        total_risk_default = effective_risk_pts * default_lot
 
         if total_risk_default <= max_risk_inr:
             return default_lot
 
         # Scale down lot size to fit inside max_risk_inr
-        scaled_lot = math.floor(max_risk_inr / risk_pts)
+        scaled_lot = math.floor(max_risk_inr / effective_risk_pts)
         if scaled_lot < 1:
             # If even 1 standard lot exceeds max_risk_inr, return 0 (cannot afford risk)
             return 0

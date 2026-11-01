@@ -1769,20 +1769,15 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 alerts_to_send.append({'subject': subject, 'body': body})
             continue
 
-        # 2. Check ACTIVE Trades: Trailing Stop-Loss to Breakeven (+50% to Target)
+        # 2. Check ACTIVE Trades: Multi-Stage Trailing Stop-Loss & Milestone Alerts
         if trade_status == 'ACTIVE' and target is not None and stop_loss is not None:
-            if not pt.get('trailing_sl_active'):
-                trail_triggered = False
-                if action == 'BUY':
-                    target_dist = target - entry_p
-                    if target_dist > 0 and cur_p >= entry_p + (target_dist * 0.5):
-                        trail_triggered = True
-                elif action == 'SELL':
-                    target_dist = entry_p - target
-                    if target_dist > 0 and cur_p <= entry_p - (target_dist * 0.5):
-                        trail_triggered = True
-                
-                if trail_triggered:
+            target_dist = (target - entry_p) if action == 'BUY' else (entry_p - target)
+            if target_dist > 0:
+                current_favorable_move = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
+                pct_to_target = (current_favorable_move / target_dist) * 100
+
+                # Stage 1: Breakeven Lock at +40% towards Target (Guarantees zero-risk position)
+                if pct_to_target >= 40.0 and not pt.get('trailing_sl_active'):
                     pt['trailing_sl_active'] = True
                     pt['original_sl'] = stop_loss
                     pt['stop_loss'] = entry_p
@@ -1791,18 +1786,43 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         s6['stop_loss'] = entry_p
                     updated_any = True
                     
-                    subject = f"🛡️ [TRAILING STOP TO BREAKEVEN] {trade['name']} Crossed 50% Target Distance"
+                    subject = f"🛡️ [STAGE 1: BREAKEVEN LOCK] {trade['name']} Reached +40% Target Milestone"
                     body = (
                         f"🛡️ <b>TRAILING STOP TO BREAKEVEN ACTIVATED</b>\n"
                         f"📅 <i>{today_str}, {now_time_str}</i>\n"
                         f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
                         f"• <b>Asset</b>: {trade['name']} ({sym})\n"
                         f"• <b>Action</b>: {action} {lot_size} units\n"
-                        f"• <b>Current Price</b>: ₹{cur_p:,.2f}\n"
+                        f"• <b>Current Price</b>: ₹{cur_p:,.2f} ({pct_to_target:.1f}% to Target)\n"
                         f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
                         f"• <b>Target</b>: ₹{target:,.2f}\n"
                         f"• <b>New Stop-Loss</b>: <b>₹{entry_p:,.2f} (Risk-Free Breakeven)</b>\n\n"
                         f"Position is now completely risk-free! Winning trade cannot turn into a loss.\n\n"
+                        f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                    )
+                    alerts_to_send.append({'subject': subject, 'body': body})
+
+                # Stage 2: Profit Lock (+0.8R / +50% of profit locked) when price hits +75% towards Target
+                elif pct_to_target >= 75.0 and not pt.get('stage_2_profit_locked'):
+                    lock_price = round(entry_p + (target_dist * 0.40) if action == 'BUY' else entry_p - (target_dist * 0.40), 2)
+                    pt['stage_2_profit_locked'] = True
+                    pt['stop_loss'] = lock_price
+                    stop_loss = lock_price
+                    if s6:
+                        s6['stop_loss'] = lock_price
+                    updated_any = True
+
+                    subject = f"💰 [STAGE 2: PROFIT LOCKED] {trade['name']} Reached +75% Target Milestone"
+                    body = (
+                        f"💰 <b>STAGE 2 PROFIT LOCK ACTIVATED (+0.8R)</b>\n"
+                        f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                        f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                        f"• <b>Asset</b>: {trade['name']} ({sym})\n"
+                        f"• <b>Action</b>: {action} {lot_size} units\n"
+                        f"• <b>Current Price</b>: ₹{cur_p:,.2f} ({pct_to_target:.1f}% to Target)\n"
+                        f"• <b>Guaranteed Profit Floor</b>: <b>₹{lock_price:,.2f}</b>\n"
+                        f"• <b>Final Target</b>: ₹{target:,.2f}\n\n"
+                        f"Trade has locked in guaranteed profits! Even on a sharp reversal, this trade is a winner.\n\n"
                         f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
                     )
                     alerts_to_send.append({'subject': subject, 'body': body})
