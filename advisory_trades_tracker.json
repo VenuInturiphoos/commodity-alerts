@@ -1,24 +1,97 @@
 {
-  "last_updated": "02 Nov 2026, 09:16 AM IST",
+  "last_updated": "02 Nov 2026, 09:21 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 8,
-    "executed_count": 1,
+    "total_signals": 9,
+    "executed_count": 2,
     "correct_count": 0,
     "wrong_count": 0,
     "protected_count": 7,
     "win_rate_pct": 0.0,
     "total_pnl_inr": 0,
     "avg_trade_pnl_inr": 0.0,
-    "active_trades_count": 1,
+    "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 300000.0,
-    "used_margin_inr": 6975.76,
-    "available_cash_inr": 293024.24,
+    "used_margin_inr": 33571.08,
+    "available_cash_inr": 266428.92,
     "net_worth_inr": 300000.0
   },
   "trades": [
+    {
+      "id": "ADV-02Nov2026-0921-ALUMINIUM",
+      "date": "02 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (EMA 20/50 Bearish Trend Confluence)",
+      "time_trigger": "09:21 AM IST",
+      "time_6pm": "09:21 AM IST",
+      "time_validation": "09:21 AM IST",
+      "time_615": "09:21 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ALUMINIUM",
+      "name": "Aluminium",
+      "lot_size": 505,
+      "event_context": "Indicator Confluence: EMA 20/50 Bearish Trend Confluence",
+      "time_machine": {
+        "replays": 1000,
+        "passed": true,
+        "verdict": "PARAMETRIC_STATISTICAL_PASS",
+        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
+        "p_target_pct": 51.8,
+        "p_stop_pct": 36.1,
+        "p_neither_pct": 12.1,
+        "resolved_win_rate_pct": 58.9,
+        "expected_r": 0.421,
+        "target_r": 1.51,
+        "sample_bars": 0,
+        "summary": "Parametric Model: 51.8% Target | 36.1% Stop | Expected: +0.42R"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 1.51,
+        "loss_at_stop_inr": 2994.65,
+        "potential_gain_inr": 4509.65
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b9329.15",
+        "rationale": "20 EMA (\u20b9330.17) < 50 EMA (\u20b9335.52) with ADX 28.7 >= 20 and healthy RSI 45.4. Downward trend continuation in effect. Parametric Model: 51.8% Target | 36.1% Stop | Expected: +0.42R",
+        "reference_price": 329.15,
+        "stop_loss": 335.08,
+        "target": 320.22
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 329.15,
+        "action_taken": "Entered SELL 505 units @ \u20b9329.15",
+        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (\u20b9330.17) < 50 EMA (\u20b9335.52) with ADX 28.7 >= 20 and healthy RSI 45.4. Downward trend continuation in effect. | Parametric Model: 51.8% Target | 36.1% Stop | Expected: +0.42R"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 505,
+        "entry_price": 329.15,
+        "entry_time": "09:21 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 320.22,
+        "stop_loss": 335.08,
+        "margin_required_inr": 26595.32
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "EMA 20/50 Bearish Trend Confluence active: SELL @ \u20b9329.15 (Target: \u20b9320.22, SL: \u20b9335.08) | Parametric Model: 51.8% Target | 36.1% Stop | Expected: +0.42R"
+      }
+    },
     {
       "id": "ADV-02Nov2026-0916-TATAMOTORS",
       "date": "02 Nov 2026",
