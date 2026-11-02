@@ -4,18 +4,18 @@
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 9,
-    "executed_count": 2,
+    "executed_count": 1,
     "correct_count": 0,
     "wrong_count": 0,
-    "protected_count": 7,
+    "protected_count": 8,
     "win_rate_pct": 0.0,
     "total_pnl_inr": 0,
     "avg_trade_pnl_inr": 0.0,
-    "active_trades_count": 2,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 300000.0,
-    "used_margin_inr": 33571.08,
-    "available_cash_inr": 266428.92,
+    "used_margin_inr": 26595.32,
+    "available_cash_inr": 273404.68,
     "net_worth_inr": 300000.0
   },
   "trades": [
@@ -128,42 +128,42 @@
         "potential_gain_inr": 3139.84
       },
       "suggestion_6pm": {
-        "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ \u20b9396.35",
-        "rationale": "50 EMA > 200 EMA Golden Cross confirmed with value pullback into demand zone (RSI: 38.4). Trend continuation entry targeting 2.0R swing upside. Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R",
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / NO F&O CONTRACT",
+        "rationale": "Tata Motors demerged into TMCV/TMPV; NSE expired all TATAMOTORS F&O contracts. Stood aside to prevent invalid derivative order.",
         "reference_price": 396.35,
         "stop_loss": 378.51,
         "target": 432.03
       },
       "check_615": {
         "checked": true,
-        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "status": "STAND_ASIDE",
         "price_615": 396.35,
-        "action_taken": "Entered BUY 88 shares @ \u20b9396.35",
-        "detail": "EMA 50/200 Golden Cross Trend Pullback: 50 EMA > 200 EMA Golden Cross confirmed with value pullback into demand zone (RSI: 38.4). Trend continuation entry targeting 2.0R swing upside. | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+        "action_taken": "Stood aside (0 shares) - No active F&O derivative contract on NSE",
+        "detail": "Demerger corporate action: old TATAMOTORS F&O contracts were prematurely expired by NSE."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "BUY",
-        "quantity": 88,
+        "action": "STAND_ASIDE",
+        "quantity": 0,
         "entry_price": 396.35,
         "entry_time": "09:16 AM IST",
         "exit_price": null,
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "status": "STAND_ASIDE",
         "target": 432.03,
         "stop_loss": 378.51,
-        "margin_required_inr": 6975.76
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "EMA 50/200 Golden Cross Trend Pullback active: BUY @ \u20b9396.35 (Target: \u20b9432.03, SL: \u20b9378.51) | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+        "outcome": "PROTECTED",
+        "badge": "No F&O Exists \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: TATAMOTORS has no active Futures contract on NSE post-demerger."
       }
     },
     {
