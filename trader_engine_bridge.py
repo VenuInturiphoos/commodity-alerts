@@ -546,14 +546,72 @@ class PositionSizer:
     # Contract point value per unit
     POINT_VALUE = {
         'GOLD': 100.0,       # 1 point move on 1 kg / 10g quote = ₹100
+        'GOLDM': 10.0,       # 1 point move on 100g = ₹10
         'SILVER': 30.0,      # 1 point move on standard silver = ₹30 (mini/mic is 5/1)
+        'SILVERM': 5.0,      # 1 point move = ₹5
         'SILVERMIC': 1.0,    # 1 point move = ₹1
-        'CRUDEOIL': 100.0,   # 1 barrel = ₹100
+        'CRUDEOIL': 100.0,   # 1 barrel = ₹100 (standard is 100 bbl)
+        'CRUDEOILM': 10.0,   # 1 barrel = ₹10 (mini is 10 bbl)
         'NATURALGAS': 1250.0,# 1 mmBtu = ₹1250
+        'NATURALGASM': 250.0,# 1 mmBtu = ₹250
         'COPPER': 2500.0,    # 1 kg quote = ₹2500
+        'COPPERM': 1000.0,   # 1 kg quote = ₹1000
         'ZINC': 5000.0,      # 1 kg quote = ₹5000
-        'ALUMINIUM': 5000.0  # 1 kg quote = ₹5000
+        'ZINCM': 1000.0,     # 1 kg quote = ₹1000
+        'ALUMINIUM': 2500.0, # 1 kg quote = ₹2500
+        'ALUMINI': 1000.0    # 1 kg quote = ₹1000
     }
+
+    # Mini / Micro Contract Routing Map for Volatility Relief
+    MINI_ROUTES = {
+        'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot_size': 1000},
+        'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot_size': 10},
+        'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot_size': 250},
+        'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot_size': 1},
+        'GOLD': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot_size': 10},
+        'ZINC': {'symbol': 'ZINCM', 'name': 'Zinc Mini', 'lot_size': 1000},
+        'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1000},
+    }
+
+    @classmethod
+    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=3000.0, atr=None):
+        """
+        Resolves the appropriate contract (Standard vs Mini) and safe lot size
+        so that total rupee risk at stop-loss strictly fits inside max_risk_inr.
+        If standard lot exceeds max_risk_inr, automatically routes to Mini contract.
+        """
+        if entry <= 0 or stop <= 0 or entry == stop:
+            return symbol, name, default_lot
+
+        risk_pts = abs(entry - stop)
+        effective_risk_pts = max(risk_pts, atr * 0.8) if (atr and atr > 0) else risk_pts
+
+        # 1. Check if standard contract fits within risk cap
+        total_risk_standard = effective_risk_pts * default_lot
+        if total_risk_standard <= max_risk_inr:
+            return symbol, name, default_lot
+
+        # 2. Check if a Mini contract exists for this commodity
+        base_sym = symbol.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '')
+        mini_info = cls.MINI_ROUTES.get(symbol) or cls.MINI_ROUTES.get(base_sym)
+        if mini_info:
+            mini_lot = mini_info['lot_size']
+            total_risk_mini = effective_risk_pts * mini_lot
+            if total_risk_mini <= max_risk_inr:
+                print(f"🔄 Sizer Route: {symbol} Standard lot risk (₹{total_risk_standard:,.0f}) > ₹{max_risk_inr:,.0f}. Routed to {mini_info['name']} ({mini_lot} units, risk ₹{total_risk_mini:,.0f}).")
+                return mini_info['symbol'], mini_info['name'], mini_lot
+            
+            # If 1 mini lot still exceeds risk, check affordable integer lots
+            afford_lot = math.floor(max_risk_inr / effective_risk_pts)
+            if afford_lot >= 1:
+                return mini_info['symbol'], mini_info['name'], afford_lot
+
+        # 3. For equities or divisible instruments
+        scaled_lot = math.floor(max_risk_inr / effective_risk_pts)
+        if scaled_lot >= 1:
+            return symbol, name, min(default_lot, scaled_lot)
+
+        return symbol, name, 0  # Blocked: Cannot safely fit inside risk cap
 
     @classmethod
     def calculate_adaptive_lot(cls, symbol, entry, stop, default_lot, max_risk_inr=3000.0, atr=None):
@@ -580,14 +638,15 @@ class PositionSizer:
         if total_risk_default <= max_risk_inr:
             return default_lot
 
-        # Standard MCX commodity contracts (e.g. Aluminium 2500, Copper 1250) are indivisible exchange lots
-        if symbol in COMMODITY_YF_MAP or default_lot > 50:
-            return default_lot
+        # Check mini contract fallback
+        base_sym = symbol.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '')
+        mini_info = cls.MINI_ROUTES.get(symbol) or cls.MINI_ROUTES.get(base_sym)
+        if mini_info and (effective_risk_pts * mini_info['lot_size'] <= max_risk_inr):
+            return mini_info['lot_size']
 
-        # Scale down lot size to fit inside max_risk_inr (for equities)
+        # Scale down lot size to fit inside max_risk_inr (for equities or divisible contracts)
         scaled_lot = math.floor(max_risk_inr / effective_risk_pts)
         if scaled_lot < 1:
-            # If even 1 standard lot exceeds max_risk_inr, return 0 (cannot afford risk)
             return 0
         return min(default_lot, scaled_lot)
 

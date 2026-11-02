@@ -9,23 +9,25 @@ NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web'
 import math
 USER_ACCOUNT = "venu.photos1@gmail.com"
 
-# MCX Risk-Parity Lot Sizes (Approx ₹1.2 Lakh to ₹1.5 Lakh Purchase/Margin Capital per Trade)
+# MCX Risk-Parity Lot Sizes (Standard & Mini / Micro Contracts)
 LOT_SIZES = {
-    'CRUDEOIL': 50,     # Crude Oil (50 bbl) - 1 pt = ₹50 (~₹1.22L margin)
-    'CRUDEOILM': 50,
-    'NATURALGAS': 2500, # Natural Gas (2500 mmBtu) - 1 pt = ₹2500 (~₹1.30L margin)
-    'NATURALGASM': 2500,
-    'SILVER': 5,        # Silver (5 kg) - 1 pt = ₹5 (~₹1.45L margin)
-    'SILVERMIC': 5,
-    'GOLD': 10,         # Gold (10 x 10g = 100g) - 1 pt = ₹10 (~₹1.44L margin)
-    'GOLDM': 10,
+    'CRUDEOIL': 50,     # Crude Oil Standard (50 bbl) - 1 pt = ₹50 (~₹1.22L margin)
+    'CRUDEOILM': 10,    # Crude Oil Mini (10 bbl) - 1 pt = ₹10 (~₹25k margin)
+    'NATURALGAS': 1250, # Natural Gas Standard (1250 mmBtu) - 1 pt = ₹1250 (~₹65k margin)
+    'NATURALGASM': 250, # Natural Gas Mini (250 mmBtu) - 1 pt = ₹250 (~₹13k margin)
+    'SILVER': 30,       # Silver Standard (30 kg) - 1 pt = ₹30 (~₹8.7L margin)
+    'SILVERM': 5,       # Silver Mini (5 kg) - 1 pt = ₹5 (~₹1.45L margin)
+    'SILVERMIC': 1,     # Silver Micro (1 kg) - 1 pt = ₹1 (~₹29k margin)
+    'GOLD': 100,        # Gold Standard (1 kg = 100 x 10g)
+    'GOLDM': 10,        # Gold Mini (100g = 10 x 10g) - 1 pt = ₹10 (~₹1.44L margin)
     'GOLDTEN': 10,
-    'COPPER': 1250,     # Copper (1250 kg) - 1 pt = ₹1250 (~₹1.40L margin)
-    'COPPERM': 1250,
-    'ZINC': 2500,       # Zinc (2500 kg) - 1 pt = ₹2500 (~₹1.33L margin)
-    'ZINCMINI': 2500,
-    'ALUMINIUM': 2500,  # Aluminium (2500 kg) - 1 pt = ₹2500 (~₹1.32L margin)
-    'ALUMINI': 2500
+    'COPPER': 2500,     # Copper Standard (2500 kg)
+    'COPPERM': 1000,    # Copper Mini (1000 kg) - 1 pt = ₹1000 (~₹1.1L margin)
+    'ZINC': 5000,       # Zinc Standard (5000 kg)
+    'ZINCM': 1000,      # Zinc Mini (1000 kg) - 1 pt = ₹1000 (~₹55k margin)
+    'ZINCMINI': 1000,
+    'ALUMINIUM': 2500,  # Aluminium Standard (2500 kg) - 1 pt = ₹2500 (~₹1.32L margin)
+    'ALUMINI': 1000     # Aluminium Mini (1000 kg) - 1 pt = ₹1000 (~₹52k margin)
 }
 
 # MCX Standard Initial Margin Requirements (SPAN + Exposure Margin adjusted for ~₹1.2L-₹1.5L purchase cost)
@@ -35,10 +37,12 @@ MARGIN_RATES = {
     'NATURALGAS': 0.18,  # 18% margin (~₹1.30 Lakh @ ₹290)
     'NATURALGASM': 0.18,
     'SILVER': 0.15,      # 15% margin (~₹1.45 Lakh)
+    'SILVERM': 0.15,
     'SILVERMIC': 0.15,
     'COPPER': 0.08,      # 8% margin (~₹1.40 Lakh)
     'COPPERM': 0.08,
     'ZINC': 0.13,        # 13% margin (~₹1.33 Lakh @ ₹410)
+    'ZINCM': 0.13,
     'ZINCMINI': 0.13,
     'ALUMINIUM': 0.16,   # 16% margin (~₹1.32 Lakh @ ₹330)
     'ALUMINI': 0.16,
@@ -1395,25 +1399,96 @@ def record_live_8pm_advisory(commodities_list, day_name):
         status = item['status']
         if 'LOCKED' in status or 'HIT' in status or 'NEAR' in status:
             direction = 'LOWER' if 'LOWER' in status else 'UPPER'
-            action = "BUY" if direction == 'LOWER' else "SELL"
             cur_p = item['current_price']
             lc_price = item['lower_circuit']
             uc_price = item['upper_circuit']
+            day_h = float(item.get('day_high', cur_p))
+            day_l = float(item.get('day_low', cur_p))
+            chg_pct = float(item.get('pct_change', 0.0))
             tgt = item['prev_close']
             lot_size = LOT_SIZES.get(sym, 1)
 
-            # Ensure BUY stop loss is strictly below min(entry, LC), and SELL stop is strictly above max(entry, UC)
-            if direction == 'LOWER':
-                sl = round(min(cur_p, lc_price) * 0.996, 2)
-            else:
-                sl = round(max(cur_p, uc_price) * 1.004, 2)
+            # 🛡️ COUNTER-TREND KNIFE-CATCHING GUARD:
+            # Never blind-buy a collapsing commodity or blind-short a surging commodity.
+            # If price is pressing Day Low / Lower Circuit (-2% or worse), standing aside is mandatory.
+            is_knife_catching = False
+            knife_reason = ""
+            if direction == 'LOWER' and (cur_p <= day_l * 1.002 or chg_pct <= -2.0):
+                is_knife_catching = True
+                knife_reason = f"Dumping into Lower Circuit ({chg_pct:+.2f}%). Counter-trend knife catching prohibited."
+            elif direction == 'UPPER' and (cur_p >= day_h * 0.998 or chg_pct >= 2.0):
+                is_knife_catching = True
+                knife_reason = f"Surging into Upper Circuit ({chg_pct:+.2f}%). Counter-trend shorting prohibited."
 
-            # 1. Adaptively scale lot size to fit strictly within ₹3,000 max risk cap
-            adaptive_lot = PositionSizer.calculate_adaptive_lot(sym, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
+            if is_knife_catching:
+                entry = {
+                    "id": trade_id,
+                    "date": today_str,
+                    "session_name": "Evening Pit Review (8:00 PM)",
+                    "time_trigger": "08:00 PM IST",
+                    "time_6pm": "08:00 PM IST",
+                    "time_validation": "08:15 PM IST",
+                    "time_615": "08:15 PM IST",
+                    "time_exit": "11:30 PM IST",
+                    "symbol": sym,
+                    "name": item['name'],
+                    "lot_size": 0,
+                    "event_context": "Counter-Trend Knife-Catching Guard",
+                    "suggestion_6pm": {
+                        "status": "STAND_ASIDE",
+                        "action_text": "STAND ASIDE / TREND GUARD",
+                        "rationale": knife_reason,
+                        "reference_price": cur_p,
+                        "stop_loss": None,
+                        "target": None
+                    },
+                    "check_615": {
+                        "checked": True,
+                        "status": "STAND_ASIDE_CONFIRMED",
+                        "price_615": cur_p,
+                        "action_taken": "Stood Aside (0 Units)",
+                        "detail": knife_reason
+                    },
+                    "paper_trade": {
+                        "user": USER_ACCOUNT,
+                        "action": "STAND_ASIDE",
+                        "quantity": 0,
+                        "entry_price": None,
+                        "entry_time": "08:00 PM IST",
+                        "exit_price": None,
+                        "exit_time": None,
+                        "pnl_points": 0.0,
+                        "pnl_inr": 0.0,
+                        "status": "STAND_ASIDE"
+                    },
+                    "eod_outcome": {
+                        "session_close": None,
+                        "circuit_limit": lc_price if direction == 'LOWER' else uc_price,
+                        "outcome": "PROTECTED",
+                        "badge": "Trend Guard 🛡️",
+                        "pnl_display": "₹0.00 (Protected)",
+                        "summary": f"Stood aside: {knife_reason}"
+                    }
+                }
+                new_entries.append(entry)
+                continue
+
+            action = "BUY" if direction == 'LOWER' else "SELL"
+
+            # Technical Invalidation Stop: placed beyond Day Extreme + buffer
+            if direction == 'LOWER':
+                sl = round(min(cur_p * 0.992, lc_price * 0.995), 2)
+            else:
+                sl = round(max(cur_p * 1.008, uc_price * 1.005), 2)
+
+            # 1. Adaptively route to Mini contract or scale lot size strictly within ₹3,000 risk cap
+            contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
+                sym, item['name'], cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR
+            )
 
             # 2. Run PreTradeRiskEngine check
             all_existing = new_entries + trades
-            risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
+            risk_metrics = PreTradeRiskEngine.check_risk(contract_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
 
             if adaptive_lot <= 0 or not risk_metrics.get('passed'):
                 # Risk Blocked: Stand Aside
@@ -1567,29 +1642,68 @@ def check_and_execute_615_confirmation(checker, alerter):
         direction = 'LOWER' if 'LOWER' in trade['event_context'] else 'UPPER'
         lot_size = trade['lot_size']
         
-        # Check if 15-min candle held inside circuit limit
+        # Check if 15-min candle showed genuine reversal confirmation vs knife-catching
+        day_h = float(c_item.get('day_high', cur_p))
+        day_l = float(c_item.get('day_low', cur_p))
+        chg_pct = float(c_item.get('pct_change', 0.0))
         is_reversal = False
+        reversal_reject_reason = ""
+
         if direction == 'LOWER':
-            is_reversal = cur_p > lc_p # held above floor
+            # Reversal requires holding above LC AND showing a real bounce off day low (+0.5% off low)
+            if cur_p > lc_p and cur_p >= day_l * 1.004 and chg_pct > -3.5:
+                is_reversal = True
+            else:
+                reversal_reject_reason = f"Hugging Day Low / LC (Chg: {chg_pct:+.2f}%). Heavy downward momentum; knife-catching blocked."
         else:
-            is_reversal = cur_p < uc_p # held below ceiling
+            # Reversal requires holding below UC AND showing a real pullback off day high (-0.5% off high)
+            if cur_p < uc_p and cur_p <= day_h * 0.996 and chg_pct < 3.5:
+                is_reversal = True
+            else:
+                reversal_reject_reason = f"Hugging Day High / UC (Chg: {chg_pct:+.2f}%). Heavy upward momentum; shorting runaway train blocked."
             
         trade['check_615']['checked'] = True
         trade['check_615']['price_615'] = cur_p
 
+        if not is_reversal:
+            # Stand aside: no genuine reversal
+            trade['check_615']['status'] = "KNIFE_CATCH_STAND_ASIDE"
+            trade['check_615']['action_taken'] = f"Stood aside: {reversal_reject_reason}"
+            trade['check_615']['detail'] = reversal_reject_reason
+            trade['paper_trade']['status'] = "STAND_ASIDE"
+            trade['paper_trade']['action'] = "STAND_ASIDE"
+            trade['paper_trade']['quantity'] = 0
+            trade['paper_trade']['entry_price'] = cur_p
+            trade['paper_trade']['exit_price'] = cur_p
+            trade['paper_trade']['pnl_inr'] = 0.0
+            trade['eod_outcome']['outcome'] = "PROTECTED"
+            trade['eod_outcome']['badge'] = "Trend Guard 🛡️"
+            trade['eod_outcome']['pnl_display'] = "₹0.00 (Protected)"
+            trade['eod_outcome']['summary'] = f"Stood aside: {reversal_reject_reason}"
+            msg = (
+                f"🛡️ <b>[6:15 PM TREND GUARD] {trade['name'].upper()}</b>\n"
+                f"• Status: Reversal NOT confirmed (Price ₹{cur_p:,.2f})\n"
+                f"• Reason: <b>{reversal_reject_reason}</b>\n"
+                f"• Action: Stood aside to protect ₹3,000 risk capital."
+            )
+            alert_messages.append(msg)
+            continue
+
         if is_reversal:
             action = "BUY" if direction == 'LOWER' else "SELL"
             if direction == 'LOWER':
-                sl = round(min(cur_p, lc_p) * 0.996, 2)
+                sl = round(min(cur_p * 0.992, lc_p * 0.995), 2)
             else:
-                sl = round(max(cur_p, uc_p) * 1.004, 2)
+                sl = round(max(cur_p * 1.008, uc_p * 1.005), 2)
             tgt = prev_close
 
-            # 1. Adaptively scale lot size to fit strictly within ₹3,000 max risk cap
-            adaptive_lot = PositionSizer.calculate_adaptive_lot(sym, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
+            # 1. Adaptively route to Mini contract or scale lot size strictly within ₹3,000 max risk cap
+            contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
+                sym, trade['name'], cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR
+            )
             
             # 2. Run PreTradeRiskEngine check
-            risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, trades, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
+            risk_metrics = PreTradeRiskEngine.check_risk(contract_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, trades, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
 
             if adaptive_lot <= 0 or not risk_metrics.get('passed'):
                 # RISK BLOCKED: Stand aside
@@ -1849,8 +1963,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 current_favorable_move = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
                 pct_to_target = (current_favorable_move / target_dist) * 100
 
-                # Stage 1: Breakeven Lock at +40% towards Target (Guarantees zero-risk position)
-                if pct_to_target >= 40.0 and not pt.get('trailing_sl_active'):
+                # Stage 1: Breakeven Lock at +30% towards Target (+0.5R lock guarantees zero-risk position)
+                if pct_to_target >= 30.0 and not pt.get('trailing_sl_active'):
                     pt['trailing_sl_active'] = True
                     pt['original_sl'] = stop_loss
                     pt['stop_loss'] = entry_p
@@ -1859,9 +1973,9 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         s6['stop_loss'] = entry_p
                     updated_any = True
                     
-                    subject = f"🛡️ [STAGE 1: BREAKEVEN LOCK] {trade['name']} Reached +40% Target Milestone"
+                    subject = f"🛡️ [STAGE 1: BREAKEVEN LOCK (+0.5R)] {trade['name']} Reached +30% Target Milestone"
                     body = (
-                        f"🛡️ <b>TRAILING STOP TO BREAKEVEN ACTIVATED</b>\n"
+                        f"🛡️ <b>TRAILING STOP TO BREAKEVEN ACTIVATED (+0.5R)</b>\n"
                         f"📅 <i>{today_str}, {now_time_str}</i>\n"
                         f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
                         f"• <b>Asset</b>: {trade['name']} ({sym})\n"
@@ -1949,12 +2063,38 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         )
                         alerts_to_send.append({'subject': subject, 'body': body})
 
-        # 4. Check Target & Stop-Loss & EOD Square-off Triggers
+        # 4. Check Target, Stop-Loss, 45-Minute Stagnation & EOD Square-off Triggers
         hit_target = False
         hit_sl = False
         hit_eod = False
+        hit_stagnation = False
         exit_p = cur_p
         reason = ""
+
+        # ⏱️ 45-Minute Stagnation Stop:
+        # If active >= 45 minutes and momentum hasn't reached +30% to target, scratch at current price to preserve capital
+        entry_time_str = pt.get('entry_time')
+        trade_date_str = trade.get('date', today_str)
+        if trade_status == 'ACTIVE' and entry_time_str:
+            try:
+                clean_time = entry_time_str.replace(' IST', '').strip()
+                entry_dt_naive = datetime.strptime(f"{trade_date_str} {clean_time}", "%d %b %Y %I:%M %p")
+                entry_dt = pytz.timezone('Asia/Kolkata').localize(entry_dt_naive)
+                mins_open = (now_dt - entry_dt).total_seconds() / 60.0
+                
+                if mins_open >= 45.0:
+                    pct_prog = 0.0
+                    if target and entry_p:
+                        t_dist = abs(target - entry_p)
+                        if t_dist > 0:
+                            f_move = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
+                            pct_prog = (f_move / t_dist) * 100.0
+                    if pct_prog < 30.0:
+                        hit_stagnation = True
+                        exit_p = cur_p
+                        reason = f"45-Minute Stagnation Exit ⏱️ (Stalled for {int(mins_open)}m; scratch to protect capital)"
+            except Exception:
+                pass
 
         if action == 'BUY':
             if target and cur_p >= target:
@@ -1983,13 +2123,13 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 exit_p = cur_p
                 reason = "Intraday EOD Square-off (03:25 PM) ⏰"
 
-        if hit_target or hit_sl or hit_eod:
+        if hit_target or hit_sl or hit_eod or hit_stagnation:
             pnl_pts = (exit_p - entry_p) if action == 'BUY' else (entry_p - exit_p)
             pnl_inr = round(pnl_pts * lot_size, 2)
             
             pt['exit_price'] = exit_p
             pt['exit_time'] = now_time_str
-            pt['exit_trigger'] = "TARGET_HIT" if hit_target else ("EOD_SQUAREOFF" if hit_eod else ("TRAILING_BREAKEVEN_HIT" if pt.get('trailing_sl_active') else "STOP_LOSS_HIT"))
+            pt['exit_trigger'] = "TARGET_HIT" if hit_target else ("EOD_SQUAREOFF" if hit_eod else ("STAGNATION_EXIT" if hit_stagnation else ("TRAILING_BREAKEVEN_HIT" if pt.get('trailing_sl_active') else "STOP_LOSS_HIT")))
             pt['pnl_points'] = round(pnl_pts, 2)
             pt['pnl_inr'] = pnl_inr
             pt['status'] = "CLOSED"
@@ -2000,6 +2140,9 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             elif hit_eod:
                 outcome_val = "CORRECT" if pnl_inr > 0 else ("WRONG" if pnl_inr < 0 else "PROTECTED")
                 badge_text = f"EOD Square-off ⏰ ({now_time_str})"
+            elif hit_stagnation:
+                outcome_val = "PROTECTED" if abs(pnl_inr) <= 500 else ("CORRECT" if pnl_inr > 0 else "WRONG")
+                badge_text = f"Stagnation Exit ⏱️ ({now_time_str})"
             elif pt.get('trailing_sl_active'):
                 outcome_val = "PROTECTED"
                 badge_text = f"Breakeven Exit 🛡️ ({now_time_str})"
@@ -2262,6 +2405,16 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                              f"healthy RSI {rsi:.1f}. Downward trend continuation in effect.")
 
         if triggered and action:
+            # 🛡️ Multi-Timeframe Trend Confirmation Guard:
+            # Never take a BUY if price is below 50 EMA with strong downward momentum (ADX >= 25).
+            # Never take a SELL if price is above 50 EMA with strong upward momentum (ADX >= 25).
+            if action == "BUY" and ema50 is not None and cur_p < ema50 and (adx is not None and adx >= 25.0):
+                print(f"🚫 Trend Guard: Blocked {sym} BUY because price (₹{cur_p:,.2f}) is below 50 EMA in strong downtrend (ADX {adx:.1f}).")
+                continue
+            if action == "SELL" and ema50 is not None and cur_p > ema50 and (adx is not None and adx >= 25.0):
+                print(f"🚫 Trend Guard: Blocked {sym} SELL because price (₹{cur_p:,.2f}) is above 50 EMA in strong uptrend (ADX {adx:.1f}).")
+                continue
+
             # 📐 Structural Technical Bracket: Stop placed beyond Day High/Low to eliminate noise stop-outs
             sl, tgt = calculate_technical_bracket(action, cur_p, day_h, day_l, ema20=ema20, ema50=ema50, atr=atr_val, min_rrr=1.8)
 
@@ -2282,16 +2435,18 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     print(f"⏱️ ORB Timer Blocked {sym} {action}: {orb_metrics.get('reason')}")
                     continue
 
-            # 3. Dynamic Position Sizing & Pre-Trade Risk Filter
-            adaptive_lot = PositionSizer.calculate_adaptive_lot(sym, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
+            # 3. Dynamic Position Sizing & Mini-Contract Routing (Ensures Technical Stop fits <= ₹3,000 risk)
+            contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
+                sym, name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR, atr=atr_val
+            )
             if adaptive_lot <= 0:
-                print(f"🛡️ Position Sizer Blocked {sym}: Risk per standard lot exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} limit. Stood aside to preserve capital.")
+                print(f"🛡️ Position Sizer Blocked {sym}: Risk per lot exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} limit even on mini contract. Stood aside to preserve capital.")
                 continue
 
             all_existing = new_trades + trades
-            risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, adaptive_lot, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
+            risk_metrics = PreTradeRiskEngine.check_risk(contract_sym, action, cur_p, sl, tgt, adaptive_lot, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
             if not risk_metrics.get('passed'):
-                print(f"🛡️ Pre-Trade Risk Engine Blocked {sym} {action}: {risk_metrics.get('reason')}")
+                print(f"🛡️ Pre-Trade Risk Engine Blocked {contract_sym} {action}: {risk_metrics.get('reason')}")
                 continue
 
             # Run Monte Carlo Time Machine simulation (3,000 replays)
@@ -2309,8 +2464,8 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 "time_validation": now_time_str,
                 "time_615": now_time_str,
                 "time_exit": "11:30 PM IST",
-                "symbol": sym,
-                "name": name,
+                "symbol": contract_sym,
+                "name": contract_name,
                 "lot_size": adaptive_lot,
                 "event_context": f"Indicator Confluence: {setup_name}",
                 "time_machine": sim_metrics,
