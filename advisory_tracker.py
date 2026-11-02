@@ -2363,11 +2363,17 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
 
             for s in equity_stocks:
                 cur_active_equity = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') == 'EQUITY')
-                if cur_active_equity >= 2:
+                if cur_active_equity >= MAX_CONCURRENT_EQUITIES:
                     break
 
                 sym = s.get('symbol', '')
                 clean_sym = sym.replace('.NS', '').upper()
+
+                # Guard: Ensure only stocks with active NSE F&O contracts are traded in F&O engine.
+                # TATAMOTORS/TMCV/TMPV underwent corporate demerger where old TATAMOTORS F&O contracts were expired by NSE.
+                if clean_sym in {'TATAMOTORS', 'TMCV', 'TMPV'}:
+                    continue
+
                 name = s.get('full_name') or s.get('name', clean_sym)
                 cur_p = float(s.get('close') or 0)
                 if cur_p <= 0:
