@@ -1,22 +1,22 @@
 {
-  "last_updated": "02 Nov 2026, 01:58 PM IST",
+  "last_updated": "02 Nov 2026, 02:01 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 16,
     "executed_count": 2,
     "correct_count": 0,
-    "wrong_count": 0,
+    "wrong_count": 1,
     "protected_count": 14,
     "win_rate_pct": 0.0,
-    "total_pnl_inr": 0,
-    "avg_trade_pnl_inr": 0.0,
-    "active_trades_count": 2,
+    "total_pnl_inr": -3000.0,
+    "avg_trade_pnl_inr": -1500.0,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 300000.0,
-    "used_margin_inr": 138530.68,
-    "available_cash_inr": 161469.32,
-    "net_worth_inr": 300000.0
+    "current_cash_inr": 297000.0,
+    "used_margin_inr": 6870.68,
+    "available_cash_inr": 290129.32,
+    "net_worth_inr": 297000.0
   },
   "trades": [
     {
@@ -444,7 +444,7 @@
       "time_6pm": "09:21 AM IST",
       "time_validation": "09:21 AM IST",
       "time_615": "09:21 AM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "02:01 PM IST",
       "symbol": "ALUMINIUM",
       "name": "Aluminium",
       "lot_size": 2500,
@@ -491,22 +491,25 @@
         "quantity": 2500,
         "entry_price": 329.15,
         "entry_time": "09:21 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 330.35,
+        "exit_time": "02:01 PM IST",
+        "pnl_points": -1.2,
+        "pnl_inr": -3000.0,
+        "status": "CLOSED",
         "target": 326.75,
         "stop_loss": 330.35,
-        "margin_required_inr": 131660.0
+        "margin_required_inr": 131660.0,
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 330.35,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "EMA 20/50 Bearish Trend Confluence active: SELL @ \u20b9329.15 (Target: \u20b9326.75, SL: \u20b9330.35) | Max Risk: \u20b93,000 (1.20 pts x 2500)."
+        "outcome": "WRONG",
+        "badge": "Stop Loss Hit \ud83d\uded1 (02:01 PM IST)",
+        "pnl_display": "\u20b9-3,000.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:01 PM IST. Entry: \u20b9329.15 -> Exit: \u20b9330.35 (\u20b9-3,000.00).",
+        "exit_time": "02:01 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
       }
     },
     {
