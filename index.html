@@ -855,8 +855,13 @@
                         <div class="glass-card full-width" style="margin-bottom: 2rem;">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
                                 <div>
-                                    <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-secondary);">Virtual Account Balance & Net Worth</h3>
-                                    <h1 id="virtual-net-worth" style="margin: 0.5rem 0 0 0; font-size: 2.2rem; color: #4ade80;">₹...</h1>
+                                    <h3 style="margin: 0; font-size: 1.05rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                        <i class="fa-solid fa-chart-pie" style="color: #4ade80;"></i> Total Portfolio Net Worth
+                                    </h3>
+                                    <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;">
+                                        <h1 id="virtual-net-worth" style="margin: 0.35rem 0 0 0; font-size: 2.2rem; color: #4ade80;">₹...</h1>
+                                        <span id="virtual-breakdown-sub" style="font-size: 0.82rem; color: #94a3b8; font-weight: 600;">(Liquid Cash + Current Value of Active Holdings)</span>
+                                    </div>
                                 </div>
                                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                     <button onclick="editVirtualBalance()" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #c7d2fe; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
@@ -2584,6 +2589,8 @@ async function loadStockInvestmentsTracker() {
             if (usedEl) usedEl.textContent = '₹' + usedMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             if (portEl) portEl.textContent = '₹' + portVal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             if (netWorthEl) netWorthEl.textContent = '₹' + netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const subBreakdownEl = document.getElementById('virtual-breakdown-sub');
+            if (subBreakdownEl) subBreakdownEl.textContent = `(₹${availCash.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Cash + ₹${portVal.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Holdings)`;
             if (plEl) {
                 plEl.textContent = (pl >= 0 ? '+₹' : '-₹') + Math.abs(pl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 plEl.style.color = pl >= 0 ? '#4ade80' : '#fb7185';
@@ -4187,6 +4194,8 @@ function renderPortfolio() {
 
     const netWorthEl = document.getElementById('virtual-net-worth');
     if (netWorthEl) netWorthEl.textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    const subBreakdownEl = document.getElementById('virtual-breakdown-sub');
+    if (subBreakdownEl) subBreakdownEl.textContent = `(₹${availableMargin.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Cash + ₹${currentPortfolioValue.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Holdings)`;
     const availEl = document.getElementById('virtual-available-margin');
     if (availEl) availEl.textContent = `₹${availableMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     const usedEl = document.getElementById('virtual-used-margin');
