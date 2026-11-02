@@ -29,7 +29,7 @@ CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.j
 
 TARGET_INVESTMENT_AMOUNT = 30000.0   # ₹30,000 INR per daily stock pick
 TOLERANCE_BAND = 1000.0              # ±₹1,000 INR tolerance
-DEFAULT_STARTING_CASH = 1000000.0    # ₹10,00,000 (10 Lakhs Virtual Stock Investing Capital)
+DEFAULT_STARTING_CASH = 300000.0     # ₹3,00,000 (3 Lakhs Virtual Stock Investing Capital)
 
 def calculate_shares_for_capital(price, target_capital=TARGET_INVESTMENT_AMOUNT):
     """

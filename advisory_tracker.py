@@ -65,7 +65,7 @@ COMMODITY_DISPLAY_NAMES = {
     'ALUMINI': 'Aluminium'
 }
 
-DEFAULT_STARTING_CASH = 1000000.0  # ₹10,00,000 (10 Lakhs Virtual Cash)
+DEFAULT_STARTING_CASH = 300000.0  # ₹3,00,000 (3 Lakhs Virtual Cash)
 
 def get_cash_and_margin(tracker_data):
     """
@@ -1646,7 +1646,7 @@ def check_and_execute_615_confirmation(checker, alerter):
         stand_aside_lines.append(f"• <b>{sa_trade['name']}</b>: ₹{cur_p:,.2f} ({chg_pct:+.2f}%) | Safe Range Held")
 
     cash_info = get_cash_and_margin(tracker)
-    avail_cash = cash_info.get('available_cash_inr', 1000000.0)
+    avail_cash = cash_info.get('available_cash', 300000.0)
 
     # If no pending circuit trades occurred, draft Stand Aside Action Playbook
     if not pending_trades:
