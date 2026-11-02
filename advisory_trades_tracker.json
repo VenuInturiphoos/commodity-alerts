@@ -1,5 +1,5 @@
 {
-  "last_updated": "02 Nov 2026, 08:47 PM IST",
+  "last_updated": "02 Nov 2026, 10:16 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -9,14 +9,14 @@
     "wrong_count": 3,
     "protected_count": 22,
     "win_rate_pct": 25.0,
-    "total_pnl_inr": -7698.2,
-    "avg_trade_pnl_inr": -1924.55,
+    "total_pnl_inr": -9180.5,
+    "avg_trade_pnl_inr": -2295.12,
     "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 292301.8,
+    "current_cash_inr": 290819.5,
     "used_margin_inr": 0,
-    "available_cash_inr": 292301.8,
-    "net_worth_inr": 292301.8
+    "available_cash_inr": 290819.5,
+    "net_worth_inr": 290819.5
   },
   "trades": [
     {
@@ -597,10 +597,10 @@
         "quantity": 29,
         "entry_price": 1184.6,
         "entry_time": "01:37 PM IST",
-        "exit_price": 1189.8,
-        "exit_time": "03:26 PM IST",
-        "pnl_points": 5.2,
-        "pnl_inr": 150.8,
+        "exit_price": 1186.1,
+        "exit_time": "03:25 PM IST",
+        "pnl_points": 1.5,
+        "pnl_inr": 43.5,
         "status": "CLOSED",
         "target": 1343.15,
         "stop_loss": 1112.53,
@@ -608,14 +608,13 @@
         "exit_trigger": "EOD_SQUAREOFF"
       },
       "eod_outcome": {
-        "session_close": 1189.8,
+        "session_close": 1186.1,
         "circuit_limit": null,
         "outcome": "CORRECT",
-        "badge": "EOD Square-off \u23f0 (03:26 PM IST)",
-        "pnl_display": "+\u20b9150.80",
-        "summary": "Intraday EOD Square-off (03:25 PM) \u23f0 at 03:26 PM IST. Entry: \u20b91,184.60 -> Exit: \u20b91,189.80 (+\u20b9150.80).",
-        "exit_time": "03:26 PM IST",
-        "exit_trigger": "EOD_SQUAREOFF"
+        "badge": "EOD Square-off \u23f0 (03:25 PM)",
+        "pnl_display": "+\u20b943.50",
+        "summary": "Intraday EOD Square-off executed @ \u20b91,186.10 (++1.50 pts x 29 shares = +\u20b943.50). Margin fully released.",
+        "exit_time": "03:25 PM IST"
       }
     },
     {
@@ -969,7 +968,7 @@
       "time_6pm": "09:21 AM IST",
       "time_validation": "09:21 AM IST",
       "time_615": "09:21 AM IST",
-      "time_exit": "02:01 PM IST",
+      "time_exit": "10:16 PM IST",
       "symbol": "ALUMINIUM",
       "name": "Aluminium",
       "lot_size": 2500,
@@ -990,18 +989,18 @@
       },
       "risk_check": {
         "passed": true,
-        "reason": "RISK_PASSED: Stop calibrated to strict \u20b93,000 risk cap (1.20 pts @ 2,500 units).",
-        "reward_risk_ratio": 2.0,
-        "loss_at_stop_inr": 3000.0,
-        "potential_gain_inr": 6000.0
+        "reason": "RISK_PASSED: Technical stop loss placed above Day High (\u20b9330.60) + 0.30 buffer.",
+        "reward_risk_ratio": 1.8,
+        "loss_at_stop_inr": 4375.0,
+        "potential_gain_inr": 7875.0
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
         "action_text": "SELL @ \u20b9329.15",
-        "rationale": "20 EMA (\u20b9330.17) < 50 EMA (\u20b9335.52) with ADX 28.7 >= 20. Downward trend confluence. Calibrated risk stop @ \u20b9330.35 (max \u20b93,000 loss) targeting \u20b9326.75 (2.0R).",
+        "rationale": "20 EMA (\u20b9330.17) < 50 EMA (\u20b9335.52). Downward trend confluence. Structural stop @ \u20b9330.90 (above Day High \u20b9330.60) targeting \u20b9326.00 (1.8R).",
         "reference_price": 329.15,
-        "stop_loss": 330.35,
-        "target": 326.75
+        "stop_loss": 330.9,
+        "target": 326.0
       },
       "check_615": {
         "checked": true,
@@ -1016,24 +1015,24 @@
         "quantity": 2500,
         "entry_price": 329.15,
         "entry_time": "09:21 AM IST",
-        "exit_price": 330.35,
-        "exit_time": "02:01 PM IST",
-        "pnl_points": -1.2,
-        "pnl_inr": -3000.0,
+        "exit_price": 330.9,
+        "exit_time": "10:16 PM IST",
+        "pnl_points": -1.75,
+        "pnl_inr": -4375.0,
         "status": "CLOSED",
-        "target": 326.75,
-        "stop_loss": 330.35,
+        "target": 326.0,
+        "stop_loss": 330.9,
         "margin_required_inr": 131660.0,
         "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": 330.35,
+        "session_close": 330.9,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Stop Loss Hit \ud83d\uded1 (02:01 PM IST)",
-        "pnl_display": "\u20b9-3,000.00",
-        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:01 PM IST. Entry: \u20b9329.15 -> Exit: \u20b9330.35 (\u20b9-3,000.00).",
-        "exit_time": "02:01 PM IST",
+        "badge": "Stop Loss Hit \ud83d\uded1 (10:16 PM IST)",
+        "pnl_display": "\u20b9-4,375.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 10:16 PM IST. Entry: \u20b9329.15 -> Exit: \u20b9330.90 (\u20b9-4,375.00).",
+        "exit_time": "10:16 PM IST",
         "exit_trigger": "STOP_LOSS_HIT"
       }
     },
