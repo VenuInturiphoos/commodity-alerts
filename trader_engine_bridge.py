@@ -53,11 +53,16 @@ class PreTradeRiskEngine:
     """
     Evaluates proposed orders against hard risk rules before any recommendation is dispatched.
     Derived from day-trader-skill (trader-risk).
+    Calibrated for ₹3,00,000 capital pool:
+    - Max Loss Per Trade: ₹3,000 (strictly 1.0% of capital)
+    - Max Daily Loss: ₹6,000 (strictly 2.0% of capital; system halts after 2 losses)
+    - Max Active Positions: 2 (Max 1 Commodity + Max 1 Equity)
+    - Min Reward-to-Risk: 1.5R (strictly positive expectancy)
     """
 
     @staticmethod
     def check_risk(symbol, action, entry, stop, target, lot_size, existing_trades,
-                   max_loss_per_trade_inr=3500.0, max_daily_loss_inr=15000.0,
+                   max_loss_per_trade_inr=3000.0, max_daily_loss_inr=6000.0,
                    min_reward_risk=1.5, max_active_positions=2):
         """
         Runs comprehensive pre-trade risk validation:
@@ -548,7 +553,7 @@ class PositionSizer:
     }
 
     @classmethod
-    def calculate_adaptive_lot(cls, symbol, entry, stop, default_lot, max_risk_inr=5000.0, atr=None):
+    def calculate_adaptive_lot(cls, symbol, entry, stop, default_lot, max_risk_inr=3000.0, atr=None):
         """
         Calculates safe integer lot size where:
         Total Risk = abs(entry - stop) * lot_size <= max_risk_inr.

@@ -47,6 +47,15 @@ MARGIN_RATES = {
     'GOLDTEN': 0.10
 }
 
+# =========================================================================
+# 🛡️ CAPITAL PRESERVATION & RISK RULES (CALIBRATED FOR ₹3 LAKH TRADING CAPITAL)
+# =========================================================================
+MAX_LOSS_PER_TRADE_INR = 3000.0   # Strictly 1.0% of total capital (100 consecutive loss buffer)
+MAX_DAILY_LOSS_INR = 6000.0       # Strictly 2.0% daily circuit breaker (halts trading after 2 losses)
+MAX_EQUITY_POSITION_INR = 35000.0 # Intraday equity capital cap (~12% of account)
+MAX_CONCURRENT_COMMODITIES = 1    # Strictly max 1 active commodity trade
+MAX_CONCURRENT_EQUITIES = 1       # Strictly max 1 active equity trade
+
 COMMODITY_DISPLAY_NAMES = {
     'CRUDEOIL': 'Crude Oil',
     'CRUDEOILM': 'Crude Oil',
@@ -285,7 +294,7 @@ def record_live_9am_advisory(commodities_list):
                         c15_detail = orb_check.get('reason')
 
                 if action in ['BUY', 'SELL']:
-                    risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, lot_size, trades, max_loss_per_trade_inr=5000.0)
+                    risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, lot_size, trades, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
                     if not risk_metrics.get('passed'):
                         action = "STAND_ASIDE"
                         entry_text = "STAND ASIDE / RISK GUARD"
@@ -410,7 +419,7 @@ def record_live_9am_advisory(commodities_list):
                         c15_detail = orb_check.get('reason')
 
                 if action in ['BUY', 'SELL']:
-                    risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, lot_size, trades, max_loss_per_trade_inr=5000.0)
+                    risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, lot_size, trades, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
                     if not risk_metrics.get('passed'):
                         action = "STAND_ASIDE"
                         entry_text = "STAND ASIDE / RISK GUARD"
@@ -618,9 +627,9 @@ def record_live_130pm_advisory(commodities_list):
         item_sector = SECTORS.get(sym, 'OTHER')
         already_called_sectors = {SECTORS.get(e.get('symbol')) for e in new_entries if e.get('paper_trade', {}).get('action') in ['BUY', 'SELL']}
 
-        # Check Portfolio Circuit Breaker (Max Daily Loss Limit = ₹15,000)
+        # Check Portfolio Circuit Breaker (Max Daily Loss Limit = ₹6,000 / 2% of ₹3L)
         today_realized_loss = sum(abs(t.get('paper_trade', {}).get('pnl_inr', 0.0)) for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('pnl_inr', 0.0) < 0)
-        portfolio_halted = today_realized_loss >= 15000.0
+        portfolio_halted = today_realized_loss >= MAX_DAILY_LOSS_INR
 
         # Check Inventory & Macro Event Blackout Guard
         event_guard = EventRiskGuard.check_event_risk(sym, now_dt)
@@ -712,7 +721,7 @@ def record_live_130pm_advisory(commodities_list):
                         "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Trap Avoided 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {orb_check.get('reason')}" }
                     }
                 else:
-                    risk_metrics = PreTradeRiskEngine.check_risk(sym, "BUY", entry_p, tight_sl, tgt, lot_size, trades, max_loss_per_trade_inr=5000.0)
+                    risk_metrics = PreTradeRiskEngine.check_risk(sym, "BUY", entry_p, tight_sl, tgt, lot_size, trades, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
                     if not risk_metrics.get('passed'):
                         entry = {
                             "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
@@ -848,7 +857,7 @@ def record_live_130pm_advisory(commodities_list):
                         "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Trap Avoided 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {orb_check.get('reason')}" }
                     }
                 else:
-                    risk_metrics = PreTradeRiskEngine.check_risk(sym, "SELL", entry_p, tight_sl, tgt, lot_size, trades, max_loss_per_trade_inr=5000.0)
+                    risk_metrics = PreTradeRiskEngine.check_risk(sym, "SELL", entry_p, tight_sl, tgt, lot_size, trades, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
                     if not risk_metrics.get('passed'):
                         entry = {
                             "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
@@ -1367,16 +1376,16 @@ def record_live_8pm_advisory(commodities_list, day_name):
             else:
                 sl = round(max(cur_p, uc_price) * 1.004, 2)
 
-            # 1. Adaptively scale lot size to fit strictly within ₹5,000 max risk cap
-            adaptive_lot = PositionSizer.calculate_adaptive_lot(sym, cur_p, sl, lot_size, max_risk_inr=5000.0)
+            # 1. Adaptively scale lot size to fit strictly within ₹3,000 max risk cap
+            adaptive_lot = PositionSizer.calculate_adaptive_lot(sym, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
 
             # 2. Run PreTradeRiskEngine check
             all_existing = new_entries + trades
-            risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=5000.0)
+            risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
 
             if adaptive_lot <= 0 or not risk_metrics.get('passed'):
                 # Risk Blocked: Stand Aside
-                reason = "Point risk exceeds ₹5,000 risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason')
+                reason = f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason')
                 entry = {
                     "id": trade_id,
                     "date": today_str,
@@ -1544,15 +1553,15 @@ def check_and_execute_615_confirmation(checker, alerter):
                 sl = round(max(cur_p, uc_p) * 1.004, 2)
             tgt = prev_close
 
-            # 1. Adaptively scale lot size to fit strictly within ₹5,000 max risk cap
-            adaptive_lot = PositionSizer.calculate_adaptive_lot(sym, cur_p, sl, lot_size, max_risk_inr=5000.0)
+            # 1. Adaptively scale lot size to fit strictly within ₹3,000 max risk cap
+            adaptive_lot = PositionSizer.calculate_adaptive_lot(sym, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
             
             # 2. Run PreTradeRiskEngine check
-            risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, trades, max_loss_per_trade_inr=5000.0)
+            risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, trades, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
 
             if adaptive_lot <= 0 or not risk_metrics.get('passed'):
                 # RISK BLOCKED: Stand aside
-                reason = "Point risk exceeds ₹5,000 risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason')
+                reason = f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason')
                 trade['check_615']['status'] = "RISK_GUARD_STAND_ASIDE"
                 trade['check_615']['action_taken'] = f"Risk Engine Block: {reason}. Stood aside to preserve capital."
                 trade['check_615']['detail'] = reason
@@ -2037,13 +2046,14 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
     tracker = load_tracker()
     trades = tracker.get('trades', [])
     
-    # 1. Portfolio Circuit Breaker: Max Daily Loss Cap (₹15,000)
+    # 1. Portfolio Circuit Breaker: Max Daily Loss Cap (₹6,000 / 2% of ₹3 Lakhs)
     today_realized_loss = sum(abs(t.get('paper_trade', {}).get('pnl_inr', 0.0)) 
                               for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('pnl_inr', 0.0) < 0)
-    if today_realized_loss >= 15000.0:
+    if today_realized_loss >= MAX_DAILY_LOSS_INR:
+        print(f"🛑 PORTFOLIO CIRCUIT BREAKER: Today's realized loss (₹{today_realized_loss:,.2f}) reached daily limit (₹{MAX_DAILY_LOSS_INR:,.2f}). Trading halted for the day.")
         return False
 
-    # 2. Maximum Concurrent Open Positions Cap (Max 2 Commodities, Max 2 Equities)
+    # 2. Maximum Concurrent Open Positions Cap (Strictly Max 1 Commodity, Max 1 Equity)
     active_commodity_trades = [
         t for t in trades 
         if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
@@ -2054,7 +2064,9 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
         if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
         and t.get('symbol') not in LOT_SIZES
     ]
-    if len(active_commodity_trades) >= 2 and len(active_equity_trades) >= 2:
+    if len(active_commodity_trades) >= MAX_CONCURRENT_COMMODITIES and len(active_equity_trades) >= MAX_CONCURRENT_EQUITIES:
+        return False
+    if (len(active_commodity_trades) + len(active_equity_trades)) >= 2:
         return False
 
     new_trades = []
@@ -2064,7 +2076,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
     # PART 1: MCX COMMODITIES CONTINUOUS SCANNER
     # =========================================================================
     circuits_res = checker.generate_circuits_data() if checker else {}
-    commodities = circuits_res.get('commodities', []) if (checker and len(active_commodity_trades) < 2) else []
+    commodities = circuits_res.get('commodities', []) if (checker and len(active_commodity_trades) < MAX_CONCURRENT_COMMODITIES) else []
 
     SECTORS = {
         'GOLD': 'BULLION',
@@ -2235,9 +2247,14 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     print(f"⏱️ ORB Timer Blocked {sym} {action}: {orb_metrics.get('reason')}")
                     continue
 
-            # 3. Run 14-point Pre-Trade Risk Filter
+            # 3. Dynamic Position Sizing & Pre-Trade Risk Filter
+            adaptive_lot = PositionSizer.calculate_adaptive_lot(sym, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
+            if adaptive_lot <= 0:
+                print(f"🛡️ Position Sizer Blocked {sym}: Risk per standard lot exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} limit. Stood aside to preserve capital.")
+                continue
+
             all_existing = new_trades + trades
-            risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, lot_size, all_existing, max_loss_per_trade_inr=5000.0)
+            risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, adaptive_lot, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
             if not risk_metrics.get('passed'):
                 print(f"🛡️ Pre-Trade Risk Engine Blocked {sym} {action}: {risk_metrics.get('reason')}")
                 continue
@@ -2259,7 +2276,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 "time_exit": "11:30 PM IST",
                 "symbol": sym,
                 "name": name,
-                "lot_size": lot_size,
+                "lot_size": adaptive_lot,
                 "event_context": f"Indicator Confluence: {setup_name}",
                 "time_machine": sim_metrics,
                 "risk_check": risk_metrics,
@@ -2275,13 +2292,13 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     "checked": True,
                     "status": "TECHNICAL_TRIGGER_ENTERED",
                     "price_615": cur_p,
-                    "action_taken": f"Entered {action} {lot_size} units @ ₹{cur_p:,.2f}",
+                    "action_taken": f"Entered {action} {adaptive_lot} units @ ₹{cur_p:,.2f}",
                     "detail": f"{setup_name}: {rationale} | {sim_metrics.get('summary', '')}"
                 },
                 "paper_trade": {
                     "user": USER_ACCOUNT,
                     "action": action,
-                    "quantity": lot_size,
+                    "quantity": adaptive_lot,
                     "entry_price": cur_p,
                     "entry_time": now_time_str,
                     "exit_price": None,
@@ -2291,7 +2308,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     "status": "ACTIVE",
                     "target": tgt,
                     "stop_loss": sl,
-                    "margin_required_inr": round(cur_p * lot_size * MARGIN_RATES.get(sym, 0.15), 2)
+                    "margin_required_inr": round(cur_p * adaptive_lot * MARGIN_RATES.get(sym, 0.15), 2)
                 },
                 "eod_outcome": {
                     "session_close": None,
@@ -2430,23 +2447,23 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     if any(t.get('id') == trade_id for t in (trades + new_trades)):
                         continue
 
-                    # Dynamic Risk Sizing: Max loss strictly <= ₹5,000, target capital ~₹35,000
+                    # Dynamic Risk Sizing: Max loss strictly <= ₹3,000 (1% of 3L), max position capital ~₹35,000
                     risk_per_share = abs(cur_p - eq_sl)
                     if risk_per_share <= 0:
                         continue
-                    cap_shares = math.floor(35000.0 / cur_p) if cur_p > 0 else 0
-                    risk_shares = math.floor(5000.0 / risk_per_share)
+                    cap_shares = math.floor(MAX_EQUITY_POSITION_INR / cur_p) if cur_p > 0 else 0
+                    risk_shares = math.floor(MAX_LOSS_PER_TRADE_INR / risk_per_share)
                     eq_shares = min(cap_shares, risk_shares)
                     if eq_shares < 1:
                         continue
-                    if (risk_per_share * eq_shares) > 5000.0:
-                        eq_shares = math.floor(5000.0 / risk_per_share)
+                    if (risk_per_share * eq_shares) > MAX_LOSS_PER_TRADE_INR:
+                        eq_shares = math.floor(MAX_LOSS_PER_TRADE_INR / risk_per_share)
                     if eq_shares < 1:
                         continue
 
                     # 14-Point Pre-Trade Risk Engine Check
                     all_existing = new_trades + trades
-                    risk_metrics = PreTradeRiskEngine.check_risk(sym, eq_action, cur_p, eq_sl, eq_tgt, eq_shares, all_existing, max_loss_per_trade_inr=5000.0)
+                    risk_metrics = PreTradeRiskEngine.check_risk(sym, eq_action, cur_p, eq_sl, eq_tgt, eq_shares, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
                     if not risk_metrics.get('passed'):
                         print(f"🛡️ Pre-Trade Risk Engine Blocked {clean_sym} {eq_action}: {risk_metrics.get('reason')}")
                         continue
