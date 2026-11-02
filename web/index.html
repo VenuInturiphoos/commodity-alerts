@@ -788,8 +788,16 @@
                     </div>
 
                     <!-- Tracker Toolbar Filters -->
-                    <div class="circuits-toolbar" style="margin-bottom: 1rem;">
-                        <div class="circuit-filters" style="gap: 0.4rem;">
+                    <div class="circuits-toolbar" style="margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                        <div class="circuit-filters" style="gap: 0.4rem; flex-wrap: wrap; align-items: center;">
+                            <div class="circuit-month-filter-wrap" style="display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.4rem;">
+                                <label for="adv-month-select" style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;"><i class="fa-regular fa-calendar"></i> Month:</label>
+                                <select id="adv-month-select" onchange="changeAdvisoryMonthFilter(this.value)" class="circuit-month-select">
+                                    <option value="CURRENT_MONTH" selected>📅 Current Month (Nov 2026)</option>
+                                    <option value="Oct 2026">🗓️ October 2026 (Archive - 72 Trades)</option>
+                                    <option value="ALL">🌐 All Months (Complete History)</option>
+                                </select>
+                            </div>
                             <button class="circuit-filter-pill active" id="adv-filter-called" onclick="filterAdvisoryTrades('CALLED', this)">Called Signals 🎯 (<span id="adv-count-called">0</span>)</button>
                             <button class="circuit-filter-pill" id="adv-filter-active" onclick="filterAdvisoryTrades('ACTIVE', this)">Active / Today ⚡ (<span id="adv-count-active">0</span>)</button>
                             <button class="circuit-filter-pill" id="adv-filter-correct" onclick="filterAdvisoryTrades('CORRECT', this)">Correct Wins 🟢 (<span id="adv-count-correct">0</span>)</button>
@@ -3895,8 +3903,9 @@ function renderPortfolio() {
         // Check for active advisory Stop-Loss and Target for this symbol
         let activeSl = null;
         let activeTgt = null;
-        if (typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) {
-            const adv = advisoryTrackerData.trades.find(t => t.symbol === symbol && t.paper_trade?.status === 'ACTIVE');
+        const liveSourceTracker = (typeof activeTrackerCache !== 'undefined' && activeTrackerCache?.trades) ? activeTrackerCache : advisoryTrackerData;
+        if (typeof liveSourceTracker !== 'undefined' && liveSourceTracker?.trades) {
+            const adv = liveSourceTracker.trades.find(t => t.symbol === symbol && t.paper_trade?.status === 'ACTIVE');
             if (adv?.suggestion_6pm) {
                 if (adv.suggestion_6pm.stop_loss) activeSl = Number(adv.suggestion_6pm.stop_loss);
                 if (adv.suggestion_6pm.target) activeTgt = Number(adv.suggestion_6pm.target);
@@ -4262,8 +4271,9 @@ function renderPendingOrders(orders) {
     const activeOrders = [...(orders || []).filter(o => o.status === 'PENDING' || o.status === 'PENDING_STOP')];
 
     // Automatically incorporate Target & Stop-Loss from active advisory trades
-    if (typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) {
-        for (const t of advisoryTrackerData.trades) {
+    const liveAdvTracker = (typeof activeTrackerCache !== 'undefined' && activeTrackerCache?.trades) ? activeTrackerCache : advisoryTrackerData;
+    if (typeof liveAdvTracker !== 'undefined' && liveAdvTracker?.trades) {
+        for (const t of liveAdvTracker.trades) {
             if (t.paper_trade?.status === 'ACTIVE' && t.suggestion_6pm) {
                 const isLong = t.paper_trade.action === 'BUY';
                 const closeAction = isLong ? 'SELL' : 'BUY';
@@ -5098,8 +5108,26 @@ window.switchPaperTradingSubView = switchPaperTradingSubView;
 // 🎯 6:00 PM IST ADVISORY SIGNALS & PAPER TRADE TRACKER
 // ==========================================
 let advisoryTrackerData = null;
+let activeTrackerCache = null;
+let archiveTrackerCache = null;
+let currentAdvMonth = 'CURRENT_MONTH';
 let activeAdvFilter = 'CALLED';
 let activeAdvSession = 'ALL';
+
+function extractTradeMonth(t) {
+    if (!t || !t.date) return '';
+    const parts = t.date.trim().split(/\s+/);
+    if (parts.length >= 3) {
+        return parts[1] + ' ' + parts[2]; // e.g. "Oct 2026", "Nov 2026"
+    }
+    try {
+        const d = new Date(t.date);
+        if (!isNaN(d.getTime())) {
+            return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+        }
+    } catch (_) {}
+    return '';
+}
 
 function getTradeSessionCategory(t) {
     if (!t) return 'OTHER';
@@ -5219,8 +5247,42 @@ function isTradeFromToday(t) {
     const options = { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' };
     const todayFormatted = now.toLocaleDateString('en-GB', options);
     if (t.date && t.date.trim() === todayFormatted.trim()) return true;
-    if (t.id && (t.id.includes('29Oct2026') || (t.date && t.date.includes('29 Oct 2026')))) return true;
     return false;
+}
+
+function populateAdvisoryMonthDropdown() {
+    const selectEl = document.getElementById('adv-month-select');
+    if (!selectEl) return;
+
+    const savedVal = currentAdvMonth;
+    const now = new Date();
+    const curMonthLabel = now.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }); // e.g. "Nov 2026"
+
+    const monthCounts = {};
+    const archiveTrades = archiveTrackerCache?.trades || [];
+    archiveTrades.forEach(t => {
+        const m = extractTradeMonth(t);
+        if (m) {
+            monthCounts[m] = (monthCounts[m] || 0) + 1;
+        }
+    });
+
+    let html = `<option value="CURRENT_MONTH">📅 Current Month (${curMonthLabel})</option>`;
+    
+    // Past months from archive
+    Object.keys(monthCounts).forEach(m => {
+        html += `<option value="${m}">🗓️ ${m} (Archive - ${monthCounts[m]} Trades)</option>`;
+    });
+
+    html += `<option value="ALL">🌐 All Months (Complete History)</option>`;
+
+    selectEl.innerHTML = html;
+    if (selectEl.querySelector(`option[value="${savedVal}"]`)) {
+        selectEl.value = savedVal;
+    } else {
+        selectEl.value = 'CURRENT_MONTH';
+        currentAdvMonth = 'CURRENT_MONTH';
+    }
 }
 
 async function loadAdvisoryTracker() {
@@ -5228,89 +5290,46 @@ async function loadAdvisoryTracker() {
     if (timeEl) timeEl.textContent = 'Syncing...';
 
     try {
-        let res = null;
-        const rawUrl = 'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_tracker.json?t=' + Date.now();
+        const rawLiveUrl = 'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_tracker.json?t=' + Date.now();
+        const rawArchiveUrl = 'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_history_archive.json?t=' + Date.now();
+
+        // 1. Fetch live active tracker (Current Month)
+        let resLive = null;
         try {
-            res = await fetch('advisory_trades_tracker.json?t=' + Date.now(), { cache: 'no-store' });
-            if (!res.ok) throw new Error("Local fetch returned status " + res.status);
+            resLive = await fetch('advisory_trades_tracker.json?t=' + Date.now(), { cache: 'no-store' });
+            if (!resLive.ok) throw new Error("Local live fetch status " + resLive.status);
         } catch (localErr) {
-            console.log("Local tracker fetch failed, falling back to raw GitHub:", localErr.message);
-            res = await fetch(rawUrl, { cache: 'no-store' });
+            console.log("Local live tracker fetch failed, falling back to raw GitHub:", localErr.message);
+            resLive = await fetch(rawLiveUrl, { cache: 'no-store' });
         }
-        if (!res || !res.ok) throw new Error("Status " + (res ? res.status : 'failed'));
-        advisoryTrackerData = await res.json();
-        
+        if (resLive && resLive.ok) {
+            activeTrackerCache = await resLive.json();
+        }
+
+        // 2. Fetch historical archive tracker (Past Months)
+        let resArchive = null;
+        try {
+            resArchive = await fetch('advisory_trades_history_archive.json?t=' + Date.now(), { cache: 'no-store' });
+            if (!resArchive.ok) throw new Error("Local archive fetch status " + resArchive.status);
+        } catch (localArcErr) {
+            console.log("Local archive fetch failed, falling back to raw GitHub:", localArcErr.message);
+            resArchive = await fetch(rawArchiveUrl, { cache: 'no-store' });
+        }
+        if (resArchive && resArchive.ok) {
+            archiveTrackerCache = await resArchive.json();
+        }
+
         // Ensure Nifty opportunities data is loaded for multi-asset equity ticker resolution
         if (typeof loadNiftyOpportunities === 'function' && (!niftyOpportunitiesData || !niftyOpportunitiesData.stocks)) {
             loadNiftyOpportunities(false);
         }
-        
-        // Update summary KPI cards
-        const summary = advisoryTrackerData.summary || {};
-        const trades = advisoryTrackerData.trades || [];
-        const countAll = trades.length;
-        const calledTrades = trades.filter(isCalledAdvisoryTrade);
-        const countCalled = calledTrades.length;
-        const countCorrect = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'CORRECT').length;
-        const countWrong = trades.filter(t => t.eod_outcome && (t.eod_outcome.outcome === 'WRONG' || t.eod_outcome.outcome === 'INCORRECT')).length;
-        const countProtected = trades.filter(t => t.eod_outcome?.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t)).length;
-        const countActive = trades.filter(t => (t.paper_trade && (t.paper_trade.status === 'ACTIVE' || t.paper_trade.status === 'PENDING_615')) || (isTradeFromToday(t) && isCalledAdvisoryTrade(t))).length;
 
-        const totalEl = document.getElementById('kpi-adv-total');
-        const totalSubEl = document.getElementById('kpi-adv-total-sub');
-        const winrateEl = document.getElementById('kpi-adv-winrate');
-        const correctSubEl = document.getElementById('kpi-adv-correct-sub');
-        const pnlEl = document.getElementById('kpi-adv-pnl');
-        
-        if (totalEl) totalEl.textContent = `${countCalled} Called`;
-        if (totalSubEl) totalSubEl.textContent = `${countAll} Total Signals (${countProtected} Avoided Traps)`;
-        if (winrateEl) winrateEl.textContent = (summary.win_rate_pct || 0) + '%';
-        if (correctSubEl) {
-            const correct = summary.correct_count || 0;
-            const wrong = summary.wrong_count || 0;
-            const prot = summary.protected_count || countProtected;
-            correctSubEl.textContent = `${correct} Won / ${wrong} Lost (${prot} Filtered)`;
-        }
-        if (pnlEl) {
-            const pnl = summary.total_pnl_inr || 0;
-            pnlEl.textContent = (pnl >= 0 ? '+₹' : '-₹') + Math.abs(pnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            pnlEl.style.color = pnl >= 0 ? '#4ade80' : '#fb7185';
-        }
-        
-        const cashEl = document.getElementById('kpi-adv-cash');
-        const marginSubEl = document.getElementById('kpi-adv-margin-sub');
-        if (cashEl) {
-            const availCash = summary.available_cash_inr ?? 300000;
-            cashEl.textContent = '₹' + Number(availCash).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        }
-        if (marginSubEl) {
-            const usedMargin = summary.used_margin_inr || 0;
-            marginSubEl.textContent = `Used Margin: ₹${Number(usedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | venu.photos1@gmail.com`;
-        }
-        
-        if (timeEl) timeEl.textContent = 'Updated: ' + (advisoryTrackerData.last_updated || 'Just now');
+        // Populate month dropdown options based on fetched data
+        populateAdvisoryMonthDropdown();
 
-        // Update counts in filter pills
-        const countCalledEl = document.getElementById('adv-count-called');
-        const countAllEl = document.getElementById('adv-count-all');
-        const countCorrectEl = document.getElementById('adv-count-correct');
-        const countWrongEl = document.getElementById('adv-count-wrong');
-        const countProtectedEl = document.getElementById('adv-count-protected');
-        const countActiveEl = document.getElementById('adv-count-active');
-        const subnavBadgeEl = document.getElementById('advisory-badge-count');
+        // Apply month filter
+        applyAdvisoryMonthFilter(currentAdvMonth);
 
-        if (countCalledEl) countCalledEl.textContent = countCalled;
-        if (countAllEl) countAllEl.textContent = countAll;
-        if (countCorrectEl) countCorrectEl.textContent = countCorrect;
-        if (countWrongEl) countWrongEl.textContent = countWrong;
-        if (countProtectedEl) countProtectedEl.textContent = countProtected;
-        if (countActiveEl) countActiveEl.textContent = countActive;
-        if (subnavBadgeEl) subnavBadgeEl.textContent = `${countCalled} Called Trades`;
-
-        // Update session win probability badges and banner
-        updateSessionStatsBadges(trades);
-
-        renderAdvisoryTradesTable();
     } catch (e) {
         console.error("Error loading advisory tracker:", e);
         const tbody = document.getElementById('advisory-tracker-body');
@@ -5318,6 +5337,151 @@ async function loadAdvisoryTracker() {
         const cardsFeed = document.getElementById('advisory-cards-feed');
         if (cardsFeed) cardsFeed.innerHTML = `<div style="text-align:center; padding:2rem; color:#fb7185; background:rgba(255,255,255,0.02); border-radius:10px;"><i class="fa-solid fa-triangle-exclamation"></i> Failed to load advisory cards: ${e.message}<br><button onclick="loadAdvisoryTracker()" style="margin-top:10px; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:6px 14px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-arrows-rotate"></i> Retry</button></div>`;
     }
+}
+
+function changeAdvisoryMonthFilter(monthValue) {
+    currentAdvMonth = monthValue;
+    applyAdvisoryMonthFilter(currentAdvMonth);
+}
+
+function applyAdvisoryMonthFilter(monthValue) {
+    const timeEl = document.getElementById('tracker-last-updated');
+    const liveTrades = activeTrackerCache?.trades || [];
+    const archiveTrades = archiveTrackerCache?.trades || [];
+
+    if (monthValue === 'CURRENT_MONTH') {
+        advisoryTrackerData = activeTrackerCache || { trades: [], summary: {} };
+    } else if (monthValue === 'ALL') {
+        const mergedTrades = [...liveTrades, ...archiveTrades];
+        const livePnl = Number(activeTrackerCache?.summary?.total_pnl_inr || 0);
+        const arcPnl = Number(archiveTrackerCache?.summary?.total_pnl_inr || 0);
+        const totalPnl = livePnl + arcPnl;
+        const totalSignals = mergedTrades.length;
+        const correctCount = mergedTrades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'CORRECT').length;
+        const wrongCount = mergedTrades.filter(t => t.eod_outcome && (t.eod_outcome.outcome === 'WRONG' || t.eod_outcome.outcome === 'INCORRECT')).length;
+        const executedCount = correctCount + wrongCount;
+        const winRate = executedCount > 0 ? Number(((correctCount / executedCount) * 100).toFixed(1)) : 0;
+        const protCount = mergedTrades.filter(t => t.eod_outcome?.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t)).length;
+
+        advisoryTrackerData = {
+            summary: {
+                total_signals: totalSignals,
+                executed_count: executedCount,
+                correct_count: correctCount,
+                wrong_count: wrongCount,
+                protected_count: protCount,
+                win_rate_pct: winRate,
+                total_pnl_inr: totalPnl,
+                starting_cash_inr: 300000.0,
+                current_cash_inr: (activeTrackerCache?.summary?.current_cash_inr ?? 300000.0) + arcPnl,
+                available_cash_inr: activeTrackerCache?.summary?.available_cash_inr ?? 300000.0,
+                used_margin_inr: activeTrackerCache?.summary?.used_margin_inr ?? 0.0,
+                net_worth_inr: (activeTrackerCache?.summary?.net_worth_inr ?? 300000.0) + arcPnl
+            },
+            trades: mergedTrades,
+            last_updated: activeTrackerCache?.last_updated || archiveTrackerCache?.last_updated || 'Just now'
+        };
+    } else {
+        // Filter archive trades matching selected month (e.g. "Oct 2026")
+        const filteredTrades = archiveTrades.filter(t => extractTradeMonth(t) === monthValue);
+        const arcPnl = filteredTrades.reduce((acc, t) => acc + (t.paper_trade?.pnl_inr || 0), 0);
+        const totalSignals = filteredTrades.length;
+        const correctCount = filteredTrades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'CORRECT').length;
+        const wrongCount = filteredTrades.filter(t => t.eod_outcome && (t.eod_outcome.outcome === 'WRONG' || t.eod_outcome.outcome === 'INCORRECT')).length;
+        const executedCount = correctCount + wrongCount;
+        const winRate = executedCount > 0 ? Number(((correctCount / executedCount) * 100).toFixed(1)) : 0;
+        const protCount = filteredTrades.filter(t => t.eod_outcome?.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t)).length;
+
+        advisoryTrackerData = {
+            summary: {
+                total_signals: totalSignals,
+                executed_count: executedCount,
+                correct_count: correctCount,
+                wrong_count: wrongCount,
+                protected_count: protCount,
+                win_rate_pct: winRate,
+                total_pnl_inr: arcPnl,
+                starting_cash_inr: 300000.0,
+                current_cash_inr: 300000.0 + arcPnl,
+                available_cash_inr: 300000.0 + arcPnl,
+                used_margin_inr: 0,
+                net_worth_inr: 300000.0 + arcPnl
+            },
+            trades: filteredTrades,
+            last_updated: archiveTrackerCache?.last_updated || 'Archive'
+        };
+    }
+
+    if (!advisoryTrackerData) {
+        advisoryTrackerData = { trades: [], summary: {} };
+    }
+
+    // Update summary KPI cards
+    const summary = advisoryTrackerData.summary || {};
+    const trades = advisoryTrackerData.trades || [];
+    const countAll = trades.length;
+    const calledTrades = trades.filter(isCalledAdvisoryTrade);
+    const countCalled = calledTrades.length;
+    const countCorrect = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'CORRECT').length;
+    const countWrong = trades.filter(t => t.eod_outcome && (t.eod_outcome.outcome === 'WRONG' || t.eod_outcome.outcome === 'INCORRECT')).length;
+    const countProtected = trades.filter(t => t.eod_outcome?.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t)).length;
+    const countActive = trades.filter(t => (t.paper_trade && (t.paper_trade.status === 'ACTIVE' || t.paper_trade.status === 'PENDING_615')) || (isTradeFromToday(t) && isCalledAdvisoryTrade(t))).length;
+
+    const totalEl = document.getElementById('kpi-adv-total');
+    const totalSubEl = document.getElementById('kpi-adv-total-sub');
+    const winrateEl = document.getElementById('kpi-adv-winrate');
+    const correctSubEl = document.getElementById('kpi-adv-correct-sub');
+    const pnlEl = document.getElementById('kpi-adv-pnl');
+    
+    if (totalEl) totalEl.textContent = `${countCalled} Called`;
+    if (totalSubEl) totalSubEl.textContent = `${countAll} Total Signals (${countProtected} Avoided Traps)`;
+    if (winrateEl) winrateEl.textContent = (summary.win_rate_pct || 0) + '%';
+    if (correctSubEl) {
+        const correct = summary.correct_count ?? countCorrect;
+        const wrong = summary.wrong_count ?? countWrong;
+        const prot = summary.protected_count ?? countProtected;
+        correctSubEl.textContent = `${correct} Won / ${wrong} Lost (${prot} Filtered)`;
+    }
+    if (pnlEl) {
+        const pnl = summary.total_pnl_inr || 0;
+        pnlEl.textContent = (pnl >= 0 ? '+₹' : '-₹') + Math.abs(pnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        pnlEl.style.color = pnl >= 0 ? '#4ade80' : '#fb7185';
+    }
+    
+    const cashEl = document.getElementById('kpi-adv-cash');
+    const marginSubEl = document.getElementById('kpi-adv-margin-sub');
+    if (cashEl) {
+        const availCash = summary.available_cash_inr ?? 300000;
+        cashEl.textContent = '₹' + Number(availCash).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+    if (marginSubEl) {
+        const usedMargin = summary.used_margin_inr || 0;
+        marginSubEl.textContent = `Used Margin: ₹${Number(usedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | venu.photos1@gmail.com`;
+    }
+    
+    if (timeEl) timeEl.textContent = 'Updated: ' + (advisoryTrackerData.last_updated || 'Just now');
+
+    // Update counts in filter pills
+    const countCalledEl = document.getElementById('adv-count-called');
+    const countAllEl = document.getElementById('adv-count-all');
+    const countCorrectEl = document.getElementById('adv-count-correct');
+    const countWrongEl = document.getElementById('adv-count-wrong');
+    const countProtectedEl = document.getElementById('adv-count-protected');
+    const countActiveEl = document.getElementById('adv-count-active');
+    const subnavBadgeEl = document.getElementById('advisory-badge-count');
+
+    if (countCalledEl) countCalledEl.textContent = countCalled;
+    if (countAllEl) countAllEl.textContent = countAll;
+    if (countCorrectEl) countCorrectEl.textContent = countCorrect;
+    if (countWrongEl) countWrongEl.textContent = countWrong;
+    if (countProtectedEl) countProtectedEl.textContent = countProtected;
+    if (countActiveEl) countActiveEl.textContent = countActive;
+    if (subnavBadgeEl) subnavBadgeEl.textContent = `${countCalled} Called Trades`;
+
+    // Update session win probability badges and banner
+    updateSessionStatsBadges(trades);
+
+    renderAdvisoryTradesTable();
 }
 
 function filterAdvisoryTrades(filterType, btnEl) {
