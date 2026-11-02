@@ -2580,9 +2580,9 @@ async function loadStockInvestmentsTracker() {
             
             const usedMargin = Number(sum.active_capital_invested_inr || 0);
             const portVal = Number(sum.current_portfolio_value_inr || 0);
-            const baseCash = Number(sum.starting_cash_inr || 300000);
-            const availCash = Number(sum.available_cash_inr != null ? sum.available_cash_inr : (baseCash - usedMargin));
-            const netWorth = Number(sum.net_worth_inr != null ? sum.net_worth_inr : (availCash + portVal));
+            const baseCash = (currentUser && userBalance > 0) ? userBalance : Number(sum.starting_cash_inr || 300000);
+            const availCash = Math.max(0, baseCash - usedMargin + Number(sum.realized_pnl_inr || 0));
+            const netWorth = availCash + portVal;
             const pl = Number(sum.total_pnl_inr || 0);
 
             if (availEl) availEl.textContent = '₹' + availCash.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -3886,11 +3886,6 @@ function renderPortfolio() {
         if (data.shares === 0) continue;
         
         const marketItem = marketData.find(item => item.symbol === symbol);
-        const isCommodity = (marketItem && marketItem.asset_type && marketItem.asset_type.includes('Commodity')) ||
-                            ['CRUDEOIL', 'GOLD', 'SILVER', 'NATURALGAS', 'COPPER', 'ZINC', 'ALUMINIUM', 'CRUDEOILM', 'GOLDM', 'GOLDTEN', 'SILVERMIC', 'COPPERM', 'ZINCMINI', 'ALUMINI'].includes(symbol.replace('-FUT','').replace('.NS','').toUpperCase()) ||
-                            symbol.includes('FUT');
-        if (isCommodity) continue; // Stock investing module strictly tracks cash equities
-        
         const currentPrice = getSynchronizedCommodityPrice(symbol, marketItem ? marketItem.current_price : 0);
         const avgPrice = data.avgPrice;
         
@@ -3945,6 +3940,7 @@ function renderPortfolio() {
             </tr>
         `;
 
+        const isCommodity = marketItem && marketItem.asset_type && marketItem.asset_type.includes('Commodity');
         const cardTargetSlSection = (activeTgt || activeSl) ? `
             <div class="mobile-card-grid-2" style="margin-top:-2px;">
                 <div class="mobile-cell-item" style="border-left: 3px solid #fb7185;">
@@ -4180,36 +4176,6 @@ function renderPortfolio() {
         }
     }
 
-    // Prioritize authoritative Stock Wealth Investing tracker summary (₹3,00,000 capital pool)
-    if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary) {
-        const sum = stockInvestmentsData.summary;
-        const usedMargin = Number(sum.active_capital_invested_inr || totalInvested);
-        const portVal = Number(sum.current_portfolio_value_inr || currentPortfolioValue);
-        const availCash = Number(sum.available_cash_inr != null ? sum.available_cash_inr : (300000 - usedMargin));
-        const netWorth = Number(sum.net_worth_inr != null ? sum.net_worth_inr : (availCash + portVal));
-        const totalStockPl = Number(sum.total_pnl_inr != null ? sum.total_pnl_inr : totalPl);
-
-        const netWorthEl = document.getElementById('virtual-net-worth');
-        if (netWorthEl) netWorthEl.textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        const subBreakdownEl = document.getElementById('virtual-breakdown-sub');
-        if (subBreakdownEl) subBreakdownEl.textContent = `(₹${availCash.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Cash + ₹${portVal.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Holdings)`;
-        const availEl = document.getElementById('virtual-available-margin');
-        if (availEl) availEl.textContent = `₹${availCash.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        const usedEl = document.getElementById('virtual-used-margin');
-        if (usedEl) usedEl.textContent = `₹${usedMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        const portValEl = document.getElementById('virtual-portfolio-value');
-        if (portValEl) portValEl.textContent = `₹${portVal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        
-        const plColor = totalStockPl >= 0 ? '#4ade80' : '#fb7185';
-        const plSign = totalStockPl >= 0 ? '+' : '';
-        const plEl = document.getElementById('virtual-total-pl');
-        if (plEl) {
-            plEl.textContent = `${plSign}₹${Math.abs(totalStockPl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            plEl.style.color = plColor;
-        }
-        return;
-    }
-
     // Baseline Cash Pool: If user has a custom balance, use userBalance; otherwise default ₹3,00,000 INR
     let baseCash = (currentUser && userBalance > 0) 
         ? userBalance 
@@ -4221,9 +4187,10 @@ function renderPortfolio() {
     const totalStockInvested = totalInvested;
     
     // Available Stock Cash: Cash balance strictly reduced by stock purchases!
+    // When a stock is sold (Target Hit / SL Hit / Manual Exit), invested capital returns and realized P&L adjusts cash.
     const availableMargin = Math.max(0, baseCash + autoStockRealizedPnl - autoStockInvested - pendingMarginLocked);
-    const usedMargin = totalStockInvested + pendingMarginLocked;
-    const netWorth = availableMargin + currentPortfolioValue;
+    const usedMargin = totalStockInvested + activePositionsMargin + pendingMarginLocked;
+    const netWorth = availableMargin + currentPortfolioValue + activePositionsMargin;
 
     const netWorthEl = document.getElementById('virtual-net-worth');
     if (netWorthEl) netWorthEl.textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
