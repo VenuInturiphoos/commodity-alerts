@@ -76,28 +76,36 @@ COMMODITY_DISPLAY_NAMES = {
 
 DEFAULT_STARTING_CASH = 300000.0  # ₹3,00,000 (3 Lakhs Virtual Cash)
 
-def enforce_max_risk_bracket(action, cur_p, sl, tgt, lot_size, max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=2.0):
+def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=None, ema50=None, atr=None, min_rrr=1.8):
     """
-    🛡️ Hard Capital Preservation Guard:
-    Guarantees that the stop-loss distance NEVER exceeds the account's maximum loss cap in rupees.
-    For high-multiplier commodities (e.g. Aluminium where 1 pt = ₹2,500):
-    Max SL Distance = ₹3,000 / 2,500 = 1.20 points.
-    Also ensures the Target provides at least a 2.0R reward-to-risk ratio.
+    📐 Technical Invalidation Stop & Target Engine:
+    Places stop-losses strictly at structural chart invalidation points rather than arbitrary rupee caps.
+    - Short Trades: SL placed strictly above Day High / Resistance (+ buffer so wicks don't trigger it).
+    - Long Trades: SL placed strictly below Day Low / Support (- buffer).
+    - Target: Calculated as an asymmetric multiple (min 1.8R - 2.0R) of the technical risk.
     """
-    if not sl or not tgt or cur_p <= 0 or lot_size <= 0:
-        return sl, tgt
+    if cur_p <= 0:
+        return None, None
         
-    max_sl_pts = round(max_loss_inr / lot_size, 2)
-    cur_risk_pts = abs(cur_p - sl)
+    atr_buf = round(atr * 0.20, 2) if (atr and atr > 0) else round(cur_p * 0.0015, 2)
+    # Ensure minimum technical buffer (e.g. 0.25 pts for base metals, 15 pts for crude)
+    atr_buf = max(atr_buf, round(cur_p * 0.0008, 2))
     
-    if cur_risk_pts > max_sl_pts:
-        if action.upper() == 'BUY':
-            sl = round(cur_p - max_sl_pts, 2)
-            tgt = round(cur_p + (min_rrr * max_sl_pts), 2)
-        else:
-            sl = round(cur_p + max_sl_pts, 2)
-            tgt = round(cur_p - (min_rrr * max_sl_pts), 2)
-            
+    if action.upper() == 'SELL':
+        ref_high = max(cur_p, day_h) if day_h and day_h > 0 else cur_p
+        if ema20 and ema20 > ref_high:
+            ref_high = ema20
+        sl = round(ref_high + atr_buf, 2)
+        risk_pts = abs(sl - cur_p)
+        tgt = round(cur_p - (min_rrr * risk_pts), 2)
+    else:
+        ref_low = min(cur_p, day_l) if day_l and day_l > 0 else cur_p
+        if ema20 and ema20 < ref_low:
+            ref_low = ema20
+        sl = round(ref_low - atr_buf, 2)
+        risk_pts = abs(cur_p - sl)
+        tgt = round(cur_p + (min_rrr * risk_pts), 2)
+        
     return sl, tgt
 
 def get_cash_and_margin(tracker_data):
@@ -2253,9 +2261,9 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 rationale = (f"20 EMA (₹{ema20:,.2f}) < 50 EMA (₹{ema50:,.2f}) with ADX {adx:.1f} >= 20 and "
                              f"healthy RSI {rsi:.1f}. Downward trend continuation in effect.")
 
-        if triggered and action and sl and tgt:
-            # 🛡️ Hard Risk Cap: Stop distance must NEVER exceed MAX_LOSS_PER_TRADE_INR (e.g. max 1.20 pts on Aluminium)
-            sl, tgt = enforce_max_risk_bracket(action, cur_p, sl, tgt, lot_size)
+        if triggered and action:
+            # 📐 Structural Technical Bracket: Stop placed beyond Day High/Low to eliminate noise stop-outs
+            sl, tgt = calculate_technical_bracket(action, cur_p, day_h, day_l, ema20=ema20, ema50=ema50, atr=atr_val, min_rrr=1.8)
 
             trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{sym}"
             if any(t.get('id') == trade_id for t in trades):
