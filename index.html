@@ -766,7 +766,7 @@
                                     <i class="fa-solid fa-wallet"></i>
                                 </div>
                             </div>
-                            <div class="circuit-kpi-value" id="kpi-adv-cash" style="color: #60a5fa; font-size: 1.35rem;">₹10,00,000.00</div>
+                            <div class="circuit-kpi-value" id="kpi-adv-cash" style="color: #60a5fa; font-size: 1.35rem;">₹3,00,000.00</div>
                             <div class="circuit-kpi-sub" id="kpi-adv-margin-sub">Used Margin: ₹0.00 | venu.photos1@gmail.com</div>
                         </div>
                     </div>
@@ -2567,7 +2567,7 @@ async function loadStockInvestmentsTracker() {
             
             const usedMargin = Number(sum.active_capital_invested_inr || 0);
             const portVal = Number(sum.current_portfolio_value_inr || 0);
-            const baseCash = (currentUser && userBalance > 0) ? userBalance : Number(sum.starting_cash_inr || 1000000);
+            const baseCash = (currentUser && userBalance > 0) ? userBalance : Number(sum.starting_cash_inr || 300000);
             const availCash = Math.max(0, baseCash - usedMargin + Number(sum.realized_pnl_inr || 0));
             const netWorth = availCash + portVal;
             const pl = Number(sum.total_pnl_inr || 0);
@@ -3464,7 +3464,7 @@ function updateAdminUI(session) {
         currentUser = null;
         userBalance = (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary?.available_cash_inr) 
             ? Number(stockInvestmentsData.summary.available_cash_inr) 
-            : 1000000;
+            : 300000;
         userPortfolio = {};
         if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker();
         if (typeof renderPortfolio === 'function') renderPortfolio();
@@ -3759,9 +3759,9 @@ async function fetchPaperTradingData(user) {
         // If the profile doesn't exist, create it (handles users who registered before the trigger was created)
         if (profileError.code === 'PGRST116') {
             console.log("Profile not found, attempting to create one...");
-            const { error: insertError } = await supabaseClient.from('profiles').insert([{ id: user.id, balance: 1000000 }]);
+            const { error: insertError } = await supabaseClient.from('profiles').insert([{ id: user.id, balance: 300000 }]);
             if (!insertError) {
-                userBalance = 1000000;
+                userBalance = 300000;
             } else {
                 console.error("Failed to create profile:", insertError);
             }
@@ -4160,12 +4160,12 @@ function renderPortfolio() {
         }
     }
 
-    // Baseline Cash Pool: If user has a custom balance, use userBalance; otherwise default ₹10,00,000 INR
+    // Baseline Cash Pool: If user has a custom balance, use userBalance; otherwise default ₹3,00,000 INR
     let baseCash = (currentUser && userBalance > 0) 
         ? userBalance 
         : ((typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary?.starting_cash_inr) 
             ? Number(stockInvestmentsData.summary.starting_cash_inr) 
-            : 1000000);
+            : 300000);
     
     // Total Active Capital Invested in Stocks (Cash Delivery)
     const totalStockInvested = totalInvested;
@@ -4715,15 +4715,15 @@ window.editVirtualBalance = async function() {
 }
 
 window.resetPaperTradingAccount = async function() {
-    if (!confirm("Are you sure you want to completely reset your account? This will restore your available cash to ₹1,000,000.")) return;
+    if (!confirm("Are you sure you want to completely reset your account? This will restore your available cash to ₹300,000.")) return;
 
     if (!currentUser) {
-        userBalance = 1000000;
+        userBalance = 300000;
         if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary) {
-            stockInvestmentsData.summary.available_cash_inr = 1000000;
+            stockInvestmentsData.summary.available_cash_inr = 300000;
         }
         renderPortfolio();
-        alert("Account reset to ₹1,000,000!");
+        alert("Account reset to ₹300,000!");
         return;
     }
 
@@ -4732,8 +4732,8 @@ window.resetPaperTradingAccount = async function() {
         const { error: txError } = await supabaseClient.from('transactions').delete().eq('user_id', currentUser.id);
         if (txError) throw txError;
 
-        // 2. Reset balance to 1M
-        const { error: profileError } = await supabaseClient.from('profiles').update({ balance: 1000000 }).eq('id', currentUser.id);
+        // 2. Reset balance to 300k
+        const { error: profileError } = await supabaseClient.from('profiles').update({ balance: 300000 }).eq('id', currentUser.id);
         if (profileError) throw profileError;
 
         alert("Account reset successfully!");
@@ -5280,7 +5280,7 @@ async function loadAdvisoryTracker() {
         const cashEl = document.getElementById('kpi-adv-cash');
         const marginSubEl = document.getElementById('kpi-adv-margin-sub');
         if (cashEl) {
-            const availCash = summary.available_cash_inr ?? 1000000;
+            const availCash = summary.available_cash_inr ?? 300000;
             cashEl.textContent = '₹' + Number(availCash).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
         if (marginSubEl) {
