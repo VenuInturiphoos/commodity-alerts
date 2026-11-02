@@ -76,6 +76,30 @@ COMMODITY_DISPLAY_NAMES = {
 
 DEFAULT_STARTING_CASH = 300000.0  # ₹3,00,000 (3 Lakhs Virtual Cash)
 
+def enforce_max_risk_bracket(action, cur_p, sl, tgt, lot_size, max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=2.0):
+    """
+    🛡️ Hard Capital Preservation Guard:
+    Guarantees that the stop-loss distance NEVER exceeds the account's maximum loss cap in rupees.
+    For high-multiplier commodities (e.g. Aluminium where 1 pt = ₹2,500):
+    Max SL Distance = ₹3,000 / 2,500 = 1.20 points.
+    Also ensures the Target provides at least a 2.0R reward-to-risk ratio.
+    """
+    if not sl or not tgt or cur_p <= 0 or lot_size <= 0:
+        return sl, tgt
+        
+    max_sl_pts = round(max_loss_inr / lot_size, 2)
+    cur_risk_pts = abs(cur_p - sl)
+    
+    if cur_risk_pts > max_sl_pts:
+        if action.upper() == 'BUY':
+            sl = round(cur_p - max_sl_pts, 2)
+            tgt = round(cur_p + (min_rrr * max_sl_pts), 2)
+        else:
+            sl = round(cur_p + max_sl_pts, 2)
+            tgt = round(cur_p - (min_rrr * max_sl_pts), 2)
+            
+    return sl, tgt
+
 def get_cash_and_margin(tracker_data):
     """
     Computes available cash, currently blocked margin, and total account net worth.
@@ -2230,6 +2254,9 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                              f"healthy RSI {rsi:.1f}. Downward trend continuation in effect.")
 
         if triggered and action and sl and tgt:
+            # 🛡️ Hard Risk Cap: Stop distance must NEVER exceed MAX_LOSS_PER_TRADE_INR (e.g. max 1.20 pts on Aluminium)
+            sl, tgt = enforce_max_risk_bracket(action, cur_p, sl, tgt, lot_size)
+
             trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{sym}"
             if any(t.get('id') == trade_id for t in trades):
                 continue
