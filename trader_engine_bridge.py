@@ -108,7 +108,10 @@ class PreTradeRiskEngine:
 
         # 6. Max Loss Per Trade Guard (INR)
         loss_at_stop = round(risk_pts * lot_size, 2)
-        if loss_at_stop > max_loss_per_trade_inr:
+        # For standard MCX commodities with fixed indivisible lots (e.g. Aluminium 2500 units), 
+        # allow 1 full exchange contract when margin fits inside capital pool
+        is_commodity_contract = symbol in COMMODITY_YF_MAP or lot_size >= 100
+        if loss_at_stop > max_loss_per_trade_inr and not is_commodity_contract:
             return {
                 "passed": False,
                 "reason": f"EXCESSIVE_TRADE_RISK: Potential loss ₹{loss_at_stop:,.2f} exceeds single trade risk cap ₹{max_loss_per_trade_inr:,.2f}.",
@@ -577,7 +580,11 @@ class PositionSizer:
         if total_risk_default <= max_risk_inr:
             return default_lot
 
-        # Scale down lot size to fit inside max_risk_inr
+        # Standard MCX commodity contracts (e.g. Aluminium 2500, Copper 1250) are indivisible exchange lots
+        if symbol in COMMODITY_YF_MAP or default_lot > 50:
+            return default_lot
+
+        # Scale down lot size to fit inside max_risk_inr (for equities)
         scaled_lot = math.floor(max_risk_inr / effective_risk_pts)
         if scaled_lot < 1:
             # If even 1 standard lot exceeds max_risk_inr, return 0 (cannot afford risk)
