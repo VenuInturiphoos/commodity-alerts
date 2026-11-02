@@ -1,22 +1,22 @@
 {
-  "last_updated": "02 Nov 2026, 02:01 PM IST",
+  "last_updated": "02 Nov 2026, 03:26 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 16,
     "executed_count": 2,
-    "correct_count": 0,
+    "correct_count": 1,
     "wrong_count": 1,
     "protected_count": 14,
-    "win_rate_pct": 0.0,
-    "total_pnl_inr": -3000.0,
-    "avg_trade_pnl_inr": -1500.0,
-    "active_trades_count": 1,
+    "win_rate_pct": 50.0,
+    "total_pnl_inr": -2849.2,
+    "avg_trade_pnl_inr": -1424.6,
+    "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 297000.0,
-    "used_margin_inr": 6870.68,
-    "available_cash_inr": 290129.32,
-    "net_worth_inr": 297000.0
+    "current_cash_inr": 297150.8,
+    "used_margin_inr": 0,
+    "available_cash_inr": 297150.8,
+    "net_worth_inr": 297150.8
   },
   "trades": [
     {
@@ -27,7 +27,7 @@
       "time_6pm": "01:37 PM IST",
       "time_validation": "01:37 PM IST",
       "time_615": "01:37 PM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "03:26 PM IST",
       "symbol": "NESTLEIND.NS",
       "name": "Nestle India Ltd.",
       "lot_size": 29,
@@ -75,22 +75,25 @@
         "quantity": 29,
         "entry_price": 1184.6,
         "entry_time": "01:37 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 1189.8,
+        "exit_time": "03:26 PM IST",
+        "pnl_points": 5.2,
+        "pnl_inr": 150.8,
+        "status": "CLOSED",
         "target": 1343.15,
         "stop_loss": 1112.53,
-        "margin_required_inr": 6870.68
+        "margin_required_inr": 6870.68,
+        "exit_trigger": "EOD_SQUAREOFF"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 1189.8,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Oversold Mean Reversion Bounce active: BUY @ \u20b91,184.60 (Target: \u20b91,343.15, SL: \u20b91,112.53) | Parametric Model: 43.2% Target | 42.6% Stop | Expected: +0.52R"
+        "outcome": "CORRECT",
+        "badge": "EOD Square-off \u23f0 (03:26 PM IST)",
+        "pnl_display": "+\u20b9150.80",
+        "summary": "Intraday EOD Square-off (03:25 PM) \u23f0 at 03:26 PM IST. Entry: \u20b91,184.60 -> Exit: \u20b91,189.80 (+\u20b9150.80).",
+        "exit_time": "03:26 PM IST",
+        "exit_trigger": "EOD_SQUAREOFF"
       }
     },
     {
