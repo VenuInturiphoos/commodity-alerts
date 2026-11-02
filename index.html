@@ -34,7 +34,8 @@
                 <button class="tab-btn" id="subscribe-tab-btn" onclick="switchTab(this, 'subscribe-tab')">Subscribe</button>
                 <button class="tab-btn" id="market-hub-tab-btn" onclick="switchTab(this, 'market-hub-tab')" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(245, 158, 11, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-bolt" style="margin-right: 5px; color: #fbbf24;"></i> Live Market & Circuits</button>
                 <button class="tab-btn" id="nifty-tab-btn" onclick="switchTab(this, 'nifty-tab')" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-gem" style="margin-right: 5px; color: #f59e0b;"></i> Golden Cross & Value</button>
-                <button class="tab-btn" id="trade-tab-btn" onclick="switchTab(this, 'trade-tab')" style="background: rgba(74, 222, 128, 0.12); border: 1px solid rgba(74, 222, 128, 0.35); color: #4ade80; font-weight: 600;"><i class="fa-solid fa-chart-pie" style="margin-right: 5px;"></i> Paper Trading & Investing</button>
+                <button class="tab-btn" id="investing-tab-btn" onclick="switchTab(this, 'investing-tab')" style="background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.4); color: #4ade80; font-weight: 700;"><i class="fa-solid fa-seedling" style="margin-right: 5px;"></i> 💼 Stock Investing (₹3L)</button>
+                <button class="tab-btn" id="trading-tab-btn" onclick="switchTab(this, 'trading-tab')" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc; font-weight: 700;"><i class="fa-solid fa-crosshairs" style="margin-right: 5px;"></i> 🎯 Commodity Trading (₹3L)</button>
                 <button class="tab-btn" id="copilot-tab-btn" onclick="switchTab(this, 'copilot-tab')" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(168, 85, 247, 0.45); color: #c084fc; font-weight: 700;"><i class="fa-solid fa-robot"></i> Copilot Chat</button>
                 <button class="tab-btn" id="admin-tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Account</button>
                 <button id="theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Mode" style="margin-left: 0.5rem;"><i class="fa-solid fa-moon"></i></button>
@@ -683,27 +684,20 @@
 
             <!-- Paper Trading Tab -->
                         <!-- Paper Trading & Investing Tab -->
-            <section id="trade-tab" class="tab-content">
+            <!-- Backward compatibility alias for DOM and link selectors -->
+            <div id="trade-tab" style="display:none;" aria-hidden="true"></div>
+
+            <!-- ========================================================= -->
+            <!-- 🎯 COMMODITY & DERIVATIVES TRADING TAB (₹3L DEDICATED MARGIN POOL) -->
+            <!-- ========================================================= -->
+            <section id="trading-tab" class="tab-content">
                 <div class="dashboard-header">
-                    <h2>Stock Wealth Investing & Automated Signals</h2>
-                    <p>Build long-term equity wealth with individual Nifty 50 delivery shares (~₹30,000 Daily Golden Cross SIP), or track automated empirical MCX commodity advisory signals.</p>
+                    <h2>🎯 MCX Commodity Trading Tracker (₹3,00,000 Dedicated Margin Pool)</h2>
+                    <p>Autonomous derivative trading pool for <strong>venu.photos1@gmail.com</strong> with strict ₹3,000 max risk per trade and ₹6,000 daily circuit breaker. <strong>Completely separate from Stock Delivery Investments.</strong></p>
                 </div>
 
-                <!-- Sub-Navigation View Switcher: Stock Investing & Advisory Signals -->
-                <div class="circuit-subnav-container" style="margin-bottom: 1.75rem;">
-                    <button class="circuit-subnav-btn active" id="btn-subnav-trade-investing" onclick="switchPaperTradingSubView('investing')">
-                        <i class="fa-solid fa-seedling" style="color:#4ade80;"></i>
-                        <span>💼 Stock Wealth Investing (₹3L Dedicated Cash Pool)</span>
-                    </button>
-                    <button class="circuit-subnav-btn" id="btn-subnav-trade-advisory" onclick="switchPaperTradingSubView('advisory')">
-                        <i class="fa-solid fa-crosshairs" style="color:#818cf8;"></i>
-                        <span>🎯 F&O & Commodity Trading (₹3L Dedicated Margin Pool)</span>
-                        <span class="subnav-badge" id="advisory-badge-count">1 Active</span>
-                    </button>
-                </div>
-
-                <!-- Advisory Signals Subview -->
-                <div id="trade-view-advisory" style="display: none;">
+                <!-- Advisory Signals View -->
+                <div id="trade-view-advisory" style="display: block;">
                     <!-- 🎯 6:00 PM IST Advisory Signals & Paper Trade Tracker -->
                     <div id="advisory-tracker-section" class="glass-card full-width" style="margin-bottom: 2.5rem; border: 1px solid rgba(99, 102, 241, 0.35); background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1rem;">
@@ -844,10 +838,19 @@
                         <div class="loading" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading advisory cards...</div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Account / Trading Views Wrapper -->
-            <div id="trade-view-terminal">
+            <!-- ========================================================= -->
+            <!-- 💼 STOCK WEALTH INVESTING TAB (₹3L DEDICATED CASH POOL) -->
+            <!-- ========================================================= -->
+            <section id="investing-tab" class="tab-content">
+                <div class="dashboard-header">
+                    <h2>💼 Stock Wealth Investing (₹3,00,000 Dedicated Cash Pool)</h2>
+                    <p>Build long-term equity wealth with individual Nifty 50 delivery shares (~₹30,000 Daily Golden Cross SIP). <strong>100% Cash Delivery in Demat, zero forced leverage, zero expiry. Completely isolated from Commodity Trading.</strong></p>
+                </div>
+
+                <!-- Account / Trading Views Wrapper -->
+                <div id="trade-view-terminal" style="display: block;">
                     <div id="trade-login-prompt" style="display: none;"></div>
 
                     <div id="trade-dashboard-content" style="display: block; width: 100%;">
@@ -1524,6 +1527,9 @@ function switchTab(btn, targetId, updateUrl = true) {
         targetId = 'market-hub-tab';
         btn = document.getElementById('market-hub-tab-btn') || btn;
         switchMarketHubSubView('alerts', updateUrl);
+    } else if (targetId === 'trade-tab') {
+        targetId = 'investing-tab';
+        btn = document.getElementById('investing-tab-btn') || btn;
     }
 
     if (!btn) {
@@ -1556,9 +1562,10 @@ function switchTab(btn, targetId, updateUrl = true) {
                 } else {
                     cleanHash = sub;
                 }
-            } else if (targetId === 'trade-tab') {
-                const sub = (typeof activePaperTradingSubView !== 'undefined' ? activePaperTradingSubView : localStorage.getItem('subview_trade')) || 'investing';
-                cleanHash = sub === 'advisory' ? 'advisory' : 'investing';
+            } else if (targetId === 'investing-tab' || targetId === 'trade-tab') {
+                cleanHash = 'investing';
+            } else if (targetId === 'trading-tab') {
+                cleanHash = 'trading';
             } else if (targetId === 'nifty-tab') {
                 cleanHash = 'nifty';
             } else if (targetId === 'copilot-tab') {
@@ -1593,17 +1600,17 @@ function switchTab(btn, targetId, updateUrl = true) {
         }
     }
     
-    if (targetId === 'trade-tab') {
+    if (targetId === 'investing-tab' || targetId === 'trade-tab') {
         if (!lastMarketFetchTime || (now - lastMarketFetchTime > 60000)) {
             if (typeof fetchMarketData === 'function') fetchMarketData();
         }
-        if (typeof activePaperTradingSubView !== 'undefined' && activePaperTradingSubView === 'advisory') {
-            if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker();
-        } else {
-            if (typeof renderTradeMarket === 'function') renderTradeMarket();
-            if (typeof renderPortfolio === 'function') renderPortfolio();
-            if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker();
-        }
+        if (typeof renderTradeMarket === 'function') renderTradeMarket();
+        if (typeof renderPortfolio === 'function') renderPortfolio();
+        if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker();
+    }
+    
+    if (targetId === 'trading-tab') {
+        if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker();
     }
     
     if (targetId === 'nifty-tab') {
@@ -1653,7 +1660,8 @@ function restoreActiveModule() {
     }
 
     const hubBtn = document.getElementById('market-hub-tab-btn');
-    const tradeBtn = document.getElementById('trade-tab-btn') || document.querySelector('button[onclick*="trade-tab"]');
+    const investingBtn = document.getElementById('investing-tab-btn') || document.getElementById('trade-tab-btn');
+    const tradingBtn = document.getElementById('trading-tab-btn');
     const niftyBtn = document.getElementById('nifty-tab-btn') || document.querySelector('button[onclick*="nifty-tab"]');
     const copilotBtn = document.getElementById('copilot-tab-btn') || document.querySelector('button[onclick*="copilot-tab"]');
     const adminBtn = document.getElementById('admin-tab-btn') || document.querySelector('button[onclick*="admin-tab"]');
@@ -1676,12 +1684,10 @@ function restoreActiveModule() {
     } else if (hash === 'hub' || hash === 'market-hub' || hash === 'markethub' || hash === 'hub-all' || hash === 'all') {
         if (hubBtn) switchTab(hubBtn, 'market-hub-tab', false);
         switchMarketHubSubView('all', false);
-    } else if (hash === 'advisory' || hash === 'signals' || hash === 'advisory-signals' || hash === 'commodities') {
-        if (tradeBtn) switchTab(tradeBtn, 'trade-tab', false);
-        switchPaperTradingSubView('advisory', false);
-    } else if (hash === 'trade' || hash === 'investing' || hash === 'stocks' || hash === 'papertrading' || hash === 'paper-trading' || hash === 'trade-tab') {
-        if (tradeBtn) switchTab(tradeBtn, 'trade-tab', false);
-        switchPaperTradingSubView('investing', false);
+    } else if (hash === 'trading' || hash === 'trading-tab' || hash === 'advisory' || hash === 'signals' || hash === 'advisory-signals' || hash === 'commodities') {
+        if (tradingBtn) switchTab(tradingBtn, 'trading-tab', false);
+    } else if (hash === 'investing' || hash === 'investing-tab' || hash === 'trade' || hash === 'stocks' || hash === 'papertrading' || hash === 'paper-trading' || hash === 'trade-tab') {
+        if (investingBtn) switchTab(investingBtn, 'investing-tab', false);
     } else if (hash === 'nifty' || hash === 'crossover' || hash === 'goldencross' || hash === 'oversold' || hash === 'nifty-tab') {
         if (niftyBtn) switchTab(niftyBtn, 'nifty-tab', false);
         try {
@@ -2518,8 +2524,8 @@ function renderNiftyOpportunities() {
 }
 
 function tradeStockFromNifty(symbol, name, price) {
-    const tradeBtn = document.querySelector('button[onclick*="trade-tab"]');
-    if (tradeBtn) switchTab(tradeBtn, 'trade-tab');
+    const investBtn = document.getElementById('investing-tab-btn');
+    if (investBtn) switchTab(investBtn, 'investing-tab');
     
     if (typeof openTradeModal === 'function') {
         setTimeout(() => {
@@ -2707,7 +2713,7 @@ function renderNiftyDailyPickHeroCard(pick) {
                     <i class="fa-solid fa-lightbulb" style="color: #fbbf24; margin-right: 5px;"></i> <strong>Daily Selection Thesis:</strong> ${pick.rationale}
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    <button class="trade-btn buy-btn btn-small" onclick="switchPaperTradingSubView('investing'); const tradeBtn = document.querySelector('button[onclick*=\"trade-tab\"]'); if (tradeBtn) switchTab(tradeBtn, 'trade-tab');" style="background: linear-gradient(135deg, #10b981, #059669); padding: 7px 14px; font-weight: 700; font-size: 0.82rem;">
+                    <button class="trade-btn buy-btn btn-small" onclick="const btn = document.getElementById('investing-tab-btn'); if (btn) switchTab(btn, 'investing-tab');" style="background: linear-gradient(135deg, #10b981, #059669); padding: 7px 14px; font-weight: 700; font-size: 0.82rem;">
                         <i class="fa-solid fa-seedling"></i> View in Stock Portfolio
                     </button>
                 </div>
@@ -7051,8 +7057,8 @@ if (document.readyState === 'loading') {
         }
 
         function tradeFromCopilot(symbol, action, price) {
-            const tradeBtn = document.querySelector('button[onclick*="trade-tab"]');
-            if (tradeBtn) switchTab(tradeBtn, 'trade-tab');
+            const btn = document.getElementById('investing-tab-btn');
+            if (btn) switchTab(btn, 'investing-tab');
             
             const win = document.getElementById('chat-widget-window');
             if (win) win.style.display = 'none';
