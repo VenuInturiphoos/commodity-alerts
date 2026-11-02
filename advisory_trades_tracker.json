@@ -1,5 +1,5 @@
 {
-  "last_updated": "02 Nov 2026, 01:37 PM IST",
+  "last_updated": "02 Nov 2026, 01:58 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -465,18 +465,18 @@
       },
       "risk_check": {
         "passed": true,
-        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
-        "reward_risk_ratio": 1.51,
-        "loss_at_stop_inr": 14825.0,
-        "potential_gain_inr": 22325.0
+        "reason": "RISK_PASSED: Stop calibrated to strict \u20b93,000 risk cap (1.20 pts @ 2,500 units).",
+        "reward_risk_ratio": 2.0,
+        "loss_at_stop_inr": 3000.0,
+        "potential_gain_inr": 6000.0
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
         "action_text": "SELL @ \u20b9329.15",
-        "rationale": "20 EMA (\u20b9330.17) < 50 EMA (\u20b9335.52) with ADX 28.7 >= 20 and healthy RSI 45.4. Downward trend continuation in effect. Parametric Model: 51.8% Target | 36.1% Stop | Expected: +0.42R",
+        "rationale": "20 EMA (\u20b9330.17) < 50 EMA (\u20b9335.52) with ADX 28.7 >= 20. Downward trend confluence. Calibrated risk stop @ \u20b9330.35 (max \u20b93,000 loss) targeting \u20b9326.75 (2.0R).",
         "reference_price": 329.15,
-        "stop_loss": 335.08,
-        "target": 320.22
+        "stop_loss": 330.35,
+        "target": 326.75
       },
       "check_615": {
         "checked": true,
@@ -496,8 +496,8 @@
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
         "status": "ACTIVE",
-        "target": 320.22,
-        "stop_loss": 335.08,
+        "target": 326.75,
+        "stop_loss": 330.35,
         "margin_required_inr": 131660.0
       },
       "eod_outcome": {
@@ -506,7 +506,7 @@
         "outcome": "PENDING",
         "badge": "Active Trigger \u26a1",
         "pnl_display": "Ticking Live...",
-        "summary": "EMA 20/50 Bearish Trend Confluence active: SELL @ \u20b9329.15 (Target: \u20b9320.22, SL: \u20b9335.08) | Parametric Model: 51.8% Target | 36.1% Stop | Expected: +0.42R"
+        "summary": "EMA 20/50 Bearish Trend Confluence active: SELL @ \u20b9329.15 (Target: \u20b9326.75, SL: \u20b9330.35) | Max Risk: \u20b93,000 (1.20 pts x 2500)."
       }
     },
     {
