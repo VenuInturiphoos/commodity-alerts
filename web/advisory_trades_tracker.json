@@ -1,13 +1,13 @@
 {
-  "last_updated": "02 Nov 2026, 10:19 AM IST",
+  "last_updated": "02 Nov 2026, 10:28 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 9,
+    "total_signals": 8,
     "executed_count": 1,
     "correct_count": 0,
     "wrong_count": 0,
-    "protected_count": 8,
+    "protected_count": 7,
     "win_rate_pct": 0.0,
     "total_pnl_inr": 0,
     "avg_trade_pnl_inr": 0.0,
@@ -90,80 +90,6 @@
         "badge": "Active Trigger \u26a1",
         "pnl_display": "Ticking Live...",
         "summary": "EMA 20/50 Bearish Trend Confluence active: SELL @ \u20b9329.15 (Target: \u20b9320.22, SL: \u20b9335.08) | Parametric Model: 51.8% Target | 36.1% Stop | Expected: +0.42R"
-      }
-    },
-    {
-      "id": "ADV-02Nov2026-0916-TATAMOTORS",
-      "date": "02 Nov 2026",
-      "session_name": "Real-Time Technical Trigger (EMA 50/200 Golden Cross Trend Pullback)",
-      "time_trigger": "09:16 AM IST",
-      "time_6pm": "09:16 AM IST",
-      "time_validation": "09:16 AM IST",
-      "time_615": "09:16 AM IST",
-      "time_exit": "03:25 PM IST",
-      "symbol": "TATAMOTORS.NS",
-      "name": "Tata Motors Limited",
-      "lot_size": 88,
-      "asset_type": "EQUITY",
-      "event_context": "Nifty F&O Confluence: EMA 50/200 Golden Cross Trend Pullback",
-      "time_machine": {
-        "replays": 1000,
-        "passed": true,
-        "verdict": "PARAMETRIC_STATISTICAL_PASS",
-        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
-        "p_target_pct": 45.3,
-        "p_stop_pct": 41.0,
-        "p_neither_pct": 13.7,
-        "resolved_win_rate_pct": 52.5,
-        "expected_r": 0.496,
-        "target_r": 2.0,
-        "sample_bars": 0,
-        "summary": "Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
-      },
-      "risk_check": {
-        "passed": true,
-        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
-        "reward_risk_ratio": 2.0,
-        "loss_at_stop_inr": 1569.92,
-        "potential_gain_inr": 3139.84
-      },
-      "suggestion_6pm": {
-        "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / NO F&O CONTRACT",
-        "rationale": "Tata Motors demerged into TMCV/TMPV; NSE expired all TATAMOTORS F&O contracts. Stood aside to prevent invalid derivative order.",
-        "reference_price": 396.35,
-        "stop_loss": 378.51,
-        "target": 432.03
-      },
-      "check_615": {
-        "checked": true,
-        "status": "STAND_ASIDE",
-        "price_615": 396.35,
-        "action_taken": "Stood aside (0 shares) - No active F&O derivative contract on NSE",
-        "detail": "Demerger corporate action: old TATAMOTORS F&O contracts were prematurely expired by NSE."
-      },
-      "paper_trade": {
-        "user": "venu.photos1@gmail.com",
-        "action": "STAND_ASIDE",
-        "quantity": 0,
-        "entry_price": 396.35,
-        "entry_time": "09:16 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "STAND_ASIDE",
-        "target": 432.03,
-        "stop_loss": 378.51,
-        "margin_required_inr": 0.0
-      },
-      "eod_outcome": {
-        "session_close": null,
-        "circuit_limit": null,
-        "outcome": "PROTECTED",
-        "badge": "No F&O Exists \ud83d\udee1\ufe0f",
-        "pnl_display": "\u20b90.00",
-        "summary": "Stood aside: TATAMOTORS has no active Futures contract on NSE post-demerger."
       }
     },
     {

@@ -2344,14 +2344,14 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
 
     # =========================================================================
     # PART 2: REAL-TIME NIFTY F&O HIGH-BETA CONTINUOUS SCANNER (Phase 1 & Phase 2)
-    # Active Window: Mon-Fri, 09:15 AM to 03:20 PM IST
-    # Setups: 20-Day Breakout, Oversold Bollinger Bounce, Golden Cross Pullback
-    # Bracket Orders: Automatic 2R Target & Stop-Loss with <= ₹5,000 Risk Sizing
+    # STRICT SEPARATION: Equities are 100% isolated to the Stock Wealth Investment workflow
+    # (stock_investment_tracker.py). Advisory tracker is strictly dedicated to MCX Commodity Derivatives.
     # =========================================================================
+    ENABLE_EQUITY_DERIVATIVES_SCANNER = False
     is_equity_window = (hour == 9 and minute >= 15) or (10 <= hour < 15) or (hour == 15 and minute <= 20)
     cur_equity_positions = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') == 'EQUITY')
 
-    if is_equity_window and cur_equity_positions < 2:
+    if ENABLE_EQUITY_DERIVATIVES_SCANNER and is_equity_window and cur_equity_positions < 2:
         if os.path.exists(NIFTY_JSON_FILE):
             try:
                 with open(NIFTY_JSON_FILE, 'r') as nf:
