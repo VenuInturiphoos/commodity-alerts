@@ -52,31 +52,57 @@ MARGIN_RATES = {
 }
 
 # =========================================================================
-# 🛡️ CAPITAL PRESERVATION & RISK RULES (CALIBRATED FOR ₹3 LAKH TRADING CAPITAL)
+# 🛡️ CAPITAL DEFENSE & RECOVERY PROTOCOL (CALIBRATED FOR ₹2.9L TRADING CAPITAL)
 # =========================================================================
-MAX_LOSS_PER_TRADE_INR = 3000.0   # Strictly 1.0% of total capital (100 consecutive loss buffer)
-MAX_DAILY_LOSS_INR = 6000.0       # Strictly 2.0% daily circuit breaker (halts trading after 2 losses)
-MAX_EQUITY_POSITION_INR = 35000.0 # Intraday equity capital cap (~12% of account)
+MAX_LOSS_PER_TRADE_INR = 1000.0   # Strictly 0.35% of capital (290+ consecutive loss runway)
+MAX_DAILY_LOSS_INR = 2000.0       # Strictly 0.70% daily circuit breaker (halts trading after 2 losses)
+MAX_EQUITY_POSITION_INR = 25000.0 # Intraday equity capital cap (~8% of account)
 MAX_CONCURRENT_COMMODITIES = 1    # Strictly max 1 active commodity trade
 MAX_CONCURRENT_EQUITIES = 1       # Strictly max 1 active equity trade
+ENFORCE_MINI_ONLY_COMMODITIES = True # Hard ban on heavy standard lots (e.g. AL2500, CRUDE50) until full capital recovery
+
+# Direct mapping to low-margin, micro/mini contracts for capital defense
+MINI_COMMODITY_MAP = {
+    'ALUMINIUM': 'ALUMINI',
+    'CRUDEOIL': 'CRUDEOILM',
+    'NATURALGAS': 'NATURALGASM',
+    'SILVER': 'SILVERMIC',
+    'GOLD': 'GOLDM',
+    'ZINC': 'ZINCM',
+    'COPPER': 'COPPERM'
+}
 
 COMMODITY_DISPLAY_NAMES = {
     'CRUDEOIL': 'Crude Oil',
-    'CRUDEOILM': 'Crude Oil',
+    'CRUDEOILM': 'Crude Oil Mini',
     'NATURALGAS': 'Natural Gas',
-    'NATURALGASM': 'Natural Gas',
+    'NATURALGASM': 'Natural Gas Mini',
     'SILVER': 'Silver',
-    'SILVERMIC': 'Silver',
+    'SILVERM': 'Silver Mini',
+    'SILVERMIC': 'Silver Micro',
     'GOLD': 'Gold',
-    'GOLDM': 'Gold',
+    'GOLDM': 'Gold Mini',
     'GOLDTEN': 'Gold',
     'COPPER': 'Copper',
-    'COPPERM': 'Copper',
+    'COPPERM': 'Copper Mini',
     'ZINC': 'Zinc',
-    'ZINCMINI': 'Zinc',
+    'ZINCM': 'Zinc Mini',
+    'ZINCMINI': 'Zinc Mini',
     'ALUMINIUM': 'Aluminium',
-    'ALUMINI': 'Aluminium'
+    'ALUMINI': 'Aluminium Mini'
 }
+
+def get_defense_contract_and_lot(sym, default_name=None):
+    """
+    Returns (exec_sym, exec_name, lot_size) enforcing Mini/Micro contracts
+    during Capital Defense / Drawdown Recovery mode.
+    """
+    if ENFORCE_MINI_ONLY_COMMODITIES:
+        mini_sym = MINI_COMMODITY_MAP.get(sym, sym)
+        mini_lot = LOT_SIZES.get(mini_sym, 1)
+        mini_name = COMMODITY_DISPLAY_NAMES.get(mini_sym, default_name or sym)
+        return mini_sym, mini_name, mini_lot
+    return sym, default_name or sym, LOT_SIZES.get(sym, 1)
 
 DEFAULT_STARTING_CASH = 300000.0  # ₹3,00,000 (3 Lakhs Virtual Cash)
 
@@ -243,14 +269,12 @@ def record_live_9am_advisory(commodities_list):
             continue
         seen_bases.add(base)
 
-        sym = raw_sym
-        name = COMMODITY_DISPLAY_NAMES.get(sym, item['name'])
+        sym, name, lot_size = get_defense_contract_and_lot(raw_sym, item['name'])
         cur_p = item['current_price']
         day_h = item.get('day_high', cur_p)
         day_l = item.get('day_low', cur_p)
         p_close = item.get('prev_close', cur_p)
         chg_pct = item.get('change_pct', 0.0)
-        lot_size = LOT_SIZES.get(sym, 1)
 
         trade_id = f"ADV-{today_str.replace(' ', '')}-0901-{sym}"
         trade_id_alt = f"ADV-{today_str.replace(' ', '')}-0900-{sym}"
@@ -613,14 +637,12 @@ def record_live_130pm_advisory(commodities_list):
             continue
         seen_bases.add(base)
 
-        sym = raw_sym
-        name = COMMODITY_DISPLAY_NAMES.get(sym, item['name'])
+        sym, name, lot_size = get_defense_contract_and_lot(raw_sym, item['name'])
         cur_p = item['current_price']
         day_h = item.get('day_high', cur_p)
         day_l = item.get('day_low', cur_p)
         p_close = item['prev_close']
         chg_pct = item['change_pct']
-        lot_size = LOT_SIZES.get(sym, 1)
 
         # Technical Indicators from Scanner (RSI, ADX, ATR, Volume)
         rsi = item.get('rsi_14')
@@ -1035,15 +1057,13 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
             continue
         seen_bases.add(base)
 
-        sym = raw_sym
-        name = COMMODITY_DISPLAY_NAMES.get(sym, item['name'])
+        sym, name, lot_size = get_defense_contract_and_lot(raw_sym, item['name'])
         cur_p = item['current_price']
         p_close = item['prev_close']
         chg_pct = item['change_pct']
         status = item['status']
         lc_price = item['lower_circuit']
         uc_price = item['upper_circuit']
-        lot_size = LOT_SIZES.get(sym, 1)
 
         trade_id = f"ADV-{today_str.replace(' ', '')}-1800-{sym}"
         trade_id_alt = f"ADV-{today_str.replace(' ', '')}-{sym}"
@@ -1261,63 +1281,67 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 chg = crude['change_pct']
                 lc = crude['lower_circuit']
                 uc = crude['upper_circuit']
-                lot_size = LOT_SIZES.get('CRUDEOIL', 50)
+                c_sym, c_name, lot_size = get_defense_contract_and_lot('CRUDEOIL', 'Crude Oil Mini')
 
-                # Fade overreaction if near circuit or spike > 1.2%
+                # Fade overreaction if near circuit or spike > 1.5% with trend verification
                 if 'NEAR' in crude['status'] or 'HIT' in crude['status'] or abs(chg) >= 1.5:
                     action = "BUY" if chg < 0 else "SELL"
                     sl = round(lc * 0.996 if action == "BUY" else uc * 1.004, 2)
                     tgt = p_close
-                    entry = {
-                        "id": trade_id,
-                        "date": today_str,
-                        "session_name": "EIA Crude Inventory (8:00 PM)",
-                        "time_trigger": "08:00 PM IST",
-                        "time_6pm": "08:00 PM IST",
-                        "time_validation": "08:15 PM IST",
-                        "time_615": "08:15 PM IST",
-                        "time_exit": "11:30 PM IST",
-                        "symbol": "CRUDEOIL",
-                        "name": "Crude Oil",
-                        "lot_size": lot_size,
-                        "event_context": "Wednesday EIA Petroleum Inventory Spike Fade",
-                        "suggestion_6pm": {
-                            "status": "EIA_FADE",
-                            "action_text": f"{action} / FADE EIA INVENTORY OVERREACTION",
-                            "rationale": "Historical EIA inventory spikes show 60%+ mean-reversion rate back toward anchor.",
-                            "reference_price": cur_p,
-                            "stop_loss": sl,
-                            "target": tgt
-                        },
-                        "check_615": {
-                            "checked": True,
-                            "status": "DIRECT_ENTRY",
-                            "price_615": cur_p,
-                            "action_taken": f"Entered {action} {lot_size} units @ ₹{cur_p:,.2f}",
-                            "detail": "EIA Inventory setup entered at 8:00 PM IST."
-                        },
-                        "paper_trade": {
-                            "user": USER_ACCOUNT,
-                            "action": action,
-                            "quantity": lot_size,
-                            "entry_price": cur_p,
-                            "entry_time": "08:00 PM IST",
-                            "exit_price": None,
-                            "exit_time": None,
-                            "pnl_points": 0.0,
-                            "pnl_inr": 0.0,
-                            "status": "ACTIVE"
-                        },
-                        "eod_outcome": {
-                            "session_close": None,
-                            "circuit_limit": lc if action == "BUY" else uc,
-                            "outcome": "PENDING",
-                            "badge": "Active Trade ⚡",
-                            "pnl_display": "Ticking Live...",
-                            "summary": f"Active {action} position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                    c_sym, c_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(c_sym, c_name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
+                    if adaptive_lot > 0:
+                        entry = {
+                            "id": trade_id,
+                            "date": today_str,
+                            "session_name": "EIA Crude Inventory (8:00 PM)",
+                            "time_trigger": "08:00 PM IST",
+                            "time_6pm": "08:00 PM IST",
+                            "time_validation": "08:15 PM IST",
+                            "time_615": "08:15 PM IST",
+                            "time_exit": "11:30 PM IST",
+                            "symbol": c_sym,
+                            "name": c_name,
+                            "lot_size": adaptive_lot,
+                            "event_context": "Wednesday EIA Petroleum Inventory Spike Fade",
+                            "suggestion_6pm": {
+                                "status": "EIA_FADE",
+                                "action_text": f"{action} / FADE EIA INVENTORY OVERREACTION",
+                                "rationale": "Historical EIA inventory spikes show 60%+ mean-reversion rate back toward anchor.",
+                                "reference_price": cur_p,
+                                "stop_loss": sl,
+                                "target": tgt
+                            },
+                            "check_615": {
+                                "checked": True,
+                                "status": "DIRECT_ENTRY",
+                                "price_615": cur_p,
+                                "action_taken": f"Entered {action} {adaptive_lot} units @ ₹{cur_p:,.2f}",
+                                "detail": "EIA Inventory setup entered at 8:00 PM IST."
+                            },
+                            "paper_trade": {
+                                "user": USER_ACCOUNT,
+                                "action": action,
+                                "quantity": adaptive_lot,
+                                "entry_price": cur_p,
+                                "entry_time": "08:00 PM IST",
+                                "exit_price": None,
+                                "exit_time": None,
+                                "pnl_points": 0.0,
+                                "pnl_inr": 0.0,
+                                "status": "ACTIVE",
+                                "target": tgt,
+                                "stop_loss": sl
+                            },
+                            "eod_outcome": {
+                                "session_close": None,
+                                "circuit_limit": lc if action == "BUY" else uc,
+                                "outcome": "PENDING",
+                                "badge": "Active Trade ⚡",
+                                "pnl_display": "Ticking Live...",
+                                "summary": f"Active {action} position ({adaptive_lot} units) entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                            }
                         }
-                    }
-                    new_entries.append(entry)
+                        new_entries.append(entry)
 
     # Priority 2: Thursday EIA Natural Gas Special
     elif day_name == 'Thursday':
@@ -1330,62 +1354,66 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 chg = natgas['change_pct']
                 lc = natgas['lower_circuit']
                 uc = natgas['upper_circuit']
-                lot_size = LOT_SIZES.get('NATURALGAS', 2500)
+                c_sym, c_name, lot_size = get_defense_contract_and_lot('NATURALGAS', 'Natural Gas Mini')
 
                 if 'NEAR' in natgas['status'] or 'HIT' in natgas['status'] or abs(chg) >= 2.0:
                     action = "BUY" if chg < 0 else "SELL"
                     sl = round(lc * 0.996 if action == "BUY" else uc * 1.004, 2)
                     tgt = p_close
-                    entry = {
-                        "id": trade_id,
-                        "date": today_str,
-                        "session_name": "EIA NatGas Storage (8:00 PM)",
-                        "time_trigger": "08:00 PM IST",
-                        "time_6pm": "08:00 PM IST",
-                        "time_validation": "08:15 PM IST",
-                        "time_615": "08:15 PM IST",
-                        "time_exit": "11:30 PM IST",
-                        "symbol": "NATURALGAS",
-                        "name": "Natural Gas",
-                        "lot_size": lot_size,
-                        "event_context": "Thursday EIA Storage Report Spike Fade",
-                        "suggestion_6pm": {
-                            "status": "EIA_FADE",
-                            "action_text": f"{action} / FADE STORAGE REPORT SPIKE",
-                            "rationale": "High-probability retracement of EIA inventory knee-jerk spike.",
-                            "reference_price": cur_p,
-                            "stop_loss": sl,
-                            "target": tgt
-                        },
-                        "check_615": {
-                            "checked": True,
-                            "status": "DIRECT_ENTRY",
-                            "price_615": cur_p,
-                            "action_taken": f"Entered {action} {lot_size} units @ ₹{cur_p:,.2f}",
-                            "detail": "EIA Natural Gas setup entered at 8:00 PM IST."
-                        },
-                        "paper_trade": {
-                            "user": USER_ACCOUNT,
-                            "action": action,
-                            "quantity": lot_size,
-                            "entry_price": cur_p,
-                            "entry_time": "08:00 PM IST",
-                            "exit_price": None,
-                            "exit_time": None,
-                            "pnl_points": 0.0,
-                            "pnl_inr": 0.0,
-                            "status": "ACTIVE"
-                        },
-                        "eod_outcome": {
-                            "session_close": None,
-                            "circuit_limit": lc if action == "BUY" else uc,
-                            "outcome": "PENDING",
-                            "badge": "Active Trade ⚡",
-                            "pnl_display": "Ticking Live...",
-                            "summary": f"Active {action} position entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                    c_sym, c_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(c_sym, c_name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
+                    if adaptive_lot > 0:
+                        entry = {
+                            "id": trade_id,
+                            "date": today_str,
+                            "session_name": "EIA NatGas Storage (8:00 PM)",
+                            "time_trigger": "08:00 PM IST",
+                            "time_6pm": "08:00 PM IST",
+                            "time_validation": "08:15 PM IST",
+                            "time_615": "08:15 PM IST",
+                            "time_exit": "11:30 PM IST",
+                            "symbol": c_sym,
+                            "name": c_name,
+                            "lot_size": adaptive_lot,
+                            "event_context": "Thursday EIA Natural Gas Storage Spike Fade",
+                            "suggestion_6pm": {
+                                "status": "EIA_FADE",
+                                "action_text": f"{action} / FADE EIA INVENTORY OVERREACTION",
+                                "rationale": "Historical EIA inventory spikes show 60%+ mean-reversion rate back toward anchor.",
+                                "reference_price": cur_p,
+                                "stop_loss": sl,
+                                "target": tgt
+                            },
+                            "check_615": {
+                                "checked": True,
+                                "status": "DIRECT_ENTRY",
+                                "price_615": cur_p,
+                                "action_taken": f"Entered {action} {adaptive_lot} units @ ₹{cur_p:,.2f}",
+                                "detail": "EIA Storage setup entered at 8:00 PM IST."
+                            },
+                            "paper_trade": {
+                                "user": USER_ACCOUNT,
+                                "action": action,
+                                "quantity": adaptive_lot,
+                                "entry_price": cur_p,
+                                "entry_time": "08:00 PM IST",
+                                "exit_price": None,
+                                "exit_time": None,
+                                "pnl_points": 0.0,
+                                "pnl_inr": 0.0,
+                                "status": "ACTIVE",
+                                "target": tgt,
+                                "stop_loss": sl
+                            },
+                            "eod_outcome": {
+                                "session_close": None,
+                                "circuit_limit": lc if action == "BUY" else uc,
+                                "outcome": "PENDING",
+                                "badge": "Active Trade ⚡",
+                                "pnl_display": "Ticking Live...",
+                                "summary": f"Active {action} position ({adaptive_lot} units) entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                            }
                         }
-                    }
-                    new_entries.append(entry)
+                        new_entries.append(entry)
 
     # General US Evening Follow-through for other commodities
     for item in commodities_list:
@@ -2328,8 +2356,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
             continue
 
         atr_val = atr if (atr and atr > 0) else (cur_p * 0.008)
-        lot_size = LOT_SIZES.get(sym, 1)
-        name = COMMODITY_DISPLAY_NAMES.get(sym, item.get('name', sym))
+        sym, name, lot_size = get_defense_contract_and_lot(sym, item.get('name', sym))
 
         triggered = False
         action = None

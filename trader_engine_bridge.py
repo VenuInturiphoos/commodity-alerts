@@ -62,14 +62,14 @@ class PreTradeRiskEngine:
 
     @staticmethod
     def check_risk(symbol, action, entry, stop, target, lot_size, existing_trades,
-                   max_loss_per_trade_inr=3000.0, max_daily_loss_inr=6000.0,
+                   max_loss_per_trade_inr=1000.0, max_daily_loss_inr=2000.0,
                    min_reward_risk=1.5, max_active_positions=2):
         """
         Runs comprehensive pre-trade risk validation:
         1. Stop loss presence and direction
         2. Minimum reward-to-risk ratio
-        3. Maximum allowable rupee loss per trade
-        4. Portfolio daily loss circuit breaker
+        3. Maximum allowable rupee loss per trade (Strictly capped at max_loss_per_trade_inr)
+        4. Portfolio daily loss circuit breaker (Strictly capped at max_daily_loss_inr)
         5. Maximum concurrent open positions
         6. Minimum risk spread (filters bid-ask noise)
         7. Late-session cut-off time (no entries after 10:45 PM IST)
@@ -106,15 +106,12 @@ class PreTradeRiskEngine:
                 "reward_risk_ratio": rrr
             }
 
-        # 6. Max Loss Per Trade Guard (INR)
+        # 6. Max Loss Per Trade Guard (INR) - Absolute Capital Preservation (No Exceptions)
         loss_at_stop = round(risk_pts * lot_size, 2)
-        # For standard MCX commodities with fixed indivisible lots (e.g. Aluminium 2500 units), 
-        # allow 1 full exchange contract when margin fits inside capital pool
-        is_commodity_contract = symbol in COMMODITY_YF_MAP or lot_size >= 100
-        if loss_at_stop > max_loss_per_trade_inr and not is_commodity_contract:
+        if loss_at_stop > max_loss_per_trade_inr:
             return {
                 "passed": False,
-                "reason": f"EXCESSIVE_TRADE_RISK: Potential loss ₹{loss_at_stop:,.2f} exceeds single trade risk cap ₹{max_loss_per_trade_inr:,.2f}.",
+                "reason": f"EXCESSIVE_TRADE_RISK: Potential loss ₹{loss_at_stop:,.2f} exceeds capital recovery risk cap ₹{max_loss_per_trade_inr:,.2f}. Must route to Mini contract or stand aside.",
                 "loss_at_stop_inr": loss_at_stop,
                 "reward_risk_ratio": rrr
             }
@@ -574,11 +571,11 @@ class PositionSizer:
     }
 
     @classmethod
-    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=3000.0, atr=None):
+    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=1000.0, atr=None):
         """
         Resolves the appropriate contract (Standard vs Mini) and safe lot size
-        so that total rupee risk at stop-loss strictly fits inside max_risk_inr.
-        If standard lot exceeds max_risk_inr, automatically routes to Mini contract.
+        so that total rupee risk at stop-loss strictly fits inside max_risk_inr (default ₹1,000).
+        Always prioritizes Mini/Micro contracts for MCX commodities to protect capital.
         """
         if entry <= 0 or stop <= 0 or entry == stop:
             return symbol, name, default_lot
@@ -586,25 +583,25 @@ class PositionSizer:
         risk_pts = abs(entry - stop)
         effective_risk_pts = max(risk_pts, atr * 0.8) if (atr and atr > 0) else risk_pts
 
-        # 1. Check if standard contract fits within risk cap
-        total_risk_standard = effective_risk_pts * default_lot
-        if total_risk_standard <= max_risk_inr:
-            return symbol, name, default_lot
-
-        # 2. Check if a Mini contract exists for this commodity
+        # 1. Prefer Mini contract for MCX commodities to keep capital unencumbered
         base_sym = symbol.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '')
         mini_info = cls.MINI_ROUTES.get(symbol) or cls.MINI_ROUTES.get(base_sym)
         if mini_info:
             mini_lot = mini_info['lot_size']
             total_risk_mini = effective_risk_pts * mini_lot
             if total_risk_mini <= max_risk_inr:
-                print(f"🔄 Sizer Route: {symbol} Standard lot risk (₹{total_risk_standard:,.0f}) > ₹{max_risk_inr:,.0f}. Routed to {mini_info['name']} ({mini_lot} units, risk ₹{total_risk_mini:,.0f}).")
+                print(f"🔄 Sizer Route: Enforcing {mini_info['name']} ({mini_lot} units, risk ₹{total_risk_mini:,.0f} <= ₹{max_risk_inr:,.0f}).")
                 return mini_info['symbol'], mini_info['name'], mini_lot
             
-            # If 1 mini lot still exceeds risk, check affordable integer lots
+            # If 1 mini lot risk is close, check affordable integer lots
             afford_lot = math.floor(max_risk_inr / effective_risk_pts)
             if afford_lot >= 1:
                 return mini_info['symbol'], mini_info['name'], afford_lot
+
+        # 2. Check if standard contract fits within risk cap
+        total_risk_standard = effective_risk_pts * default_lot
+        if total_risk_standard <= max_risk_inr:
+            return symbol, name, default_lot
 
         # 3. For equities or divisible instruments
         scaled_lot = math.floor(max_risk_inr / effective_risk_pts)
@@ -614,35 +611,26 @@ class PositionSizer:
         return symbol, name, 0  # Blocked: Cannot safely fit inside risk cap
 
     @classmethod
-    def calculate_adaptive_lot(cls, symbol, entry, stop, default_lot, max_risk_inr=3000.0, atr=None):
+    def calculate_adaptive_lot(cls, symbol, entry, stop, default_lot, max_risk_inr=1000.0, atr=None):
         """
         Calculates safe integer lot size where:
-        Total Risk = abs(entry - stop) * lot_size <= max_risk_inr.
-        Optionally uses ATR (14) to adjust position size:
-        If ATR is unusually high (> 1.5x normal risk spread), scales down further
-        to protect against volatility spikes.
+        Total Risk = abs(entry - stop) * lot_size <= max_risk_inr (default ₹1,000.00).
         """
         if entry <= 0 or stop <= 0 or entry == stop or default_lot <= 0:
             return default_lot
 
         risk_pts = abs(entry - stop)
-
-        # Volatility expansion adjustment: if ATR is provided and exceeds stop distance, scale conservatively
-        if atr and atr > 0:
-            effective_risk_pts = max(risk_pts, atr * 0.8)
-        else:
-            effective_risk_pts = risk_pts
-
-        total_risk_default = effective_risk_pts * default_lot
-
-        if total_risk_default <= max_risk_inr:
-            return default_lot
+        effective_risk_pts = max(risk_pts, atr * 0.8) if (atr and atr > 0) else risk_pts
 
         # Check mini contract fallback
         base_sym = symbol.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '')
         mini_info = cls.MINI_ROUTES.get(symbol) or cls.MINI_ROUTES.get(base_sym)
         if mini_info and (effective_risk_pts * mini_info['lot_size'] <= max_risk_inr):
             return mini_info['lot_size']
+
+        total_risk_default = effective_risk_pts * default_lot
+        if total_risk_default <= max_risk_inr:
+            return default_lot
 
         # Scale down lot size to fit inside max_risk_inr (for equities or divisible contracts)
         scaled_lot = math.floor(max_risk_inr / effective_risk_pts)
