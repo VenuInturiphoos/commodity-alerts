@@ -2344,10 +2344,11 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
 
     # =========================================================================
     # PART 2: REAL-TIME NIFTY F&O HIGH-BETA CONTINUOUS SCANNER (Phase 1 & Phase 2)
-    # STRICT SEPARATION: Equities are 100% isolated to the Stock Wealth Investment workflow
-    # (stock_investment_tracker.py). Advisory tracker is strictly dedicated to MCX Commodity Derivatives.
+    # Active Window: Mon-Fri, 09:15 AM to 03:20 PM IST
+    # Scans valid Nifty 50 F&O stocks (excluding corporate demergers like TATAMOTORS)
+    # Strictly sized <= ₹3,000 risk (1% of ₹3L Trading pool) with 03:25 PM EOD square-off
     # =========================================================================
-    ENABLE_EQUITY_DERIVATIVES_SCANNER = False
+    ENABLE_EQUITY_DERIVATIVES_SCANNER = True
     is_equity_window = (hour == 9 and minute >= 15) or (10 <= hour < 15) or (hour == 15 and minute <= 20)
     cur_equity_positions = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') == 'EQUITY')
 
