@@ -2656,105 +2656,14 @@ def exit_and_evaluate_eod_trades(checker, alerter):
 
 def init_clean_live_tracker():
     """
-    Initializes a forward-tested live tracker starting strictly from real live data
-    captured in production (23 Oct 2026 onwards). Removes all simulated historical daily-bar backfills.
+    Initializes a clean forward-tested live tracker starting fresh from today (02 Nov 2026 onwards)
+    with ₹3,00,000 base trading capital. Past trades archived into web/advisory_trades_history_archive.json.
     """
-    live_seed_trades = [
-        {
-            "id": "ADV-20261023-NATURALGAS",
-            "date": "23 Oct 2026",
-            "time_6pm": "06:00 PM IST",
-            "time_615": "N/A",
-            "time_exit": "11:30 PM IST",
-            "symbol": "NATURALGAS",
-            "name": "Natural Gas",
-            "lot_size": 1250,
-            "event_context": "Pre-6 PM Upper Circuit Test (Asian/EU Fade Setup)",
-            "suggestion_6pm": {
-                "status": "DIRECT_FADE",
-                "action_text": "SELL / FADE THE MOVE",
-                "rationale": "Pre-6 PM limit tests show structural fade probability before US pit volume arrives.",
-                "reference_price": 3.16,
-                "stop_loss": 2.97,
-                "target": 2.80
-            },
-            "check_615": {
-                "checked": True,
-                "status": "DIRECT_ENTRY",
-                "price_615": 3.16,
-                "action_taken": "Entered SELL 1250 units @ ₹3.16",
-                "detail": "Direct trade executed at 6:00 PM IST."
-            },
-            "paper_trade": {
-                "user": USER_ACCOUNT,
-                "action": "SELL",
-                "quantity": 1250,
-                "entry_price": 3.16,
-                "entry_time": "06:00 PM IST",
-                "exit_price": 3.05,
-                "exit_time": "11:30 PM IST",
-                "pnl_points": 0.11,
-                "pnl_inr": 137.50,
-                "status": "CLOSED"
-            },
-            "eod_outcome": {
-                "session_close": 3.05,
-                "circuit_limit": 2.96,
-                "outcome": "CORRECT",
-                "badge": "Correct ✅",
-                "pnl_display": "+₹137.50",
-                "summary": "Pre-6 PM fade captured +0.11 pts retracement into 11:30 PM session close (0.11 pts × 1,250 = +₹137.50)."
-            }
-        },
-        {
-            "id": "ADV-20261023-SILVER",
-            "date": "23 Oct 2026",
-            "time_6pm": "06:00 PM IST",
-            "time_615": "06:15 PM IST",
-            "time_exit": "11:30 PM IST",
-            "symbol": "SILVER",
-            "name": "Silver",
-            "lot_size": 5,
-            "event_context": "US Pit Open Lower Band Test (Knife-Catch Warning)",
-            "suggestion_6pm": {
-                "status": "WAIT_615",
-                "action_text": "DO NOT KNIFE-CATCH! WAIT FOR 6:15 PM CONFIRMATION",
-                "rationale": "Lower circuit test carries 66.7% downward expansion risk. Wait for 6:15 PM candle close to confirm limit floor holds.",
-                "reference_price": 195719.0,
-                "stop_loss": 190848.5,
-                "target": 199599.0
-            },
-            "check_615": {
-                "checked": True,
-                "status": "NO_REVERSAL_STAND_ASIDE",
-                "price_615": 195650.0,
-                "action_taken": "No bullish reversal pin-bar at 6:15 PM. STOOD ASIDE (Avoided False Dip Buy).",
-                "detail": "Price remained pressed against lower limit band without bullish rejection. 15-min rule preserved capital."
-            },
-            "paper_trade": {
-                "user": USER_ACCOUNT,
-                "action": "STAND_ASIDE",
-                "quantity": 0,
-                "entry_price": 195650.0,
-                "entry_time": "06:15 PM IST",
-                "exit_price": 195719.0,
-                "exit_time": "11:30 PM IST",
-                "pnl_points": 0.0,
-                "pnl_inr": 0.0,
-                "status": "CLOSED"
-            },
-            "eod_outcome": {
-                "session_close": 195719.0,
-                "circuit_limit": 191615.04,
-                "outcome": "PROTECTED",
-                "badge": "Avoided Trap 🛡️",
-                "pnl_display": "₹0.00 (Protected)",
-                "summary": "15-minute rule successfully protected capital by preventing premature counter-trend knife-catching."
-            }
-        }
-    ]
-
-    tracker_data = {"trades": live_seed_trades}
+    tracker_data = {
+        "account_email": USER_ACCOUNT,
+        "starting_cash_inr": DEFAULT_STARTING_CASH,
+        "trades": []
+    }
     save_tracker(tracker_data)
     return tracker_data
 
