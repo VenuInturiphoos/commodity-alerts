@@ -24,6 +24,12 @@ import pytz
 import urllib3
 from datetime import datetime
 
+from trader_engine_bridge import (
+    OptionsMonteCarloEngine,
+    OptionsRiskGatekeeper,
+    OptionsBudgetAndExitPlanner
+)
+
 try:
     import requests
     HAS_REQUESTS = True
@@ -311,16 +317,66 @@ def scan_options_theta_opportunities(output_path='web/options_selling_data.json'
                          f"{call_strike} CE is sheltered above the volatility ceiling with a {call_buffer_pct:.1f}% buffer.")
 
         # =========================================================================
-        # 4. TECHNICAL RANGEBOUND QUALITY SCORE (0 - 100 PTS)
+        # 4. EXTERNAL DAY-TRADER SKILLS INTEGRATION
+        # =========================================================================
+        # Skill 1: trader-timemachine (5,000-Path Monte Carlo Confinement Simulation)
+        mc_sim = OptionsMonteCarloEngine.simulate_channel_confinement(
+            symbol=orig_sym,
+            close=close,
+            put_strike=put_strike,
+            call_strike=call_strike,
+            strategy_type=strategy_type,
+            dte=dte,
+            daily_vol_pct=daily_vol,
+            replays=5000
+        )
+
+        # Skill 2: trader-risk (14-Point Pre-Trade Institutional Risk Gatekeeper)
+        risk_audit = OptionsRiskGatekeeper.audit_trade(
+            symbol=orig_sym,
+            close=close,
+            put_strike=put_strike,
+            call_strike=call_strike,
+            strategy_type=strategy_type,
+            adx=adx_val,
+            rsi=rsi_val,
+            bb_low=bb_low_val,
+            bb_high=bb_high_val,
+            bb_width=bb_width_pct,
+            dte=dte,
+            rom_pct=rom_pct,
+            daily_vol=daily_vol,
+            lot_size=lot_size,
+            est_premium=est_total_premium,
+            margin_req=margin_required
+        )
+
+        # Skill 3, 4, 5: trader-budget, trader-exit, trader-alerts (50% Profit Rule & 3-Point Defense Alerts)
+        trade_plan = OptionsBudgetAndExitPlanner.build_plan(
+            symbol=orig_sym,
+            close=close,
+            put_strike=put_strike,
+            call_strike=call_strike,
+            strategy_type=strategy_type,
+            est_total_premium=est_total_premium,
+            lot_size=lot_size,
+            bb_low=bb_low_val,
+            bb_high=bb_high_val
+        )
+
+        # =========================================================================
+        # 5. TECHNICAL RANGEBOUND QUALITY SCORE (0 - 100 PTS)
         # =========================================================================
         # Ranks genuine technical consolidation quality:
-        # - Exhausted ADX: up to 40 pts (lower ADX = flatter trend)
-        # - Tight Bollinger Squeeze: up to 35 pts (narrower width = lower volatility)
-        # - Return on Margin Yield: up to 25 pts
-        adx_score = max(0.0, (23.0 - adx_val) * (40.0 / 13.0))
-        bw_score = max(0.0, (13.0 - bb_width_pct) * (35.0 / 8.0))
-        rom_score = min(25.0, (rom_pct / 5.0) * 25.0)
-        technical_quality_score = round(min(98.0, max(60.0, adx_score + bw_score + rom_score)), 1)
+        # - Exhausted ADX: up to 35 pts (lower ADX = flatter trend)
+        # - Tight Bollinger Squeeze: up to 30 pts (narrower width = lower volatility)
+        # - Monte Carlo Confinement Hold: up to 25 pts (empirical channel hold rate)
+        # - Return on Margin Yield: up to 10 pts
+        adx_score = max(0.0, (23.0 - adx_val) * (35.0 / 13.0))
+        bw_score = max(0.0, (13.0 - bb_width_pct) * (30.0 / 8.0))
+        mc_score = max(0.0, (mc_sim['channel_hold_prob_pct'] - 50.0) * (25.0 / 50.0))
+        rom_score = min(10.0, (rom_pct / 5.0) * 10.0)
+        technical_quality_score = round(min(99.0, max(60.0, adx_score + bw_score + mc_score + rom_score)), 1)
 
         opportunities.append({
             'symbol': orig_sym,
@@ -363,11 +419,24 @@ def scan_options_theta_opportunities(output_path='web/options_selling_data.json'
             'resist_desc': resist_desc,
             'days_to_expiry': dte,
             'expiry_date': expiry_str,
-            'rationale': rationale
+            'rationale': rationale,
+            # Enhanced Skill Fields
+            'timemachine': mc_sim,
+            'mc_hold_pct': mc_sim['channel_hold_prob_pct'],
+            'mc_rating': mc_sim['confidence_rating'],
+            'mc_badge': mc_sim['rating_badge'],
+            'mc_expected_r': mc_sim['expected_r'],
+            'risk_audit': risk_audit,
+            'risk_passed': risk_audit['passed'],
+            'risk_verdict': risk_audit['verdict'],
+            'trade_plan': trade_plan,
+            'take_profit_target_premium': trade_plan['take_profit_target_premium'],
+            'take_profit_locked_inr': trade_plan['take_profit_locked_inr'],
+            'defense_alerts': trade_plan['alerts']
         })
 
     # Sort opportunities by Technical Rangebound Quality Score descending
-    opportunities.sort(key=lambda x: (x['theta_safety_score'], x['rom_pct']), reverse=True)
+    opportunities.sort(key=lambda x: (x['theta_safety_score'], x['mc_hold_pct'], x['rom_pct']), reverse=True)
 
     summary = {
         'total_scanned': len(opportunities),
@@ -376,6 +445,8 @@ def scan_options_theta_opportunities(output_path='web/options_selling_data.json'
         'put_sell_count': len([o for o in opportunities if o['strategy_type'] == 'PUT_SELL']),
         'call_sell_count': len([o for o in opportunities if o['strategy_type'] == 'CALL_SELL']),
         'avg_safety_buffer': round(sum(o['primary_buffer_pct'] for o in opportunities) / len(opportunities), 1) if opportunities else 0.0,
+        'avg_mc_hold_pct': round(sum(o['mc_hold_pct'] for o in opportunities) / len(opportunities), 1) if opportunities else 0.0,
+        'risk_cleared_count': len([o for o in opportunities if o['risk_passed']]),
         'expiry_date': expiry_str,
         'days_to_expiry': dte
     }

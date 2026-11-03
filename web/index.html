@@ -728,6 +728,7 @@
                 <div class="nifty-toolbar">
                     <div class="nifty-filters">
                         <button class="circuit-filter-pill active" onclick="filterOptionsCategory('ALL', this)">🔥 All Setups (<span id="options-cnt-all">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterOptionsCategory('RISK_PASS', this)">🛡️ 14-Pt Risk Pass (<span id="options-cnt-risk">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterOptionsCategory('PUT_SELL', this)">🟢 OTM Put Sell (Floor Defense) (<span id="options-cnt-put">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterOptionsCategory('CALL_SELL', this)">🔴 OTM Call Sell (Ceiling Defense) (<span id="options-cnt-call">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterOptionsCategory('STRANGLE', this)">🟣 Short Strangle (Range) (<span id="options-cnt-strangle">0</span>)</button>
@@ -742,6 +743,7 @@
 
                         <select id="options-sort-select" onchange="sortOptionsOpportunities(this.value)" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 7px 12px; border-radius: 20px; font-size: 0.85rem; outline: none; cursor: pointer;">
                             <option value="safety" selected>🛡️ Highest Technical Quality (Lowest Breakout Risk)</option>
+                            <option value="timemachine">🎲 Highest Monte Carlo Hold % (Time Machine)</option>
                             <option value="adx">📉 Lowest ADX (Tightest Consolidation)</option>
                             <option value="pop">💎 Highest Profit Probability (PoP %)</option>
                             <option value="buffer">🛡️ Widest Margin of Safety Buffer (%)</option>
@@ -771,11 +773,11 @@
                             <tr>
                                 <th>Stock &amp; F&amp;O Lot</th>
                                 <th>CMP &amp; Daily Chg</th>
-                                <th>Suggested Strategy</th>
+                                <th>Strategy &amp; 14-Pt Risk</th>
                                 <th>Recommended Strikes</th>
-                                <th>Safety Buffer %</th>
-                                <th>PoP (Worthless) %</th>
-                                <th>ADX &amp; Volatility</th>
+                                <th>Time Machine (5k Replays)</th>
+                                <th>Safety Buffer &amp; PoP</th>
+                                <th>50% Profit Target Rule</th>
                                 <th>Est. Margin &amp; Yield</th>
                                 <th style="text-align: right;">Action</th>
                             </tr>
@@ -2825,12 +2827,14 @@ async function fetchOptionsOpportunities(forceNetwork = false) {
     // Update Filter Button Count Labels
     const stocks = loadedData.stocks || [];
     const cntAll = document.getElementById('options-cnt-all');
+    const cntRisk = document.getElementById('options-cnt-risk');
     const cntPut = document.getElementById('options-cnt-put');
     const cntCall = document.getElementById('options-cnt-call');
     const cntStrangle = document.getElementById('options-cnt-strangle');
     const cntElite = document.getElementById('options-cnt-elite');
     
     if (cntAll) cntAll.textContent = stocks.length;
+    if (cntRisk) cntRisk.textContent = stocks.filter(x => x.risk_passed).length;
     if (cntPut) cntPut.textContent = stocks.filter(x => x.strategy_type === 'PUT_SELL').length;
     if (cntCall) cntCall.textContent = stocks.filter(x => x.strategy_type === 'CALL_SELL').length;
     if (cntStrangle) cntStrangle.textContent = stocks.filter(x => x.strategy_type === 'STRANGLE').length;
@@ -2884,6 +2888,7 @@ function renderOptionsOpportunities() {
     if (!cardsContainer && !tableBody) return;
     
     let filtered = optionsOpportunitiesData.stocks.filter(s => {
+        if (activeOptionsFilter === 'RISK_PASS' && !s.risk_passed) return false;
         if (activeOptionsFilter === 'PUT_SELL' && s.strategy_type !== 'PUT_SELL') return false;
         if (activeOptionsFilter === 'CALL_SELL' && s.strategy_type !== 'CALL_SELL') return false;
         if (activeOptionsFilter === 'STRANGLE' && s.strategy_type !== 'STRANGLE') return false;
@@ -2903,6 +2908,7 @@ function renderOptionsOpportunities() {
     
     filtered.sort((a, b) => {
         if (activeOptionsSort === 'safety') return (b.theta_safety_score - a.theta_safety_score) || (b.primary_pop - a.primary_pop);
+        if (activeOptionsSort === 'timemachine') return (b.mc_hold_pct || b.primary_pop) - (a.mc_hold_pct || a.primary_pop);
         if (activeOptionsSort === 'buffer') return b.primary_buffer_pct - a.primary_buffer_pct;
         if (activeOptionsSort === 'adx') return a.adx - b.adx;
         if (activeOptionsSort === 'rom') return (b.rom_pct || 0) - (a.rom_pct || 0);
@@ -2924,6 +2930,12 @@ function renderOptionsOpportunities() {
                 const badgeBorder = isStrangle ? 'rgba(192, 132, 252, 0.35)' : (isPut ? 'rgba(52, 211, 153, 0.35)' : 'rgba(251, 113, 133, 0.35)');
                 const changeColor = item.change_pct >= 0 ? '#34d399' : '#fb7185';
                 const changeSign = item.change_pct >= 0 ? '+' : '';
+                const holdPct = item.mc_hold_pct != null ? item.mc_hold_pct : item.primary_pop;
+                const expR = item.mc_expected_r != null ? item.mc_expected_r : 0.65;
+                const tgtPrem = item.take_profit_target_premium || (item.est_total_premium * 0.5).toFixed(2);
+                const lockedInr = item.take_profit_locked_inr || Math.round(item.est_inflow_inr * 0.5);
+                const stopPrem = item.trade_plan?.stop_loss_premium || (item.est_total_premium * 2.0).toFixed(2);
+                const tailCap = item.risk_audit?.tail_risk_cap_inr || item.est_inflow_inr || 0;
                 
                 return `
                     <div class="nifty-card" style="border-color: ${badgeBorder};">
@@ -2959,8 +2971,28 @@ function renderOptionsOpportunities() {
                             </div>
                         </div>
 
+                        <!-- Skill Badge 1: trader-timemachine (Monte Carlo Replay) -->
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3); border-radius:6px; padding:4px 8px; margin-top:8px; font-size:0.72rem;">
+                            <span style="color:#e9d5ff; font-weight:700;">
+                                <i class="fa-solid fa-dice-d20" style="color:#c084fc;"></i> Time Machine: ${holdPct}% Channel Hold
+                            </span>
+                            <span style="color:#a7f3d0; font-weight:700;">
+                                Expected: +${expR}R (5k Replays)
+                            </span>
+                        </div>
+
+                        <!-- Skill Badge 2: trader-risk (14-Point Pre-Trade Risk Pass) -->
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.25); border-radius:6px; padding:4px 8px; margin-top:5px; font-size:0.71rem;">
+                            <span style="color:#86efac; font-weight:700;">
+                                <i class="fa-solid fa-shield-halved" style="color:#4ade80;"></i> ${item.risk_passed ? '14/14 Pre-Trade Risk Pass 🛡️' : 'Risk Screened'}
+                            </span>
+                            <span style="color:#cbd5e1;">
+                                Tail Risk Cap: ₹${tailCap.toLocaleString('en-IN')}
+                            </span>
+                        </div>
+
                         <!-- Option Selling Action Box -->
-                        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 0.85rem; margin-top: 0.85rem;">
+                        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 0.85rem; margin-top: 0.65rem;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
                                 <span style="font-size:0.85rem; font-weight:800; color:#f8fafc; letter-spacing:0.3px;">
                                     <i class="fa-solid fa-ticket" style="color:#ec4899; margin-right:4px;"></i> ${item.primary_action}
@@ -2986,9 +3018,20 @@ function renderOptionsOpportunities() {
                             </div>
 
                             <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:#cbd5e1; margin-top:8px; padding:6px 8px; background:rgba(0,0,0,0.35); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
-                                <span><i class="fa-solid fa-shield-halved" style="color:#38bdf8;"></i> <strong>Floor (Support):</strong> ₹${item.bb_lower}</span>
-                                <span><i class="fa-solid fa-hand" style="color:#fb7185;"></i> <strong>Ceil (Resist):</strong> ₹${item.bb_upper}</span>
+                                <span><i class="fa-solid fa-shield-halved" style="color:#38bdf8;"></i> <strong>Floor:</strong> ₹${item.bb_lower}</span>
+                                <span><i class="fa-solid fa-hand" style="color:#fb7185;"></i> <strong>Ceil:</strong> ₹${item.bb_upper}</span>
                                 <span style="color:#ec4899; font-weight:700;"><i class="fa-solid fa-coins"></i> ${item.rom_pct}% RoM</span>
+                            </div>
+
+                            <!-- Skill Badge 3, 4, 5: trader-budget & trader-alerts (50% Profit Target Rule) -->
+                            <div style="margin-top:7px; padding:6px 8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:6px; font-size:0.72rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; color:#bae6fd; font-weight:700;">
+                                    <span><i class="fa-solid fa-bullseye" style="color:#38bdf8;"></i> 50% Profit Target Rule:</span>
+                                    <span style="color:#4ade80;">Exit @ ₹${tgtPrem} (+₹${lockedInr.toLocaleString('en-IN')})</span>
+                                </div>
+                                <div style="color:var(--text-secondary); font-size:0.68rem; margin-top:3px;">
+                                    🔔 Alerts: Floor ₹${item.bb_lower} | Ceil ₹${item.bb_upper} | 50% Decay Target
+                                </div>
                             </div>
 
                             <div class="nifty-rationale-quote" style="margin-top:0.6rem; font-size:0.72rem;">
@@ -2997,7 +3040,7 @@ function renderOptionsOpportunities() {
                         </div>
                         
                         <div class="nifty-card-footer" style="margin-top:0.85rem;">
-                            <button class="trade-btn buy-btn" onclick="copyOptionTicket('${item.symbol}', '${item.primary_action}', ${item.est_total_premium}, ${item.lot_size})" style="flex: 1; padding: 7px 10px; font-size: 0.82rem; background: linear-gradient(135deg, rgba(236,72,153,0.3), rgba(168,85,247,0.3)); border-color: rgba(236,72,153,0.5); color:#fdf2f8;">
+                            <button class="trade-btn buy-btn" onclick="copyOptionTicket('${item.symbol}', '${item.primary_action}', ${item.est_total_premium}, ${item.lot_size}, ${tgtPrem}, ${stopPrem})" style="flex: 1; padding: 7px 10px; font-size: 0.82rem; background: linear-gradient(135deg, rgba(236,72,153,0.3), rgba(168,85,247,0.3)); border-color: rgba(236,72,153,0.5); color:#fdf2f8;">
                                 <i class="fa-solid fa-copy"></i> Copy Order Ticket
                             </button>
                             <button class="btn-small" onclick="openChartModal('${item.symbol}', '${item.name}', ${item.close}, null, ${item.call_strike}, ${item.put_strike})" style="padding: 7px 12px; font-size: 0.8rem; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 8px; cursor: pointer;" title="Inspect Support/Resistance Levels">
@@ -3022,6 +3065,11 @@ function renderOptionsOpportunities() {
                 const badgeBg = isStrangle ? 'rgba(192, 132, 252, 0.15)' : (isPut ? 'rgba(52, 211, 153, 0.15)' : 'rgba(251, 113, 133, 0.15)');
                 const changeColor = item.change_pct >= 0 ? '#34d399' : '#fb7185';
                 const changeSign = item.change_pct >= 0 ? '+' : '';
+                const holdPct = item.mc_hold_pct != null ? item.mc_hold_pct : item.primary_pop;
+                const expR = item.mc_expected_r != null ? item.mc_expected_r : 0.65;
+                const tgtPrem = item.take_profit_target_premium || (item.est_total_premium * 0.5).toFixed(2);
+                const lockedInr = item.take_profit_locked_inr || Math.round(item.est_inflow_inr * 0.5);
+                const stopPrem = item.trade_plan?.stop_loss_premium || (item.est_total_premium * 2.0).toFixed(2);
                 
                 return `
                     <tr>
@@ -3037,29 +3085,32 @@ function renderOptionsOpportunities() {
                             <span style="font-size:0.74rem; font-weight:700; color:${badgeColor}; background:${badgeBg}; padding:2px 7px; border-radius:4px; border:1px solid ${badgeColor}40;">
                                 ${item.strategy_label}
                             </span>
+                            <div style="font-size:0.68rem; color:#86efac; margin-top:2px;">
+                                <i class="fa-solid fa-shield-halved"></i> ${item.risk_passed ? '14/14 Risk Pass' : 'Screened'}
+                            </div>
                         </td>
                         <td>
                             <strong style="font-size:0.85rem; color:#f8fafc;">${item.primary_action}</strong>
                             <div style="font-size:0.68rem; color:#cbd5e1;">Est. Prem: ₹${item.est_total_premium} / share</div>
                         </td>
                         <td>
-                            <span style="color:#38bdf8; font-weight:700; font-size:0.82rem;">+${item.primary_buffer_pct}%</span>
-                            <div style="font-size:0.68rem; color:var(--text-secondary);">Buffer from CMP</div>
+                            <strong style="color:#e9d5ff; font-size:0.82rem;"><i class="fa-solid fa-dice-d20" style="color:#c084fc;"></i> ${holdPct}% Hold</strong>
+                            <div style="font-size:0.68rem; color:#a7f3d0;">Expected: +${expR}R</div>
                         </td>
                         <td>
-                            <span style="color:#4ade80; font-weight:700; font-size:0.82rem;">${item.primary_pop}%</span>
-                            <div style="font-size:0.68rem; color:var(--text-secondary);">Expires Worthless</div>
+                            <span style="color:#38bdf8; font-weight:700; font-size:0.82rem;">+${item.primary_buffer_pct}% Buffer</span>
+                            <div style="font-size:0.68rem; color:#4ade80;">${item.primary_pop}% PoP</div>
                         </td>
                         <td>
-                            <strong style="color:#cbd5e1;">ADX ${item.adx}</strong>
-                            <div style="font-size:0.68rem; color:var(--text-secondary);">BW: ${item.bb_width_pct}%</div>
+                            <strong style="color:#4ade80; font-size:0.82rem;">+₹${lockedInr.toLocaleString('en-IN')}</strong>
+                            <div style="font-size:0.68rem; color:#bae6fd;">Exit @ ₹${tgtPrem}</div>
                         </td>
                         <td>
                             <div style="font-size:0.8rem; font-weight:700; color:#34d399;">+₹${item.est_inflow_inr?.toLocaleString('en-IN')}</div>
                             <div style="font-size:0.68rem; color:#94a3b8;">Margin: ₹${item.margin_required_inr?.toLocaleString('en-IN')} (${item.rom_pct}% RoM)</div>
                         </td>
                         <td style="text-align: right;">
-                            <button class="trade-btn buy-btn btn-small" onclick="copyOptionTicket('${item.symbol}', '${item.primary_action}', ${item.est_total_premium}, ${item.lot_size})" style="padding:4px 8px; font-size:0.75rem; background: linear-gradient(135deg, rgba(236,72,153,0.3), rgba(168,85,247,0.3)); border-color: rgba(236,72,153,0.5); color:#fdf2f8;">Ticket</button>
+                            <button class="trade-btn buy-btn btn-small" onclick="copyOptionTicket('${item.symbol}', '${item.primary_action}', ${item.est_total_premium}, ${item.lot_size}, ${tgtPrem}, ${stopPrem})" style="padding:4px 8px; font-size:0.75rem; background: linear-gradient(135deg, rgba(236,72,153,0.3), rgba(168,85,247,0.3)); border-color: rgba(236,72,153,0.5); color:#fdf2f8;">Ticket</button>
                         </td>
                     </tr>
                 `;
@@ -3068,8 +3119,11 @@ function renderOptionsOpportunities() {
     }
 }
 
-function copyOptionTicket(symbol, action, premium, lotSize) {
-    const text = `NSE F&O OPTION ORDER:\nAsset: ${symbol}\nAction: ${action}\nEst. Premium: ₹${premium}\nLot Size: ${lotSize}\nStrategy: Theta Decay Selling (Monthly Expiry)`;
+function copyOptionTicket(symbol, action, premium, lotSize, tgtPrem, stopPrem) {
+    const p = premium || 0;
+    const target = tgtPrem || (p * 0.5).toFixed(2);
+    const stop = stopPrem || (p * 2.0).toFixed(2);
+    const text = `NSE F&O OPTION ORDER:\nAsset: ${symbol}\nAction: ${action}\nEst. Entry Credit: ₹${p} / share\nLot Size: ${lotSize}\nStrategy: Institutional Theta Decay Selling\n50% Profit Target Rule: Buy back to close @ ₹${target} (locks 50% max profit)\nTail Risk Stop Loss: Cut trade if premium doubles to ₹${stop}`;
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
             alert(`Option Selling Ticket copied to clipboard:\n\n${text}`);
