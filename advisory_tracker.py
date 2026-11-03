@@ -2487,6 +2487,19 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
             if any(t.get('id') == trade_id for t in trades):
                 continue
 
+            # Prevent duplicate calls on the same asset if already active today
+            existing_active_syms = {
+                t.get('symbol', '').replace('-FUT', '').replace('.NS', '').upper()
+                for t in (new_trades + trades)
+                if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT', 'PENDING_615']
+            }
+            clean_check_sym = sym.replace('-FUT', '').replace('.NS', '').upper()
+            if (clean_check_sym in existing_active_syms or 
+                f"{clean_check_sym}M" in existing_active_syms or 
+                (clean_check_sym == 'ALUMINIUM' and 'ALUMINI' in existing_active_syms) or
+                (clean_check_sym == 'ALUMINI' and 'ALUMINIUM' in existing_active_syms)):
+                continue
+
             # 1. Inventory & Macro Event Blackout Guard
             event_metrics = EventRiskGuard.check_event_risk(sym, now_dt)
             if not event_metrics.get('passed'):
