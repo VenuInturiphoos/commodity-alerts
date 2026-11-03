@@ -1,24 +1,110 @@
 {
-  "last_updated": "03 Nov 2026, 09:45 AM IST",
+  "last_updated": "03 Nov 2026, 10:15 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 36,
-    "executed_count": 7,
+    "total_signals": 37,
+    "executed_count": 8,
     "correct_count": 1,
     "wrong_count": 3,
     "protected_count": 29,
     "win_rate_pct": 25.0,
     "total_pnl_inr": -9180.5,
-    "avg_trade_pnl_inr": -1311.5,
+    "avg_trade_pnl_inr": -1147.56,
     "active_trades_count": 3,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 290819.5,
-    "used_margin_inr": 31668.54,
-    "available_cash_inr": 259150.96,
+    "used_margin_inr": 44034.6,
+    "available_cash_inr": 246784.9,
     "net_worth_inr": 290819.5
   },
   "trades": [
+    {
+      "id": "ADV-03Nov2026-1015-BAJFINANCEFUT",
+      "date": "03 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "10:15 AM IST",
+      "time_6pm": "10:15 AM IST",
+      "time_validation": "10:15 AM IST",
+      "time_615": "10:15 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "BAJFINANCE-FUT",
+      "name": "Bajaj Finance Futures",
+      "lot_size": 125,
+      "asset_type": "FUTURES",
+      "event_context": "NSE Stock Future (FINANCE): 20-Day / High-Beta Volatility Breakout",
+      "time_machine": {
+        "replays": 1000,
+        "passed": true,
+        "verdict": "PARAMETRIC_STATISTICAL_PASS",
+        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
+        "p_target_pct": 45.3,
+        "p_stop_pct": 41.0,
+        "p_neither_pct": 13.7,
+        "resolved_win_rate_pct": 52.5,
+        "expected_r": 0.496,
+        "target_r": 2.0,
+        "sample_bars": 0,
+        "summary": "Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 2.0,
+        "loss_at_stop_inr": 1000.0,
+        "potential_gain_inr": 2000.0
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b9978.15 breaking above range high \u20b9978.15."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY 1 Lot @ \u20b9978.15",
+        "rationale": "Breaking towards 20D/52W high (Chg: +1.95%) with strong RSI momentum (54.0) and verified ORB bar close. Sized with structural 2.0R target. Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R",
+        "reference_price": 978.15,
+        "stop_loss": 970.15,
+        "target": 994.15
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 978.15,
+        "action_taken": "Entered BUY 1 Lot (125 units) @ \u20b9978.15",
+        "detail": "20-Day / High-Beta Volatility Breakout: Breaking towards 20D/52W high (Chg: +1.95%) with strong RSI momentum (54.0) and verified ORB bar close. Sized with structural 2.0R target. | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 125,
+        "entry_price": 978.15,
+        "entry_time": "10:15 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 994.15,
+        "stop_loss": 970.15,
+        "margin_required_inr": 26899.12,
+        "product_type": "NRML_FUTURES"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b9978.15 (Target: \u20b9994.15, SL: \u20b9970.15) | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+      }
+    },
     {
       "id": "ADV-03Nov2026-0945-ADANIENT",
       "date": "03 Nov 2026",
@@ -160,11 +246,11 @@
         "quantity": 276,
         "entry_price": 329.1,
         "entry_time": "09:35 AM IST",
-        "exit_price": null,
-        "exit_time": null,
+        "exit_price": 329.1,
+        "exit_time": "09:40 AM IST",
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "status": "CLOSED",
         "target": 325.39,
         "stop_loss": 331.16,
         "margin_required_inr": 14533.06
@@ -172,10 +258,10 @@
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
+        "outcome": "PROTECTED",
+        "badge": "Consolidated Duplicate \ud83d\udee1\ufe0f",
         "pnl_display": "Ticking Live...",
-        "summary": "EMA 20/50 Bearish Trend Confluence active: SELL @ \u20b9329.10 (Target: \u20b9325.39, SL: \u20b9331.16) | Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R"
+        "summary": "Consolidated into primary 09:05 AM ALUMINI position to enforce single-contract symbol limit."
       }
     },
     {
