@@ -741,8 +741,8 @@
                         </div>
 
                         <select id="options-sort-select" onchange="sortOptionsOpportunities(this.value)" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 7px 12px; border-radius: 20px; font-size: 0.85rem; outline: none; cursor: pointer;">
-                            <option value="pop" selected>💎 Highest Profit Probability (PoP %)</option>
-                            <option value="safety">🛡️ Highest Theta Safety (Lowest Breakout Risk)</option>
+                            <option value="safety" selected>🛡️ Highest Theta Safety (Lowest Breakout Risk)</option>
+                            <option value="pop">💎 Highest Probability of Profit (PoP %)</option>
                             <option value="buffer">🛡️ Widest Margin of Safety Buffer (%)</option>
                             <option value="adx">📉 Lowest ADX (Most Rangebound)</option>
                             <option value="rom">💰 Highest Return on Margin (RoM %)</option>
@@ -1463,7 +1463,7 @@ let lastNiftyFetchTime = 0;
 
 let optionsOpportunitiesData = null;
 let activeOptionsFilter = 'ALL';
-let activeOptionsSort = 'pop';
+let activeOptionsSort = 'safety';
 let activeOptionsView = 'cards';
 let activeOptionsSearchQuery = '';
 let lastOptionsFetchTime = 0;
@@ -2853,7 +2853,7 @@ function handleOptionsSearch(val) {
 }
 
 function sortOptionsOpportunities(sortVal) {
-    activeOptionsSort = sortVal || 'pop';
+    activeOptionsSort = sortVal || 'safety';
     renderOptionsOpportunities();
 }
 
@@ -2902,13 +2902,13 @@ function renderOptionsOpportunities() {
     });
     
     filtered.sort((a, b) => {
-        if (activeOptionsSort === 'safety') return (b.theta_safety_score - a.theta_safety_score) || (b.primary_pop - a.primary_pop);
+        if (activeOptionsSort === 'pop') return b.primary_pop - a.primary_pop;
         if (activeOptionsSort === 'buffer') return b.primary_buffer_pct - a.primary_buffer_pct;
         if (activeOptionsSort === 'adx') return a.adx - b.adx;
         if (activeOptionsSort === 'rom') return (b.rom_pct || 0) - (a.rom_pct || 0);
         if (activeOptionsSort === 'name') return a.name.localeCompare(b.name);
-        // Default: Highest Profit Probability (PoP %) desc, then buffer desc, then lowest adx
-        return (b.primary_pop - a.primary_pop) || (b.primary_buffer_pct - a.primary_buffer_pct) || (a.adx - b.adx);
+        // Default: theta_safety_score desc, then primary_pop desc
+        return (b.theta_safety_score - a.theta_safety_score) || (b.primary_pop - a.primary_pop);
     });
     
     // Render Cards View
