@@ -613,7 +613,6 @@
                 <div class="nifty-toolbar">
                     <div class="nifty-filters">
                         <button class="circuit-filter-pill active" onclick="filterNiftyCategory('ALL', this)">🔥 All Setups (<span id="nifty-cnt-all">0</span>)</button>
-                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('SAFETY', this)">🛡️ Max Capital Safety &gt;75% (<span id="nifty-cnt-safety">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('LARGE', this)">🏛️ Large Cap (<span id="nifty-cnt-large">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('MIDCAP', this)">🚀 Mid Cap (<span id="nifty-cnt-mid">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('GOLDEN', this)">🌟 Golden Cross (<span id="nifty-cnt-golden">0</span>)</button>
@@ -629,7 +628,6 @@
                         </div>
 
                         <select id="nifty-sort-select" onchange="sortNiftyOpportunities(this.value)" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 7px 12px; border-radius: 20px; font-size: 0.85rem; outline: none; cursor: pointer;">
-                            <option value="safety" selected>🛡️ Highest Capital Safety (Lowest Risk of Loss)</option>
                             <option value="prob">🏆 Highest Win Probability</option>
                             <option value="discount">🏷️ Deepest 52W Discount</option>
                             <option value="rsi">📉 Lowest RSI (Most Oversold)</option>
@@ -1343,7 +1341,7 @@ let activeHistoryViewMode = 'intraday';
 let activePaperTradingSubView = 'terminal';
 let niftyOpportunitiesData = null;
 let activeNiftyFilter = 'ALL';
-let activeNiftySort = 'safety';
+let activeNiftySort = 'prob';
 let activeNiftyView = 'cards';
 let activeNiftySearchQuery = '';
 let lastNiftyFetchTime = 0;
@@ -2273,8 +2271,6 @@ async function fetchNiftyOpportunities(forceNetwork = false) {
     const cntElite = document.getElementById('nifty-cnt-elite');
     
     if (cntAll) cntAll.textContent = stocks.length;
-    const cntSafety = document.getElementById('nifty-cnt-safety');
-    if (cntSafety) cntSafety.textContent = stocks.filter(x => (x.capital_safety_score || 0) >= 75).length;
     if (cntLarge) cntLarge.textContent = stocks.filter(x => x.cap_category === 'Large Cap' || !x.is_midcap).length;
     if (cntMid) cntMid.textContent = stocks.filter(x => x.cap_category === 'Mid Cap' || x.is_midcap).length;
     if (cntGolden) cntGolden.textContent = stocks.filter(x => x.is_golden).length;
@@ -2299,7 +2295,7 @@ function handleNiftySearch(val) {
 }
 
 function sortNiftyOpportunities(sortVal) {
-    activeNiftySort = sortVal || 'safety';
+    activeNiftySort = sortVal || 'prob';
     renderNiftyOpportunities();
 }
 
@@ -2334,7 +2330,6 @@ function renderNiftyOpportunities() {
     
     let filtered = niftyOpportunitiesData.stocks.filter(s => {
         // Category Filter
-        if (activeNiftyFilter === 'SAFETY' && (s.capital_safety_score || 0) < 75) return false;
         if (activeNiftyFilter === 'LARGE' && (s.cap_category !== 'Large Cap' && s.is_midcap)) return false;
         if (activeNiftyFilter === 'MIDCAP' && (s.cap_category !== 'Mid Cap' && !s.is_midcap)) return false;
         if (activeNiftyFilter === 'GOLDEN' && !s.is_golden) return false;
@@ -2357,26 +2352,12 @@ function renderNiftyOpportunities() {
     
     // Sort
     filtered.sort((a, b) => {
-        if (activeNiftySort === 'safety') {
-            const scoreA = a.capital_safety_score != null ? a.capital_safety_score : (a.win_probability * 0.8);
-            const scoreB = b.capital_safety_score != null ? b.capital_safety_score : (b.win_probability * 0.8);
-            if (scoreB !== scoreA) return scoreB - scoreA;
-            if (b.is_golden !== a.is_golden) return (b.is_golden ? 1 : 0) - (a.is_golden ? 1 : 0);
-            const riskA = a.trade_plan?.risk_pct || 10;
-            const riskB = b.trade_plan?.risk_pct || 10;
-            return riskA - riskB;
-        }
         if (activeNiftySort === 'discount') return b.discount_pct - a.discount_pct;
         if (activeNiftySort === 'rsi') return a.rsi - b.rsi;
         if (activeNiftySort === 'upside') return (b.trade_plan?.potential_upside_t1 || 0) - (a.trade_plan?.potential_upside_t1 || 0);
         if (activeNiftySort === 'name') return a.name.localeCompare(b.name);
-        if (activeNiftySort === 'prob') {
-            return (b.win_probability - a.win_probability) || (b.discount_pct - a.discount_pct);
-        }
-        // Default: Capital Safety descending
-        const scoreA = a.capital_safety_score != null ? a.capital_safety_score : (a.win_probability * 0.8);
-        const scoreB = b.capital_safety_score != null ? b.capital_safety_score : (b.win_probability * 0.8);
-        return (scoreB - scoreA) || ((a.trade_plan?.risk_pct || 10) - (b.trade_plan?.risk_pct || 10));
+        // Default: win_probability desc, then discount_pct desc
+        return (b.win_probability - a.win_probability) || (b.discount_pct - a.discount_pct);
     });
     
     // Render Cards View
@@ -2399,13 +2380,8 @@ function renderNiftyOpportunities() {
                                 <h3>${item.name} <small style="font-size:0.75rem; color:var(--text-secondary); font-weight:400;">(${item.symbol})</small></h3>
                                 <p>${item.full_name} • <span style="color:#a855f7;">${item.sector}</span> • <span style="font-size:0.7rem; color:${item.cap_category === 'Mid Cap' ? '#38bdf8' : '#a78bfa'}; background:${item.cap_category === 'Mid Cap' ? 'rgba(56,189,248,0.15)' : 'rgba(167,139,250,0.15)'}; border:1px solid ${item.cap_category === 'Mid Cap' ? 'rgba(56,189,248,0.3)' : 'rgba(167,139,250,0.3)'}; padding:1px 5px; border-radius:4px; font-weight:700;">${item.cap_category || 'Large Cap'}</span></p>
                             </div>
-                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-                                <div class="nifty-win-badge" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(5, 150, 105, 0.35)); border: 1px solid rgba(52, 211, 153, 0.55); color: #34d399; font-weight: 700; font-size: 0.78rem; padding: 3px 8px; border-radius: 6px; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);">
-                                    <i class="fa-solid fa-shield-halved"></i> ${(item.capital_safety_score || (item.win_probability * 0.85)).toFixed(1)}% Capital Safety
-                                </div>
-                                <div class="nifty-win-badge ${tierClass}" style="font-size: 0.7rem; padding: 2px 6px;">
-                                    <i class="fa-solid fa-bolt"></i> ${item.win_probability}% Win Prob
-                                </div>
+                            <div class="nifty-win-badge ${tierClass}">
+                                <i class="fa-solid fa-bolt"></i> ${item.win_probability}% Win Prob
                             </div>
                         </div>
                         
@@ -2527,14 +2503,9 @@ function renderNiftyOpportunities() {
                             <div style="font-size:0.72rem; color:${changeColor}; font-weight:600;">${changeSign}${item.change_pct}%</div>
                         </td>
                         <td>
-                            <div style="display:flex; flex-direction:column; gap:3px;">
-                                <span style="font-size:0.75rem; color:#34d399; font-weight:700; white-space:nowrap;">
-                                    <i class="fa-solid fa-shield-halved"></i> ${(item.capital_safety_score || (item.win_probability * 0.85)).toFixed(1)}% Safety
-                                </span>
-                                <span class="nifty-win-badge ${tierClass}" style="font-size:0.68rem; padding:1px 5px; width:fit-content;">
-                                    ${item.win_probability}% Win
-                                </span>
-                            </div>
+                            <span class="nifty-win-badge ${tierClass}" style="font-size:0.72rem; padding:2px 7px;">
+                                ${item.win_probability}%
+                            </span>
                         </td>
                         <td>
                             <span style="color: ${item.is_golden ? '#fbbf24' : (item.near_golden ? '#38bdf8' : 'var(--text-secondary)')}; font-weight:600; font-size:0.8rem;">
