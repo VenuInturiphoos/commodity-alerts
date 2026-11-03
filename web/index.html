@@ -614,6 +614,8 @@
                 <div class="nifty-toolbar">
                     <div class="nifty-filters">
                         <button class="circuit-filter-pill active" onclick="filterNiftyCategory('ALL', this)">🔥 All Setups (<span id="nifty-cnt-all">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('BULL_REGIME', this)">🚀 Bull Trend (<span id="nifty-cnt-bull">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('RANGE_REGIME', this)">💤 Rangebound (<span id="nifty-cnt-range">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('SAFETY', this)">🛡️ Max Capital Safety &gt;75% (<span id="nifty-cnt-safety">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('LARGE', this)">🏛️ Large Cap (<span id="nifty-cnt-large">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('MIDCAP', this)">🚀 Mid Cap (<span id="nifty-cnt-mid">0</span>)</button>
@@ -2421,6 +2423,8 @@ async function fetchNiftyOpportunities(forceNetwork = false) {
     // Update Filter Button Count Labels
     const stocks = loadedData.stocks || [];
     const cntAll = document.getElementById('nifty-cnt-all');
+    const cntBull = document.getElementById('nifty-cnt-bull');
+    const cntRange = document.getElementById('nifty-cnt-range');
     const cntLarge = document.getElementById('nifty-cnt-large');
     const cntMid = document.getElementById('nifty-cnt-mid');
     const cntGolden = document.getElementById('nifty-cnt-golden');
@@ -2429,6 +2433,8 @@ async function fetchNiftyOpportunities(forceNetwork = false) {
     const cntElite = document.getElementById('nifty-cnt-elite');
     
     if (cntAll) cntAll.textContent = stocks.length;
+    if (cntBull) cntBull.textContent = stocks.filter(x => x.regime_tag === 'BULL_TREND' || x.regime_tag === 'MILD_BULLISH').length;
+    if (cntRange) cntRange.textContent = stocks.filter(x => x.regime_tag === 'COMPRESSED_RANGE').length;
     const cntSafety = document.getElementById('nifty-cnt-safety');
     if (cntSafety) cntSafety.textContent = stocks.filter(x => (x.capital_safety_score || 0) >= 75).length;
     if (cntLarge) cntLarge.textContent = stocks.filter(x => x.cap_category === 'Large Cap' || !x.is_midcap).length;
@@ -2490,6 +2496,8 @@ function renderNiftyOpportunities() {
     
     let filtered = niftyOpportunitiesData.stocks.filter(s => {
         // Category Filter
+        if (activeNiftyFilter === 'BULL_REGIME' && s.regime_tag !== 'BULL_TREND' && s.regime_tag !== 'MILD_BULLISH') return false;
+        if (activeNiftyFilter === 'RANGE_REGIME' && s.regime_tag !== 'COMPRESSED_RANGE') return false;
         if (activeNiftyFilter === 'SAFETY' && (s.capital_safety_score || 0) < 75) return false;
         if (activeNiftyFilter === 'LARGE' && (s.cap_category !== 'Large Cap' && s.is_midcap)) return false;
         if (activeNiftyFilter === 'MIDCAP' && (s.cap_category !== 'Mid Cap' && !s.is_midcap)) return false;
@@ -2564,6 +2572,12 @@ function renderNiftyOpportunities() {
                                 </div>
                             </div>
                         </div>
+
+                        ${item.market_regime ? `
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin: 6px 0 2px 0; padding:3px 8px; background:${item.market_regime.bg_color}; border:1px solid ${item.market_regime.border_color}; border-radius:6px; font-size:0.71rem;">
+                            <span style="font-weight:700; color:${item.market_regime.color};"><i class="${item.market_regime.icon}"></i> ${item.market_regime.badge}</span>
+                            <span style="color:#94a3b8; font-size:0.68rem;">ADX: ${item.market_regime.adx} • BBW: ${item.market_regime.bb_width_pct}%</span>
+                        </div>` : ''}
                         
                         <div class="nifty-price-row">
                             <div>
@@ -2641,6 +2655,11 @@ function renderNiftyOpportunities() {
                                 "${plan.rationale}"
                             </div>
                             
+                            ${item.market_regime?.mandate ? `
+                            <div style="font-size:0.68rem; color:${item.market_regime.color}; background:rgba(0,0,0,0.3); border-left:3px solid ${item.market_regime.color}; padding:4px 7px; margin-top:5px; border-radius:0 4px 4px 0; line-height:1.3;">
+                                <strong>Regime Mandate:</strong> ${item.market_regime.mandate}
+                            </div>` : ''}
+                            
                             ${item.time_machine ? `
                             <div style="margin-top: 0.5rem; background: rgba(167, 139, 250, 0.08); border: 1px solid rgba(167, 139, 250, 0.25); border-radius: 6px; padding: 5px 8px; font-size: 0.7rem; color: #c4b5fd; display: flex; flex-direction: column; gap: 3px;">
                                 <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -2709,6 +2728,10 @@ function renderNiftyOpportunities() {
                                 ${item.crossover_label}
                             </span>
                             <div style="font-size:0.68rem; color:var(--text-secondary);">50E: ₹${item.ema_50} | 200E: ₹${item.ema_200}</div>
+                            ${item.market_regime ? `
+                            <div style="font-size:0.67rem; font-weight:700; color:${item.market_regime.color}; margin-top:2px;">
+                                <i class="${item.market_regime.icon}"></i> ${item.market_regime.short_tag}
+                            </div>` : ''}
                         </td>
                         <td>
                             <strong style="color:${item.rsi_color}">${item.rsi}</strong>
@@ -5983,6 +6006,34 @@ function isTradeFromToday(t) {
     return false;
 }
 
+function isPastISTWindow(dateStr, targetHour, targetMin) {
+    if (!dateStr) return false;
+    try {
+        const now = new Date();
+        const options = { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' };
+        const todayIST = now.toLocaleDateString('en-GB', options).trim();
+        
+        // If trade date is strictly before today in IST, it is past
+        const tradeD = new Date(dateStr);
+        const todayD = new Date(todayIST);
+        if (todayD > tradeD) return true;
+        if (todayD < tradeD) return false;
+
+        // If same day in IST, check time in IST
+        const timeParts = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Asia/Kolkata',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }).format(now).split(':');
+        const curH = parseInt(timeParts[0], 10);
+        const curM = parseInt(timeParts[1], 10);
+        return (curH > targetHour) || (curH === targetHour && curM >= targetMin);
+    } catch (e) {
+        return false;
+    }
+}
+
 function populateAdvisoryMonthDropdown() {
     const selectEl = document.getElementById('adv-month-select');
     if (!selectEl) return;
@@ -6161,7 +6212,17 @@ function applyAdvisoryMonthFilter(monthValue) {
     const countCorrect = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'CORRECT').length;
     const countWrong = trades.filter(t => t.eod_outcome && (t.eod_outcome.outcome === 'WRONG' || t.eod_outcome.outcome === 'INCORRECT')).length;
     const countProtected = trades.filter(t => t.eod_outcome?.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t)).length;
-    const countActive = trades.filter(t => (t.paper_trade && (t.paper_trade.status === 'ACTIVE' || t.paper_trade.status === 'PENDING_615')) || (isTradeFromToday(t) && isCalledAdvisoryTrade(t))).length;
+    const countActive = trades.filter(t => {
+        const pt = t.paper_trade || {};
+        if (pt.status === 'CLOSED' || pt.status === 'STAND_ASIDE' || t.eod_outcome?.outcome === 'PROTECTED') return false;
+        const isPast1815 = isPastISTWindow(t.date, 18, 15);
+        const isPast1520 = isPastISTWindow(t.date, 15, 20);
+        const isEq = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
+        if (isEq && isPast1520) return false;
+        if (pt.status === 'ACTIVE') return true;
+        if ((pt.status === 'PENDING_615' || t.check_615?.status === 'PENDING_615') && !isPast1815) return true;
+        return false;
+    }).length;
 
     const subPnl = trades.reduce((acc, t) => acc + (Number(t.paper_trade?.pnl_inr) || 0), 0);
     const resolvedCount = countCorrect + countWrong;
@@ -6270,8 +6331,14 @@ function renderAdvisoryTradesTable() {
             if (!isCalledAdvisoryTrade(t)) return false;
         } else if (activeAdvFilter === 'ACTIVE') {
             const st = t.paper_trade?.status;
-            const isToday = isTradeFromToday(t);
-            if (st !== 'ACTIVE' && st !== 'PENDING_615' && !(isToday && isCalledAdvisoryTrade(t))) return false;
+            if (st === 'CLOSED' || st === 'STAND_ASIDE' || t.eod_outcome?.outcome === 'PROTECTED') return false;
+            const isPast1815 = isPastISTWindow(t.date, 18, 15);
+            const isPast1520 = isPastISTWindow(t.date, 15, 20);
+            const isEq = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
+            if (isEq && isPast1520) return false;
+            if (st === 'ACTIVE') return true;
+            if ((st === 'PENDING_615' || t.check_615?.status === 'PENDING_615') && !isPast1815) return true;
+            return false;
         } else if (activeAdvFilter === 'CORRECT') {
             if (t.eod_outcome?.outcome !== 'CORRECT') return false;
         } else if (activeAdvFilter === 'WRONG') {
@@ -6301,6 +6368,10 @@ function renderAdvisoryTradesTable() {
         const s6 = t.suggestion_6pm || {};
         const c15 = t.check_615 || {};
         const outcome = t.eod_outcome || {};
+
+        const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
+        const isPast1815 = isPastISTWindow(t.date, 18, 15);
+        const isPast1520 = isPastISTWindow(t.date, 15, 20);
 
         // Find live market data: prioritized from rawCircuitsData (authoritative exchange feed), then marketData, then niftyOpportunitiesData
         const cleanSym = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
@@ -6339,7 +6410,7 @@ function renderAdvisoryTradesTable() {
             const chg = Number(liveSource.change_pct || 0);
             const chgColor = chg >= 0 ? '#4ade80' : '#fb7185';
             const chgIcon = chg >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
-            const isLiveActive = pt.status === 'ACTIVE' || pt.status === 'PENDING_615';
+            const isLiveActive = (pt.status === 'ACTIVE' && !(isEqTrade && isPast1520)) || (pt.status === 'PENDING_615' && !isPast1815);
 
             curPriceHtml = `
                 <div>
@@ -6366,16 +6437,24 @@ function renderAdvisoryTradesTable() {
         let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
         if (outcome.outcome === 'WRONG') {
             outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
-        } else if (outcome.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t)) {
+        } else if (outcome.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t) || (pt.status === 'PENDING_615' && isPast1815)) {
             outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${outcome.badge || 'Avoided Trap 🛡️'}</span>`;
-        } else if (outcome.outcome === 'PENDING' || pt.status === 'ACTIVE' || pt.status === 'PENDING_615') {
-            outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
+        } else if (pt.status === 'ACTIVE') {
+            if (isEqTrade && isPast1520) {
+                outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-clock"></i> Intraday Exit (03:20 PM)</span>`;
+            } else {
+                outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
+            }
+        } else if (pt.status === 'PENDING_615' || outcome.outcome === 'PENDING') {
+            outcomeBadge = isPast1815
+                ? `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Window Lapsed 🛡️</span>`
+                : `<span class="adv-badge-active"><i class="fa-solid fa-hourglass-half"></i> Awaiting 6:15 PM</span>`;
         }
 
         let pnlColor = '#cbd5e1';
         let pnlText = outcome.pnl_display || '₹0.00';
         let ptsFormulaHtml = '';
-        if (pt.status === 'ACTIVE' && pt.entry_price) {
+        if (pt.status === 'ACTIVE' && !(isEqTrade && isPast1520) && pt.entry_price) {
             if (liveSource && liveSource.current_price) {
                 const curPrice = Number(liveSource.current_price);
                 const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
@@ -6446,14 +6525,7 @@ function renderAdvisoryTradesTable() {
                 </div>
             `;
         } else if (c15.status === 'PENDING_615' || c15.status === 'PENDING_615_CHECK') {
-            const tradeDate = new Date(t.date);
-            const now = new Date();
-            const nowHours = now.getHours();
-            const nowMins = now.getMinutes();
-            const isToday = !isNaN(tradeDate.getTime()) && (now.toDateString() === tradeDate.toDateString());
-            const isPastTime = isToday && (nowHours > 18 || (nowHours === 18 && nowMins >= 15));
-            const isPast = (!isToday && now > tradeDate) || isPastTime;
-            if (isPast) {
+            if (isPast1815) {
                 check615Html = `<span style="color:#94a3b8; font-size:0.8rem;"><i class="fa-solid fa-clock-rotate-left"></i> Window Lapsed (Stood Aside)</span>`;
             } else {
                 check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Confirmation</span>`;
@@ -6466,11 +6538,10 @@ function renderAdvisoryTradesTable() {
             check615Html = `<span style="color:#f43f5e; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-dice"></i> Simulation Guard</span>`;
         } else if (c15.status === 'RISK_GUARD_STAND_ASIDE') {
             check615Html = `<span style="color:#38bdf8; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-shield"></i> Risk Engine Block</span>`;
-        } else if (c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') {
+        } else if (c15.status === 'CONFIRMED_STAND_ASIDE' || c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') {
             check615Html = `<span style="color:#60a5fa; font-size:0.8rem;"><i class="fa-solid fa-ban"></i> Stood Aside (Protected)</span>`;
         }
 
-        const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
         let paperTradeCell = `<span style="color:#94a3b8; font-size:0.8rem;">Stood Aside</span>`;
         if (pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price) {
             const actColor = pt.action === 'BUY' ? 'adv-action-buy' : 'adv-action-sell';
@@ -6491,16 +6562,13 @@ function renderAdvisoryTradesTable() {
         let exitDetailHtml = `<div style="font-size:0.75rem; color:#94a3b8;"><i class="fa-regular fa-clock"></i> ${exitTimeStr}</div>`;
         
         if (pt.status === 'ACTIVE') {
-            exitDetailHtml = `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</div>`;
+            if (isEqTrade && isPast1520) {
+                exitDetailHtml = `<div style="font-size:0.75rem; color:#f59e0b; font-weight:700;"><i class="fa-solid fa-clock"></i> Intraday Exit (03:20 PM)</div>`;
+            } else {
+                exitDetailHtml = `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</div>`;
+            }
         } else if (pt.status === 'PENDING_615') {
-            const tradeDate = new Date(t.date);
-            const now = new Date();
-            const nowHours = now.getHours();
-            const nowMins = now.getMinutes();
-            const isToday = !isNaN(tradeDate.getTime()) && (now.toDateString() === tradeDate.toDateString());
-            const isPastTime = isToday && (nowHours > 18 || (nowHours === 18 && nowMins >= 15));
-            const isPast = (!isToday && now > tradeDate) || isPastTime;
-            exitDetailHtml = isPast
+            exitDetailHtml = isPast1815
                 ? `<div style="font-size:0.75rem; color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</div>`
                 : `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Pending Check</div>`;
         } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {
@@ -6577,6 +6645,10 @@ function renderAdvisoryTradesTable() {
             const c15 = t.check_615 || {};
             const outcome = t.eod_outcome || {};
 
+            const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
+            const isPast1815 = isPastISTWindow(t.date, 18, 15);
+            const isPast1520 = isPastISTWindow(t.date, 15, 20);
+
             // Find live market data: prioritized from rawCircuitsData (authoritative exchange feed), then marketData, then niftyOpportunitiesData
             const cleanSym = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
             const circuitItem = (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) 
@@ -6603,16 +6675,24 @@ function renderAdvisoryTradesTable() {
             let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
             if (outcome.outcome === 'WRONG') {
                 outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
-            } else if (outcome.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t)) {
+            } else if (outcome.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t) || (pt.status === 'PENDING_615' && isPast1815)) {
                 outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${outcome.badge || 'Avoided Trap 🛡️'}</span>`;
-            } else if (outcome.outcome === 'PENDING' || pt.status === 'ACTIVE' || pt.status === 'PENDING_615') {
-                outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
+            } else if (pt.status === 'ACTIVE') {
+                if (isEqTrade && isPast1520) {
+                    outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-clock"></i> Intraday Exit (03:20 PM)</span>`;
+                } else {
+                    outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
+                }
+            } else if (pt.status === 'PENDING_615' || outcome.outcome === 'PENDING') {
+                outcomeBadge = isPast1815
+                    ? `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Window Lapsed 🛡️</span>`
+                    : `<span class="adv-badge-active"><i class="fa-solid fa-hourglass-half"></i> Awaiting 6:15 PM</span>`;
             }
 
             let pnlColor = '#cbd5e1';
             let pnlText = outcome.pnl_display || '₹0.00';
             let mobilePtsFormulaHtml = '';
-            if (pt.status === 'ACTIVE' && pt.entry_price) {
+            if (pt.status === 'ACTIVE' && !(isEqTrade && isPast1520) && pt.entry_price) {
                 if (liveSource && liveSource.current_price) {
                     const curPrice = Number(liveSource.current_price);
                     const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
@@ -6649,25 +6729,14 @@ function renderAdvisoryTradesTable() {
             else if (c15.status === 'GAP_FADE_ENTERED') checkLabel = 'Gap Fade Entered';
             else if (c15.status === 'EXTENSION_CONFIRMED') checkLabel = 'Limit Broken (Stood Aside)';
             else if (c15.status === 'PENDING_615' || c15.status === 'PENDING_615_CHECK') {
-                const tradeDate = new Date(t.date);
-                const now = new Date();
-                const nowHours = now.getHours();
-                const nowMins = now.getMinutes();
-                const isToday = !isNaN(tradeDate.getTime()) && (now.toDateString() === tradeDate.toDateString());
-                const isPastTime = isToday && (nowHours > 18 || (nowHours === 18 && nowMins >= 15));
-                const isPast = (!isToday && now > tradeDate) || isPastTime;
-                checkLabel = isPast ? 'Window Lapsed (Stood Aside)' : 'Awaiting Confirmation';
+                checkLabel = isPast1815 ? 'Window Lapsed (Stood Aside)' : 'Awaiting Confirmation';
             }
             else if (c15.status === 'EVENT_GUARD_STAND_ASIDE') checkLabel = 'Event Blackout (Protected)';
             else if (c15.status === 'WICK_TRAP_STAND_ASIDE') checkLabel = 'Wick Trap Rejected';
             else if (c15.status === 'SIM_GUARD_STAND_ASIDE') checkLabel = 'Simulation Guard';
             else if (c15.status === 'RISK_GUARD_STAND_ASIDE') checkLabel = 'Risk Guard Block';
-            else if (c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') checkLabel = 'Stood Aside (Protected)';
+            else if (c15.status === 'CONFIRMED_STAND_ASIDE' || c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') checkLabel = 'Stood Aside (Protected)';
 
-            const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
-            const assetBadge = isEqTrade 
-                ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.4); color:#6ee7b7; padding:1px 5px; border-radius:3px;">NIFTY F&O</span>`
-                : `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 5px; border-radius:3px;">MCX</span>`;
             const unitLabel = isEqTrade ? 'shares' : 'qty';
             const multLabel = isEqTrade ? `1 pt = ₹${pt.quantity}` : `1 pt = ₹${t.lot_size || 1}`;
 
@@ -6681,17 +6750,12 @@ function renderAdvisoryTradesTable() {
 
             if (pt.status === 'ACTIVE') {
                 mobileExitLabel = 'Position Status';
-                mobileExitVal = '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</span>';
+                mobileExitVal = (isEqTrade && isPast1520)
+                    ? '<span style="color:#f59e0b; font-weight:700;"><i class="fa-solid fa-clock"></i> Intraday Exit (03:20 PM)</span>'
+                    : '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</span>';
             } else if (pt.status === 'PENDING_615') {
-                const tradeDate = new Date(t.date);
-                const now = new Date();
-                const nowHours = now.getHours();
-                const nowMins = now.getMinutes();
-                const isToday = !isNaN(tradeDate.getTime()) && (now.toDateString() === tradeDate.toDateString());
-                const isPastTime = isToday && (nowHours > 18 || (nowHours === 18 && nowMins >= 15));
-                const isPast = (!isToday && now > tradeDate) || isPastTime;
                 mobileExitLabel = 'Position Status';
-                mobileExitVal = isPast 
+                mobileExitVal = isPast1815
                     ? '<span style="color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</span>'
                     : '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Pending Check</span>';
             } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {

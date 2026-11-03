@@ -27,7 +27,8 @@ from datetime import datetime
 from trader_engine_bridge import (
     OptionsMonteCarloEngine,
     OptionsRiskGatekeeper,
-    OptionsBudgetAndExitPlanner
+    OptionsBudgetAndExitPlanner,
+    MarketRegimeDetector
 )
 
 try:
@@ -364,6 +365,20 @@ def scan_options_theta_opportunities(output_path='web/options_selling_data.json'
             bb_high=bb_high_val
         )
 
+        # Market Regime Classifier
+        regime_info = MarketRegimeDetector.classify_regime(
+            symbol=orig_sym,
+            close=close,
+            ema50=ema50,
+            ema200=ema200,
+            adx=adx_val,
+            rsi=rsi_val,
+            bb_lower=bb_low_val,
+            bb_upper=bb_high_val,
+            daily_vol_pct=daily_vol,
+            atr=atr_val
+        )
+
         # =========================================================================
         # 5. TECHNICAL RANGEBOUND QUALITY SCORE (0 - 100 PTS)
         # =========================================================================
@@ -429,6 +444,11 @@ def scan_options_theta_opportunities(output_path='web/options_selling_data.json'
             'risk_audit': risk_audit,
             'risk_passed': risk_audit['passed'],
             'risk_verdict': risk_audit['verdict'],
+            'market_regime': regime_info,
+            'regime_tag': regime_info.get('regime') if regime_info else 'NEUTRAL',
+            'regime_badge': regime_info.get('badge') if regime_info else 'Neutral',
+            'regime_short': regime_info.get('short_tag') if regime_info else 'Neutral',
+            'regime_color': regime_info.get('color') if regime_info else '#c084fc',
             'trade_plan': trade_plan,
             'take_profit_target_premium': trade_plan['take_profit_target_premium'],
             'take_profit_locked_inr': trade_plan['take_profit_locked_inr'],

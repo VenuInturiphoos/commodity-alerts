@@ -17,7 +17,7 @@ import urllib.request
 import json as json_lib
 
 try:
-    from trader_engine_bridge import CircuitMonteCarloPredictor
+    from trader_engine_bridge import CircuitMonteCarloPredictor, MarketRegimeDetector
     HAS_CIRCUIT_PREDICTOR = True
 except Exception:
     HAS_CIRCUIT_PREDICTOR = False
@@ -1672,6 +1672,25 @@ class PriceChecker:
                 except Exception:
                     pass
 
+            # Market Regime Detection for Commodity
+            regime_info = None
+            if HAS_CIRCUIT_PREDICTOR:
+                try:
+                    regime_info = MarketRegimeDetector.classify_regime(
+                        symbol=symbol,
+                        close=close,
+                        ema50=quote.get('ema_50') if quote else None,
+                        ema200=quote.get('ema_20') if quote else None,
+                        adx=quote.get('adx_14') if quote else None,
+                        rsi=quote.get('rsi_14') if quote else None,
+                        bb_lower=lc_init,
+                        bb_upper=uc_init,
+                        daily_vol_pct=daily_vol_pct,
+                        atr=atr_val
+                    )
+                except Exception:
+                    pass
+
             circuits.append({
                 "symbol": symbol,
                 "name": name,
@@ -1718,6 +1737,12 @@ class PriceChecker:
                 "circuit_risk_color": circuit_sim.get('rating_color', '#10b981') if circuit_sim else '#10b981',
                 "var_95_high": circuit_sim.get('var_95_expected_high') if circuit_sim else None,
                 "var_95_low": circuit_sim.get('var_95_expected_low') if circuit_sim else None,
+                # Market Regime Metrics
+                "market_regime": regime_info,
+                "regime_badge": regime_info.get('badge') if regime_info else 'Normal Trading',
+                "regime_short": regime_info.get('short_tag') if regime_info else 'Normal',
+                "regime_color": regime_info.get('color') if regime_info else '#10b981',
+                "regime_mandate": regime_info.get('mandate') if regime_info else '',
             })
             
         out_data = {

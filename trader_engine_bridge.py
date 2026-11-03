@@ -1168,4 +1168,155 @@ class CircuitMonteCarloPredictor:
         }
 
 
+class MarketRegimeDetector:
+    """
+    Institutional Market Regime Classifier.
+    Categorizes any asset (Equity, Commodity, Index) into one of the mathematical market regimes:
+    
+    1. BULL_TREND 🚀:
+       - Structure: Close >= EMA50 >= EMA200
+       - Trend Strength: ADX >= 21.0
+       - Momentum: RSI >= 50.0
+       - Trading Mandate: BUY DIPS & BREAKOUTS. Trend continuation in effect.
+       - Disallowed: NAKED CALL SELLING, BLIND SHORTING.
+       
+    2. BEAR_TREND 🔻:
+       - Structure: Close <= EMA50 <= EMA200
+       - Trend Strength: ADX >= 21.0
+       - Momentum: RSI <= 50.0
+       - Trading Mandate: SELL RALLIES / SHORT BREAKDOWNS. Capital preservation priority.
+       - Disallowed: NAKED PUT SELLING, BUYING FALLING KNIVES.
+       
+    3. COMPRESSED_RANGE 💤:
+       - Volatility: Bollinger Bandwidth <= 12.5%
+       - Trend Strength: ADX < 20.5 (Trend exhausted / non-trending)
+       - Momentum: 38.0 <= RSI <= 62.0 (Neutral oscillation)
+       - Trading Mandate: THETA DECAY OPTION HARVEST (Strangles / Condors / Channel Range).
+       - Disallowed: BUYING BREAKOUTS (High fakeout risk).
+       
+    4. VOLATILE_EXPANSION ⚡:
+       - Volatility: Bollinger Bandwidth > 16.0% or Daily Volatility > 3.0%
+       - Price Action: Wide erratic expansion / whipsaw
+       - Trading Mandate: REDUCE SIZING 50% / STAND ASIDE. Volatility shock in progress.
+       - Disallowed: FULL LOT SIZING, HIGH LEVERAGE.
+    """
+
+    @classmethod
+    def classify_regime(cls, symbol, close, ema50, ema200, adx, rsi, bb_lower, bb_upper,
+                        daily_vol_pct=None, atr=None):
+        if not close or close <= 0:
+            return None
+
+        ema50 = float(ema50 or close)
+        ema200 = float(ema200 or close)
+        adx = float(adx or 20.0)
+        rsi = float(rsi or 50.0)
+        bb_low = float(bb_lower or (close * 0.95))
+        bb_high = float(bb_upper or (close * 1.05))
+        
+        bb_width_pct = round(((bb_high - bb_low) / close) * 100, 2) if close > 0 else 10.0
+        daily_vol = float(daily_vol_pct) if daily_vol_pct else (round((atr / close) * 100, 2) if (atr and close > 0) else 1.8)
+
+        # 1. Check Compressed Range (Theta Zone) first
+        is_compressed = (adx < 20.5) and (bb_width_pct <= 12.5) and (38.0 <= rsi <= 62.0)
+        
+        # 2. Check Volatility Expansion
+        is_volatile_expansion = (bb_width_pct >= 16.0) or (daily_vol >= 3.0)
+
+        # 3. Directional Alignment
+        is_bull_structure = (close >= ema50) and (ema50 >= (ema200 * 0.985)) and (rsi >= 48.0)
+        is_bear_structure = (close <= ema50) and (ema50 <= (ema200 * 1.015)) and (rsi <= 52.0)
+        has_trend_strength = (adx >= 21.0)
+
+        if is_compressed:
+            regime = "COMPRESSED_RANGE"
+            badge = "💤 Compressed Range"
+            short_tag = "Rangebound"
+            color = "#c084fc"
+            bg_color = "rgba(192, 132, 252, 0.12)"
+            border_color = "rgba(192, 132, 252, 0.35)"
+            mandate = f"Non-trending channel (ADX: {adx:.1f}, BBW: {bb_width_pct:.1f}%). Ideal for Options Theta Harvesting & boundary oscillations."
+            allowed = ["OPTION_SELLING", "RANGE_BOUND_SUPPORT_BUY", "STRANGLE"]
+            blocked = ["TREND_BREAKOUT_BUY", "HIGH_BETA_FUTURES"]
+            regime_icon = "fa-solid fa-compress"
+
+        elif is_volatile_expansion and not (has_trend_strength and is_bull_structure):
+            regime = "VOLATILE_EXPANSION"
+            badge = "⚡ Volatile Expansion"
+            short_tag = "High Volatility"
+            color = "#fbbf24"
+            bg_color = "rgba(251, 191, 36, 0.12)"
+            border_color = "rgba(251, 191, 36, 0.35)"
+            mandate = f"Wide volatility band (BBW: {bb_width_pct:.1f}%, Vol: {daily_vol:.1f}%). High whipsaw risk. Reduce position sizing by 50%."
+            allowed = ["STRADDLE", "DEFENSIVE_SCALPING", "REDUCED_SIZING"]
+            blocked = ["NAKED_OPTION_SELLING", "FULL_LEVERAGE"]
+            regime_icon = "fa-solid fa-bolt"
+
+        elif is_bull_structure and has_trend_strength:
+            regime = "BULL_TREND"
+            badge = "🚀 Low-Vol Bull Trend"
+            short_tag = "Bull Trend"
+            color = "#34d399"
+            bg_color = "rgba(52, 211, 153, 0.12)"
+            border_color = "rgba(52, 211, 153, 0.35)"
+            mandate = f"Strong structural uptrend (50E > 200E, ADX: {adx:.1f}, RSI: {rsi:.1f}). Favorable for Golden Cross accumulation & swing longs."
+            allowed = ["GOLDEN_CROSS_BUY", "PULLBACK_LONG", "BULL_PUT_SPREAD"]
+            blocked = ["NAKED_CALL_SELLING", "SHORTING"]
+            regime_icon = "fa-solid fa-arrow-trend-up"
+
+        elif is_bear_structure and has_trend_strength:
+            regime = "BEAR_TREND"
+            badge = "🔻 Bear Breakdown"
+            short_tag = "Bear Trend"
+            color = "#fb7185"
+            bg_color = "rgba(251, 113, 133, 0.12)"
+            border_color = "rgba(251, 113, 133, 0.35)"
+            mandate = f"Downtrend in effect (Close < 50E, ADX: {adx:.1f}, RSI: {rsi:.1f}). Only take oversold bounces with tight stops; do not sell naked puts."
+            allowed = ["DEFENSIVE_HEDGING", "BEAR_CALL_SPREAD", "TIGHT_STOP_BOUNCE"]
+            blocked = ["NAKED_PUT_SELLING", "AGGRESSIVE_BUYING"]
+            regime_icon = "fa-solid fa-arrow-trend-down"
+
+        elif is_bull_structure:
+            regime = "MILD_BULLISH"
+            badge = "🌱 Mild Bullish Accumulation"
+            short_tag = "Mild Bull"
+            color = "#86efac"
+            bg_color = "rgba(134, 239, 172, 0.12)"
+            border_color = "rgba(134, 239, 172, 0.35)"
+            mandate = f"Constructive basing above 50/200 EMA (ADX: {adx:.1f}). Accumulating with defined support."
+            allowed = ["SWING_BUY", "COVERED_CALL"]
+            blocked = ["AGGRESSIVE_BREAKOUT"]
+            regime_icon = "fa-solid fa-seedling"
+
+        else:
+            regime = "MILD_BEARISH"
+            badge = "🌧️ Mild Consolidation / Soft"
+            short_tag = "Soft"
+            color = "#94a3b8"
+            bg_color = "rgba(148, 163, 184, 0.12)"
+            border_color = "rgba(148, 163, 184, 0.35)"
+            mandate = f"Neutral to soft consolidation (ADX: {adx:.1f}). Wait for directional break."
+            allowed = ["WATCHLIST", "STAGED_LIMIT_ORDERS"]
+            blocked = ["MARKET_ORDERS"]
+            regime_icon = "fa-solid fa-cloud"
+
+        return {
+            "regime": regime,
+            "badge": badge,
+            "short_tag": short_tag,
+            "color": color,
+            "bg_color": bg_color,
+            "border_color": border_color,
+            "mandate": mandate,
+            "allowed_strategies": allowed,
+            "blocked_strategies": blocked,
+            "icon": regime_icon,
+            "adx": round(adx, 1),
+            "rsi": round(rsi, 1),
+            "bb_width_pct": bb_width_pct,
+            "daily_vol_pct": round(daily_vol, 2)
+        }
+
+
+
 

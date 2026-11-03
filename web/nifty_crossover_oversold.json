@@ -1,5 +1,5 @@
 {
-  "last_updated": "04 Nov 2026, 12:26 AM IST",
+  "last_updated": "04 Nov 2026, 12:13 AM IST",
   "summary": {
     "total_scanned": 99,
     "large_cap_count": 48,
@@ -9,7 +9,11 @@
     "golden_cross_count": 32,
     "oversold_count": 7,
     "deep_discount_count": 66,
-    "avg_discount_top_10": 18.2
+    "avg_discount_top_10": 18.2,
+    "bull_regime_count": 13,
+    "range_regime_count": 15,
+    "expansion_regime_count": 35,
+    "bear_regime_count": 17
   },
   "stocks": [
     {
@@ -69,6 +73,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,011.40 (24.2% hit rate); trail stop to entry for T2 \u20b92,181.66 (6.8% hit rate).",
         "summary": "3,000 Replays: 24.2% T1 | 6.8% T2 | 50.3% SL | Expected: -0.08R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 35.9). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 35.9,
+        "rsi": 43.5,
+        "bb_width_pct": 10.59,
+        "daily_vol_pct": 2.67
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 35.9). Wait for directional break.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -144,6 +174,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9188.88 (20.8% hit rate); trail stop to entry for T2 \u20b9204.44 (4.1% hit rate).",
         "summary": "3,000 Replays: 20.8% T1 | 4.1% T2 | 46.0% SL | Expected: -0.12R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 25.3). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 25.3,
+        "rsi": 45.9,
+        "bb_width_pct": 10.27,
+        "daily_vol_pct": 2.3
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 25.3). Wait for directional break.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -219,6 +275,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,012.42 (26.2% hit rate); trail stop to entry for T2 \u20b91,108.72 (9.0% hit rate).",
         "summary": "3,000 Replays: 26.2% T1 | 9.0% T2 | 53.1% SL | Expected: -0.05R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 25.2%, Vol: 3.3%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 36.5,
+        "rsi": 35.0,
+        "bb_width_pct": 25.18,
+        "daily_vol_pct": 3.31
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 25.2%, Vol: 3.3%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -294,6 +378,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b983.21 (12.3% hit rate); trail stop to entry for T2 \u20b989.61 (1.5% hit rate).",
         "summary": "3,000 Replays: 12.3% T1 | 1.5% T2 | 35.0% SL | Expected: -0.17R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 17.3%, Vol: 1.9%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 35.3,
+        "rsi": 36.4,
+        "bb_width_pct": 17.32,
+        "daily_vol_pct": 1.9
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 17.3%, Vol: 1.9%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -369,6 +481,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9457.62 (29.6% hit rate); trail stop to entry for T2 \u20b9496.46 (12.7% hit rate).",
         "summary": "3,000 Replays: 29.6% T1 | 12.7% T2 | 56.6% SL | Expected: +0.02R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 12.0%, Vol: 3.3%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 29.0,
+        "rsi": 43.8,
+        "bb_width_pct": 11.96,
+        "daily_vol_pct": 3.32
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 12.0%, Vol: 3.3%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -444,6 +584,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b93,025.45 (8.3% hit rate); trail stop to entry for T2 \u20b93,245.00 (1.2% hit rate).",
         "summary": "3,000 Replays: 8.3% T1 | 1.2% T2 | 30.3% SL | Expected: -0.18R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 36.5). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 36.5,
+        "rsi": 43.0,
+        "bb_width_pct": 14.45,
+        "daily_vol_pct": 2.04
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 36.5). Wait for directional break.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -519,6 +685,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,133.94 (8.1% hit rate); trail stop to entry for T2 \u20b91,176.40 (2.9% hit rate).",
         "summary": "3,000 Replays: 8.1% T1 | 2.9% T2 | 30.0% SL | Expected: -0.16R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 18.4, BBW: 8.4%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 18.4,
+        "rsi": 52.1,
+        "bb_width_pct": 8.4,
+        "daily_vol_pct": 2.06
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 18.4, BBW: 8.4%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "HIGH_PROB",
       "prob_label": "High Probability \u26a1",
       "prob_badge": "HIGH",
@@ -594,6 +788,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,952.75 (27.2% hit rate); trail stop to entry for T2 \u20b91,986.10 (23.7% hit rate).",
         "summary": "3,000 Replays: 27.2% T1 | 23.7% T2 | 55.2% SL | Expected: +0.04R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 11.0%, Vol: 3.8%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 28.5,
+        "rsi": 47.9,
+        "bb_width_pct": 11.0,
+        "daily_vol_pct": 3.79
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 11.0%, Vol: 3.8%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -669,6 +891,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9471.39 (20.5% hit rate); trail stop to entry for T2 \u20b9464.00 (24.2% hit rate).",
         "summary": "3,000 Replays: 20.5% T1 | 24.2% T2 | 47.2% SL | Expected: -0.01R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 23.1%, Vol: 3.2%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 18.9,
+        "rsi": 43.9,
+        "bb_width_pct": 23.1,
+        "daily_vol_pct": 3.23
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 23.1%, Vol: 3.2%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -744,6 +994,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9377.46 (23.6% hit rate); trail stop to entry for T2 \u20b9371.70 (28.1% hit rate).",
         "summary": "3,000 Replays: 23.6% T1 | 28.1% T2 | 49.9% SL | Expected: +0.03R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 22.9). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 22.9,
+        "rsi": 46.4,
+        "bb_width_pct": 10.61,
+        "daily_vol_pct": 2.61
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 22.9). Wait for directional break.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -819,6 +1095,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b912,663.86 (5.7% hit rate); trail stop to entry for T2 \u20b912,470.00 (8.3% hit rate).",
         "summary": "3,000 Replays: 5.7% T1 | 8.3% T2 | 25.9% SL | Expected: -0.12R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 30.9). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 30.9,
+        "rsi": 51.8,
+        "bb_width_pct": 8.96,
+        "daily_vol_pct": 2.24
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 30.9). Wait for directional break.",
       "prob_tier": "HIGH_PROB",
       "prob_label": "High Probability \u26a1",
       "prob_badge": "HIGH",
@@ -894,6 +1196,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9957.25 (27.9% hit rate); trail stop to entry for T2 \u20b91,030.33 (10.5% hit rate).",
         "summary": "3,000 Replays: 27.9% T1 | 10.5% T2 | 54.4% SL | Expected: -0.02R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 38.4, RSI: 44.5). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 38.4,
+        "rsi": 44.5,
+        "bb_width_pct": 8.46,
+        "daily_vol_pct": 2.73
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 38.4, RSI: 44.5). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -969,6 +1299,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b98,974.64 (17.6% hit rate); trail stop to entry for T2 \u20b99,802.02 (2.8% hit rate).",
         "summary": "3,000 Replays: 17.6% T1 | 2.8% T2 | 43.1% SL | Expected: -0.16R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 32.5, RSI: 43.6). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 32.5,
+        "rsi": 43.6,
+        "bb_width_pct": 14.07,
+        "daily_vol_pct": 2.39
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 32.5, RSI: 43.6). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -1044,6 +1402,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,681.24 (34.0% hit rate); trail stop to entry for T2 \u20b92,856.90 (18.7% hit rate).",
         "summary": "3,000 Replays: 34.0% T1 | 18.7% T2 | 61.3% SL | Expected: +0.12R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 16.4%, Vol: 3.2%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 26.8,
+        "rsi": 30.9,
+        "bb_width_pct": 16.39,
+        "daily_vol_pct": 3.19
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 16.4%, Vol: 3.2%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -1119,6 +1505,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,518.15 (37.6% hit rate); trail stop to entry for T2 \u20b91,617.61 (28.0% hit rate).",
         "summary": "3,000 Replays: 37.6% T1 | 28.0% T2 | 62.2% SL | Expected: +0.30R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 30.8%, Vol: 5.2%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 27.3,
+        "rsi": 30.3,
+        "bb_width_pct": 30.84,
+        "daily_vol_pct": 5.2
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 30.8%, Vol: 5.2%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -1194,6 +1608,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b95,325.16 (13.3% hit rate); trail stop to entry for T2 \u20b95,186.70 (19.9% hit rate).",
         "summary": "3,000 Replays: 13.3% T1 | 19.9% T2 | 37.0% SL | Expected: -0.05R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 40.0). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 40.0,
+        "rsi": 53.9,
+        "bb_width_pct": 5.99,
+        "daily_vol_pct": 2.4
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 40.0). Wait for directional break.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -1269,6 +1709,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,100.66 (12.5% hit rate); trail stop to entry for T2 \u20b91,153.70 (6.2% hit rate).",
         "summary": "3,000 Replays: 12.5% T1 | 6.2% T2 | 37.2% SL | Expected: -0.14R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 23.1%, Vol: 3.4%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 42.8,
+        "rsi": 44.3,
+        "bb_width_pct": 23.05,
+        "daily_vol_pct": 3.41
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 23.1%, Vol: 3.4%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -1344,6 +1812,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9129,341.31 (16.0% hit rate); trail stop to entry for T2 \u20b9137,814.99 (1.8% hit rate).",
         "summary": "3,000 Replays: 16.0% T1 | 1.8% T2 | 38.1% SL | Expected: -0.14R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 50.0, RSI: 30.6). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 50.0,
+        "rsi": 30.6,
+        "bb_width_pct": 8.28,
+        "daily_vol_pct": 1.52
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 50.0, RSI: 30.6). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -1419,6 +1915,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,053.65 (6.5% hit rate); trail stop to entry for T2 \u20b91,153.93 (0.3% hit rate).",
         "summary": "3,000 Replays: 6.5% T1 | 0.3% T2 | 26.6% SL | Expected: -0.18R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 31.0, RSI: 50.1). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 31.0,
+        "rsi": 50.1,
+        "bb_width_pct": 6.63,
+        "daily_vol_pct": 1.73
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 31.0, RSI: 50.1). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -1494,6 +2018,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9585.30 (17.6% hit rate); trail stop to entry for T2 \u20b9628.78 (2.6% hit rate).",
         "summary": "3,000 Replays: 17.6% T1 | 2.6% T2 | 41.4% SL | Expected: -0.14R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 21.3, RSI: 45.2). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 21.3,
+        "rsi": 45.2,
+        "bb_width_pct": 11.67,
+        "daily_vol_pct": 1.85
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 21.3, RSI: 45.2). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "HIGH_PROB",
       "prob_label": "High Probability \u26a1",
       "prob_badge": "HIGH",
@@ -1569,6 +2121,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b976.27 (31.6% hit rate); trail stop to entry for T2 \u20b982.15 (14.8% hit rate).",
         "summary": "3,000 Replays: 31.6% T1 | 14.8% T2 | 58.5% SL | Expected: +0.06R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 12.4%, Vol: 3.2%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 47.8,
+        "rsi": 36.5,
+        "bb_width_pct": 12.4,
+        "daily_vol_pct": 3.23
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 12.4%, Vol: 3.2%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -1644,6 +2224,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,070.77 (36.5% hit rate); trail stop to entry for T2 \u20b91,143.87 (25.6% hit rate).",
         "summary": "3,000 Replays: 36.5% T1 | 25.6% T2 | 63.0% SL | Expected: +0.24R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 4.5%, Vol: 4.7%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 26.4,
+        "rsi": 50.1,
+        "bb_width_pct": 4.47,
+        "daily_vol_pct": 4.72
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 4.5%, Vol: 4.7%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -1719,6 +2327,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9466.98 (13.9% hit rate); trail stop to entry for T2 \u20b9430.70 (33.0% hit rate).",
         "summary": "3,000 Replays: 13.9% T1 | 33.0% T2 | 39.4% SL | Expected: -0.04R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 24.5, RSI: 55.0). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 24.5,
+        "rsi": 55.0,
+        "bb_width_pct": 12.01,
+        "daily_vol_pct": 3.32
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 24.5, RSI: 55.0). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -1794,6 +2430,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,486.03 (12.3% hit rate); trail stop to entry for T2 \u20b92,301.40 (42.1% hit rate).",
         "summary": "3,000 Replays: 12.3% T1 | 42.1% T2 | 35.7% SL | Expected: -0.03R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 18.5, BBW: 9.4%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 18.5,
+        "rsi": 51.2,
+        "bb_width_pct": 9.43,
+        "daily_vol_pct": 2.15
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 18.5, BBW: 9.4%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -1869,6 +2533,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9326.90 (9.4% hit rate); trail stop to entry for T2 \u20b9363.42 (0.8% hit rate).",
         "summary": "3,000 Replays: 9.4% T1 | 0.8% T2 | 32.2% SL | Expected: -0.19R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 27.5, RSI: 47.3). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 27.5,
+        "rsi": 47.3,
+        "bb_width_pct": 12.73,
+        "daily_vol_pct": 2.32
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 27.5, RSI: 47.3). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -1944,6 +2636,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b93,035.83 (8.8% hit rate); trail stop to entry for T2 \u20b93,405.01 (0.7% hit rate).",
         "summary": "3,000 Replays: 8.8% T1 | 0.7% T2 | 31.7% SL | Expected: -0.19R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 46.2, RSI: 46.0). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 46.2,
+        "rsi": 46.0,
+        "bb_width_pct": 15.44,
+        "daily_vol_pct": 2.51
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 46.2, RSI: 46.0). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -2019,6 +2739,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b97,660.08 (0.0% hit rate); trail stop to entry for T2 \u20b96,599.00 (19.9% hit rate).",
         "summary": "3,000 Replays: 0.0% T1 | 19.9% T2 | 2.3% SL | Expected: +0.03R"
       },
+      "market_regime": {
+        "regime": "MILD_BULLISH",
+        "badge": "\ud83c\udf31 Mild Bullish Accumulation",
+        "short_tag": "Mild Bull",
+        "color": "#86efac",
+        "bg_color": "rgba(134, 239, 172, 0.12)",
+        "border_color": "rgba(134, 239, 172, 0.35)",
+        "mandate": "Constructive basing above 50/200 EMA (ADX: 16.7). Accumulating with defined support.",
+        "allowed_strategies": [
+          "SWING_BUY",
+          "COVERED_CALL"
+        ],
+        "blocked_strategies": [
+          "AGGRESSIVE_BREAKOUT"
+        ],
+        "icon": "fa-solid fa-seedling",
+        "adx": 16.7,
+        "rsi": 66.9,
+        "bb_width_pct": 11.11,
+        "daily_vol_pct": 1.39
+      },
+      "regime_tag": "MILD_BULLISH",
+      "regime_badge": "\ud83c\udf31 Mild Bullish Accumulation",
+      "regime_short": "Mild Bull",
+      "regime_color": "#86efac",
+      "regime_mandate": "Constructive basing above 50/200 EMA (ADX: 16.7). Accumulating with defined support.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -2094,6 +2840,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,945.13 (26.6% hit rate); trail stop to entry for T2 \u20b92,046.90 (11.7% hit rate).",
         "summary": "3,000 Replays: 26.6% T1 | 11.7% T2 | 51.6% SL | Expected: -0.00R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 36.4, RSI: 45.6). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 36.4,
+        "rsi": 45.6,
+        "bb_width_pct": 3.32,
+        "daily_vol_pct": 2.17
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 36.4, RSI: 45.6). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "HIGH_PROB",
       "prob_label": "High Probability \u26a1",
       "prob_badge": "HIGH",
@@ -2169,6 +2943,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b95,580.80 (18.8% hit rate); trail stop to entry for T2 \u20b96,100.00 (5.9% hit rate).",
         "summary": "3,000 Replays: 18.8% T1 | 5.9% T2 | 45.9% SL | Expected: -0.13R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 14.6%, Vol: 3.5%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 34.8,
+        "rsi": 48.4,
+        "bb_width_pct": 14.6,
+        "daily_vol_pct": 3.46
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 14.6%, Vol: 3.5%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "HIGH_PROB",
       "prob_label": "High Probability \u26a1",
       "prob_badge": "HIGH",
@@ -2244,6 +3046,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,583.26 (17.9% hit rate); trail stop to entry for T2 \u20b91,553.00 (21.2% hit rate).",
         "summary": "3,000 Replays: 17.9% T1 | 21.2% T2 | 45.3% SL | Expected: -0.05R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 22.4%, Vol: 4.5%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 37.8,
+        "rsi": 47.4,
+        "bb_width_pct": 22.39,
+        "daily_vol_pct": 4.47
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 22.4%, Vol: 4.5%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -2319,6 +3149,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9489.89 (13.1% hit rate); trail stop to entry for T2 \u20b9539.27 (1.4% hit rate).",
         "summary": "3,000 Replays: 13.1% T1 | 1.4% T2 | 36.8% SL | Expected: -0.17R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 23.1, RSI: 42.8). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 23.1,
+        "rsi": 42.8,
+        "bb_width_pct": 12.35,
+        "daily_vol_pct": 2.3
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 23.1, RSI: 42.8). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "HIGH_PROB",
       "prob_label": "High Probability \u26a1",
       "prob_badge": "HIGH",
@@ -2394,6 +3252,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b910,947.85 (0.1% hit rate); trail stop to entry for T2 \u20b99,070.50 (32.9% hit rate).",
         "summary": "3,000 Replays: 0.1% T1 | 32.9% T2 | 4.0% SL | Expected: +0.03R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 28.1, RSI: 59.2). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 28.1,
+        "rsi": 59.2,
+        "bb_width_pct": 12.45,
+        "daily_vol_pct": 1.77
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 28.1, RSI: 59.2). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -2469,6 +3355,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9590.38 (15.4% hit rate); trail stop to entry for T2 \u20b9598.20 (12.7% hit rate).",
         "summary": "3,000 Replays: 15.4% T1 | 12.7% T2 | 40.6% SL | Expected: -0.08R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 17.7%, Vol: 2.6%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 19.3,
+        "rsi": 44.1,
+        "bb_width_pct": 17.74,
+        "daily_vol_pct": 2.61
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 17.7%, Vol: 2.6%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "HIGH_PROB",
       "prob_label": "High Probability \u26a1",
       "prob_badge": "HIGH",
@@ -2544,6 +3458,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9461.37 (5.5% hit rate); trail stop to entry for T2 \u20b9491.25 (0.5% hit rate).",
         "summary": "3,000 Replays: 5.5% T1 | 0.5% T2 | 24.1% SL | Expected: -0.16R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 21.5, RSI: 50.2). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 21.5,
+        "rsi": 50.2,
+        "bb_width_pct": 8.17,
+        "daily_vol_pct": 1.43
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 21.5, RSI: 50.2). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -2619,6 +3561,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,241.16 (18.8% hit rate); trail stop to entry for T2 \u20b92,038.00 (50.3% hit rate).",
         "summary": "3,000 Replays: 18.8% T1 | 50.3% T2 | 44.7% SL | Expected: -0.07R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 14.2, BBW: 7.7%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 14.2,
+        "rsi": 53.5,
+        "bb_width_pct": 7.69,
+        "daily_vol_pct": 2.55
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 14.2, BBW: 7.7%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -2694,6 +3664,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b915,952.62 (12.9% hit rate); trail stop to entry for T2 \u20b915,775.00 (14.3% hit rate).",
         "summary": "3,000 Replays: 12.9% T1 | 14.3% T2 | 37.9% SL | Expected: -0.09R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 22.0%, Vol: 4.2%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 37.2,
+        "rsi": 49.9,
+        "bb_width_pct": 21.99,
+        "daily_vol_pct": 4.24
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 22.0%, Vol: 4.2%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "HIGH_PROB",
       "prob_label": "High Probability \u26a1",
       "prob_badge": "HIGH",
@@ -2769,6 +3767,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b93,813.95 (7.1% hit rate); trail stop to entry for T2 \u20b93,411.10 (35.8% hit rate).",
         "summary": "3,000 Replays: 7.1% T1 | 35.8% T2 | 29.1% SL | Expected: -0.06R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 35.0, RSI: 60.6). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 35.0,
+        "rsi": 60.6,
+        "bb_width_pct": 7.75,
+        "daily_vol_pct": 2.74
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 35.0, RSI: 60.6). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -2844,6 +3870,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b94,696.56 (18.5% hit rate); trail stop to entry for T2 \u20b95,161.70 (3.3% hit rate).",
         "summary": "3,000 Replays: 18.5% T1 | 3.3% T2 | 44.4% SL | Expected: -0.15R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 30.6, RSI: 41.4). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 30.6,
+        "rsi": 41.4,
+        "bb_width_pct": 13.67,
+        "daily_vol_pct": 2.66
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 30.6, RSI: 41.4). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -2919,6 +3973,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9354.41 (28.6% hit rate); trail stop to entry for T2 \u20b9326.40 (41.8% hit rate).",
         "summary": "3,000 Replays: 28.6% T1 | 41.8% T2 | 56.4% SL | Expected: -0.02R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 17.4, BBW: 5.9%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 17.4,
+        "rsi": 60.9,
+        "bb_width_pct": 5.91,
+        "daily_vol_pct": 4.11
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 17.4, BBW: 5.9%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -2994,6 +4076,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,648.77 (0.0% hit rate); trail stop to entry for T2 \u20b91,854.00 (63.2% hit rate).",
         "summary": "3,000 Replays: 0.0% T1 | 63.2% T2 | 0.4% SL | Expected: +0.04R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 31.9, RSI: 65.3). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 31.9,
+        "rsi": 65.3,
+        "bb_width_pct": 30.16,
+        "daily_vol_pct": 2.12
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 31.9, RSI: 65.3). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -3069,6 +4179,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b98,928.41 (23.8% hit rate); trail stop to entry for T2 \u20b98,230.00 (40.2% hit rate).",
         "summary": "3,000 Replays: 23.8% T1 | 40.2% T2 | 51.4% SL | Expected: -0.01R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 27.7, RSI: 58.3). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 27.7,
+        "rsi": 58.3,
+        "bb_width_pct": 7.69,
+        "daily_vol_pct": 4.06
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 27.7, RSI: 58.3). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -3144,6 +4282,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9464.87 (36.4% hit rate); trail stop to entry for T2 \u20b9498.11 (24.7% hit rate).",
         "summary": "3,000 Replays: 36.4% T1 | 24.7% T2 | 63.0% SL | Expected: +0.23R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 12.8%, Vol: 4.8%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 40.9,
+        "rsi": 37.5,
+        "bb_width_pct": 12.81,
+        "daily_vol_pct": 4.77
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 12.8%, Vol: 4.8%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "ELITE_SETUP",
       "prob_label": "Elite High Prob \ud83d\udd25",
       "prob_badge": "ELITE",
@@ -3219,6 +4385,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,751.86 (0.0% hit rate); trail stop to entry for T2 \u20b91,351.00 (68.0% hit rate).",
         "summary": "3,000 Replays: 0.0% T1 | 68.0% T2 | 1.6% SL | Expected: +0.03R"
       },
+      "market_regime": {
+        "regime": "MILD_BULLISH",
+        "badge": "\ud83c\udf31 Mild Bullish Accumulation",
+        "short_tag": "Mild Bull",
+        "color": "#86efac",
+        "bg_color": "rgba(134, 239, 172, 0.12)",
+        "border_color": "rgba(134, 239, 172, 0.35)",
+        "mandate": "Constructive basing above 50/200 EMA (ADX: 19.5). Accumulating with defined support.",
+        "allowed_strategies": [
+          "SWING_BUY",
+          "COVERED_CALL"
+        ],
+        "blocked_strategies": [
+          "AGGRESSIVE_BREAKOUT"
+        ],
+        "icon": "fa-solid fa-seedling",
+        "adx": 19.5,
+        "rsi": 63.5,
+        "bb_width_pct": 12.98,
+        "daily_vol_pct": 1.61
+      },
+      "regime_tag": "MILD_BULLISH",
+      "regime_badge": "\ud83c\udf31 Mild Bullish Accumulation",
+      "regime_short": "Mild Bull",
+      "regime_color": "#86efac",
+      "regime_mandate": "Constructive basing above 50/200 EMA (ADX: 19.5). Accumulating with defined support.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -3294,6 +4486,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,076.92 (0.0% hit rate); trail stop to entry for T2 \u20b91,780.10 (0.5% hit rate).",
         "summary": "3,000 Replays: 0.0% T1 | 0.5% T2 | 0.0% SL | Expected: +0.00R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 33.0, RSI: 71.3). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 33.0,
+        "rsi": 71.3,
+        "bb_width_pct": 25.4,
+        "daily_vol_pct": 1.67
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 33.0, RSI: 71.3). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -3369,6 +4589,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,674.75 (20.0% hit rate); trail stop to entry for T2 \u20b91,480.00 (50.9% hit rate).",
         "summary": "3,000 Replays: 20.0% T1 | 50.9% T2 | 46.7% SL | Expected: -0.10R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 24.1, RSI: 62.1). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 24.1,
+        "rsi": 62.1,
+        "bb_width_pct": 6.59,
+        "daily_vol_pct": 3.14
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 24.1, RSI: 62.1). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -3444,6 +4692,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,011.87 (10.6% hit rate); trail stop to entry for T2 \u20b91,740.00 (60.6% hit rate).",
         "summary": "3,000 Replays: 10.6% T1 | 60.6% T2 | 34.1% SL | Expected: -0.12R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 19.1, BBW: 9.4%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 19.1,
+        "rsi": 56.8,
+        "bb_width_pct": 9.44,
+        "daily_vol_pct": 2.49
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 19.1, BBW: 9.4%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -3519,6 +4795,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,340.85 (0.3% hit rate); trail stop to entry for T2 \u20b91,891.10 (76.9% hit rate).",
         "summary": "3,000 Replays: 0.3% T1 | 76.9% T2 | 7.4% SL | Expected: -0.04R"
       },
+      "market_regime": {
+        "regime": "MILD_BULLISH",
+        "badge": "\ud83c\udf31 Mild Bullish Accumulation",
+        "short_tag": "Mild Bull",
+        "color": "#86efac",
+        "bg_color": "rgba(134, 239, 172, 0.12)",
+        "border_color": "rgba(134, 239, 172, 0.35)",
+        "mandate": "Constructive basing above 50/200 EMA (ADX: 20.5). Accumulating with defined support.",
+        "allowed_strategies": [
+          "SWING_BUY",
+          "COVERED_CALL"
+        ],
+        "blocked_strategies": [
+          "AGGRESSIVE_BREAKOUT"
+        ],
+        "icon": "fa-solid fa-seedling",
+        "adx": 20.5,
+        "rsi": 63.1,
+        "bb_width_pct": 10.22,
+        "daily_vol_pct": 1.71
+      },
+      "regime_tag": "MILD_BULLISH",
+      "regime_badge": "\ud83c\udf31 Mild Bullish Accumulation",
+      "regime_short": "Mild Bull",
+      "regime_color": "#86efac",
+      "regime_mandate": "Constructive basing above 50/200 EMA (ADX: 20.5). Accumulating with defined support.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -3594,6 +4896,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,897.20 (0.1% hit rate); trail stop to entry for T2 \u20b91,414.90 (65.7% hit rate).",
         "summary": "3,000 Replays: 0.1% T1 | 65.7% T2 | 3.3% SL | Expected: +0.02R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 31.2, RSI: 75.1). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 31.2,
+        "rsi": 75.1,
+        "bb_width_pct": 17.13,
+        "daily_vol_pct": 2.23
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 31.2, RSI: 75.1). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -3669,6 +4999,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,647.01 (0.6% hit rate); trail stop to entry for T2 \u20b91,254.20 (78.8% hit rate).",
         "summary": "3,000 Replays: 0.6% T1 | 78.8% T2 | 9.6% SL | Expected: -0.07R"
       },
+      "market_regime": {
+        "regime": "MILD_BULLISH",
+        "badge": "\ud83c\udf31 Mild Bullish Accumulation",
+        "short_tag": "Mild Bull",
+        "color": "#86efac",
+        "bg_color": "rgba(134, 239, 172, 0.12)",
+        "border_color": "rgba(134, 239, 172, 0.35)",
+        "mandate": "Constructive basing above 50/200 EMA (ADX: 12.7). Accumulating with defined support.",
+        "allowed_strategies": [
+          "SWING_BUY",
+          "COVERED_CALL"
+        ],
+        "blocked_strategies": [
+          "AGGRESSIVE_BREAKOUT"
+        ],
+        "icon": "fa-solid fa-seedling",
+        "adx": 12.7,
+        "rsi": 69.3,
+        "bb_width_pct": 13.49,
+        "daily_vol_pct": 2.36
+      },
+      "regime_tag": "MILD_BULLISH",
+      "regime_badge": "\ud83c\udf31 Mild Bullish Accumulation",
+      "regime_short": "Mild Bull",
+      "regime_color": "#86efac",
+      "regime_mandate": "Constructive basing above 50/200 EMA (ADX: 12.7). Accumulating with defined support.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -3744,6 +5100,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9183.16 (19.4% hit rate); trail stop to entry for T2 \u20b9202.32 (3.7% hit rate).",
         "summary": "3,000 Replays: 19.4% T1 | 3.7% T2 | 45.9% SL | Expected: -0.15R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 16.1%, Vol: 2.9%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 19.1,
+        "rsi": 44.2,
+        "bb_width_pct": 16.12,
+        "daily_vol_pct": 2.94
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 16.1%, Vol: 2.9%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "HIGH_PROB",
       "prob_label": "High Probability \u26a1",
       "prob_badge": "HIGH",
@@ -3819,6 +5203,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,116.53 (1.2% hit rate); trail stop to entry for T2 \u20b91,546.30 (76.5% hit rate).",
         "summary": "3,000 Replays: 1.2% T1 | 76.5% T2 | 12.9% SL | Expected: -0.09R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 46.2, RSI: 72.0). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 46.2,
+        "rsi": 72.0,
+        "bb_width_pct": 17.69,
+        "daily_vol_pct": 3.06
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 46.2, RSI: 72.0). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -3894,6 +5306,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,721.79 (3.0% hit rate); trail stop to entry for T2 \u20b92,112.20 (69.7% hit rate).",
         "summary": "3,000 Replays: 3.0% T1 | 69.7% T2 | 20.5% SL | Expected: -0.12R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 14.6%, Vol: 3.0%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 17.1,
+        "rsi": 64.9,
+        "bb_width_pct": 14.58,
+        "daily_vol_pct": 3.04
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 14.6%, Vol: 3.0%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -3969,6 +5409,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b913,213.17 (0.3% hit rate); trail stop to entry for T2 \u20b910,064.00 (85.8% hit rate).",
         "summary": "3,000 Replays: 0.3% T1 | 85.8% T2 | 6.5% SL | Expected: -0.06R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 23.4, RSI: 69.7). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 23.4,
+        "rsi": 69.7,
+        "bb_width_pct": 12.34,
+        "daily_vol_pct": 2.04
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 23.4, RSI: 69.7). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -4044,6 +5512,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9712.03 (18.1% hit rate); trail stop to entry for T2 \u20b9609.05 (49.5% hit rate).",
         "summary": "3,000 Replays: 18.1% T1 | 49.5% T2 | 45.5% SL | Expected: -0.09R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 18.8, BBW: 9.6%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 18.8,
+        "rsi": 59.1,
+        "bb_width_pct": 9.55,
+        "daily_vol_pct": 4.23
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 18.8, BBW: 9.6%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -4119,6 +5615,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,899.92 (25.7% hit rate); trail stop to entry for T2 \u20b92,095.00 (8.9% hit rate).",
         "summary": "3,000 Replays: 25.7% T1 | 8.9% T2 | 53.0% SL | Expected: -0.06R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 20.9%, Vol: 3.6%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 28.4,
+        "rsi": 40.0,
+        "bb_width_pct": 20.93,
+        "daily_vol_pct": 3.58
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 20.9%, Vol: 3.6%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "HIGH_PROB",
       "prob_label": "High Probability \u26a1",
       "prob_badge": "HIGH",
@@ -4194,6 +5718,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,108.38 (3.3% hit rate); trail stop to entry for T2 \u20b92,110.00 (3.2% hit rate).",
         "summary": "3,000 Replays: 3.3% T1 | 3.2% T2 | 21.5% SL | Expected: -0.14R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 19.0, BBW: 8.0%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 19.0,
+        "rsi": 57.8,
+        "bb_width_pct": 7.96,
+        "daily_vol_pct": 1.97
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 19.0, BBW: 8.0%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -4269,6 +5821,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9566.16 (2.5% hit rate); trail stop to entry for T2 \u20b9465.95 (76.9% hit rate).",
         "summary": "3,000 Replays: 2.5% T1 | 76.9% T2 | 19.2% SL | Expected: -0.15R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 36.6, RSI: 68.9). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 36.6,
+        "rsi": 68.9,
+        "bb_width_pct": 8.19,
+        "daily_vol_pct": 2.03
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 36.6, RSI: 68.9). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -4344,6 +5924,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b95,385.15 (1.2% hit rate); trail stop to entry for T2 \u20b95,950.00 (0.1% hit rate).",
         "summary": "3,000 Replays: 1.2% T1 | 0.1% T2 | 11.9% SL | Expected: -0.10R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 31.1%, Vol: 3.4%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 31.9,
+        "rsi": 58.6,
+        "bb_width_pct": 31.13,
+        "daily_vol_pct": 3.45
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 31.1%, Vol: 3.4%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -4419,6 +6027,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,549.05 (0.7% hit rate); trail stop to entry for T2 \u20b91,728.00 (0.0% hit rate).",
         "summary": "3,000 Replays: 0.7% T1 | 0.0% T2 | 9.6% SL | Expected: -0.09R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 22.2%, Vol: 2.5%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 19.1,
+        "rsi": 56.6,
+        "bb_width_pct": 22.25,
+        "daily_vol_pct": 2.51
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 22.2%, Vol: 2.5%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -4494,6 +6130,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,634.37 (7.3% hit rate); trail stop to entry for T2 \u20b92,961.19 (0.5% hit rate).",
         "summary": "3,000 Replays: 7.3% T1 | 0.5% T2 | 29.1% SL | Expected: -0.19R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 28.1, RSI: 50.4). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 28.1,
+        "rsi": 50.4,
+        "bb_width_pct": 11.21,
+        "daily_vol_pct": 2.43
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 28.1, RSI: 50.4). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -4569,6 +6233,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b96,432.67 (7.1% hit rate); trail stop to entry for T2 \u20b96,388.50 (8.3% hit rate).",
         "summary": "3,000 Replays: 7.1% T1 | 8.3% T2 | 29.0% SL | Expected: -0.13R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 19.0, BBW: 9.7%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 19.0,
+        "rsi": 55.5,
+        "bb_width_pct": 9.67,
+        "daily_vol_pct": 2.51
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 19.0, BBW: 9.7%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -4644,6 +6336,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b914,056.66 (4.8% hit rate); trail stop to entry for T2 \u20b915,647.68 (0.1% hit rate).",
         "summary": "3,000 Replays: 4.8% T1 | 0.1% T2 | 24.1% SL | Expected: -0.18R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 37.7). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 37.7,
+        "rsi": 55.9,
+        "bb_width_pct": 6.13,
+        "daily_vol_pct": 1.97
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 37.7). Wait for directional break.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -4719,6 +6437,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,370.86 (28.2% hit rate); trail stop to entry for T2 \u20b91,418.30 (18.4% hit rate).",
         "summary": "3,000 Replays: 28.2% T1 | 18.4% T2 | 54.7% SL | Expected: +0.04R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 17.7, BBW: 8.2%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 17.7,
+        "rsi": 50.0,
+        "bb_width_pct": 8.19,
+        "daily_vol_pct": 2.63
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 17.7, BBW: 8.2%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -4794,6 +6540,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,289.83 (1.5% hit rate); trail stop to entry for T2 \u20b91,467.15 (0.0% hit rate).",
         "summary": "3,000 Replays: 1.5% T1 | 0.0% T2 | 15.5% SL | Expected: -0.14R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 37.6, RSI: 50.4). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 37.6,
+        "rsi": 50.4,
+        "bb_width_pct": 13.37,
+        "daily_vol_pct": 1.98
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 37.6, RSI: 50.4). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -4869,6 +6643,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,944.81 (14.0% hit rate); trail stop to entry for T2 \u20b92,109.69 (1.6% hit rate).",
         "summary": "3,000 Replays: 14.0% T1 | 1.6% T2 | 37.7% SL | Expected: -0.17R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 51.2, RSI: 47.5). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 51.2,
+        "rsi": 47.5,
+        "bb_width_pct": 7.41,
+        "daily_vol_pct": 1.95
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 51.2, RSI: 47.5). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "HIGH_PROB",
       "prob_label": "High Probability \u26a1",
       "prob_badge": "HIGH",
@@ -4944,6 +6746,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9325.36 (20.9% hit rate); trail stop to entry for T2 \u20b9362.78 (5.1% hit rate).",
         "summary": "3,000 Replays: 20.9% T1 | 5.1% T2 | 48.1% SL | Expected: -0.13R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 6.0%, Vol: 3.5%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 20.0,
+        "rsi": 62.3,
+        "bb_width_pct": 6.03,
+        "daily_vol_pct": 3.46
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 6.0%, Vol: 3.5%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -5019,6 +6849,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9301.82 (0.0% hit rate); trail stop to entry for T2 \u20b9273.10 (0.0% hit rate).",
         "summary": "3,000 Replays: 0.0% T1 | 0.0% T2 | 0.0% SL | Expected: +0.00R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 27.0%, Vol: 1.3%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 40.2,
+        "rsi": 71.6,
+        "bb_width_pct": 27.04,
+        "daily_vol_pct": 1.27
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 27.0%, Vol: 1.3%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -5094,6 +6952,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b95,030.71 (0.0% hit rate); trail stop to entry for T2 \u20b94,440.00 (5.2% hit rate).",
         "summary": "3,000 Replays: 0.0% T1 | 5.2% T2 | 1.6% SL | Expected: +0.00R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 33.8). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 33.8,
+        "rsi": 66.4,
+        "bb_width_pct": 10.52,
+        "daily_vol_pct": 1.34
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 33.8). Wait for directional break.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -5169,6 +7053,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,760.23 (17.3% hit rate); trail stop to entry for T2 \u20b91,707.50 (25.8% hit rate).",
         "summary": "3,000 Replays: 17.3% T1 | 25.8% T2 | 43.3% SL | Expected: -0.03R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 32.1). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 32.1,
+        "rsi": 53.4,
+        "bb_width_pct": 7.9,
+        "daily_vol_pct": 2.7
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 32.1). Wait for directional break.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -5244,6 +7154,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b93,587.18 (0.0% hit rate); trail stop to entry for T2 \u20b93,350.00 (0.1% hit rate).",
         "summary": "3,000 Replays: 0.0% T1 | 0.1% T2 | 1.1% SL | Expected: -0.01R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 26.9%, Vol: 2.1%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 39.1,
+        "rsi": 66.6,
+        "bb_width_pct": 26.91,
+        "daily_vol_pct": 2.1
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 26.9%, Vol: 2.1%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -5319,6 +7257,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,805.32 (24.2% hit rate); trail stop to entry for T2 \u20b91,897.90 (14.9% hit rate).",
         "summary": "3,000 Replays: 24.2% T1 | 14.9% T2 | 51.4% SL | Expected: -0.02R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 16.8%, Vol: 3.8%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 21.8,
+        "rsi": 46.4,
+        "bb_width_pct": 16.82,
+        "daily_vol_pct": 3.83
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 16.8%, Vol: 3.8%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -5394,6 +7360,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b93,794.19 (22.7% hit rate); trail stop to entry for T2 \u20b94,074.80 (8.2% hit rate).",
         "summary": "3,000 Replays: 22.7% T1 | 8.2% T2 | 49.0% SL | Expected: -0.08R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 18.4%, Vol: 2.9%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 23.0,
+        "rsi": 43.8,
+        "bb_width_pct": 18.4,
+        "daily_vol_pct": 2.88
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 18.4%, Vol: 2.9%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -5469,6 +7463,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9184.00 (26.1% hit rate); trail stop to entry for T2 \u20b9206.74 (10.1% hit rate).",
         "summary": "3,000 Replays: 26.1% T1 | 10.1% T2 | 55.2% SL | Expected: -0.05R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 7.8%, Vol: 4.6%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 38.2,
+        "rsi": 55.4,
+        "bb_width_pct": 7.84,
+        "daily_vol_pct": 4.59
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 7.8%, Vol: 4.6%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -5544,6 +7566,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9859.28 (23.2% hit rate); trail stop to entry for T2 \u20b9956.58 (6.7% hit rate).",
         "summary": "3,000 Replays: 23.2% T1 | 6.7% T2 | 50.5% SL | Expected: -0.10R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 16.6, BBW: 7.8%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 16.6,
+        "rsi": 58.4,
+        "bb_width_pct": 7.77,
+        "daily_vol_pct": 3.65
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 16.6, BBW: 7.8%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -5619,6 +7669,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,085.37 (7.5% hit rate); trail stop to entry for T2 \u20b92,312.70 (1.0% hit rate).",
         "summary": "3,000 Replays: 7.5% T1 | 1.0% T2 | 29.6% SL | Expected: -0.18R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 31.5). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 31.5,
+        "rsi": 55.5,
+        "bb_width_pct": 9.15,
+        "daily_vol_pct": 2.95
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 31.5). Wait for directional break.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -5694,6 +7770,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b941,256.76 (6.8% hit rate); trail stop to entry for T2 \u20b943,855.00 (1.2% hit rate).",
         "summary": "3,000 Replays: 6.8% T1 | 1.2% T2 | 27.6% SL | Expected: -0.17R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 23.5, RSI: 47.8). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 23.5,
+        "rsi": 47.8,
+        "bb_width_pct": 14.64,
+        "daily_vol_pct": 1.97
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 23.5, RSI: 47.8). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "SOLID_VALUE",
       "prob_label": "Solid Value \ud83d\udfe2",
       "prob_badge": "GOOD",
@@ -5769,6 +7873,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b93,180.89 (12.1% hit rate); trail stop to entry for T2 \u20b92,975.00 (25.1% hit rate).",
         "summary": "3,000 Replays: 12.1% T1 | 25.1% T2 | 36.7% SL | Expected: -0.06R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 30.8, RSI: 57.1). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 30.8,
+        "rsi": 57.1,
+        "bb_width_pct": 15.28,
+        "daily_vol_pct": 3.51
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 30.8, RSI: 57.1). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -5844,6 +7976,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,948.25 (14.7% hit rate); trail stop to entry for T2 \u20b91,781.40 (32.1% hit rate).",
         "summary": "3,000 Replays: 14.7% T1 | 32.1% T2 | 41.0% SL | Expected: -0.05R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 16.0, BBW: 9.9%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 16.0,
+        "rsi": 60.6,
+        "bb_width_pct": 9.92,
+        "daily_vol_pct": 4.02
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 16.0, BBW: 9.9%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -5919,6 +8079,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9270.89 (12.1% hit rate); trail stop to entry for T2 \u20b9299.05 (1.2% hit rate).",
         "summary": "3,000 Replays: 12.1% T1 | 1.2% T2 | 35.6% SL | Expected: -0.18R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 17.8, BBW: 6.5%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 17.8,
+        "rsi": 56.3,
+        "bb_width_pct": 6.45,
+        "daily_vol_pct": 2.3
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 17.8, BBW: 6.5%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -5994,6 +8182,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,122.67 (8.7% hit rate); trail stop to entry for T2 \u20b91,185.40 (3.4% hit rate).",
         "summary": "3,000 Replays: 8.7% T1 | 3.4% T2 | 31.8% SL | Expected: -0.16R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 11.9%, Vol: 3.1%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 35.4,
+        "rsi": 51.5,
+        "bb_width_pct": 11.95,
+        "daily_vol_pct": 3.15
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 11.9%, Vol: 3.1%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6069,6 +8285,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9341.36 (21.8% hit rate); trail stop to entry for T2 \u20b9373.70 (5.2% hit rate).",
         "summary": "3,000 Replays: 21.8% T1 | 5.2% T2 | 48.0% SL | Expected: -0.11R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 23.9). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 23.9,
+        "rsi": 52.3,
+        "bb_width_pct": 6.39,
+        "daily_vol_pct": 2.8
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 23.9). Wait for directional break.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6144,6 +8386,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9386.80 (4.3% hit rate); trail stop to entry for T2 \u20b9414.40 (0.7% hit rate).",
         "summary": "3,000 Replays: 4.3% T1 | 0.7% T2 | 23.7% SL | Expected: -0.17R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 38.2). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 38.2,
+        "rsi": 57.8,
+        "bb_width_pct": 8.93,
+        "daily_vol_pct": 2.13
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 38.2). Wait for directional break.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6219,6 +8487,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,559.43 (29.3% hit rate); trail stop to entry for T2 \u20b91,683.95 (12.0% hit rate).",
         "summary": "3,000 Replays: 29.3% T1 | 12.0% T2 | 56.0% SL | Expected: +0.01R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 19.3, BBW: 9.6%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 19.3,
+        "rsi": 48.8,
+        "bb_width_pct": 9.6,
+        "daily_vol_pct": 3.01
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 19.3, BBW: 9.6%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6294,6 +8590,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b96,059.92 (30.8% hit rate); trail stop to entry for T2 \u20b96,271.00 (25.7% hit rate).",
         "summary": "3,000 Replays: 30.8% T1 | 25.7% T2 | 60.4% SL | Expected: +0.07R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 9.7%, Vol: 6.3%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 35.6,
+        "rsi": 59.2,
+        "bb_width_pct": 9.73,
+        "daily_vol_pct": 6.29
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 9.7%, Vol: 6.3%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6369,6 +8693,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9203.23 (14.2% hit rate); trail stop to entry for T2 \u20b9222.67 (1.7% hit rate).",
         "summary": "3,000 Replays: 14.2% T1 | 1.7% T2 | 38.4% SL | Expected: -0.17R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 22.5, RSI: 51.6). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 22.5,
+        "rsi": 51.6,
+        "bb_width_pct": 7.07,
+        "daily_vol_pct": 2.26
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 22.5, RSI: 51.6). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6444,6 +8796,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9105.33 (25.3% hit rate); trail stop to entry for T2 \u20b9115.64 (8.2% hit rate).",
         "summary": "3,000 Replays: 25.3% T1 | 8.2% T2 | 51.8% SL | Expected: -0.06R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 7.7%, Vol: 3.3%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 25.3,
+        "rsi": 50.4,
+        "bb_width_pct": 7.73,
+        "daily_vol_pct": 3.31
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 7.7%, Vol: 3.3%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6519,6 +8899,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,892.33 (18.6% hit rate); trail stop to entry for T2 \u20b92,044.57 (3.1% hit rate).",
         "summary": "3,000 Replays: 18.6% T1 | 3.1% T2 | 43.6% SL | Expected: -0.14R"
       },
+      "market_regime": {
+        "regime": "BEAR_TREND",
+        "badge": "\ud83d\udd3b Bear Breakdown",
+        "short_tag": "Bear Trend",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 34.6, RSI: 50.7). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "TIGHT_STOP_BOUNCE"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "AGGRESSIVE_BUYING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 34.6,
+        "rsi": 50.7,
+        "bb_width_pct": 6.7,
+        "daily_vol_pct": 2.1
+      },
+      "regime_tag": "BEAR_TREND",
+      "regime_badge": "\ud83d\udd3b Bear Breakdown",
+      "regime_short": "Bear Trend",
+      "regime_color": "#fb7185",
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 34.6, RSI: 50.7). Only take oversold bounces with tight stops; do not sell naked puts.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6594,6 +9002,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,760.12 (16.7% hit rate); trail stop to entry for T2 \u20b92,775.00 (16.0% hit rate).",
         "summary": "3,000 Replays: 16.7% T1 | 16.0% T2 | 43.9% SL | Expected: -0.07R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 18.8, BBW: 9.8%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 18.8,
+        "rsi": 60.2,
+        "bb_width_pct": 9.83,
+        "daily_vol_pct": 4.19
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 18.8, BBW: 9.8%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6669,6 +9105,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,408.81 (15.1% hit rate); trail stop to entry for T2 \u20b92,479.60 (10.6% hit rate).",
         "summary": "3,000 Replays: 15.1% T1 | 10.6% T2 | 41.4% SL | Expected: -0.11R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 7.6%, Vol: 3.5%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 28.7,
+        "rsi": 63.9,
+        "bb_width_pct": 7.59,
+        "daily_vol_pct": 3.47
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 7.6%, Vol: 3.5%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6744,6 +9208,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,318.03 (2.5% hit rate); trail stop to entry for T2 \u20b92,529.50 (0.0% hit rate).",
         "summary": "3,000 Replays: 2.5% T1 | 0.0% T2 | 18.4% SL | Expected: -0.15R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 32.5). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 32.5,
+        "rsi": 52.3,
+        "bb_width_pct": 6.09,
+        "daily_vol_pct": 1.4
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 32.5). Wait for directional break.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6819,6 +9309,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b9308.79 (25.1% hit rate); trail stop to entry for T2 \u20b9324.95 (15.9% hit rate).",
         "summary": "3,000 Replays: 25.1% T1 | 15.9% T2 | 52.8% SL | Expected: -0.01R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 9.2%, Vol: 4.0%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 28.6,
+        "rsi": 53.3,
+        "bb_width_pct": 9.17,
+        "daily_vol_pct": 4.04
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 9.2%, Vol: 4.0%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6894,6 +9412,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,759.30 (0.1% hit rate); trail stop to entry for T2 \u20b91,611.80 (1.7% hit rate).",
         "summary": "3,000 Replays: 0.1% T1 | 1.7% T2 | 3.7% SL | Expected: -0.03R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 28.1). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 28.1,
+        "rsi": 66.7,
+        "bb_width_pct": 12.17,
+        "daily_vol_pct": 2.02
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 28.1). Wait for directional break.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -6969,6 +9513,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,917.36 (25.0% hit rate); trail stop to entry for T2 \u20b92,985.70 (20.9% hit rate).",
         "summary": "3,000 Replays: 25.0% T1 | 20.9% T2 | 52.9% SL | Expected: +0.01R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 6.7%, Vol: 4.2%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 41.3,
+        "rsi": 59.6,
+        "bb_width_pct": 6.72,
+        "daily_vol_pct": 4.19
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 6.7%, Vol: 4.2%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -7044,6 +9616,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,441.59 (9.2% hit rate); trail stop to entry for T2 \u20b91,282.70 (27.7% hit rate).",
         "summary": "3,000 Replays: 9.2% T1 | 27.7% T2 | 32.3% SL | Expected: -0.06R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 12.0%, Vol: 4.3%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 25.4,
+        "rsi": 69.9,
+        "bb_width_pct": 12.02,
+        "daily_vol_pct": 4.28
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 12.0%, Vol: 4.3%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -7119,6 +9719,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b93,021.61 (11.0% hit rate); trail stop to entry for T2 \u20b92,901.50 (18.7% hit rate).",
         "summary": "3,000 Replays: 11.0% T1 | 18.7% T2 | 35.2% SL | Expected: -0.08R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 9.0%, Vol: 3.2%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 20.8,
+        "rsi": 60.3,
+        "bb_width_pct": 8.96,
+        "daily_vol_pct": 3.2
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 9.0%, Vol: 3.2%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -7194,6 +9822,32 @@
         "swing_advice": "Lock 60% profit at T1 \u20b91,682.88 (2.6% hit rate); trail stop to entry for T2 \u20b91,539.70 (23.5% hit rate).",
         "summary": "3,000 Replays: 2.6% T1 | 23.5% T2 | 19.7% SL | Expected: -0.06R"
       },
+      "market_regime": {
+        "regime": "MILD_BEARISH",
+        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+        "short_tag": "Soft",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral to soft consolidation (ADX: 19.2). Wait for directional break.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS"
+        ],
+        "icon": "fa-solid fa-cloud",
+        "adx": 19.2,
+        "rsi": 63.7,
+        "bb_width_pct": 7.57,
+        "daily_vol_pct": 1.93
+      },
+      "regime_tag": "MILD_BEARISH",
+      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
+      "regime_short": "Soft",
+      "regime_color": "#94a3b8",
+      "regime_mandate": "Neutral to soft consolidation (ADX: 19.2). Wait for directional break.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -7269,6 +9923,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b92,849.74 (8.6% hit rate); trail stop to entry for T2 \u20b92,174.50 (60.3% hit rate).",
         "summary": "3,000 Replays: 8.6% T1 | 60.3% T2 | 31.0% SL | Expected: -0.12R"
       },
+      "market_regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Low-Vol Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 30.6, RSI: 73.6). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 30.6,
+        "rsi": 73.6,
+        "bb_width_pct": 15.04,
+        "daily_vol_pct": 4.57
+      },
+      "regime_tag": "BULL_TREND",
+      "regime_badge": "\ud83d\ude80 Low-Vol Bull Trend",
+      "regime_short": "Bull Trend",
+      "regime_color": "#34d399",
+      "regime_mandate": "Strong structural uptrend (50E > 200E, ADX: 30.6, RSI: 73.6). Favorable for Golden Cross accumulation & swing longs.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -7344,6 +10026,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b96,107.20 (18.6% hit rate); trail stop to entry for T2 \u20b95,933.50 (26.4% hit rate).",
         "summary": "3,000 Replays: 18.6% T1 | 26.4% T2 | 44.7% SL | Expected: -0.02R"
       },
+      "market_regime": {
+        "regime": "COMPRESSED_RANGE",
+        "badge": "\ud83d\udca4 Compressed Range",
+        "short_tag": "Rangebound",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending channel (ADX: 18.1, BBW: 8.5%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "allowed_strategies": [
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES"
+        ],
+        "icon": "fa-solid fa-compress",
+        "adx": 18.1,
+        "rsi": 56.0,
+        "bb_width_pct": 8.53,
+        "daily_vol_pct": 2.84
+      },
+      "regime_tag": "COMPRESSED_RANGE",
+      "regime_badge": "\ud83d\udca4 Compressed Range",
+      "regime_short": "Rangebound",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending channel (ADX: 18.1, BBW: 8.5%). Ideal for Options Theta Harvesting & boundary oscillations.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",
@@ -7419,6 +10129,34 @@
         "swing_advice": "Lock 60% profit at T1 \u20b915,043.38 (8.5% hit rate); trail stop to entry for T2 \u20b913,110.00 (38.1% hit rate).",
         "summary": "3,000 Replays: 8.5% T1 | 38.1% T2 | 31.3% SL | Expected: -0.06R"
       },
+      "market_regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 10.2%, Vol: 3.5%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "STRADDLE",
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "NAKED_OPTION_SELLING",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 25.0,
+        "rsi": 66.7,
+        "bb_width_pct": 10.16,
+        "daily_vol_pct": 3.48
+      },
+      "regime_tag": "VOLATILE_EXPANSION",
+      "regime_badge": "\u26a1 Volatile Expansion",
+      "regime_short": "High Volatility",
+      "regime_color": "#fbbf24",
+      "regime_mandate": "Wide volatility band (BBW: 10.2%, Vol: 3.5%). High whipsaw risk. Reduce position sizing by 50%.",
       "prob_tier": "WATCHLIST",
       "prob_label": "Watchlist Setup \ud83d\udc41\ufe0f",
       "prob_badge": "WATCH",

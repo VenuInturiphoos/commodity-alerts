@@ -12,7 +12,11 @@ import requests
 from datetime import datetime
 
 try:
-    from trader_engine_bridge import MonteCarloTimeMachine, SwingStockMonteCarloEngine
+    from trader_engine_bridge import (
+        MonteCarloTimeMachine,
+        SwingStockMonteCarloEngine,
+        MarketRegimeDetector
+    )
     HAS_TIME_MACHINE = True
 except Exception:
     HAS_TIME_MACHINE = False
@@ -95,7 +99,7 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         'EMA50', 'EMA200', 'SMA50', 'SMA200',
         'RSI', 'RSI[1]', 'MACD.macd', 'MACD.signal',
         'BB.lower', 'BB.upper', 'Recommend.All', 'sector',
-        'Volatility.D', 'ATR'
+        'Volatility.D', 'ATR', 'ADX'
     ]
 
     payload = {
@@ -157,6 +161,7 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         sector = d.get('sector') or 'Indian Equities'
         volatility_d = float(d.get('Volatility.D') or 1.8)
         atr_val = float(d.get('ATR') or (close * 0.02))
+        adx_val = float(d.get('ADX') or 20.0)
 
         # Technical Metrics
         discount_pct = round(((h52 - close) / h52) * 100, 2) if h52 > 0 else 0.0
@@ -387,6 +392,25 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         is_large_cap = orig_sym in large_cap_set
         cap_category = 'Large Cap' if is_large_cap else 'Mid Cap'
 
+        # Market Regime Classifier (trader-engine: 4-state mathematical regime)
+        regime_info = None
+        if HAS_TIME_MACHINE:
+            try:
+                regime_info = MarketRegimeDetector.classify_regime(
+                    symbol=orig_sym,
+                    close=close,
+                    ema50=ema50,
+                    ema200=ema200,
+                    adx=adx_val,
+                    rsi=rsi,
+                    bb_lower=bb_low,
+                    bb_upper=bb_high,
+                    daily_vol_pct=volatility_d,
+                    atr=atr_val
+                )
+            except Exception:
+                pass
+
         opportunities.append({
             'symbol': orig_sym,
             'name': name,
@@ -428,6 +452,12 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
             'win_probability': win_prob,
             'capital_safety_score': capital_safety_score,
             'time_machine': time_machine_metrics,
+            'market_regime': regime_info,
+            'regime_tag': regime_info.get('regime') if regime_info else 'NEUTRAL',
+            'regime_badge': regime_info.get('badge') if regime_info else 'Neutral',
+            'regime_short': regime_info.get('short_tag') if regime_info else 'Neutral',
+            'regime_color': regime_info.get('color') if regime_info else '#94a3b8',
+            'regime_mandate': regime_info.get('mandate') if regime_info else '',
             'prob_tier': prob_tier,
             'prob_label': prob_label,
             'prob_badge': prob_badge,
@@ -462,6 +492,11 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
     top_10 = opportunities[:10]
     avg_discount_top_10 = round(sum(o['discount_pct'] for o in top_10) / len(top_10), 1) if top_10 else 0.0
 
+    bull_regime_count = len([o for o in opportunities if o.get('regime_tag') == 'BULL_TREND'])
+    range_regime_count = len([o for o in opportunities if o.get('regime_tag') == 'COMPRESSED_RANGE'])
+    expansion_regime_count = len([o for o in opportunities if o.get('regime_tag') == 'VOLATILE_EXPANSION'])
+    bear_regime_count = len([o for o in opportunities if o.get('regime_tag') == 'BEAR_TREND'])
+
     output_payload = {
         'last_updated': timestamp_str,
         'summary': {
@@ -473,7 +508,11 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
             'golden_cross_count': golden_cross_count,
             'oversold_count': oversold_count,
             'deep_discount_count': deep_discount_count,
-            'avg_discount_top_10': avg_discount_top_10
+            'avg_discount_top_10': avg_discount_top_10,
+            'bull_regime_count': bull_regime_count,
+            'range_regime_count': range_regime_count,
+            'expansion_regime_count': expansion_regime_count,
+            'bear_regime_count': bear_regime_count
         },
         'stocks': opportunities
     }
