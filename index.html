@@ -35,7 +35,7 @@
                 <button class="tab-btn" id="market-hub-tab-btn" onclick="switchTab(this, 'market-hub-tab')" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(245, 158, 11, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-bolt" style="margin-right: 5px; color: #fbbf24;"></i> Live Market & Circuits</button>
                 <button class="tab-btn" id="nifty-tab-btn" onclick="switchTab(this, 'nifty-tab')" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-gem" style="margin-right: 5px; color: #f59e0b;"></i> Golden Cross & Value</button>
                 <button class="tab-btn" id="investing-tab-btn" onclick="switchTab(this, 'investing-tab')" style="background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.4); color: #4ade80; font-weight: 700;"><i class="fa-solid fa-seedling" style="margin-right: 5px;"></i> 💼 Stock Investing (₹3L)</button>
-                <button class="tab-btn" id="trading-tab-btn" onclick="switchTab(this, 'trading-tab')" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc; font-weight: 700;"><i class="fa-solid fa-crosshairs" style="margin-right: 5px;"></i> 🎯 Commodity Trading (₹3L)</button>
+                <button class="tab-btn" id="trading-tab-btn" onclick="switchTab(this, 'trading-tab')" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc; font-weight: 700;"><i class="fa-solid fa-crosshairs" style="margin-right: 5px;"></i> 🎯 Trading (₹3L)</button>
                 <button class="tab-btn" id="copilot-tab-btn" onclick="switchTab(this, 'copilot-tab')" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(168, 85, 247, 0.45); color: #c084fc; font-weight: 700;"><i class="fa-solid fa-robot"></i> Copilot Chat</button>
                 <button class="tab-btn" id="admin-tab-btn" onclick="switchTab(this, 'admin-tab')" style="background: rgba(255,255,255,0.05); color: #888;">Account</button>
                 <button id="theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Mode" style="margin-left: 0.5rem;"><i class="fa-solid fa-moon"></i></button>
@@ -688,12 +688,12 @@
             <div id="trade-tab" style="display:none;" aria-hidden="true"></div>
 
             <!-- ========================================================= -->
-            <!-- 🎯 COMMODITY & DERIVATIVES TRADING TAB (₹3L DEDICATED MARGIN POOL) -->
+            <!-- 🎯 TRADING TAB (₹3L DEDICATED MARGIN POOL) -->
             <!-- ========================================================= -->
             <section id="trading-tab" class="tab-content">
                 <div class="dashboard-header">
-                    <h2>🎯 MCX Commodity Trading Tracker (₹3,00,000 Dedicated Margin Pool)</h2>
-                    <p>Autonomous derivative trading pool for <strong>venu.photos1@gmail.com</strong> with strict ₹3,000 max risk per trade and ₹6,000 daily circuit breaker. <strong>Completely separate from Stock Delivery Investments.</strong></p>
+                    <h2>🎯 Trading Tracker (₹3,00,000 Dedicated Margin Pool)</h2>
+                    <p>Autonomous trading pool (Commodity Mini & Intraday Stocks) for <strong>venu.photos1@gmail.com</strong> with strict ₹1,000 max risk per trade and ₹2,000 daily circuit breaker. <strong>Completely separate from Stock Delivery Investments.</strong></p>
                 </div>
 
                 <!-- Advisory Signals View -->
@@ -703,11 +703,11 @@
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1rem;">
                         <div>
                             <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 0.5rem; text-transform: uppercase;">
-                                <i class="fa-solid fa-crosshairs"></i> Dedicated F&O Capital: ₹3,00,000
+                                <i class="fa-solid fa-crosshairs"></i> Dedicated Trading Capital: ₹3,00,000
                             </div>
-                            <h2 style="margin: 0; font-size: 1.35rem; color: #f8fafc;">🎯 F&O & Commodity Trading Tracker (₹3,00,000 Dedicated Pool)</h2>
+                            <h2 style="margin: 0; font-size: 1.35rem; color: #f8fafc;">🎯 Trading Tracker (₹3,00,000 Dedicated Pool)</h2>
                             <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">
-                                Autonomous F&O and Commodity trading pool for <strong>venu.photos1@gmail.com</strong> with strict ₹3,000 max risk per trade and ₹6,000 daily circuit breaker. <strong>Completely separate from Stock Delivery Investments.</strong>
+                                Autonomous trading pool (Commodity Mini & Intraday Stocks) for <strong>venu.photos1@gmail.com</strong> with strict ₹1,000 max risk per trade and ₹2,000 daily circuit breaker. <strong>Completely separate from Stock Delivery Investments.</strong>
                             </p>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -846,7 +846,7 @@
             <section id="investing-tab" class="tab-content">
                 <div class="dashboard-header">
                     <h2>💼 Stock Wealth Investing (₹3,00,000 Dedicated Cash Pool)</h2>
-                    <p>Build long-term equity wealth with individual Nifty 50 delivery shares (~₹30,000 Daily Golden Cross SIP). <strong>100% Cash Delivery in Demat, zero forced leverage, zero expiry. Completely isolated from Commodity Trading.</strong></p>
+                    <p>Build long-term equity wealth with individual Nifty 50 delivery shares (~₹30,000 Daily Golden Cross SIP). <strong>100% Cash Delivery in Demat, zero forced leverage, zero expiry. Completely isolated from Trading.</strong></p>
                 </div>
 
                 <!-- Account / Trading Views Wrapper -->
