@@ -5879,8 +5879,8 @@ function renderAdvisoryTradesTable() {
         }
 
         const assetBadge = isEqTrade 
-            ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.4); color:#6ee7b7; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> NIFTY F&O</span>`
-            : `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-gem"></i> MCX</span>`;
+            ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-bolt"></i> MIS INTRADAY (5x)</span>`
+            : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
 
         return `
             <tr>
@@ -5893,10 +5893,20 @@ function renderAdvisoryTradesTable() {
                     </div>
                     <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${t.date} | ${t.symbol} ${assetBadge}</div>
                     <div style="font-size:0.7rem; color:#818cf8; margin-top:2px;">${t.event_context || ''}</div>
-                    ${t.time_machine ? `
-                        <div style="font-size:0.68rem; margin-top:3px; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine (3,000 empirical replays): ${t.time_machine.summary || ''}">
-                            🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
-                        </div>` : ''}
+                    <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:3px;">
+                        ${t.time_machine ? `
+                            <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine (3,000 empirical replays): ${t.time_machine.summary || ''}">
+                                🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
+                            </div>` : ''}
+                        ${t.risk_check?.passed ? `
+                            <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); color:#7dd3fc; padding:1px 5px; border-radius:4px; font-weight:600;" title="Pre-Trade Risk Engine: 14-Point Checks Passed">
+                                🛡️ 14-Pt Risk Pass
+                            </div>` : ''}
+                        ${t.orb_check?.passed && t.orb_check?.status !== 'CONFIRMED' ? `
+                            <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3); color:#d8b4fe; padding:1px 5px; border-radius:4px; font-weight:600;" title="ORB Timer: ${t.orb_check.reason || ''}">
+                                ⏱️ ORB Verified
+                            </div>` : ''}
+                    </div>
                 </td>
                 <td>
                     <div style="font-size:0.85rem; font-weight:600; color:#f1f5f9;">${s6.action_text || '--'}</div>
@@ -6065,10 +6075,16 @@ function renderAdvisoryTradesTable() {
                                 </span>
                             </div>
                             <div class="mobile-card-meta">${t.date} · ${t.symbol} ${assetBadge} ${t.event_context ? '· ' + t.event_context : ''}</div>
-                            ${t.time_machine ? `
-                                <div style="font-size:0.68rem; margin-top:3px; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine: ${t.time_machine.summary || ''}">
-                                    🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
-                                </div>` : ''}
+                            <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:3px;">
+                                ${t.time_machine ? `
+                                    <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine: ${t.time_machine.summary || ''}">
+                                        🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
+                                    </div>` : ''}
+                                ${t.risk_check?.passed ? `
+                                    <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); color:#7dd3fc; padding:1px 5px; border-radius:4px; font-weight:600;" title="Pre-Trade Risk Engine Passed">
+                                        🛡️ 14-Pt Risk Pass
+                                    </div>` : ''}
+                            </div>
                         </div>
                         <div class="mobile-card-badges">
                             ${outcomeBadge}

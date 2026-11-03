@@ -2625,6 +2625,12 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                         except Exception:
                             pass
 
+                # 1. Event Risk Guard (trader-news skill)
+                event_metrics = EventRiskGuard.check_event_risk(clean_sym, now_dt)
+                if not event_metrics.get('passed'):
+                    print(f"📰 Event Risk Guard Blocked {clean_sym}: {event_metrics.get('reason')}")
+                    continue
+
                 chg_pct = float(s.get('change_pct') or 0)
                 rsi = float(s.get('rsi') or 50)
                 high_52 = float(s.get('price_52_week_high') or cur_p)
@@ -2633,6 +2639,12 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 is_golden = bool(s.get('is_golden'))
                 rsi_curling_up = bool(s.get('rsi_curling_up'))
                 near_bb = bool(s.get('near_bb_lower'))
+                day_h = float(s.get('day_high') or s.get('high') or high_52)
+                day_l = float(s.get('day_low') or s.get('low') or (cur_p * 0.98))
+                vol_ratio = float(s.get('volume_ratio') or 1.15)
+                atr = float(s.get('atr_14') or (cur_p * 0.015))
+                ema20 = float(s.get('ema_20') or cur_p)
+                ema50 = float(s.get('ema_50') or cur_p)
 
                 eq_triggered = False
                 eq_action = None
@@ -2640,34 +2652,46 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 eq_sl = None
                 eq_tgt = None
                 eq_rationale = ""
+                orb_metrics = {"passed": True, "status": "CONFIRMED", "reason": "Standard momentum confluence."}
 
                 # Setup A: 20-Day / High-Beta Volatility Breakout (Momentum Expansion)
                 if (cur_p >= high_52 * 0.985 or chg_pct >= 0.85) and (52.0 <= rsi <= 72.0):
-                    eq_triggered = True
                     eq_action = "BUY"
                     eq_setup = "20-Day / High-Beta Volatility Breakout"
-                    eq_sl = round(cur_p * 0.965, 2)  # 3.5% protective risk floor
-                    eq_tgt = round(cur_p + (2.0 * (cur_p - eq_sl)), 2)  # 2.0R asymmetric target (+7.0%)
-                    eq_rationale = (f"Breaking towards 20D/52W high (Chg: +{chg_pct:.2f}%) with strong RSI momentum ({rsi:.1f}). "
-                                    f"Riding directional institutional expansion with 2.0R bracket.")
+                    
+                    # 2. 15-Minute ORB Bar-Close & Wick Trap Guard (trader-entry skill)
+                    orb_metrics = ORBTimer.check_orb_confirmation(sym, eq_action, cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p)
+                    if not orb_metrics.get('passed'):
+                        print(f"⏱️ ORB Timer Blocked {clean_sym} {eq_action}: {orb_metrics.get('reason')}")
+                        continue
+
+                    # 3. Structural Invalidation Stop & 2.0R Target Bracket (trader-exit skill)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=2.0)
+                    eq_sl = calc_sl or round(cur_p * 0.965, 2)
+                    eq_tgt = calc_tgt or round(cur_p + (2.0 * (cur_p - eq_sl)), 2)
+                    eq_triggered = True
+                    eq_rationale = (f"Breaking towards 20D/52W high (Chg: +{chg_pct:.2f}%) with strong RSI momentum ({rsi:.1f}) "
+                                    f"and verified ORB bar close. Sized with structural 2.0R target.")
 
                 # Setup B: Oversold Mean Reversion Bounce (Bollinger Band Mean Reversion)
                 elif (rsi <= 36.0) and (rsi_curling_up or near_bb or cur_p <= bb_lower * 1.01) and (discount_pct >= 15.0):
-                    eq_triggered = True
                     eq_action = "BUY"
                     eq_setup = "Oversold Mean Reversion Bounce"
-                    eq_sl = round(min(bb_lower, cur_p * 0.955), 2)  # 4.5% risk floor at Lower BB
-                    eq_tgt = round(cur_p + (2.2 * (cur_p - eq_sl)), 2)  # 2.2R mean reversion target (~+9.9%)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=min(bb_lower, day_l), ema20=ema20, ema50=ema50, atr=atr, min_rrr=2.0)
+                    eq_sl = calc_sl or round(min(bb_lower, cur_p * 0.955), 2)
+                    eq_tgt = calc_tgt or round(cur_p + (2.2 * (cur_p - eq_sl)), 2)
+                    eq_triggered = True
                     eq_rationale = (f"Oversold accumulation RSI ({rsi:.1f} <= 36) bouncing off Lower Bollinger Band (₹{bb_lower:,.2f}) "
                                     f"at a deep {discount_pct:.1f}% discount to 52W high. High probability mean-reversion.")
 
                 # Setup C: EMA 50/200 Golden Cross Trend Pullback
                 elif is_golden and (35.0 <= rsi <= 48.0):
-                    eq_triggered = True
                     eq_action = "BUY"
                     eq_setup = "EMA 50/200 Golden Cross Trend Pullback"
-                    eq_sl = round(cur_p * 0.955, 2)  # 4.5% protective stop
-                    eq_tgt = round(cur_p + (2.0 * (cur_p - eq_sl)), 2)  # 2.0R trend continuation target (+9.0%)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=2.0)
+                    eq_sl = calc_sl or round(cur_p * 0.955, 2)
+                    eq_tgt = calc_tgt or round(cur_p + (2.0 * (cur_p - eq_sl)), 2)
+                    eq_triggered = True
                     eq_rationale = (f"50 EMA > 200 EMA Golden Cross confirmed with value pullback into demand zone (RSI: {rsi:.1f}). "
                                     f"Trend continuation entry targeting 2.0R swing upside.")
 
@@ -2676,7 +2700,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     if any(t.get('id') == trade_id for t in (trades + new_trades)):
                         continue
 
-                    # ⚡ Sizing for Max ₹10,000 Margin Allocation with 5x MIS Leverage:
+                    # 4. Adaptive Position Sizing with 5x MIS Leverage (trader-budget skill):
                     # Margin allocated <= ₹10,000 | Buying power <= ₹50,000 | Max loss at stop <= ₹250
                     risk_per_share = abs(cur_p - eq_sl)
                     if risk_per_share <= 0:
@@ -2693,7 +2717,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     if eq_shares < 1:
                         continue
 
-                    # 14-Point Pre-Trade Risk Engine Check (Capped at ₹250 trade risk / ₹500 daily equity loss)
+                    # 5. 14-Point Pre-Trade Risk Engine Check (trader-risk skill: Capped at ₹250 risk / ₹500 daily loss)
                     all_existing = new_trades + trades
                     risk_metrics = PreTradeRiskEngine.check_risk(
                         sym, eq_action, cur_p, eq_sl, eq_tgt, eq_shares, all_existing,
@@ -2704,7 +2728,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                         print(f"🛡️ Pre-Trade Risk Engine Blocked {clean_sym} {eq_action}: {risk_metrics.get('reason')}")
                         continue
 
-                    # Monte Carlo Time Machine simulation (3,000 replays)
+                    # 6. Monte Carlo Time Machine simulation (trader-timemachine skill: 3,000 replays)
                     sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, eq_sl, eq_tgt, action=eq_action.lower(), replays=3000)
                     if not sim_metrics.get('passed'):
                         print(f"🎲 Monte Carlo Time Machine Blocked {clean_sym} {eq_action}: {sim_metrics.get('summary')}")
@@ -2726,6 +2750,8 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                         "event_context": f"Nifty Intraday MIS: {eq_setup}",
                         "time_machine": sim_metrics,
                         "risk_check": risk_metrics,
+                        "orb_check": orb_metrics,
+                        "event_check": event_metrics,
                         "suggestion_6pm": {
                             "status": "REALTIME_TRIGGER",
                             "action_text": f"{eq_action} @ ₹{cur_p:,.2f}",
