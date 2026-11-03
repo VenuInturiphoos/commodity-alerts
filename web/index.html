@@ -741,10 +741,10 @@
                         </div>
 
                         <select id="options-sort-select" onchange="sortOptionsOpportunities(this.value)" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 7px 12px; border-radius: 20px; font-size: 0.85rem; outline: none; cursor: pointer;">
-                            <option value="pop" selected>💎 Highest Profit Probability (PoP %)</option>
-                            <option value="safety">🛡️ Highest Theta Safety (Lowest Breakout Risk)</option>
+                            <option value="safety" selected>🛡️ Highest Technical Quality (Lowest Breakout Risk)</option>
+                            <option value="adx">📉 Lowest ADX (Tightest Consolidation)</option>
+                            <option value="pop">💎 Highest Profit Probability (PoP %)</option>
                             <option value="buffer">🛡️ Widest Margin of Safety Buffer (%)</option>
-                            <option value="adx">📉 Lowest ADX (Most Rangebound)</option>
                             <option value="rom">💰 Highest Return on Margin (RoM %)</option>
                             <option value="name">🔤 Stock Name (A-Z)</option>
                         </select>
@@ -1463,7 +1463,7 @@ let lastNiftyFetchTime = 0;
 
 let optionsOpportunitiesData = null;
 let activeOptionsFilter = 'ALL';
-let activeOptionsSort = 'pop';
+let activeOptionsSort = 'safety';
 let activeOptionsView = 'cards';
 let activeOptionsSearchQuery = '';
 let lastOptionsFetchTime = 0;
@@ -2853,7 +2853,7 @@ function handleOptionsSearch(val) {
 }
 
 function sortOptionsOpportunities(sortVal) {
-    activeOptionsSort = sortVal || 'pop';
+    activeOptionsSort = sortVal || 'safety';
     renderOptionsOpportunities();
 }
 
@@ -2907,8 +2907,8 @@ function renderOptionsOpportunities() {
         if (activeOptionsSort === 'adx') return a.adx - b.adx;
         if (activeOptionsSort === 'rom') return (b.rom_pct || 0) - (a.rom_pct || 0);
         if (activeOptionsSort === 'name') return a.name.localeCompare(b.name);
-        // Default: Highest Profit Probability (PoP %) desc, then buffer desc, then lowest adx
-        return (b.primary_pop - a.primary_pop) || (b.primary_buffer_pct - a.primary_buffer_pct) || (a.adx - b.adx);
+        // Default: Highest Technical Quality (Lowest Breakout Risk), then lowest ADX, then RoM desc
+        return (b.theta_safety_score - a.theta_safety_score) || (a.adx - b.adx) || ((b.rom_pct || 0) - (a.rom_pct || 0));
     });
     
     // Render Cards View
@@ -2985,9 +2985,10 @@ function renderOptionsOpportunities() {
                                 </div>
                             </div>
 
-                            <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:#94a3b8; margin-top:6px; padding:0 2px;">
-                                <span>Floor (200E): ₹${item.ema_200} | BB: ₹${item.bb_lower}</span>
-                                <span style="color:#ec4899; font-weight:600;">Yield: ${item.rom_pct}% RoM</span>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:#cbd5e1; margin-top:8px; padding:6px 8px; background:rgba(0,0,0,0.35); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                                <span><i class="fa-solid fa-shield-halved" style="color:#38bdf8;"></i> <strong>Floor (Support):</strong> ₹${item.bb_lower}</span>
+                                <span><i class="fa-solid fa-hand" style="color:#fb7185;"></i> <strong>Ceil (Resist):</strong> ₹${item.bb_upper}</span>
+                                <span style="color:#ec4899; font-weight:700;"><i class="fa-solid fa-coins"></i> ${item.rom_pct}% RoM</span>
                             </div>
 
                             <div class="nifty-rationale-quote" style="margin-top:0.6rem; font-size:0.72rem;">
