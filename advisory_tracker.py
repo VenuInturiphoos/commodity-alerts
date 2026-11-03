@@ -52,6 +52,29 @@ MARGIN_RATES = {
 }
 
 # =========================================================================
+# 🎯 NSE LIQUID STOCK FUTURES (F&O CONTRACT SPECIFICATIONS)
+# =========================================================================
+STOCK_FUTURES_CONFIG = {
+    'ICICIBANK': {'lot_size': 700, 'margin_rate': 0.20, 'name': 'ICICI Bank Futures', 'sector': 'BANKING'},
+    'RELIANCE': {'lot_size': 250, 'margin_rate': 0.22, 'name': 'Reliance Industries Futures', 'sector': 'ENERGY'},
+    'INFY': {'lot_size': 400, 'margin_rate': 0.20, 'name': 'Infosys Futures', 'sector': 'IT'},
+    'TCS': {'lot_size': 175, 'margin_rate': 0.20, 'name': 'Tata Consultancy Services Futures', 'sector': 'IT'},
+    'HDFCBANK': {'lot_size': 550, 'margin_rate': 0.20, 'name': 'HDFC Bank Futures', 'sector': 'BANKING'},
+    'SBIN': {'lot_size': 750, 'margin_rate': 0.22, 'name': 'State Bank of India Futures', 'sector': 'BANKING'},
+    'BHARTIARTL': {'lot_size': 475, 'margin_rate': 0.20, 'name': 'Bharti Airtel Futures', 'sector': 'TELECOM'},
+    'LT': {'lot_size': 150, 'margin_rate': 0.20, 'name': 'Larsen & Toubro Futures', 'sector': 'CAPITAL_GOODS'},
+    'AXISBANK': {'lot_size': 625, 'margin_rate': 0.22, 'name': 'Axis Bank Futures', 'sector': 'BANKING'},
+    'BAJFINANCE': {'lot_size': 125, 'margin_rate': 0.22, 'name': 'Bajaj Finance Futures', 'sector': 'FINANCE'},
+    'MARUTI': {'lot_size': 50, 'margin_rate': 0.20, 'name': 'Maruti Suzuki Futures', 'sector': 'AUTO'}
+}
+
+for sfc_sym, sfc_cfg in STOCK_FUTURES_CONFIG.items():
+    LOT_SIZES[f"{sfc_sym}-FUT"] = sfc_cfg['lot_size']
+    LOT_SIZES[sfc_sym] = sfc_cfg['lot_size']
+    MARGIN_RATES[f"{sfc_sym}-FUT"] = sfc_cfg['margin_rate']
+    MARGIN_RATES[sfc_sym] = sfc_cfg['margin_rate']
+
+# =========================================================================
 # 🛡️ CAPITAL DEFENSE & RECOVERY PROTOCOL (CALIBRATED FOR ₹2.9L TRADING CAPITAL)
 # =========================================================================
 MAX_LOSS_PER_TRADE_INR = 1000.0   # Strictly 0.35% of capital (290+ consecutive loss runway for Futures)
@@ -2290,14 +2313,17 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
     commodities = circuits_res.get('commodities', []) if (checker and len(active_commodity_trades) < MAX_CONCURRENT_COMMODITIES) else []
 
     SECTORS = {
-        'GOLD': 'BULLION',
-        'SILVER': 'BULLION',
-        'COPPER': 'BASE_METALS',
-        'ZINC': 'BASE_METALS',
-        'ALUMINIUM': 'BASE_METALS',
-        'CRUDEOIL': 'ENERGY',
-        'NATURALGAS': 'ENERGY'
+        'GOLD': 'BULLION', 'GOLDM': 'BULLION', 'GOLDTEN': 'BULLION',
+        'SILVER': 'BULLION', 'SILVERM': 'BULLION', 'SILVERMIC': 'BULLION',
+        'COPPER': 'BASE_METALS', 'COPPERM': 'BASE_METALS',
+        'ZINC': 'BASE_METALS', 'ZINCM': 'BASE_METALS', 'ZINCMINI': 'BASE_METALS',
+        'ALUMINIUM': 'BASE_METALS', 'ALUMINI': 'BASE_METALS',
+        'CRUDEOIL': 'ENERGY', 'CRUDEOILM': 'ENERGY',
+        'NATURALGAS': 'ENERGY', 'NATURALGASM': 'ENERGY'
     }
+    for sfc_sym, sfc_cfg in STOCK_FUTURES_CONFIG.items():
+        SECTORS[f"{sfc_sym}-FUT"] = sfc_cfg['sector']
+        SECTORS[sfc_sym] = sfc_cfg['sector']
     
     active_sectors = {
         SECTORS.get(t.get('symbol')) for t in active_commodity_trades
@@ -2311,6 +2337,10 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
 
         sym = item.get('symbol')
         if not sym or sym not in LOT_SIZES:
+            continue
+
+        # Prevent duplicate active positions in the same symbol
+        if any(t.get('symbol') == sym and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT'] for t in (trades + new_trades)):
             continue
 
         item_sector = SECTORS.get(sym, 'OTHER')
@@ -2588,8 +2618,13 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 equity_stocks = []
 
             for s in equity_stocks:
+                cur_active_futures = len(active_commodity_trades) + sum(1 for t in new_trades if (t.get('asset_type') in ['FUTURES', 'COMMODITY'] or t.get('symbol') in LOT_SIZES or '-FUT' in str(t.get('symbol', ''))))
                 cur_active_equity = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'])
-                if cur_active_equity >= MAX_CONCURRENT_EQUITIES:
+
+                can_enter_futures = (cur_active_futures < MAX_CONCURRENT_COMMODITIES)
+                can_enter_equity = (cur_active_equity < MAX_CONCURRENT_EQUITIES)
+
+                if not can_enter_futures and not can_enter_equity:
                     break
 
                 sym = s.get('symbol', '')
@@ -2598,6 +2633,10 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 # Guard: Ensure only stocks with active NSE F&O contracts are traded in F&O engine.
                 # TATAMOTORS/TMCV/TMPV underwent corporate demerger where old TATAMOTORS F&O contracts were expired by NSE.
                 if clean_sym in {'TATAMOTORS', 'TMCV', 'TMPV'}:
+                    continue
+
+                # Duplicate active position guard (prevent holding both stock and stock future simultaneously)
+                if any(t.get('symbol') in [sym, clean_sym, f"{clean_sym}-FUT"] and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT'] for t in (trades + new_trades)):
                     continue
 
                 name = s.get('full_name') or s.get('name', clean_sym)
@@ -2699,124 +2738,241 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                                     f"Trend continuation entry targeting 2.0R swing upside.")
 
                 if eq_triggered and eq_action and eq_sl and eq_tgt:
-                    trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{clean_sym}"
-                    if any(t.get('id') == trade_id for t in (trades + new_trades)):
-                        continue
+                    # PATH A: Enter as an NSE Stock Future if futures pool has room and stock is an active F&O contract
+                    if can_enter_futures and clean_sym in STOCK_FUTURES_CONFIG:
+                        sfc = STOCK_FUTURES_CONFIG[clean_sym]
+                        fut_sym = f"{clean_sym}-FUT"
+                        if sfc['sector'] not in active_sectors:
+                            fut_lot = sfc['lot_size']
+                            fut_margin_rate = sfc['margin_rate']
+                            fut_margin_req = round(cur_p * fut_lot * fut_margin_rate, 2)
+                            
+                            # Calibrate stop so max risk per lot strictly fits within MAX_LOSS_PER_TRADE_INR (₹1,000)
+                            fut_risk_per_share = abs(cur_p - eq_sl)
+                            fut_total_risk = fut_risk_per_share * fut_lot
+                            fut_sl = eq_sl
+                            fut_tgt = eq_tgt
+                            if fut_total_risk > MAX_LOSS_PER_TRADE_INR:
+                                fut_risk_per_share = MAX_LOSS_PER_TRADE_INR / fut_lot
+                                fut_sl = round(cur_p - fut_risk_per_share if eq_action == 'BUY' else cur_p + fut_risk_per_share, 2)
+                                fut_tgt = round(cur_p + (2.0 * fut_risk_per_share) if eq_action == 'BUY' else cur_p - (2.0 * fut_risk_per_share), 2)
+                            
+                            # 14-Point Pre-Trade Risk Engine Check for Stock Futures
+                            all_existing = new_trades + trades
+                            risk_metrics = PreTradeRiskEngine.check_risk(
+                                fut_sym, eq_action, cur_p, fut_sl, fut_tgt, fut_lot, all_existing,
+                                max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR,
+                                max_daily_loss_inr=MAX_DAILY_LOSS_INR
+                            )
+                            if risk_metrics.get('passed'):
+                                # Monte Carlo Time Machine simulation (3,000 replays)
+                                sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, fut_sl, fut_tgt, action=eq_action.lower(), replays=3000)
+                                if sim_metrics.get('passed'):
+                                    trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{clean_sym}FUT"
+                                    if not any(t.get('id') == trade_id for t in (trades + new_trades)):
+                                        entry_obj = {
+                                            "id": trade_id,
+                                            "date": today_str,
+                                            "session_name": f"Real-Time Technical Trigger ({eq_setup})",
+                                            "time_trigger": now_time_str,
+                                            "time_6pm": now_time_str,
+                                            "time_validation": now_time_str,
+                                            "time_615": now_time_str,
+                                            "time_exit": "03:25 PM IST",
+                                            "symbol": fut_sym,
+                                            "name": sfc['name'],
+                                            "lot_size": fut_lot,
+                                            "asset_type": "FUTURES",
+                                            "event_context": f"NSE Stock Future ({sfc['sector']}): {eq_setup}",
+                                            "time_machine": sim_metrics,
+                                            "risk_check": risk_metrics,
+                                            "orb_check": orb_metrics,
+                                            "event_check": event_metrics,
+                                            "suggestion_6pm": {
+                                                "status": "REALTIME_TRIGGER",
+                                                "action_text": f"{eq_action} 1 Lot @ ₹{cur_p:,.2f}",
+                                                "rationale": f"{eq_rationale} {sim_metrics.get('summary', '')}",
+                                                "reference_price": cur_p,
+                                                "stop_loss": fut_sl,
+                                                "target": fut_tgt
+                                            },
+                                            "check_615": {
+                                                "checked": True,
+                                                "status": "TECHNICAL_TRIGGER_ENTERED",
+                                                "price_615": cur_p,
+                                                "action_taken": f"Entered {eq_action} 1 Lot ({fut_lot} units) @ ₹{cur_p:,.2f}",
+                                                "detail": f"{eq_setup}: {eq_rationale} | {sim_metrics.get('summary', '')}"
+                                            },
+                                            "paper_trade": {
+                                                "user": USER_ACCOUNT,
+                                                "action": eq_action,
+                                                "quantity": fut_lot,
+                                                "entry_price": cur_p,
+                                                "entry_time": now_time_str,
+                                                "exit_price": None,
+                                                "exit_time": None,
+                                                "pnl_points": 0.0,
+                                                "pnl_inr": 0.0,
+                                                "status": "ACTIVE",
+                                                "target": fut_tgt,
+                                                "stop_loss": fut_sl,
+                                                "margin_required_inr": fut_margin_req,
+                                                "product_type": "NRML_FUTURES"
+                                            },
+                                            "eod_outcome": {
+                                                "session_close": None,
+                                                "circuit_limit": None,
+                                                "outcome": "PENDING",
+                                                "badge": "Active Trigger ⚡",
+                                                "pnl_display": "Ticking Live...",
+                                                "summary": f"{eq_setup} active: {eq_action} @ ₹{cur_p:,.2f} (Target: ₹{fut_tgt:,.2f}, SL: ₹{fut_sl:,.2f}) | {sim_metrics.get('summary', '')}"
+                                            }
+                                        }
+                                        new_trades.append(entry_obj)
+                                        active_sectors.add(sfc['sector'])
+                                        mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
+                                        subject = f"🎯 [NSE STOCK FUTURE TRIGGER] {sfc['name']} {eq_action} @ ₹{cur_p:,.2f} ({now_time_str})"
+                                        body = (
+                                            f"🎯 <b>REAL-TIME NSE STOCK FUTURE TRIGGER</b>\n"
+                                            f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                                            f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                                            f"• <b>Contract</b>: <b>{sfc['name']} ({fut_sym})</b>\n"
+                                            f"• <b>Action</b>: <b>{eq_action} 1 Lot ({fut_lot} units) @ ₹{cur_p:,.2f}</b>\n"
+                                            f"• <b>Technical Setup</b>: {eq_setup}\n"
+                                            f"• <b>Technical Rationale</b>: {eq_rationale}\n"
+                                            f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
+                                            f"• <b>Stop-Loss</b>: <b>₹{fut_sl:,.2f}</b> (Max loss strictly ₹{round(fut_risk_per_share * fut_lot, 2):,.2f} <= ₹1,000)\n"
+                                            f"• <b>Target (2.0R)</b>: <b>₹{fut_tgt:,.2f}</b>\n"
+                                            f"• <b>Contract Value</b>: ₹{cur_p * fut_lot:,.2f} (Margin Required: ₹{fut_margin_req:,.2f})\n"
+                                            f"• <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit\n\n"
+                                            f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
+                                        )
+                                        alerts_to_send.append({'subject': subject, 'body': body})
+                                        print(f"🎯 NSE Stock Future Trigger Fired: {sfc['name']} {eq_action} @ ₹{cur_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
+                                        can_enter_futures = False
+                                        continue
 
-                    # 4. Adaptive Position Sizing with 5x MIS Leverage (trader-budget skill):
-                    # Margin allocated <= ₹10,000 | Buying power <= ₹50,000 | Max loss at stop <= ₹250
-                    risk_per_share = abs(cur_p - eq_sl)
-                    if risk_per_share <= 0:
-                        continue
-                    margin_per_share = cur_p * 0.20 # 20% SEBI MIS intraday margin requirement
-                    max_shares_by_margin = math.floor(MAX_INTRADAY_STOCK_MARGIN_INR / margin_per_share) if margin_per_share > 0 else 0
-                    max_shares_by_power = math.floor(MAX_INTRADAY_STOCK_POSITION_INR / cur_p) if cur_p > 0 else 0
-                    risk_shares = math.floor(MAX_INTRADAY_STOCK_RISK_INR / risk_per_share)
-                    eq_shares = min(max_shares_by_margin, max_shares_by_power, risk_shares)
-                    if eq_shares < 1:
-                        continue
-                    while eq_shares > 1 and ((cur_p * eq_shares * 0.20) > MAX_INTRADAY_STOCK_MARGIN_INR or (risk_per_share * eq_shares) > MAX_INTRADAY_STOCK_RISK_INR):
-                        eq_shares -= 1
-                    if eq_shares < 1:
-                        continue
+                    # PATH B: Enter as an Intraday Stock (MIS with 5x leverage from ₹10k pool)
+                    if can_enter_equity:
+                        trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{clean_sym}"
+                        if any(t.get('id') == trade_id for t in (trades + new_trades)):
+                            continue
 
-                    # 5. 14-Point Pre-Trade Risk Engine Check (trader-risk skill: Capped at ₹250 risk / ₹500 daily loss)
-                    all_existing = new_trades + trades
-                    risk_metrics = PreTradeRiskEngine.check_risk(
-                        sym, eq_action, cur_p, eq_sl, eq_tgt, eq_shares, all_existing,
-                        max_loss_per_trade_inr=MAX_INTRADAY_STOCK_RISK_INR,
-                        max_daily_loss_inr=MAX_INTRADAY_STOCK_DAILY_LOSS_INR
-                    )
-                    if not risk_metrics.get('passed'):
-                        print(f"🛡️ Pre-Trade Risk Engine Blocked {clean_sym} {eq_action}: {risk_metrics.get('reason')}")
-                        continue
+                        # 4. Adaptive Position Sizing with 5x MIS Leverage (trader-budget skill):
+                        # Margin allocated <= ₹10,000 | Buying power <= ₹50,000 | Max loss at stop <= ₹250
+                        risk_per_share = abs(cur_p - eq_sl)
+                        if risk_per_share <= 0:
+                            continue
+                        margin_per_share = cur_p * 0.20 # 20% SEBI MIS intraday margin requirement
+                        max_shares_by_margin = math.floor(MAX_INTRADAY_STOCK_MARGIN_INR / margin_per_share) if margin_per_share > 0 else 0
+                        max_shares_by_power = math.floor(MAX_INTRADAY_STOCK_POSITION_INR / cur_p) if cur_p > 0 else 0
+                        risk_shares = math.floor(MAX_INTRADAY_STOCK_RISK_INR / risk_per_share)
+                        eq_shares = min(max_shares_by_margin, max_shares_by_power, risk_shares)
+                        if eq_shares < 1:
+                            continue
+                        while eq_shares > 1 and ((cur_p * eq_shares * 0.20) > MAX_INTRADAY_STOCK_MARGIN_INR or (risk_per_share * eq_shares) > MAX_INTRADAY_STOCK_RISK_INR):
+                            eq_shares -= 1
+                        if eq_shares < 1:
+                            continue
 
-                    # 6. Monte Carlo Time Machine simulation (trader-timemachine skill: 3,000 replays)
-                    sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, eq_sl, eq_tgt, action=eq_action.lower(), replays=3000)
-                    if not sim_metrics.get('passed'):
-                        print(f"🎲 Monte Carlo Time Machine Blocked {clean_sym} {eq_action}: {sim_metrics.get('summary')}")
-                        continue
+                        # 5. 14-Point Pre-Trade Risk Engine Check (trader-risk skill: Capped at ₹250 risk / ₹500 daily loss)
+                        all_existing = new_trades + trades
+                        risk_metrics = PreTradeRiskEngine.check_risk(
+                            sym, eq_action, cur_p, eq_sl, eq_tgt, eq_shares, all_existing,
+                            max_loss_per_trade_inr=MAX_INTRADAY_STOCK_RISK_INR,
+                            max_daily_loss_inr=MAX_INTRADAY_STOCK_DAILY_LOSS_INR
+                        )
+                        if not risk_metrics.get('passed'):
+                            print(f"🛡️ Pre-Trade Risk Engine Blocked {clean_sym} {eq_action}: {risk_metrics.get('reason')}")
+                            continue
 
-                    entry_obj = {
-                        "id": trade_id,
-                        "date": today_str,
-                        "session_name": f"Real-Time Technical Trigger ({eq_setup})",
-                        "time_trigger": now_time_str,
-                        "time_6pm": now_time_str,
-                        "time_validation": now_time_str,
-                        "time_615": now_time_str,
-                        "time_exit": "03:25 PM IST",
-                        "symbol": sym,
-                        "name": name,
-                        "lot_size": eq_shares,
-                        "asset_type": "INTRADAY_STOCK",
-                        "event_context": f"Nifty Intraday MIS: {eq_setup}",
-                        "time_machine": sim_metrics,
-                        "risk_check": risk_metrics,
-                        "orb_check": orb_metrics,
-                        "event_check": event_metrics,
-                        "suggestion_6pm": {
-                            "status": "REALTIME_TRIGGER",
-                            "action_text": f"{eq_action} @ ₹{cur_p:,.2f}",
-                            "rationale": f"{eq_rationale} {sim_metrics.get('summary', '')}",
-                            "reference_price": cur_p,
-                            "stop_loss": eq_sl,
-                            "target": eq_tgt
-                        },
-                        "check_615": {
-                            "checked": True,
-                            "status": "TECHNICAL_TRIGGER_ENTERED",
-                            "price_615": cur_p,
-                            "action_taken": f"Entered {eq_action} {eq_shares} shares @ ₹{cur_p:,.2f}",
-                            "detail": f"{eq_setup}: {eq_rationale} | {sim_metrics.get('summary', '')}"
-                        },
-                        "paper_trade": {
-                            "user": USER_ACCOUNT,
-                            "action": eq_action,
-                            "quantity": eq_shares,
-                            "entry_price": cur_p,
-                            "entry_time": now_time_str,
-                            "exit_price": None,
-                            "exit_time": None,
-                            "pnl_points": 0.0,
-                            "pnl_inr": 0.0,
-                            "status": "ACTIVE",
-                            "target": eq_tgt,
-                            "stop_loss": eq_sl,
-                            "margin_required_inr": round(cur_p * eq_shares * 0.20, 2),
-                            "product_type": "MIS_INTRADAY"
-                        },
-                        "eod_outcome": {
-                            "session_close": None,
-                            "circuit_limit": None,
-                            "outcome": "PENDING",
-                            "badge": "Active Trigger ⚡",
-                            "pnl_display": "Ticking Live...",
-                            "summary": f"{eq_setup} active: {eq_action} @ ₹{cur_p:,.2f} (Target: ₹{eq_tgt:,.2f}, SL: ₹{eq_sl:,.2f}) | {sim_metrics.get('summary', '')}"
+                        # 6. Monte Carlo Time Machine simulation (trader-timemachine skill: 3,000 replays)
+                        sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, eq_sl, eq_tgt, action=eq_action.lower(), replays=3000)
+                        if not sim_metrics.get('passed'):
+                            print(f"🎲 Monte Carlo Time Machine Blocked {clean_sym} {eq_action}: {sim_metrics.get('summary')}")
+                            continue
+
+                        entry_obj = {
+                            "id": trade_id,
+                            "date": today_str,
+                            "session_name": f"Real-Time Technical Trigger ({eq_setup})",
+                            "time_trigger": now_time_str,
+                            "time_6pm": now_time_str,
+                            "time_validation": now_time_str,
+                            "time_615": now_time_str,
+                            "time_exit": "03:25 PM IST",
+                            "symbol": sym,
+                            "name": name,
+                            "lot_size": eq_shares,
+                            "asset_type": "INTRADAY_STOCK",
+                            "event_context": f"Nifty Intraday MIS: {eq_setup}",
+                            "time_machine": sim_metrics,
+                            "risk_check": risk_metrics,
+                            "orb_check": orb_metrics,
+                            "event_check": event_metrics,
+                            "suggestion_6pm": {
+                                "status": "REALTIME_TRIGGER",
+                                "action_text": f"{eq_action} @ ₹{cur_p:,.2f}",
+                                "rationale": f"{eq_rationale} {sim_metrics.get('summary', '')}",
+                                "reference_price": cur_p,
+                                "stop_loss": eq_sl,
+                                "target": eq_tgt
+                            },
+                            "check_615": {
+                                "checked": True,
+                                "status": "TECHNICAL_TRIGGER_ENTERED",
+                                "price_615": cur_p,
+                                "action_taken": f"Entered {eq_action} {eq_shares} shares @ ₹{cur_p:,.2f}",
+                                "detail": f"{eq_setup}: {eq_rationale} | {sim_metrics.get('summary', '')}"
+                            },
+                            "paper_trade": {
+                                "user": USER_ACCOUNT,
+                                "action": eq_action,
+                                "quantity": eq_shares,
+                                "entry_price": cur_p,
+                                "entry_time": now_time_str,
+                                "exit_price": None,
+                                "exit_time": None,
+                                "pnl_points": 0.0,
+                                "pnl_inr": 0.0,
+                                "status": "ACTIVE",
+                                "target": eq_tgt,
+                                "stop_loss": eq_sl,
+                                "margin_required_inr": round(cur_p * eq_shares * 0.20, 2),
+                                "product_type": "MIS_INTRADAY"
+                            },
+                            "eod_outcome": {
+                                "session_close": None,
+                                "circuit_limit": None,
+                                "outcome": "PENDING",
+                                "badge": "Active Trigger ⚡",
+                                "pnl_display": "Ticking Live...",
+                                "summary": f"{eq_setup} active: {eq_action} @ ₹{cur_p:,.2f} (Target: ₹{eq_tgt:,.2f}, SL: ₹{eq_sl:,.2f}) | {sim_metrics.get('summary', '')}"
+                            }
                         }
-                    }
-                    new_trades.append(entry_obj)
+                        new_trades.append(entry_obj)
 
-                    mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
-                    subject = f"⚡ [NIFTY INTRADAY MIS TRIGGER] {name} {eq_action} @ ₹{cur_p:,.2f} ({now_time_str})"
-                    body = (
-                        f"⚡ <b>REAL-TIME INTRADAY STOCK TRIGGER (5x MIS MARGIN BENEFIT)</b>\n"
-                        f"📅 <i>{today_str}, {now_time_str}</i>\n"
-                        f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
-                        f"• <b>Asset Class</b>: Nifty Intraday Stock (MIS 5x Margin Benefit)\n"
-                        f"• <b>Stock</b>: <b>{name} ({clean_sym})</b>\n"
-                        f"• <b>Signal</b>: <b>{eq_action} {eq_shares} shares @ ₹{cur_p:,.2f}</b>\n"
-                        f"• <b>Setup</b>: {eq_setup}\n"
-                        f"• <b>Technical Rationale</b>: {eq_rationale}\n"
-                        f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
-                        f"• <b>Stop-Loss</b>: <b>₹{eq_sl:,.2f}</b> (Max loss strictly ₹{round(risk_per_share * eq_shares, 2):,.2f} <= ₹250)\n"
-                        f"• <b>Target (2.0R)</b>: <b>₹{eq_tgt:,.2f}</b>\n"
-                        f"• <b>Position Value</b>: ₹{cur_p * eq_shares:,.2f} (MIS Margin Blocked: ₹{round(cur_p * eq_shares * 0.20, 2):,.2f} / Max ₹10k)\n"
-                        f"• <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit (Zero overnight risk)\n\n"
-                        f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
-                    )
-                    alerts_to_send.append({'subject': subject, 'body': body})
-                    print(f"⚡ Nifty Intraday Stock Trigger Fired: {name} {eq_action} @ ₹{cur_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
+                        mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
+                        subject = f"⚡ [NIFTY INTRADAY MIS TRIGGER] {name} {eq_action} @ ₹{cur_p:,.2f} ({now_time_str})"
+                        body = (
+                            f"⚡ <b>REAL-TIME INTRADAY STOCK TRIGGER (5x MIS MARGIN BENEFIT)</b>\n"
+                            f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                            f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                            f"• <b>Asset Class</b>: Nifty Intraday Stock (MIS 5x Margin Benefit)\n"
+                            f"• <b>Stock</b>: <b>{name} ({clean_sym})</b>\n"
+                            f"• <b>Signal</b>: <b>{eq_action} {eq_shares} shares @ ₹{cur_p:,.2f}</b>\n"
+                            f"• <b>Setup</b>: {eq_setup}\n"
+                            f"• <b>Technical Rationale</b>: {eq_rationale}\n"
+                            f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
+                            f"• <b>Stop-Loss</b>: <b>₹{eq_sl:,.2f}</b> (Max loss strictly ₹{round(risk_per_share * eq_shares, 2):,.2f} <= ₹250)\n"
+                            f"• <b>Target (2.0R)</b>: <b>₹{eq_tgt:,.2f}</b>\n"
+                            f"• <b>Position Value</b>: ₹{cur_p * eq_shares:,.2f} (MIS Margin Blocked: ₹{round(cur_p * eq_shares * 0.20, 2):,.2f} / Max ₹10k)\n"
+                            f"• <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit (Zero overnight risk)\n\n"
+                            f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
+                        )
+                        alerts_to_send.append({'subject': subject, 'body': body})
+                        print(f"⚡ Nifty Intraday Stock Trigger Fired: {name} {eq_action} @ ₹{cur_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
+                        can_enter_equity = False
 
     if new_trades:
         tracker['trades'] = new_trades + trades
