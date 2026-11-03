@@ -54,13 +54,16 @@ MARGIN_RATES = {
 # =========================================================================
 # 🛡️ CAPITAL DEFENSE & RECOVERY PROTOCOL (CALIBRATED FOR ₹2.9L TRADING CAPITAL)
 # =========================================================================
-MAX_LOSS_PER_TRADE_INR = 1000.0   # Strictly 0.35% of capital (290+ consecutive loss runway)
-MAX_DAILY_LOSS_INR = 2000.0       # Strictly 0.70% daily circuit breaker (halts trading after 2 losses)
-MAX_EQUITY_POSITION_INR = 10000.0 # Dedicated ₹10,000 daily budget for Intraday Stock Trading
+MAX_LOSS_PER_TRADE_INR = 1000.0   # Strictly 0.35% of capital (290+ consecutive loss runway for Futures)
+MAX_DAILY_LOSS_INR = 2000.0       # Strictly 0.70% daily circuit breaker for Futures (halts after 2 losses)
+MAX_INTRADAY_STOCK_MARGIN_INR = 10000.0 # Dedicated max ₹10,000 margin allocated per day for Intraday Stock Trading
+INTRADAY_STOCK_MIS_LEVERAGE = 5.0 # 5x leverage for MIS intraday equity (20% margin requirement)
+MAX_INTRADAY_STOCK_POSITION_INR = MAX_INTRADAY_STOCK_MARGIN_INR * INTRADAY_STOCK_MIS_LEVERAGE # ₹50,000 buying power
+MAX_EQUITY_POSITION_INR = MAX_INTRADAY_STOCK_POSITION_INR # Backward compatibility alias
 MAX_INTRADAY_STOCK_RISK_INR = 250.0 # Strictly capped at ₹250 loss per stock trade (~2.5% of allocation)
 MAX_INTRADAY_STOCK_DAILY_LOSS_INR = 500.0 # Halts intraday stock trading if 2 losses occur in a day
-MAX_CONCURRENT_COMMODITIES = 1    # Strictly max 1 active commodity trade
-MAX_CONCURRENT_EQUITIES = 1       # Strictly max 1 active equity trade
+MAX_CONCURRENT_COMMODITIES = 1    # Strictly max 1 active futures trade
+MAX_CONCURRENT_EQUITIES = 1       # Strictly max 1 active intraday equity trade
 ENFORCE_MINI_ONLY_COMMODITIES = True # Hard ban on heavy standard lots (e.g. AL2500, CRUDE50) until full capital recovery
 
 # Direct mapping to low-margin, micro/mini contracts for capital defense
@@ -2258,16 +2261,16 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
         print(f"🛑 PORTFOLIO CIRCUIT BREAKER: Today's realized loss (₹{today_realized_loss:,.2f}) reached daily limit (₹{MAX_DAILY_LOSS_INR:,.2f}). Trading halted for the day.")
         return False
 
-    # 2. Maximum Concurrent Open Positions Cap (Strictly Max 1 Commodity, Max 1 Equity)
+    # 2. Maximum Concurrent Open Positions Cap (Strictly Max 1 Futures, Max 1 Intraday Stock)
     active_commodity_trades = [
         t for t in trades 
         if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
-        and t.get('symbol') in LOT_SIZES
+        and (t.get('asset_type') in ['FUTURES', 'COMMODITY'] or t.get('symbol') in LOT_SIZES or '-FUT' in str(t.get('symbol', '')))
     ]
     active_equity_trades = [
         t for t in trades 
         if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
-        and t.get('symbol') not in LOT_SIZES
+        and (t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'] or (t.get('symbol') not in LOT_SIZES and not str(t.get('symbol', '')).endswith('-FUT')))
     ]
     if len(active_commodity_trades) >= MAX_CONCURRENT_COMMODITIES and len(active_equity_trades) >= MAX_CONCURRENT_EQUITIES:
         return False
@@ -2569,7 +2572,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
     # =========================================================================
     ENABLE_EQUITY_DERIVATIVES_SCANNER = True
     is_equity_window = (hour == 9 and minute >= 15) or (10 <= hour < 15) or (hour == 15 and minute <= 20)
-    cur_equity_positions = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') == 'EQUITY')
+    cur_equity_positions = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'])
 
     if ENABLE_EQUITY_DERIVATIVES_SCANNER and is_equity_window and cur_equity_positions < 2:
         if os.path.exists(NIFTY_JSON_FILE):
@@ -2582,7 +2585,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 equity_stocks = []
 
             for s in equity_stocks:
-                cur_active_equity = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') == 'EQUITY')
+                cur_active_equity = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'])
                 if cur_active_equity >= MAX_CONCURRENT_EQUITIES:
                     break
 
@@ -2673,22 +2676,20 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     if any(t.get('id') == trade_id for t in (trades + new_trades)):
                         continue
 
-                    # ⚡ Sizing for ₹10,000 Dedicated Daily Intraday Stock Allocation:
-                    # Position value strictly <= ₹10,000 | Max loss at stop strictly <= ₹250
+                    # ⚡ Sizing for Max ₹10,000 Margin Allocation with 5x MIS Leverage:
+                    # Margin allocated <= ₹10,000 | Buying power <= ₹50,000 | Max loss at stop <= ₹250
                     risk_per_share = abs(cur_p - eq_sl)
                     if risk_per_share <= 0:
                         continue
-                    cap_shares = math.floor(MAX_EQUITY_POSITION_INR / cur_p) if cur_p > 0 else 0
+                    margin_per_share = cur_p * 0.20 # 20% SEBI MIS intraday margin requirement
+                    max_shares_by_margin = math.floor(MAX_INTRADAY_STOCK_MARGIN_INR / margin_per_share) if margin_per_share > 0 else 0
+                    max_shares_by_power = math.floor(MAX_INTRADAY_STOCK_POSITION_INR / cur_p) if cur_p > 0 else 0
                     risk_shares = math.floor(MAX_INTRADAY_STOCK_RISK_INR / risk_per_share)
-                    eq_shares = min(cap_shares, risk_shares)
+                    eq_shares = min(max_shares_by_margin, max_shares_by_power, risk_shares)
                     if eq_shares < 1:
                         continue
-                    if (cur_p * eq_shares) > MAX_EQUITY_POSITION_INR:
-                        eq_shares = math.floor(MAX_EQUITY_POSITION_INR / cur_p)
-                    if eq_shares < 1:
-                        continue
-                    if (risk_per_share * eq_shares) > MAX_INTRADAY_STOCK_RISK_INR:
-                        eq_shares = math.floor(MAX_INTRADAY_STOCK_RISK_INR / risk_per_share)
+                    while eq_shares > 1 and ((cur_p * eq_shares * 0.20) > MAX_INTRADAY_STOCK_MARGIN_INR or (risk_per_share * eq_shares) > MAX_INTRADAY_STOCK_RISK_INR):
+                        eq_shares -= 1
                     if eq_shares < 1:
                         continue
 
@@ -2721,8 +2722,8 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                         "symbol": sym,
                         "name": name,
                         "lot_size": eq_shares,
-                        "asset_type": "EQUITY",
-                        "event_context": f"Nifty F&O Confluence: {eq_setup}",
+                        "asset_type": "INTRADAY_STOCK",
+                        "event_context": f"Nifty Intraday MIS: {eq_setup}",
                         "time_machine": sim_metrics,
                         "risk_check": risk_metrics,
                         "suggestion_6pm": {
@@ -2753,7 +2754,8 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             "status": "ACTIVE",
                             "target": eq_tgt,
                             "stop_loss": eq_sl,
-                            "margin_required_inr": round(cur_p * eq_shares * 0.20, 2)
+                            "margin_required_inr": round(cur_p * eq_shares * 0.20, 2),
+                            "product_type": "MIS_INTRADAY"
                         },
                         "eod_outcome": {
                             "session_close": None,
@@ -2767,25 +2769,25 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     new_trades.append(entry_obj)
 
                     mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
-                    subject = f"⚡ [NIFTY F&O TRIGGER] {name} {eq_action} @ ₹{cur_p:,.2f} ({now_time_str})"
+                    subject = f"⚡ [NIFTY INTRADAY MIS TRIGGER] {name} {eq_action} @ ₹{cur_p:,.2f} ({now_time_str})"
                     body = (
-                        f"⚡ <b>REAL-TIME MULTI-ASSET TECHNICAL TRIGGER (NIFTY F&O)</b>\n"
+                        f"⚡ <b>REAL-TIME INTRADAY STOCK TRIGGER (5x MIS MARGIN BENEFIT)</b>\n"
                         f"📅 <i>{today_str}, {now_time_str}</i>\n"
                         f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
-                        f"• <b>Asset Class</b>: Nifty F&O High-Beta Equity\n"
+                        f"• <b>Asset Class</b>: Nifty Intraday Stock (MIS 5x Margin Benefit)\n"
                         f"• <b>Stock</b>: <b>{name} ({clean_sym})</b>\n"
                         f"• <b>Signal</b>: <b>{eq_action} {eq_shares} shares @ ₹{cur_p:,.2f}</b>\n"
                         f"• <b>Setup</b>: {eq_setup}\n"
                         f"• <b>Technical Rationale</b>: {eq_rationale}\n"
                         f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
-                        f"• <b>Stop-Loss</b>: ₹{eq_sl:,.2f} (Max Risk: -₹{abs(cur_p - eq_sl) * eq_shares:,.2f})\n"
-                        f"• <b>Target</b>: ₹{eq_tgt:,.2f} (Target Reward: +₹{abs(eq_tgt - cur_p) * eq_shares:,.2f})\n"
-                        f"• <b>Capital Allocated</b>: ₹{cur_p * eq_shares:,.2f} (Margin ~₹{round(cur_p * eq_shares * 0.20, 2):,.2f})\n"
-                        f"• <b>Status</b>: Active paper trade. Auto-trailing breakeven & 03:25 PM EOD squareoff enabled.\n\n"
-                        f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                        f"• <b>Stop-Loss</b>: <b>₹{eq_sl:,.2f}</b> (Max loss strictly ₹{round(risk_per_share * eq_shares, 2):,.2f} <= ₹250)\n"
+                        f"• <b>Target (2.0R)</b>: <b>₹{eq_tgt:,.2f}</b>\n"
+                        f"• <b>Position Value</b>: ₹{cur_p * eq_shares:,.2f} (MIS Margin Blocked: ₹{round(cur_p * eq_shares * 0.20, 2):,.2f} / Max ₹10k)\n"
+                        f"• <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit (Zero overnight risk)\n\n"
+                        f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
                     )
                     alerts_to_send.append({'subject': subject, 'body': body})
-                    print(f"⚡ Nifty Equity Trigger Fired: {name} {eq_action} @ ₹{cur_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
+                    print(f"⚡ Nifty Intraday Stock Trigger Fired: {name} {eq_action} @ ₹{cur_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
 
     if new_trades:
         tracker['trades'] = new_trades + trades
