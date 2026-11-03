@@ -1,5 +1,5 @@
 {
-  "last_updated": "03 Nov 2026, 11:46 PM IST",
+  "last_updated": "04 Nov 2026, 12:01 AM IST",
   "summary": {
     "total_scanned": 17,
     "high_pop_count": 0,
@@ -10,7 +10,7 @@
     "avg_mc_hold_pct": 35.9,
     "risk_cleared_count": 14,
     "expiry_date": "26 Nov 2026",
-    "days_to_expiry": 23
+    "days_to_expiry": 22
   },
   "stocks": [
     {
@@ -30,7 +30,7 @@
       "bb_upper": 2427.29,
       "bb_width_pct": 8.96,
       "daily_volatility_pct": 3.2,
-      "expected_move_pct": 15.35,
+      "expected_move_pct": 15.01,
       "strategy_type": "PUT_SELL",
       "strategy_label": "OTM Put Sell (Floor Defense)",
       "strategy_badge": "PUT_SELL",
@@ -52,14 +52,14 @@
       "rom_pct": 5.87,
       "support_desc": "BB Lower \u20b92208.8 & 50E \u20b92389.0",
       "resist_desc": "BB Upper \u20b92427.3",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Support Defense (ADX: 20.8, RSI: 60.3). Anchored above BB Lower \u20b92208.8 & 50E \u20b92389.0. 2150 PE sits safely below the volatility floor with a 11.9% safety buffer.",
       "timemachine": {
         "channel_hold_prob_pct": 80.6,
         "put_breach_risk_pct": 19.4,
         "call_breach_risk_pct": 67.7,
-        "terminal_pop_pct": 76.7,
+        "terminal_pop_pct": 77.0,
         "expected_r": 0.61,
         "confidence_rating": "SOLID",
         "rating_badge": "\ud83d\udfe1 Solid Hold",
@@ -119,7 +119,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -241,7 +241,7 @@
       "bb_upper": 422.9,
       "bb_width_pct": 8.16,
       "daily_volatility_pct": 1.43,
-      "expected_move_pct": 6.86,
+      "expected_move_pct": 6.71,
       "strategy_type": "CALL_SELL",
       "strategy_label": "OTM Call Sell (Ceiling Defense)",
       "strategy_badge": "CALL_SELL",
@@ -251,8 +251,8 @@
       "theta_safety_score": 60.0,
       "put_strike": 380,
       "put_buffer_pct": 6.9,
-      "put_pop_pct": 76.2,
-      "est_put_premium": 4.78,
+      "put_pop_pct": 76.7,
+      "est_put_premium": 4.75,
       "call_strike": 430,
       "call_buffer_pct": 5.4,
       "call_pop_pct": 76.0,
@@ -263,14 +263,14 @@
       "rom_pct": 5.87,
       "support_desc": "BB Lower \u20b9389.6",
       "resist_desc": "BB Upper \u20b9422.9 & 50E \u20b9412.2",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Resistance Defense (ADX: 21.5, RSI: 50.2). Capped beneath BB Upper \u20b9422.9 & 50E \u20b9412.2. 430 CE is sheltered above the volatility ceiling with a 5.4% buffer.",
       "timemachine": {
         "channel_hold_prob_pct": 79.6,
         "put_breach_risk_pct": 10.4,
         "call_breach_risk_pct": 20.4,
-        "terminal_pop_pct": 78.9,
+        "terminal_pop_pct": 79.4,
         "expected_r": 0.59,
         "confidence_rating": "SOLID",
         "rating_badge": "\ud83d\udfe1 Solid Hold",
@@ -330,7 +330,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -452,7 +452,7 @@
       "bb_upper": 354.08,
       "bb_width_pct": 10.61,
       "daily_volatility_pct": 2.61,
-      "expected_move_pct": 12.52,
+      "expected_move_pct": 12.24,
       "strategy_type": "PUT_SELL",
       "strategy_label": "OTM Put Sell (Floor Defense)",
       "strategy_badge": "PUT_SELL",
@@ -474,14 +474,14 @@
       "rom_pct": 5.87,
       "support_desc": "BB Lower \u20b9318.7",
       "resist_desc": "BB Upper \u20b9354.1",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Support Defense (ADX: 22.9, RSI: 46.4). Anchored above BB Lower \u20b9318.7. 310 PE sits safely below the volatility floor with a 7.1% safety buffer.",
       "timemachine": {
         "channel_hold_prob_pct": 67.7,
         "put_breach_risk_pct": 32.3,
         "call_breach_risk_pct": 29.0,
-        "terminal_pop_pct": 69.5,
+        "terminal_pop_pct": 69.4,
         "expected_r": 0.35,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -541,7 +541,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -663,7 +663,7 @@
       "bb_upper": 567.25,
       "bb_width_pct": 11.67,
       "daily_volatility_pct": 1.85,
-      "expected_move_pct": 8.87,
+      "expected_move_pct": 8.68,
       "strategy_type": "PUT_SELL",
       "strategy_label": "OTM Put Sell (Floor Defense)",
       "strategy_badge": "PUT_SELL",
@@ -685,14 +685,14 @@
       "rom_pct": 5.87,
       "support_desc": "BB Lower \u20b9505.9",
       "resist_desc": "BB Upper \u20b9567.2",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Support Defense (ADX: 21.3, RSI: 45.2). Anchored above BB Lower \u20b9505.9. 500 PE sits safely below the volatility floor with a 4.9% safety buffer.",
       "timemachine": {
         "channel_hold_prob_pct": 66.3,
         "put_breach_risk_pct": 33.7,
         "call_breach_risk_pct": 13.4,
-        "terminal_pop_pct": 69.2,
+        "terminal_pop_pct": 68.9,
         "expected_r": 0.33,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -752,7 +752,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -874,7 +874,7 @@
       "bb_upper": 179.33,
       "bb_width_pct": 7.07,
       "daily_volatility_pct": 2.26,
-      "expected_move_pct": 10.84,
+      "expected_move_pct": 10.6,
       "strategy_type": "CALL_SELL",
       "strategy_label": "OTM Call Sell (Ceiling Defense)",
       "strategy_badge": "CALL_SELL",
@@ -896,14 +896,14 @@
       "rom_pct": 5.86,
       "support_desc": "BB Lower \u20b9166.8",
       "resist_desc": "BB Upper \u20b9179.3 & 50E \u20b9179.1",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Resistance Defense (ADX: 22.5, RSI: 51.6). Capped beneath BB Upper \u20b9179.3 & 50E \u20b9179.1. 185 CE is sheltered above the volatility ceiling with a 4.8% buffer.",
       "timemachine": {
         "channel_hold_prob_pct": 58.5,
         "put_breach_risk_pct": 30.2,
         "call_breach_risk_pct": 41.5,
-        "terminal_pop_pct": 69.2,
+        "terminal_pop_pct": 69.7,
         "expected_r": 0.17,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -963,7 +963,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -1085,7 +1085,7 @@
       "bb_upper": 1764.96,
       "bb_width_pct": 7.96,
       "daily_volatility_pct": 1.97,
-      "expected_move_pct": 9.45,
+      "expected_move_pct": 9.24,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
@@ -1107,14 +1107,14 @@
       "rom_pct": 11.75,
       "support_desc": "BB Floor \u20b91624.9",
       "resist_desc": "BB Ceil \u20b91765.0",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 19.0, BBW: 8.0%). Price is oscillating tightly between BB Floor \u20b91624.9 and BB Ceil \u20b91765.0. Selling both 1600 PE & 1850 CE collects dual theta.",
       "timemachine": {
         "channel_hold_prob_pct": 54.0,
         "put_breach_risk_pct": 11.5,
         "call_breach_risk_pct": 34.6,
-        "terminal_pop_pct": 55.2,
+        "terminal_pop_pct": 56.2,
         "expected_r": 0.08,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -1174,7 +1174,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -1296,7 +1296,7 @@
       "bb_upper": 1995.35,
       "bb_width_pct": 7.69,
       "daily_volatility_pct": 2.55,
-      "expected_move_pct": 12.23,
+      "expected_move_pct": 11.96,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
@@ -1318,14 +1318,14 @@
       "rom_pct": 11.74,
       "support_desc": "BB Floor \u20b91845.5",
       "resist_desc": "BB Ceil \u20b91995.3",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 14.2, BBW: 7.7%). Price is oscillating tightly between BB Floor \u20b91845.5 and BB Ceil \u20b91995.3. Selling both 1800 PE & 2050 CE collects dual theta.",
       "timemachine": {
         "channel_hold_prob_pct": 29.6,
         "put_breach_risk_pct": 28.4,
         "call_breach_risk_pct": 43.2,
-        "terminal_pop_pct": 40.2,
+        "terminal_pop_pct": 40.7,
         "expected_r": -0.41,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -1385,7 +1385,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -1507,7 +1507,7 @@
       "bb_upper": 5370.33,
       "bb_width_pct": 9.67,
       "daily_volatility_pct": 2.51,
-      "expected_move_pct": 12.04,
+      "expected_move_pct": 11.77,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
@@ -1529,14 +1529,14 @@
       "rom_pct": 11.74,
       "support_desc": "BB Floor \u20b94858.0",
       "resist_desc": "BB Ceil \u20b95370.3",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 19.0, BBW: 9.7%). Price is oscillating tightly between BB Floor \u20b94858.0 and BB Ceil \u20b95370.3. Selling both 4800 PE & 5500 CE collects dual theta.",
       "timemachine": {
         "channel_hold_prob_pct": 29.5,
         "put_breach_risk_pct": 19.2,
         "call_breach_risk_pct": 52.5,
-        "terminal_pop_pct": 42.4,
+        "terminal_pop_pct": 42.5,
         "expected_r": -0.41,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -1596,7 +1596,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -1718,7 +1718,7 @@
       "bb_upper": 990.59,
       "bb_width_pct": 8.4,
       "daily_volatility_pct": 2.06,
-      "expected_move_pct": 9.88,
+      "expected_move_pct": 9.66,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
@@ -1740,14 +1740,14 @@
       "rom_pct": 11.77,
       "support_desc": "BB Floor \u20b9909.1",
       "resist_desc": "BB Ceil \u20b9990.6",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 18.4, BBW: 8.4%). Price is oscillating tightly between BB Floor \u20b9909.1 and BB Ceil \u20b9990.6. Selling both 900 PE & 1000 CE collects dual theta.",
       "timemachine": {
         "channel_hold_prob_pct": 26.8,
         "put_breach_risk_pct": 22.2,
         "call_breach_risk_pct": 52.7,
-        "terminal_pop_pct": 40.3,
+        "terminal_pop_pct": 40.2,
         "expected_r": -0.46,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -1807,7 +1807,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -1929,7 +1929,7 @@
       "bb_upper": 232.8,
       "bb_width_pct": 6.44,
       "daily_volatility_pct": 2.3,
-      "expected_move_pct": 11.03,
+      "expected_move_pct": 10.79,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
@@ -1951,7 +1951,7 @@
       "rom_pct": 11.76,
       "support_desc": "BB Floor \u20b9217.8",
       "resist_desc": "BB Ceil \u20b9232.8",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 17.8, BBW: 6.4%). Price is oscillating tightly between BB Floor \u20b9217.8 and BB Ceil \u20b9232.8. Selling both 215 PE & 240 CE collects dual theta.",
       "timemachine": {
@@ -2018,7 +2018,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -2140,7 +2140,7 @@
       "bb_upper": 1733.82,
       "bb_width_pct": 9.44,
       "daily_volatility_pct": 2.49,
-      "expected_move_pct": 11.94,
+      "expected_move_pct": 11.68,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
@@ -2162,14 +2162,14 @@
       "rom_pct": 11.74,
       "support_desc": "BB Floor \u20b91573.8",
       "resist_desc": "BB Ceil \u20b91733.8",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 19.1, BBW: 9.4%). Price is oscillating tightly between BB Floor \u20b91573.8 and BB Ceil \u20b91733.8. Selling both 1550 PE & 1750 CE collects dual theta.",
       "timemachine": {
         "channel_hold_prob_pct": 22.6,
         "put_breach_risk_pct": 23.2,
         "call_breach_risk_pct": 56.5,
-        "terminal_pop_pct": 38.5,
+        "terminal_pop_pct": 38.8,
         "expected_r": -0.55,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -2229,7 +2229,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -2351,7 +2351,7 @@
       "bb_upper": 5360.15,
       "bb_width_pct": 8.53,
       "daily_volatility_pct": 2.84,
-      "expected_move_pct": 13.62,
+      "expected_move_pct": 13.32,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
@@ -2373,14 +2373,14 @@
       "rom_pct": 11.74,
       "support_desc": "BB Floor \u20b94913.7",
       "resist_desc": "BB Ceil \u20b95360.1",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 18.1, BBW: 8.5%). Price is oscillating tightly between BB Floor \u20b94913.7 and BB Ceil \u20b95360.1. Selling both 4800 PE & 5400 CE collects dual theta.",
       "timemachine": {
         "channel_hold_prob_pct": 14.3,
         "put_breach_risk_pct": 29.5,
         "call_breach_risk_pct": 61.0,
-        "terminal_pop_pct": 33.6,
+        "terminal_pop_pct": 33.3,
         "expected_r": -0.71,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -2440,7 +2440,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -2562,7 +2562,7 @@
       "bb_upper": 1463.53,
       "bb_width_pct": 9.6,
       "daily_volatility_pct": 3.01,
-      "expected_move_pct": 14.44,
+      "expected_move_pct": 14.12,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
@@ -2584,14 +2584,14 @@
       "rom_pct": 11.74,
       "support_desc": "BB Floor \u20b91330.3",
       "resist_desc": "BB Ceil \u20b91463.5",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 19.3, BBW: 9.6%). Price is oscillating tightly between BB Floor \u20b91330.3 and BB Ceil \u20b91463.5. Selling both 1320 PE & 1480 CE collects dual theta.",
       "timemachine": {
         "channel_hold_prob_pct": 13.9,
         "put_breach_risk_pct": 51.2,
         "call_breach_risk_pct": 40.2,
-        "terminal_pop_pct": 30.4,
+        "terminal_pop_pct": 31.1,
         "expected_r": -0.72,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -2651,7 +2651,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -2773,7 +2773,7 @@
       "bb_upper": 731.18,
       "bb_width_pct": 7.77,
       "daily_volatility_pct": 3.65,
-      "expected_move_pct": 17.5,
+      "expected_move_pct": 17.12,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
@@ -2795,14 +2795,14 @@
       "rom_pct": 11.74,
       "support_desc": "BB Floor \u20b9674.8",
       "resist_desc": "BB Ceil \u20b9731.2",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 16.6, BBW: 7.8%). Price is oscillating tightly between BB Floor \u20b9674.8 and BB Ceil \u20b9731.2. Selling both 660 PE & 760 CE collects dual theta.",
       "timemachine": {
         "channel_hold_prob_pct": 13.2,
         "put_breach_risk_pct": 35.8,
         "call_breach_risk_pct": 56.5,
-        "terminal_pop_pct": 31.4,
+        "terminal_pop_pct": 31.2,
         "expected_r": -0.74,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -2862,7 +2862,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -2984,7 +2984,7 @@
       "bb_upper": 1288.63,
       "bb_width_pct": 8.19,
       "daily_volatility_pct": 2.63,
-      "expected_move_pct": 12.61,
+      "expected_move_pct": 12.34,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
@@ -3006,14 +3006,14 @@
       "rom_pct": 11.75,
       "support_desc": "BB Floor \u20b91187.7",
       "resist_desc": "BB Ceil \u20b91288.6",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 17.7, BBW: 8.2%). Price is oscillating tightly between BB Floor \u20b91187.7 and BB Ceil \u20b91288.6. Selling both 1180 PE & 1300 CE collects dual theta.",
       "timemachine": {
         "channel_hold_prob_pct": 12.4,
         "put_breach_risk_pct": 51.2,
         "call_breach_risk_pct": 42.3,
-        "terminal_pop_pct": 29.4,
+        "terminal_pop_pct": 30.2,
         "expected_r": -0.75,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -3073,7 +3073,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -3195,7 +3195,7 @@
       "bb_upper": 2176.35,
       "bb_width_pct": 9.83,
       "daily_volatility_pct": 4.19,
-      "expected_move_pct": 20.09,
+      "expected_move_pct": 19.65,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
@@ -3217,14 +3217,14 @@
       "rom_pct": 11.74,
       "support_desc": "BB Floor \u20b91961.0",
       "resist_desc": "BB Ceil \u20b92176.3",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 18.8, BBW: 9.8%). Price is oscillating tightly between BB Floor \u20b91961.0 and BB Ceil \u20b92176.3. Selling both 1900 PE & 2250 CE collects dual theta.",
       "timemachine": {
         "channel_hold_prob_pct": 10.6,
         "put_breach_risk_pct": 26.3,
         "call_breach_risk_pct": 69.7,
-        "terminal_pop_pct": 32.4,
+        "terminal_pop_pct": 32.3,
         "expected_r": -0.79,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -3284,7 +3284,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
@@ -3406,7 +3406,7 @@
       "bb_upper": 301.79,
       "bb_width_pct": 5.91,
       "daily_volatility_pct": 4.11,
-      "expected_move_pct": 19.71,
+      "expected_move_pct": 19.28,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
@@ -3428,14 +3428,14 @@
       "rom_pct": 11.75,
       "support_desc": "BB Floor \u20b9283.9",
       "resist_desc": "BB Ceil \u20b9301.8",
-      "days_to_expiry": 23,
+      "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 17.4, BBW: 5.9%). Price is oscillating tightly between BB Floor \u20b9283.9 and BB Ceil \u20b9301.8. Selling both 280 PE & 320 CE collects dual theta.",
       "timemachine": {
         "channel_hold_prob_pct": 8.0,
         "put_breach_risk_pct": 46.8,
         "call_breach_risk_pct": 54.9,
-        "terminal_pop_pct": 26.2,
+        "terminal_pop_pct": 26.8,
         "expected_r": -0.84,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -3495,7 +3495,7 @@
             "id": "DTE_SAFE_WINDOW",
             "name": "Safe DTE Horizon (7-35d)",
             "passed": true,
-            "value": "23 DTE"
+            "value": "22 DTE"
           },
           {
             "id": "ROM_YIELD_HURDLE",
