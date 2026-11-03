@@ -297,6 +297,20 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         risk_pct = round(((close - stop_loss) / close) * 100, 1)
         risk_reward_str = f"1 : {round((target_1 - close) / risk_per_share, 1)}"
 
+        # Capital Safety / Capital Defense Score: Statistical chance of preserving capital (not losing capital)
+        # 1. Base statistical edge from confluence (0-40 pts): (win_prob / 96.0) * 40.0
+        # 2. Institutional EMA structural foundation (0-20 pts): 20 pts if 50 EMA >= 200 EMA (golden cross provides dynamic accumulation support), 10 pts if near golden cross
+        # 3. Margin of Safety / Valuation buffer (0-20 pts): Deep 52W high discount buffer (min(35.0, max(0.0, discount_pct)) / 35.0) * 20.0
+        # 4. Downside floor proximity / Capital Protection (0-20 pts): max(0.0, 20.0 - (risk_pct * 1.5))
+        safety_score = (win_prob / 96.0) * 40.0
+        if is_golden:
+            safety_score += 20.0
+        elif near_golden:
+            safety_score += 10.0
+        safety_score += (min(35.0, max(0.0, discount_pct)) / 35.0) * 20.0
+        safety_score += max(0.0, 20.0 - (risk_pct * 1.5))
+        capital_safety_score = round(min(98.5, max(50.0, safety_score)), 1)
+
         # Rationale Narrative
         reasons = []
         if is_golden:
@@ -362,6 +376,7 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
             'macd_status': macd_status,
             'macd_bullish': macd_bullish,
             'win_probability': win_prob,
+            'capital_safety_score': capital_safety_score,
             'prob_tier': prob_tier,
             'prob_label': prob_label,
             'prob_badge': prob_badge,
@@ -381,10 +396,11 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
             }
         })
 
-    # Sort opportunities by win_probability descending, then by discount_pct descending
-    opportunities.sort(key=lambda x: (x['win_probability'], x['discount_pct']), reverse=True)
+    # Sort opportunities by capital_safety_score descending (Highest chance of not losing capital), then win_probability descending, then discount_pct descending
+    opportunities.sort(key=lambda x: (x.get('capital_safety_score', 0), x['win_probability'], x['discount_pct']), reverse=True)
 
     # Compute high-level summary KPIs
+    high_safety_count = len([o for o in opportunities if o.get('capital_safety_score', 0) >= 80.0])
     high_win_prob_count = len([o for o in opportunities if o['win_probability'] >= 80])
     golden_cross_count = len([o for o in opportunities if o['is_golden']])
     oversold_count = len([o for o in opportunities if o['rsi'] < 40.0])
@@ -401,6 +417,7 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
             'total_scanned': len(opportunities),
             'large_cap_count': large_cap_count,
             'mid_cap_count': mid_cap_count,
+            'high_safety_count': high_safety_count,
             'high_win_prob_count': high_win_prob_count,
             'golden_cross_count': golden_cross_count,
             'oversold_count': oversold_count,
