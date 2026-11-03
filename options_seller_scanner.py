@@ -316,8 +316,8 @@ def scan_options_theta_opportunities(output_path='web/options_selling_data.json'
             'rationale': rationale
         })
 
-    # Sort opportunities by theta_safety_score descending (Lowest probability of breakdown/breakout)
-    opportunities.sort(key=lambda x: (x['theta_safety_score'], x['primary_pop'], x['primary_buffer_pct']), reverse=True)
+    # Sort opportunities by primary_pop descending (Highest profit probability), then primary_buffer_pct descending, then adx ascending
+    opportunities.sort(key=lambda x: (x['primary_pop'], x['primary_buffer_pct'], -x.get('adx', 50)), reverse=True)
 
     summary = {
         'total_scanned': len(opportunities),
@@ -346,3 +346,4 @@ def scan_options_theta_opportunities(output_path='web/options_selling_data.json'
 
 if __name__ == '__main__':
     scan_options_theta_opportunities()
+
