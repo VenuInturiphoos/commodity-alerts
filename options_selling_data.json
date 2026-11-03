@@ -1,5 +1,5 @@
 {
-  "last_updated": "04 Nov 2026, 01:00 AM IST",
+  "last_updated": "04 Nov 2026, 01:08 AM IST",
   "summary": {
     "total_scanned": 17,
     "high_pop_count": 0,
@@ -168,32 +168,33 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "VOLATILE_EXPANSION",
-        "badge": "\u26a1 Volatile Expansion",
-        "short_tag": "High Volatility",
-        "color": "#fbbf24",
-        "bg_color": "rgba(251, 191, 36, 0.12)",
-        "border_color": "rgba(251, 191, 36, 0.35)",
-        "mandate": "Wide volatility band (BBW: 9.0%, Vol: 3.2%). High whipsaw risk. Reduce position sizing by 50%.",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending chop (ADX: 20.8, BBW: 9.0%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
-          "STRADDLE",
-          "DEFENSIVE_SCALPING",
-          "REDUCED_SIZING"
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
         ],
         "blocked_strategies": [
-          "NAKED_OPTION_SELLING",
-          "FULL_LEVERAGE"
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-bolt",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 20.8,
         "rsi": 60.3,
         "bb_width_pct": 8.96,
         "daily_vol_pct": 3.2
       },
-      "regime_tag": "VOLATILE_EXPANSION",
-      "regime_badge": "\u26a1 Volatile Expansion",
-      "regime_short": "High Volatility",
-      "regime_color": "#fbbf24",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
+      "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 8595.0,
         "take_profit_target_premium": 14.32,
@@ -406,21 +407,22 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "BEAR_TREND",
-        "badge": "\ud83d\udd3b Bear Breakdown",
-        "short_tag": "Bear Trend",
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
         "border_color": "rgba(251, 113, 133, 0.35)",
-        "mandate": "Downtrend in effect (Close < 50E, ADX: 21.5, RSI: 50.2). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 21.5, RSI: 50.2). Capital preservation priority; falling knife defense. Do not take long breakouts.",
         "allowed_strategies": [
           "DEFENSIVE_HEDGING",
           "BEAR_CALL_SPREAD",
-          "TIGHT_STOP_BOUNCE"
+          "SHORT_FUTURES"
         ],
         "blocked_strategies": [
           "NAKED_PUT_SELLING",
-          "AGGRESSIVE_BUYING"
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
         ],
         "icon": "fa-solid fa-arrow-trend-down",
         "adx": 21.5,
@@ -428,9 +430,9 @@
         "bb_width_pct": 8.16,
         "daily_vol_pct": 1.43
       },
-      "regime_tag": "BEAR_TREND",
-      "regime_badge": "\ud83d\udd3b Bear Breakdown",
-      "regime_short": "Bear Trend",
+      "regime_tag": "BREAKDOWN",
+      "regime_badge": "\ud83d\udd3b Breakdown / Bear Trend",
+      "regime_short": "Breakdown",
       "regime_color": "#fb7185",
       "trade_plan": {
         "initial_credit_inr": 10059.0,
@@ -644,30 +646,33 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "MILD_BEARISH",
-        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
-        "short_tag": "Soft",
-        "color": "#94a3b8",
-        "bg_color": "rgba(148, 163, 184, 0.12)",
-        "border_color": "rgba(148, 163, 184, 0.35)",
-        "mandate": "Neutral to soft consolidation (ADX: 22.9). Wait for directional break.",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending chop (ADX: 22.9, BBW: 10.6%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
-          "WATCHLIST",
-          "STAGED_LIMIT_ORDERS"
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
         ],
         "blocked_strategies": [
-          "MARKET_ORDERS"
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-cloud",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 22.9,
         "rsi": 46.4,
         "bb_width_pct": 10.61,
         "daily_vol_pct": 2.61
       },
-      "regime_tag": "MILD_BEARISH",
-      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
-      "regime_short": "Soft",
-      "regime_color": "#94a3b8",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
+      "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 19600.0,
         "take_profit_target_premium": 1.96,
@@ -880,21 +885,22 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "BEAR_TREND",
-        "badge": "\ud83d\udd3b Bear Breakdown",
-        "short_tag": "Bear Trend",
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
         "border_color": "rgba(251, 113, 133, 0.35)",
-        "mandate": "Downtrend in effect (Close < 50E, ADX: 21.3, RSI: 45.2). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 21.3, RSI: 45.2). Capital preservation priority; falling knife defense. Do not take long breakouts.",
         "allowed_strategies": [
           "DEFENSIVE_HEDGING",
           "BEAR_CALL_SPREAD",
-          "TIGHT_STOP_BOUNCE"
+          "SHORT_FUTURES"
         ],
         "blocked_strategies": [
           "NAKED_PUT_SELLING",
-          "AGGRESSIVE_BUYING"
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
         ],
         "icon": "fa-solid fa-arrow-trend-down",
         "adx": 21.3,
@@ -902,9 +908,9 @@
         "bb_width_pct": 11.67,
         "daily_vol_pct": 1.85
       },
-      "regime_tag": "BEAR_TREND",
-      "regime_badge": "\ud83d\udd3b Bear Breakdown",
-      "regime_short": "Bear Trend",
+      "regime_tag": "BREAKDOWN",
+      "regime_badge": "\ud83d\udd3b Breakdown / Bear Trend",
+      "regime_short": "Breakdown",
       "regime_color": "#fb7185",
       "trade_plan": {
         "initial_credit_inr": 6787.0,
@@ -1118,21 +1124,22 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "BEAR_TREND",
-        "badge": "\ud83d\udd3b Bear Breakdown",
-        "short_tag": "Bear Trend",
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
         "border_color": "rgba(251, 113, 133, 0.35)",
-        "mandate": "Downtrend in effect (Close < 50E, ADX: 22.5, RSI: 51.6). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 22.5, RSI: 51.6). Capital preservation priority; falling knife defense. Do not take long breakouts.",
         "allowed_strategies": [
           "DEFENSIVE_HEDGING",
           "BEAR_CALL_SPREAD",
-          "TIGHT_STOP_BOUNCE"
+          "SHORT_FUTURES"
         ],
         "blocked_strategies": [
           "NAKED_PUT_SELLING",
-          "AGGRESSIVE_BUYING"
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
         ],
         "icon": "fa-solid fa-arrow-trend-down",
         "adx": 22.5,
@@ -1140,9 +1147,9 @@
         "bb_width_pct": 7.07,
         "daily_vol_pct": 2.26
       },
-      "regime_tag": "BEAR_TREND",
-      "regime_badge": "\ud83d\udd3b Bear Breakdown",
-      "regime_short": "Bear Trend",
+      "regime_tag": "BREAKDOWN",
+      "regime_badge": "\ud83d\udd3b Breakdown / Bear Trend",
+      "regime_short": "Breakdown",
       "regime_color": "#fb7185",
       "trade_plan": {
         "initial_credit_inr": 11385.0,
@@ -1356,13 +1363,13 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 19.0, BBW: 8.0%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 19.0, BBW: 8.0%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -1370,17 +1377,18 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 19.0,
         "rsi": 57.8,
         "bb_width_pct": 7.96,
         "daily_vol_pct": 1.97
       },
-      "regime_tag": "COMPRESSED_RANGE",
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 20660.0,
@@ -1594,13 +1602,13 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 14.2, BBW: 7.7%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 14.2, BBW: 7.7%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -1608,17 +1616,18 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 14.2,
         "rsi": 53.5,
         "bb_width_pct": 7.69,
         "daily_vol_pct": 2.55
       },
-      "regime_tag": "COMPRESSED_RANGE",
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 29770.0,
@@ -1832,13 +1841,13 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 19.0, BBW: 9.7%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 19.0, BBW: 9.7%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -1846,17 +1855,18 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 19.0,
         "rsi": 55.5,
         "bb_width_pct": 9.67,
         "daily_vol_pct": 2.51
       },
-      "regime_tag": "COMPRESSED_RANGE",
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 18672.0,
@@ -2070,13 +2080,13 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 18.4, BBW: 8.4%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 18.4, BBW: 8.4%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -2084,17 +2094,18 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 18.4,
         "rsi": 52.1,
         "bb_width_pct": 8.4,
         "daily_vol_pct": 2.06
       },
-      "regime_tag": "COMPRESSED_RANGE",
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 2847.5,
@@ -2308,13 +2319,13 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 17.8, BBW: 6.4%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 17.8, BBW: 6.4%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -2322,17 +2333,18 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 17.8,
         "rsi": 56.3,
         "bb_width_pct": 6.44,
         "daily_vol_pct": 2.3
       },
-      "regime_tag": "COMPRESSED_RANGE",
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 21021.0,
@@ -2546,13 +2558,13 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 19.1, BBW: 9.4%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 19.1, BBW: 9.4%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -2560,17 +2572,18 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 19.1,
         "rsi": 56.8,
         "bb_width_pct": 9.44,
         "daily_vol_pct": 2.49
       },
-      "regime_tag": "COMPRESSED_RANGE",
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 21890.0,
@@ -2784,13 +2797,13 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 18.1, BBW: 8.5%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 18.1, BBW: 8.5%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -2798,17 +2811,18 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 18.1,
         "rsi": 56.0,
         "bb_width_pct": 8.53,
         "daily_vol_pct": 2.84
       },
-      "regime_tag": "COMPRESSED_RANGE",
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 15372.5,
@@ -3022,13 +3036,13 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 19.3, BBW: 9.6%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 19.3, BBW: 9.6%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -3036,17 +3050,18 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 19.3,
         "rsi": 48.8,
         "bb_width_pct": 9.6,
         "daily_vol_pct": 3.01
       },
-      "regime_tag": "COMPRESSED_RANGE",
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 13855.0,
@@ -3260,13 +3275,13 @@
       "risk_passed": false,
       "risk_verdict": "CONDITIONAL PASS",
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 16.6, BBW: 7.8%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 16.6, BBW: 7.8%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -3274,17 +3289,18 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 16.6,
         "rsi": 58.4,
         "bb_width_pct": 7.77,
         "daily_vol_pct": 3.65
       },
-      "regime_tag": "COMPRESSED_RANGE",
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 9372.0,
@@ -3498,13 +3514,13 @@
       "risk_passed": true,
       "risk_verdict": "APPROVED FOR THETA HARVEST",
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 17.7, BBW: 8.2%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 17.7, BBW: 8.2%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -3512,17 +3528,18 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 17.7,
         "rsi": 50.0,
         "bb_width_pct": 8.19,
         "daily_vol_pct": 2.63
       },
-      "regime_tag": "COMPRESSED_RANGE",
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 18100.0,
@@ -3736,13 +3753,13 @@
       "risk_passed": false,
       "risk_verdict": "CONDITIONAL PASS",
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 18.8, BBW: 9.8%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 18.8, BBW: 9.8%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -3750,17 +3767,18 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 18.8,
         "rsi": 60.2,
         "bb_width_pct": 9.83,
         "daily_vol_pct": 4.19
       },
-      "regime_tag": "COMPRESSED_RANGE",
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 15432.0,
@@ -3974,13 +3992,13 @@
       "risk_passed": false,
       "risk_verdict": "CONDITIONAL PASS",
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 17.4, BBW: 5.9%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 17.4, BBW: 5.9%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -3988,17 +4006,18 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 17.4,
         "rsi": 60.9,
         "bb_width_pct": 5.91,
         "daily_vol_pct": 4.11
       },
-      "regime_tag": "COMPRESSED_RANGE",
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_tag": "CHOP_CONSOLIDATION",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
         "initial_credit_inr": 21360.0,
