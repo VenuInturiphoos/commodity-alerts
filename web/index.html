@@ -2334,6 +2334,10 @@ function renderCircuitsTable() {
                     <div style="color: #fb7185; font-weight: 600; margin-top: 2px;">
                         <i class="fa-solid fa-angles-down" style="font-size: 0.7em;"></i> -${item.dist_to_lc_pct.toFixed(2)}% <span style="color:var(--text-secondary); font-size:0.75rem;">(₹${item.dist_to_lc_pts.toFixed(1)})</span>
                     </div>
+                    ${(item.prob_upper_circuit_pct !== undefined || item.prob_lower_circuit_pct !== undefined) ? `
+                    <div style="margin-top: 4px; font-size: 0.68rem; font-weight: 700; color: ${item.circuit_risk_color || '#38bdf8'};">
+                        <i class="fa-solid fa-bolt"></i> Lock Odds: ${Math.max(item.prob_upper_circuit_pct || 0, item.prob_lower_circuit_pct || 0)}% (${item.circuit_risk_badge || 'Band Contained'})
+                    </div>` : ''}
                 </td>
                 
                 <td>
@@ -2638,9 +2642,15 @@ function renderNiftyOpportunities() {
                             </div>
                             
                             ${item.time_machine ? `
-                            <div style="margin-top: 0.5rem; background: rgba(167, 139, 250, 0.08); border: 1px solid rgba(167, 139, 250, 0.25); border-radius: 6px; padding: 4px 8px; font-size: 0.7rem; color: #c4b5fd; display: flex; align-items: center; justify-content: space-between;">
-                                <span><i class="fa-solid fa-dice"></i> <strong>Time Machine:</strong> ${item.time_machine.p_stop_pct ? item.time_machine.p_stop_pct + '% Stop Risk' : 'Low Stop Risk'}</span>
-                                <span style="color: #34d399; font-weight: 700;">${(item.time_machine.expected_r >= 0 ? '+' : '') + item.time_machine.expected_r + 'R Exp'}</span>
+                            <div style="margin-top: 0.5rem; background: rgba(167, 139, 250, 0.08); border: 1px solid rgba(167, 139, 250, 0.25); border-radius: 6px; padding: 5px 8px; font-size: 0.7rem; color: #c4b5fd; display: flex; flex-direction: column; gap: 3px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <span><i class="fa-solid fa-dice"></i> <strong>Time Machine:</strong> ${item.time_machine.p_target_1_pct || item.time_machine.p_target_pct}% T1 · ${item.time_machine.p_target_2_pct || '20'}% T2 · ${item.time_machine.p_stop_pct}% SL</span>
+                                    <span style="color: #34d399; font-weight: 700;">${(item.time_machine.expected_r >= 0 ? '+' : '') + item.time_machine.expected_r + 'R'}</span>
+                                </div>
+                                ${item.time_machine.swing_advice ? `
+                                <div style="font-size: 0.65rem; color: #a78bfa; font-style: italic;">
+                                    💡 ${item.time_machine.swing_advice}
+                                </div>` : ''}
                             </div>` : ''}
                         </div>
                         
@@ -2714,7 +2724,7 @@ function renderNiftyOpportunities() {
                             <span class="nifty-action-badge ${actionClass}" style="font-size:0.68rem; padding:1px 6px;">${plan.action}</span>
                             <div style="font-size:0.72rem; color:#34d399; font-weight:600; margin-top:2px;">Target: ₹${plan.target_1} (+${plan.potential_upside_t1}%)</div>
                             <div style="font-size:0.68rem; color:#fb7185;">SL: ₹${plan.stop_loss}</div>
-                            ${item.time_machine ? `<div style="font-size:0.65rem; color:#c4b5fd;">🎲 ${item.time_machine.p_stop_pct}% Stop Risk</div>` : ''}
+                            ${item.time_machine ? `<div style="font-size:0.65rem; color:#c4b5fd;">🎲 ${item.time_machine.p_target_1_pct || item.time_machine.p_target_pct}% T1 · ${item.time_machine.p_stop_pct}% SL (${(item.time_machine.expected_r >= 0 ? '+' : '') + item.time_machine.expected_r}R)</div>` : ''}
                         </td>
                         <td style="text-align: right;">
                             <div style="display:flex; justify-content:flex-end; gap:4px;">

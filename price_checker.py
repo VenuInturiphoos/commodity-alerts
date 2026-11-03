@@ -16,6 +16,12 @@ import pyotp
 import urllib.request
 import json as json_lib
 
+try:
+    from trader_engine_bridge import CircuitMonteCarloPredictor
+    HAS_CIRCUIT_PREDICTOR = True
+except Exception:
+    HAS_CIRCUIT_PREDICTOR = False
+
 class PriceChecker:
     def __init__(self, config):
         self.commodities = config.get('commodities', {})
@@ -1541,7 +1547,8 @@ class PriceChecker:
             tv_quotes = self.fetch_tradingview_commodity_quotes()
             
         circuits = []
-        now_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d %b %Y, %I:%M:%S %p IST')
+        now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+        now_ist = now_dt.strftime('%d %b %Y, %I:%M:%S %p IST')
         
         # Parent mapping for Mini / Micro commodities to guarantee identical price and limit sync
         PARENT_MAP = {
@@ -1645,6 +1652,26 @@ class PriceChecker:
                 status_color = "#10b981"
                 status_text = "Normal Trading 🟢"
                 
+            # Circuit Limit Monte Carlo Hit Predictor (trader-timemachine skill: 5,000 paths)
+            circuit_sim = None
+            if HAS_CIRCUIT_PREDICTOR:
+                try:
+                    close_time = now_dt.replace(hour=23, minute=30, second=0, microsecond=0)
+                    mins_rem = max(15, int((close_time - now_dt).total_seconds() / 60)) if (close_time > now_dt) else 60
+                    atr_val = quote.get('atr_14') if quote else None
+                    daily_vol_pct = round((atr_val / close) * 100, 2) if (atr_val and close > 0) else 2.0
+                    circuit_sim = CircuitMonteCarloPredictor.predict_circuit_probability(
+                        symbol=symbol,
+                        current_price=close,
+                        upper_circuit=uc_init,
+                        lower_circuit=lc_init,
+                        daily_vol_pct=daily_vol_pct,
+                        minutes_remaining=mins_rem,
+                        replays=5000
+                    )
+                except Exception:
+                    pass
+
             circuits.append({
                 "symbol": symbol,
                 "name": name,
@@ -1681,7 +1708,16 @@ class PriceChecker:
                 "atr_14": quote.get('atr_14') if quote else None,
                 "avg_volume_10d": quote.get('avg_volume_10d') if quote else None,
                 "ema_20": quote.get('ema_20') if quote else None,
-                "ema_50": quote.get('ema_50') if quote else None
+                "ema_50": quote.get('ema_50') if quote else None,
+                # Monte Carlo Circuit Simulation Metrics
+                "circuit_sim": circuit_sim,
+                "prob_upper_circuit_pct": circuit_sim.get('prob_upper_circuit_pct', 0.0) if circuit_sim else 0.0,
+                "prob_lower_circuit_pct": circuit_sim.get('prob_lower_circuit_pct', 0.0) if circuit_sim else 0.0,
+                "circuit_risk_rating": circuit_sim.get('circuit_risk_rating', 'NORMAL_CONTAINED') if circuit_sim else 'NORMAL_CONTAINED',
+                "circuit_risk_badge": circuit_sim.get('rating_badge', '🟢 Band Contained') if circuit_sim else '🟢 Band Contained',
+                "circuit_risk_color": circuit_sim.get('rating_color', '#10b981') if circuit_sim else '#10b981',
+                "var_95_high": circuit_sim.get('var_95_expected_high') if circuit_sim else None,
+                "var_95_low": circuit_sim.get('var_95_expected_low') if circuit_sim else None,
             })
             
         out_data = {

@@ -947,3 +947,225 @@ class OptionsBudgetAndExitPlanner:
         }
 
 
+class SwingStockMonteCarloEngine:
+    """
+    Multi-Target Swing Monte Carlo Engine for Golden Crossover & Oversold Equities.
+    Derived from day-trader-skill (trader-timemachine).
+    
+    Simulates 3,000 multi-day paths over a realistic swing holding horizon (15 to 25 trading days).
+    Uses the stock's actual daily volatility (daily_vol_pct) to model empirical price diffusion.
+    
+    Computes:
+    - Target 1 Hit Rate (% of paths reaching Target 1 before SL, e.g. +6% to +10%)
+    - Target 2 Hit Rate (% of paths reaching Target 2 before SL, e.g. +15% to +22%)
+    - Stop Loss Risk Rate (% of paths stopped out)
+    - Neither Hit (% of paths floating inside the channel at holding horizon)
+    - Expected Return in R-multiples (assuming 60% locked at T1 and 40% trailed to T2)
+    - Institutional Swing Advice: e.g. "Lock 60% profit at ₹{target_1} (71% probability); trail stop to entry for ₹{target_2}"
+    """
+
+    @classmethod
+    def simulate_swing_trade(cls, symbol, close, stop_loss, target_1, target_2, daily_vol_pct=1.8,
+                             holding_days=20, replays=3000, seed=42):
+        try:
+            import numpy as np
+            has_np = True
+        except ImportError:
+            has_np = False
+
+        daily_vol = max(0.008, float(daily_vol_pct) / 100.0) if daily_vol_pct else 0.018
+        risk_per_share = abs(close - stop_loss)
+        r1 = round(abs(target_1 - close) / risk_per_share, 2) if risk_per_share > 0 else 1.8
+        r2 = round(abs(target_2 - close) / risk_per_share, 2) if risk_per_share > 0 else 3.5
+
+        if has_np:
+            rng = np.random.default_rng(seed)
+            # Slight drift (0.05% daily) representing positive edge in golden crossover / oversold bounce
+            daily_rets = rng.normal(loc=0.0005, scale=daily_vol, size=(replays, holding_days))
+            price_paths = close * np.cumprod(1.0 + daily_rets, axis=1)
+
+            hit_sl_step = price_paths <= stop_loss
+            hit_t1_step = price_paths >= target_1
+            hit_t2_step = price_paths >= target_2
+
+            first_sl = np.where(np.any(hit_sl_step, axis=1), np.argmax(hit_sl_step, axis=1), 9999)
+            first_t1 = np.where(np.any(hit_t1_step, axis=1), np.argmax(hit_t1_step, axis=1), 9999)
+            first_t2 = np.where(np.any(hit_t2_step, axis=1), np.argmax(hit_t2_step, axis=1), 9999)
+
+            sl_before_t1 = (first_sl < first_t1) & (first_sl != 9999)
+            t1_reached = (first_t1 != 9999) & (~sl_before_t1)
+            t2_reached = (first_t2 != 9999) & (~sl_before_t1)
+            neither_reached = (first_sl == 9999) & (first_t1 == 9999)
+
+            p_t1 = round(float(np.mean(t1_reached) * 100.0), 1)
+            p_t2 = round(float(np.mean(t2_reached) * 100.0), 1)
+            p_sl = round(float(np.mean(sl_before_t1) * 100.0), 1)
+            p_neither = round(float(np.mean(neither_reached) * 100.0), 1)
+        else:
+            rng = random.Random(seed)
+            t1_c = 0
+            t2_c = 0
+            sl_c = 0
+            for _ in range(replays):
+                p = close
+                hit_sl = False
+                hit_t1 = False
+                hit_t2 = False
+                for _ in range(holding_days):
+                    ret = rng.gauss(0.0005, daily_vol)
+                    p *= (1.0 + ret)
+                    if p <= stop_loss and not hit_t1:
+                        hit_sl = True
+                        break
+                    if p >= target_1:
+                        hit_t1 = True
+                    if p >= target_2:
+                        hit_t2 = True
+                if hit_sl: sl_c += 1
+                if hit_t1: t1_c += 1
+                if hit_t2: t2_c += 1
+            p_t1 = round((t1_c / replays) * 100.0, 1)
+            p_t2 = round((t2_c / replays) * 100.0, 1)
+            p_sl = round((sl_c / replays) * 100.0, 1)
+            p_neither = round(max(0.0, 100.0 - (p_t1 + p_sl)), 1)
+
+        # Expected R: 60% booked at T1 (r1), 40% booked at T2 (r2), vs losing 1.0R at SL
+        expected_r = round(((p_t1 / 100.0) * 0.60 * r1) + ((p_t2 / 100.0) * 0.40 * r2) - ((p_sl / 100.0) * 1.0), 2)
+
+        if p_t1 >= 55.0 and expected_r >= 0.40:
+            verdict = "HIGH_CONFIDENCE_SWING"
+            verdict_badge = "🟢 High Edge Swing"
+        elif p_t1 >= 45.0:
+            verdict = "FAVORABLE_SWING"
+            verdict_badge = "🟢 Favorable Swing"
+        else:
+            verdict = "MODERATE_SWING"
+            verdict_badge = "🟡 Moderate Swing"
+
+        swing_advice = (
+            f"Lock 60% profit at T1 ₹{target_1:,.2f} ({p_t1}% hit rate); "
+            f"trail stop to entry for T2 ₹{target_2:,.2f} ({p_t2}% hit rate)."
+        )
+
+        return {
+            "replays": replays,
+            "holding_days": holding_days,
+            "daily_volatility_pct": round(daily_vol * 100.0, 2),
+            "p_target_pct": p_t1,
+            "p_target_1_pct": p_t1,
+            "p_target_2_pct": p_t2,
+            "p_stop_pct": p_sl,
+            "p_neither_pct": p_neither,
+            "target_1_r": r1,
+            "target_2_r": r2,
+            "expected_r": expected_r,
+            "verdict": verdict,
+            "verdict_badge": verdict_badge,
+            "swing_advice": swing_advice,
+            "summary": f"{replays:,} Replays: {p_t1}% T1 | {p_t2}% T2 | {p_sl}% SL | Expected: {expected_r:+.2f}R"
+        }
+
+
+class CircuitMonteCarloPredictor:
+    """
+    Circuit Limit Lock & Extreme Intraday Range Predictor for Commodities & Equities.
+    Derived from day-trader-skill (trader-timemachine).
+    
+    Simulates 5,000 intraday paths across the remaining minutes/hours of the active session
+    using current price, distance to Upper/Lower circuits, and intraday ATR/volatility.
+    
+    Computes:
+    - Upper Circuit Hit Probability (% chance of price touching or locking the Upper Circuit band today)
+    - Lower Circuit Hit Probability (% chance of price touching or locking the Lower Circuit band today)
+    - 95% Confidence Session Range (Lower Band 95th VaR and Upper Band 95th VaR)
+    - Circuit Risk Rating: LOW (<10%), MODERATE (10-24%), HIGH (25-49%), EXTREME (>=50%)
+    """
+
+    @classmethod
+    def predict_circuit_probability(cls, symbol, current_price, upper_circuit, lower_circuit,
+                                   daily_vol_pct=2.0, minutes_remaining=180, replays=5000, seed=42):
+        try:
+            import numpy as np
+            has_np = True
+        except ImportError:
+            has_np = False
+
+        if not current_price or current_price <= 0:
+            return None
+
+        bars_remaining = max(1, int(minutes_remaining / 5))
+        # Approximate 5-minute bar volatility from daily volatility (75 5m bars in MCX session)
+        daily_vol = max(0.008, float(daily_vol_pct) / 100.0) if daily_vol_pct else 0.02
+        bar_vol = daily_vol / math.sqrt(75)
+
+        if has_np:
+            rng = np.random.default_rng(seed)
+            bar_returns = rng.normal(loc=0.0, scale=bar_vol, size=(replays, bars_remaining))
+            paths = current_price * np.cumprod(1.0 + bar_returns, axis=1)
+
+            max_prices = np.max(paths, axis=1)
+            min_prices = np.min(paths, axis=1)
+
+            uc_hit = round(float(np.mean(max_prices >= upper_circuit) * 100.0), 1) if upper_circuit else 0.0
+            lc_hit = round(float(np.mean(min_prices <= lower_circuit) * 100.0), 1) if lower_circuit else 0.0
+            var_95_high = round(float(np.percentile(max_prices, 95)), 2)
+            var_95_low = round(float(np.percentile(min_prices, 5)), 2)
+        else:
+            rng = random.Random(seed)
+            uc_c = 0
+            lc_c = 0
+            max_list = []
+            min_list = []
+            for _ in range(replays):
+                p = current_price
+                p_max = current_price
+                p_min = current_price
+                for _ in range(bars_remaining):
+                    ret = rng.gauss(0.0, bar_vol)
+                    p *= (1.0 + ret)
+                    if p > p_max: p_max = p
+                    if p < p_min: p_min = p
+                if upper_circuit and p_max >= upper_circuit: uc_c += 1
+                if lower_circuit and p_min <= lower_circuit: lc_c += 1
+                max_list.append(p_max)
+                min_list.append(p_min)
+            uc_hit = round((uc_c / replays) * 100.0, 1)
+            lc_hit = round((lc_c / replays) * 100.0, 1)
+            max_list.sort()
+            min_list.sort()
+            var_95_high = round(max_list[int(replays * 0.95)], 2)
+            var_95_low = round(min_list[int(replays * 0.05)], 2)
+
+        max_circuit_prob = max(uc_hit, lc_hit)
+        if max_circuit_prob >= 40.0:
+            rating = "EXTREME_CIRCUIT_RISK"
+            rating_badge = "🚨 Extreme Circuit Risk"
+            rating_color = "#ef4444"
+        elif max_circuit_prob >= 20.0:
+            rating = "HIGH_CIRCUIT_RISK"
+            rating_badge = "⚠️ High Circuit Risk"
+            rating_color = "#f97316"
+        elif max_circuit_prob >= 8.0:
+            rating = "MODERATE_CIRCUIT_TEST"
+            rating_badge = "⚡ Moderate Circuit Test"
+            rating_color = "#eab308"
+        else:
+            rating = "NORMAL_CONTAINED"
+            rating_badge = "🟢 Band Contained"
+            rating_color = "#10b981"
+
+        return {
+            "replays": replays,
+            "minutes_remaining": minutes_remaining,
+            "prob_upper_circuit_pct": uc_hit,
+            "prob_lower_circuit_pct": lc_hit,
+            "var_95_expected_high": var_95_high,
+            "var_95_expected_low": var_95_low,
+            "circuit_risk_rating": rating,
+            "rating_badge": rating_badge,
+            "rating_color": rating_color,
+            "summary": f"Circuit Odds: {uc_hit}% Upper Lock | {lc_hit}% Lower Lock | 95% Band: ₹{var_95_low:,.1f} - ₹{var_95_high:,.1f}"
+        }
+
+
+

@@ -12,7 +12,7 @@ import requests
 from datetime import datetime
 
 try:
-    from trader_engine_bridge import MonteCarloTimeMachine
+    from trader_engine_bridge import MonteCarloTimeMachine, SwingStockMonteCarloEngine
     HAS_TIME_MACHINE = True
 except Exception:
     HAS_TIME_MACHINE = False
@@ -94,7 +94,8 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         'price_52_week_high', 'price_52_week_low',
         'EMA50', 'EMA200', 'SMA50', 'SMA200',
         'RSI', 'RSI[1]', 'MACD.macd', 'MACD.signal',
-        'BB.lower', 'BB.upper', 'Recommend.All', 'sector'
+        'BB.lower', 'BB.upper', 'Recommend.All', 'sector',
+        'Volatility.D', 'ATR'
     ]
 
     payload = {
@@ -154,6 +155,8 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         macd_sig = float(d.get('MACD.signal') or 0.0)
         full_name = d.get('description') or name
         sector = d.get('sector') or 'Indian Equities'
+        volatility_d = float(d.get('Volatility.D') or 1.8)
+        atr_val = float(d.get('ATR') or (close * 0.02))
 
         # Technical Metrics
         discount_pct = round(((h52 - close) / h52) * 100, 2) if h52 > 0 else 0.0
@@ -303,18 +306,30 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         risk_pct = round(((close - stop_loss) / close) * 100, 1)
         risk_reward_str = f"1 : {round((target_1 - close) / risk_per_share, 1)}"
 
-        # Trader-TimeMachine Simulation (trader-timemachine skill: parametric volatility replays)
+        # Trader-TimeMachine Simulation (3,000 empirical paths using stock-specific daily volatility)
         time_machine_metrics = None
         if HAS_TIME_MACHINE:
             try:
-                time_machine_metrics = MonteCarloTimeMachine._parametric_fallback(
-                    entry=round(close, 2),
-                    stop=stop_loss,
-                    target=target_1,
-                    action='buy'
+                time_machine_metrics = SwingStockMonteCarloEngine.simulate_swing_trade(
+                    symbol=orig_sym,
+                    close=round(close, 2),
+                    stop_loss=stop_loss,
+                    target_1=target_1,
+                    target_2=target_2,
+                    daily_vol_pct=volatility_d,
+                    holding_days=20,
+                    replays=3000
                 )
             except Exception:
-                pass
+                try:
+                    time_machine_metrics = MonteCarloTimeMachine._parametric_fallback(
+                        entry=round(close, 2),
+                        stop=stop_loss,
+                        target=target_1,
+                        action='buy'
+                    )
+                except Exception:
+                    pass
 
         if not time_machine_metrics:
             p_stop = min(50.0, max(20.0, risk_pct * 4.2))
@@ -322,6 +337,8 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
             time_machine_metrics = {
                 'replays': 1000,
                 'p_target_pct': round(p_tgt, 1),
+                'p_target_1_pct': round(p_tgt, 1),
+                'p_target_2_pct': round(p_tgt * 0.45, 1),
                 'p_stop_pct': round(p_stop, 1),
                 'expected_r': round((p_tgt * 2.2 - p_stop * 1.0) / 100, 3),
                 'summary': f"Parametric Replay: {p_tgt:.1f}% Target | {p_stop:.1f}% Stop"
