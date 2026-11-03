@@ -615,14 +615,16 @@
                     <div class="nifty-filters">
                         <button class="circuit-filter-pill active" onclick="filterNiftyCategory('ALL', this)">🔥 All Setups (<span id="nifty-cnt-all">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('BULL_REGIME', this)">🚀 Bull Trend (<span id="nifty-cnt-bull">0</span>)</button>
-                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('RANGE_REGIME', this)">💤 Rangebound (<span id="nifty-cnt-range">0</span>)</button>
-                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('SAFETY', this)">🛡️ Max Capital Safety &gt;75% (<span id="nifty-cnt-safety">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('RANGE_REGIME', this)">💤 Chop / Consolidation (<span id="nifty-cnt-range">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('BREAKDOWN_REGIME', this)">🔻 Breakdown (<span id="nifty-cnt-breakdown">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('REGIME_VERIFIED', this)">🛡️ Regime Verified (<span id="nifty-cnt-verified">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('SAFETY', this)">🛡️ Capital Safety &gt;75% (<span id="nifty-cnt-safety">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('LARGE', this)">🏛️ Large Cap (<span id="nifty-cnt-large">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('MIDCAP', this)">🚀 Mid Cap (<span id="nifty-cnt-mid">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('GOLDEN', this)">🌟 Golden Cross (<span id="nifty-cnt-golden">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('OVERSOLD', this)">📉 Deeply Oversold (<span id="nifty-cnt-oversold">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('DISCOUNT', this)">🏷️ Deep Discount &gt;15% (<span id="nifty-cnt-discount">0</span>)</button>
-                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('ELITE', this)">🏆 90%+ Elite Win Prob (<span id="nifty-cnt-elite">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('ELITE', this)">🏆 90%+ Win Prob (<span id="nifty-cnt-elite">0</span>)</button>
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
@@ -2434,7 +2436,11 @@ async function fetchNiftyOpportunities(forceNetwork = false) {
     
     if (cntAll) cntAll.textContent = stocks.length;
     if (cntBull) cntBull.textContent = stocks.filter(x => x.regime_tag === 'BULL_TREND' || x.regime_tag === 'MILD_BULLISH').length;
-    if (cntRange) cntRange.textContent = stocks.filter(x => x.regime_tag === 'COMPRESSED_RANGE').length;
+    if (cntRange) cntRange.textContent = stocks.filter(x => x.regime_tag === 'CHOP_CONSOLIDATION' || x.regime_tag === 'COMPRESSED_RANGE').length;
+    const cntBreakdown = document.getElementById('nifty-cnt-breakdown');
+    if (cntBreakdown) cntBreakdown.textContent = stocks.filter(x => x.regime_tag === 'BREAKDOWN' || x.regime_tag === 'BEAR_TREND').length;
+    const cntVerified = document.getElementById('nifty-cnt-verified');
+    if (cntVerified) cntVerified.textContent = stocks.filter(x => x.signal_quality === 'REGIME_VERIFIED' || (!x.is_false_signal && x.regime_tag !== 'BREAKDOWN')).length;
     const cntSafety = document.getElementById('nifty-cnt-safety');
     if (cntSafety) cntSafety.textContent = stocks.filter(x => (x.capital_safety_score || 0) >= 75).length;
     if (cntLarge) cntLarge.textContent = stocks.filter(x => x.cap_category === 'Large Cap' || !x.is_midcap).length;
@@ -2497,7 +2503,9 @@ function renderNiftyOpportunities() {
     let filtered = niftyOpportunitiesData.stocks.filter(s => {
         // Category Filter
         if (activeNiftyFilter === 'BULL_REGIME' && s.regime_tag !== 'BULL_TREND' && s.regime_tag !== 'MILD_BULLISH') return false;
-        if (activeNiftyFilter === 'RANGE_REGIME' && s.regime_tag !== 'COMPRESSED_RANGE') return false;
+        if (activeNiftyFilter === 'RANGE_REGIME' && s.regime_tag !== 'CHOP_CONSOLIDATION' && s.regime_tag !== 'COMPRESSED_RANGE') return false;
+        if (activeNiftyFilter === 'BREAKDOWN_REGIME' && s.regime_tag !== 'BREAKDOWN' && s.regime_tag !== 'BEAR_TREND') return false;
+        if (activeNiftyFilter === 'REGIME_VERIFIED' && (s.is_false_signal || s.signal_quality === 'FALSE_SIGNAL_RISK' || s.regime_tag === 'BREAKDOWN')) return false;
         if (activeNiftyFilter === 'SAFETY' && (s.capital_safety_score || 0) < 75) return false;
         if (activeNiftyFilter === 'LARGE' && (s.cap_category !== 'Large Cap' && s.is_midcap)) return false;
         if (activeNiftyFilter === 'MIDCAP' && (s.cap_category !== 'Mid Cap' && !s.is_midcap)) return false;
@@ -5997,38 +6005,62 @@ function isAvoidedAdvisoryTrade(t) {
            (s6.action_text && s6.action_text.includes('STAND ASIDE'));
 }
 
-function isTradeFromToday(t) {
-    if (!t) return false;
+function parseDateStrToParts(str) {
+    if (!str) return null;
+    const parts = str.trim().split(/[\s\-]+/);
+    if (parts.length < 3) return null;
+    const day = parseInt(parts[0], 10);
+    const months = { 'jan':0, 'feb':1, 'mar':2, 'apr':3, 'may':4, 'jun':5, 'jul':6, 'aug':7, 'sep':8, 'oct':9, 'nov':10, 'dec':11 };
+    const month = months[parts[1].slice(0, 3).toLowerCase()];
+    const year = parseInt(parts[2], 10);
+    if (isNaN(day) || month === undefined || isNaN(year)) return null;
+    return { year, month, day };
+}
+
+function getNowISTParts() {
     const now = new Date();
-    const options = { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' };
-    const todayFormatted = now.toLocaleDateString('en-GB', options);
-    if (t.date && t.date.trim() === todayFormatted.trim()) return true;
-    return false;
+    const dFmt = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Kolkata',
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false
+    });
+    const parts = dFmt.formatToParts(now);
+    const getVal = (t) => parseInt(parts.find(p => p.type === t)?.value || '0', 10);
+    return {
+        year: getVal('year'),
+        month: getVal('month') - 1,
+        day: getVal('day'),
+        hour: getVal('hour'),
+        minute: getVal('minute')
+    };
+}
+
+function isTradeFromToday(t) {
+    if (!t || !t.date) return false;
+    const nowP = getNowISTParts();
+    const tradeP = parseDateStrToParts(t.date);
+    if (!tradeP) return false;
+    return (nowP.year === tradeP.year && nowP.month === tradeP.month && nowP.day === tradeP.day);
 }
 
 function isPastISTWindow(dateStr, targetHour, targetMin) {
     if (!dateStr) return false;
     try {
-        const now = new Date();
-        const options = { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' };
-        const todayIST = now.toLocaleDateString('en-GB', options).trim();
-        
-        // If trade date is strictly before today in IST, it is past
-        const tradeD = new Date(dateStr);
-        const todayD = new Date(todayIST);
-        if (todayD > tradeD) return true;
-        if (todayD < tradeD) return false;
-
-        // If same day in IST, check time in IST
-        const timeParts = new Intl.DateTimeFormat('en-GB', {
-            timeZone: 'Asia/Kolkata',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        }).format(now).split(':');
-        const curH = parseInt(timeParts[0], 10);
-        const curM = parseInt(timeParts[1], 10);
-        return (curH > targetHour) || (curH === targetHour && curM >= targetMin);
+        const nowP = getNowISTParts();
+        const tradeP = parseDateStrToParts(dateStr);
+        if (tradeP) {
+            if (nowP.year > tradeP.year) return true;
+            if (nowP.year < tradeP.year) return false;
+            if (nowP.month > tradeP.month) return true;
+            if (nowP.month < tradeP.month) return false;
+            if (nowP.day > tradeP.day) return true;
+            if (nowP.day < tradeP.day) return false;
+        }
+        return (nowP.hour > targetHour) || (nowP.hour === targetHour && nowP.minute >= targetMin);
     } catch (e) {
         return false;
     }
@@ -6440,10 +6472,19 @@ function renderAdvisoryTradesTable() {
             `;
         }
 
+        const isStandAsideTrade = isAvoidedAdvisoryTrade(t) ||
+            pt.status === 'STAND_ASIDE' ||
+            pt.action === 'STAND_ASIDE' ||
+            c15.status === 'CONFIRMATION_EXPIRED' ||
+            c15.status === 'CONFIRMED_STAND_ASIDE' ||
+            c15.status === 'NO_REVERSAL_STAND_ASIDE' ||
+            c15.status === 'NO_GAP_STAND_ASIDE' ||
+            outcome.outcome === 'PROTECTED';
+
         let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
         if (outcome.outcome === 'WRONG') {
             outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
-        } else if (outcome.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t) || (pt.status === 'PENDING_615' && isPast1815)) {
+        } else if (isStandAsideTrade || (pt.status === 'PENDING_615' && isPast1815)) {
             outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${outcome.badge || 'Avoided Trap 🛡️'}</span>`;
         } else if (pt.status === 'ACTIVE') {
             if (isSessionExpired) {
@@ -6461,7 +6502,10 @@ function renderAdvisoryTradesTable() {
         let pnlColor = '#cbd5e1';
         let pnlText = outcome.pnl_display || '₹0.00';
         let ptsFormulaHtml = '';
-        if (pt.status === 'ACTIVE' && !isSessionExpired && pt.entry_price) {
+        if (isStandAsideTrade) {
+            pnlColor = '#94a3b8';
+            pnlText = '₹0.00 <span style="font-size:0.7rem; color:#60a5fa; display:block; font-weight:400;">(Protected)</span>';
+        } else if (pt.status === 'ACTIVE' && !isSessionExpired && pt.entry_price) {
             if (liveSource && liveSource.current_price) {
                 const curPrice = Number(liveSource.current_price);
                 const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
@@ -6683,10 +6727,19 @@ function renderAdvisoryTradesTable() {
                 }
             }
 
+            const isStandAsideTrade = isAvoidedAdvisoryTrade(t) ||
+                pt.status === 'STAND_ASIDE' ||
+                pt.action === 'STAND_ASIDE' ||
+                c15.status === 'CONFIRMATION_EXPIRED' ||
+                c15.status === 'CONFIRMED_STAND_ASIDE' ||
+                c15.status === 'NO_REVERSAL_STAND_ASIDE' ||
+                c15.status === 'NO_GAP_STAND_ASIDE' ||
+                outcome.outcome === 'PROTECTED';
+
             let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
             if (outcome.outcome === 'WRONG') {
                 outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
-            } else if (outcome.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t) || (pt.status === 'PENDING_615' && isPast1815)) {
+            } else if (isStandAsideTrade || (pt.status === 'PENDING_615' && isPast1815)) {
                 outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${outcome.badge || 'Avoided Trap 🛡️'}</span>`;
             } else if (pt.status === 'ACTIVE') {
                 if (isSessionExpired) {
@@ -6704,7 +6757,10 @@ function renderAdvisoryTradesTable() {
             let pnlColor = '#cbd5e1';
             let pnlText = outcome.pnl_display || '₹0.00';
             let mobilePtsFormulaHtml = '';
-            if (pt.status === 'ACTIVE' && !isSessionExpired && pt.entry_price) {
+            if (isStandAsideTrade) {
+                pnlColor = '#94a3b8';
+                pnlText = '₹0.00 <small style="font-size:0.68rem; color:#60a5fa; display:block; font-weight:400;">(Protected)</small>';
+            } else if (pt.status === 'ACTIVE' && !isSessionExpired && pt.entry_price) {
                 if (liveSource && liveSource.current_price) {
                     const curPrice = Number(liveSource.current_price);
                     const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
@@ -6776,9 +6832,9 @@ function renderAdvisoryTradesTable() {
             } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || outcome.summary?.includes('Stop-Loss')) {
                 mobileExitLabel = `<i class="fa-solid fa-shield" style="color:#fb7185;"></i> Stop Loss Hit`;
                 mobileExitVal = `<span style="color:#fb7185; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
-            } else if (isAvoidedAdvisoryTrade(t)) {
+            } else if (isStandAsideTrade) {
                 mobileExitLabel = 'Trade Action';
-                mobileExitVal = '<span style="color:#64748b;">Avoided Trap</span>';
+                mobileExitVal = '<span style="color:#64748b;">N/A (Stood Aside)</span>';
             } else if (pt.exit_price) {
                 mobileExitLabel = `Exit (${exitTimeStr})`;
             }

@@ -147,6 +147,16 @@ def main():
     except Exception as e:
         print(f"Error checking 1:30 PM advisory: {e}")
 
+    # Check and trigger NSE Intraday 3:20 PM Square-off (Monday - Friday, 15:20 IST onwards)
+    try:
+        now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
+        if now_ist.weekday() < 5 and (now_ist.hour > 15 or (now_ist.hour == 15 and now_ist.minute >= 20)):
+            print("\n--- Checking NSE Intraday 3:20 PM Square-off & Settlement ---")
+            from advisory_tracker import square_off_intraday_equity_trades
+            square_off_intraday_equity_trades(checker, alerter)
+    except Exception as e:
+        print(f"Error checking 3:20 PM intraday square-off: {e}")
+
     # Check and trigger Daily 6:00 PM IST Action Advisory (Monday - Friday)
     try:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))

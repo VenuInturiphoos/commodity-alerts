@@ -2,7 +2,7 @@ import os
 import json
 import pytz
 from datetime import datetime
-from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer
+from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer, MarketRegimeDetector
 
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'advisory_trades_tracker.json')
 NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'nifty_crossover_oversold.json')
@@ -230,6 +230,18 @@ def save_tracker(tracker_data):
             eod['badge'] = 'Avoided Trap 🛡️'
             eod['pnl_display'] = '₹0.00 (Protected)'
             eod['summary'] = '15-minute confirmation check elapsed without executed entry. 100% capital protected in cash.'
+
+        # Enforce ~₹1.5L Value Parity Whole Contract Lot Sizing for MCX Commodities
+        if t.get('symbol') == 'ALUMINI' and (t.get('lot_size') == 276 or pt.get('quantity') == 276):
+            t['lot_size'] = 1000
+            pt['quantity'] = 1000
+            if pt.get('entry_price') and pt.get('exit_price'):
+                pts = (pt['entry_price'] - pt['exit_price']) if pt.get('action') == 'SELL' else (pt['exit_price'] - pt['entry_price'])
+                pnl = round(pts * 1000, 2)
+                pt['pnl_points'] = round(pts, 2)
+                pt['pnl_inr'] = pnl
+                eod['pnl_display'] = f"{'+' if pnl >= 0 else ''}₹{pnl:,.2f}"
+                eod['summary'] = f"11:30 PM IST session close exit. Entry: ₹{pt['entry_price']:,.2f} -> Exit: ₹{pt['exit_price']:,.2f} ({pts:+.2f} pts | {'+' if pnl >= 0 else ''}₹{pnl:,.2f}). Margin released."
 
         # 2. ACTIVE trades past their trading session (past day or current day past session cut-off)
         is_past_session = False
@@ -2563,20 +2575,30 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 (clean_check_sym == 'ALUMINI' and 'ALUMINIUM' in existing_active_syms)):
                 continue
 
-            # 1. Inventory & Macro Event Blackout Guard
+            # 1. Institutional Market Regime Classifier & False Signal Filter
+            regime_info = MarketRegimeDetector.classify_regime(
+                symbol=sym, close=cur_p, ema50=ema50, ema200=ema20,
+                adx=adx, rsi=rsi, bb_lower=lc, bb_upper=uc, atr=atr_val
+            )
+            regime_check = MarketRegimeDetector.validate_signal(regime_info, action, setup_name)
+            if not regime_check.get('passed'):
+                print(f"🛡️ Market Regime Filter Blocked {sym} {action}: {regime_check.get('reason')}")
+                continue
+
+            # 2. Inventory & Macro Event Blackout Guard
             event_metrics = EventRiskGuard.check_event_risk(sym, now_dt)
             if not event_metrics.get('passed'):
                 print(f"📰 Event Risk Guard Blocked {sym}: {event_metrics.get('reason')}")
                 continue
 
-            # 2. 15-Minute ORB Bar-Close & Wick Trap Guard (for Breakouts)
+            # 3. 15-Minute ORB Bar-Close & Wick Trap Guard (for Breakouts)
             if "Breakout" in setup_name or "Breakdown" in setup_name:
                 orb_metrics = ORBTimer.check_orb_confirmation(sym, action, cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p)
                 if not orb_metrics.get('passed'):
                     print(f"⏱️ ORB Timer Blocked {sym} {action}: {orb_metrics.get('reason')}")
                     continue
 
-            # 3. Dynamic Position Sizing & Mini-Contract Routing (Ensures Technical Stop fits <= ₹3,000 risk)
+            # 4. Dynamic Position Sizing & Mini-Contract Routing (Ensures Technical Stop fits <= ₹3,000 risk)
             contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
                 sym, name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR, atr=atr_val
             )
@@ -2609,6 +2631,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 "name": contract_name,
                 "lot_size": adaptive_lot,
                 "event_context": f"Indicator Confluence: {setup_name}",
+                "regime": regime_info,
                 "time_machine": sim_metrics,
                 "risk_check": risk_metrics,
                 "suggestion_6pm": {
@@ -2833,6 +2856,17 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                                 fut_sl = round(cur_p - fut_risk_per_share if eq_action == 'BUY' else cur_p + fut_risk_per_share, 2)
                                 fut_tgt = round(cur_p + (2.0 * fut_risk_per_share) if eq_action == 'BUY' else cur_p - (2.0 * fut_risk_per_share), 2)
                             
+                            # Institutional Market Regime Classifier & False Signal Filter for Stock Futures
+                            regime_info = s.get('regime') or MarketRegimeDetector.classify_regime(
+                                symbol=clean_sym, close=cur_p, ema50=ema50, ema200=float(s.get('ema_200') or cur_p),
+                                adx=float(s.get('adx') or 20.0), rsi=rsi, bb_lower=bb_lower, bb_upper=float(s.get('bb_upper') or cur_p * 1.05),
+                                atr=atr
+                            )
+                            regime_check = MarketRegimeDetector.validate_signal(regime_info, eq_action, eq_setup)
+                            if not regime_check.get('passed'):
+                                print(f"🛡️ Market Regime Filter Blocked Stock Future {fut_sym} {eq_action}: {regime_check.get('reason')}")
+                                continue
+
                             # 14-Point Pre-Trade Risk Engine Check for Stock Futures
                             all_existing = new_trades + trades
                             risk_metrics = PreTradeRiskEngine.check_risk(
@@ -2860,6 +2894,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                                             "lot_size": fut_lot,
                                             "asset_type": "FUTURES",
                                             "event_context": f"NSE Stock Future ({sfc['sector']}): {eq_setup}",
+                                            "regime": regime_info,
                                             "time_machine": sim_metrics,
                                             "risk_check": risk_metrics,
                                             "orb_check": orb_metrics,
@@ -2951,7 +2986,18 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                         if eq_shares < 1:
                             continue
 
-                        # 5. 14-Point Pre-Trade Risk Engine Check (trader-risk skill: Capped at ₹250 risk / ₹500 daily loss)
+                        # 5. Institutional Market Regime Classifier & False Signal Filter
+                        regime_info = s.get('regime') or MarketRegimeDetector.classify_regime(
+                            symbol=clean_sym, close=cur_p, ema50=ema50, ema200=float(s.get('ema_200') or cur_p),
+                            adx=float(s.get('adx') or 20.0), rsi=rsi, bb_lower=bb_lower, bb_upper=float(s.get('bb_upper') or cur_p * 1.05),
+                            atr=atr
+                        )
+                        regime_check = MarketRegimeDetector.validate_signal(regime_info, eq_action, eq_setup)
+                        if not regime_check.get('passed'):
+                            print(f"🛡️ Market Regime Filter Blocked Intraday Stock {clean_sym} {eq_action}: {regime_check.get('reason')}")
+                            continue
+
+                        # 6. 14-Point Pre-Trade Risk Engine Check (trader-risk skill: Capped at ₹250 risk / ₹500 daily loss)
                         all_existing = new_trades + trades
                         risk_metrics = PreTradeRiskEngine.check_risk(
                             sym, eq_action, cur_p, eq_sl, eq_tgt, eq_shares, all_existing,
@@ -2962,7 +3008,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             print(f"🛡️ Pre-Trade Risk Engine Blocked {clean_sym} {eq_action}: {risk_metrics.get('reason')}")
                             continue
 
-                        # 6. Monte Carlo Time Machine simulation (trader-timemachine skill: 3,000 replays)
+                        # 7. Monte Carlo Time Machine simulation (trader-timemachine skill: 3,000 replays)
                         sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, eq_sl, eq_tgt, action=eq_action.lower(), replays=3000)
                         if not sim_metrics.get('passed'):
                             print(f"🎲 Monte Carlo Time Machine Blocked {clean_sym} {eq_action}: {sim_metrics.get('summary')}")
@@ -2982,6 +3028,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             "lot_size": eq_shares,
                             "asset_type": "INTRADAY_STOCK",
                             "event_context": f"Nifty Intraday MIS: {eq_setup}",
+                            "regime": regime_info,
                             "time_machine": sim_metrics,
                             "risk_check": risk_metrics,
                             "orb_check": orb_metrics,
@@ -3065,6 +3112,96 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
 
     return False
 
+def square_off_intraday_equity_trades(checker=None, alerter=None):
+    """
+    Called at 03:20 PM IST (15:20 - 15:35 IST window) on trading days.
+    Executes mandatory square-off for all active intraday equity and stock futures trades
+    (MIS intraday and F&O intraday positions).
+    Settles final P&L, sets exit_trigger="INTRADAY_320_SQUAREOFF", status="CLOSED", and releases margin.
+    """
+    tracker = load_tracker()
+    trades = tracker.get('trades', [])
+    now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
+    today_str = now_dt.strftime('%d %b %Y')
+
+    active_equity_trades = [
+        t for t in trades
+        if t.get('paper_trade', {}).get('status') == 'ACTIVE' and
+        (t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'] or
+         t.get('symbol', '').endswith('-FUT') or
+         t.get('symbol') in STOCK_FUTURES_CONFIG or
+         (t.get('symbol') not in LOT_SIZES and 'COMMODITY' not in str(t.get('asset_type', ''))))
+    ]
+
+    if not active_equity_trades:
+        return False
+
+    print(f"Executing 03:20 PM IST Intraday Square-off for {len(active_equity_trades)} active equity positions...")
+
+    # Load latest prices from nifty scanner or fallback
+    nifty_prices = {}
+    if os.path.exists(NIFTY_JSON_FILE):
+        try:
+            with open(NIFTY_JSON_FILE, 'r') as nf:
+                nd = json.load(nf)
+                for st in nd.get('stocks', []):
+                    sym = st.get('symbol', '').replace('.NS', '').upper()
+                    nifty_prices[sym] = float(st.get('close') or 0)
+        except Exception:
+            pass
+
+    summary_lines = []
+    for trade in active_equity_trades:
+        sym = trade['symbol']
+        clean_sym = sym.replace('-FUT', '').replace('.NS', '').upper()
+        pt = trade.setdefault('paper_trade', {})
+        entry_p = float(pt.get('entry_price') or trade.get('suggestion_6pm', {}).get('reference_price') or 0.0)
+        cur_p = nifty_prices.get(clean_sym) or float(pt.get('exit_price') or entry_p)
+        
+        action = pt.get('action', 'BUY')
+        qty = pt.get('quantity') or trade.get('lot_size') or 1
+        
+        pts = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
+        pnl_inr = round(pts * qty, 2)
+        
+        pt['exit_price'] = cur_p
+        pt['exit_time'] = "03:20 PM IST"
+        pt['exit_trigger'] = "INTRADAY_320_SQUAREOFF"
+        pt['pnl_points'] = round(pts, 2)
+        pt['pnl_inr'] = pnl_inr
+        pt['status'] = "CLOSED"
+        
+        is_correct = pnl_inr > 0
+        trade['time_exit'] = "03:20 PM IST"
+        eod = trade.setdefault('eod_outcome', {})
+        eod['session_close'] = cur_p
+        eod['exit_time'] = "03:20 PM IST"
+        eod['exit_trigger'] = "INTRADAY_320_SQUAREOFF"
+        eod['outcome'] = "CORRECT" if is_correct else "WRONG"
+        eod['badge'] = "Intraday Exit (03:20 PM)"
+        eod['pnl_display'] = f"{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}"
+        eod['summary'] = f"Intraday 03:20 PM square-off executed. Entry: ₹{entry_p:,.2f} -> Exit: ₹{cur_p:,.2f} ({pts:+.2f} pts | {'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}). Margin released."
+        
+        summary_lines.append(
+            f"• <b>{trade['name']} ({action})</b>: Entry ₹{entry_p:,.2f} ➔ Exit ₹{cur_p:,.2f} | P&L: <b>{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}</b>"
+        )
+
+    save_tracker(tracker)
+
+    if alerter and summary_lines:
+        try:
+            body = (
+                f"⏱️ <b>NSE INTRADAY 03:20 PM SQUARE-OFF COMPLETED</b>\n"
+                f"📅 <i>{today_str}</i>\n\n"
+                + "\n".join(summary_lines)
+            )
+            alerter.send_alert("⏱️ NSE 03:20 PM Intraday Square-off Settled", body)
+        except Exception as e:
+            print(f"Error dispatching 3:20 PM alert: {e}")
+
+    return True
+
+
 def exit_and_evaluate_eod_trades(checker, alerter):
     """
     Called at 11:15 PM – 11:30 PM IST.
@@ -3110,7 +3247,7 @@ def exit_and_evaluate_eod_trades(checker, alerter):
         save_tracker(tracker)
         return bool(pending_to_expire)
 
-    circuits_res = checker.generate_circuits_data()
+    circuits_res = checker.generate_circuits_data() if checker else {}
     commodities_map = {c['symbol']: c for c in circuits_res.get('commodities', [])} if circuits_res else {}
     
     summary_lines = []
@@ -3119,34 +3256,44 @@ def exit_and_evaluate_eod_trades(checker, alerter):
     for trade in active_trades:
         sym = trade['symbol']
         c_item = commodities_map.get(sym)
-        if not c_item:
-            continue
-            
-        close_p = c_item['current_price']
-        action = trade['paper_trade']['action']
-        entry_p = trade['paper_trade']['entry_price']
-        lot_size = trade['lot_size']
+        is_eq = trade.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'] or '-FUT' in sym or sym in STOCK_FUTURES_CONFIG
         
+        pt = trade.setdefault('paper_trade', {})
+        action = pt.get('action', 'BUY')
+        entry_p = float(pt.get('entry_price') or trade.get('suggestion_6pm', {}).get('reference_price') or 0.0)
+        lot_size = trade.get('lot_size') or pt.get('quantity') or 1
+        
+        if c_item:
+            close_p = float(c_item.get('current_price') or entry_p)
+        elif is_eq:
+            close_p = float(pt.get('exit_price') or entry_p)
+        else:
+            close_p = float(pt.get('exit_price') or entry_p)
+            
         pnl_pts = (close_p - entry_p) if action == 'BUY' else (entry_p - close_p)
         pnl_inr = round(pnl_pts * lot_size, 2)
         total_day_pnl += pnl_inr
         
-        trade['paper_trade']['exit_price'] = close_p
-        trade['paper_trade']['exit_time'] = "11:30 PM IST"
-        trade['paper_trade']['exit_trigger'] = "EOD_SQUAREOFF"
-        trade['paper_trade']['pnl_points'] = round(pnl_pts, 2)
-        trade['paper_trade']['pnl_inr'] = pnl_inr
-        trade['paper_trade']['status'] = "CLOSED"
+        exit_time_label = "03:20 PM IST" if is_eq else "11:30 PM IST"
+        exit_trigger = "INTRADAY_320_SQUAREOFF" if is_eq else "EOD_SQUAREOFF"
+        
+        pt['exit_price'] = close_p
+        pt['exit_time'] = exit_time_label
+        pt['exit_trigger'] = exit_trigger
+        pt['pnl_points'] = round(pnl_pts, 2)
+        pt['pnl_inr'] = pnl_inr
+        pt['status'] = "CLOSED"
         
         is_correct = pnl_inr > 0
-        trade['time_exit'] = "11:30 PM IST"
-        trade['eod_outcome']['session_close'] = close_p
-        trade['eod_outcome']['exit_time'] = "11:30 PM IST"
-        trade['eod_outcome']['exit_trigger'] = "EOD_SQUAREOFF"
-        trade['eod_outcome']['outcome'] = "CORRECT" if is_correct else "WRONG"
-        trade['eod_outcome']['badge'] = "Correct ✅ (11:30 PM)" if is_correct else "Wrong ❌ (11:30 PM)"
-        trade['eod_outcome']['pnl_display'] = f"{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}"
-        trade['eod_outcome']['summary'] = f"11:30 PM session close exit. Entry: ₹{entry_p:,.2f} -> Exit: ₹{close_p:,.2f} ({pnl_pts:+.2f} pts | {'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f})."
+        trade['time_exit'] = exit_time_label
+        eod = trade.setdefault('eod_outcome', {})
+        eod['session_close'] = close_p
+        eod['exit_time'] = exit_time_label
+        eod['exit_trigger'] = exit_trigger
+        eod['outcome'] = "CORRECT" if is_correct else "WRONG"
+        eod['badge'] = f"{'Correct ✅' if is_correct else 'Wrong ❌'} ({exit_time_label.replace(' IST', '')})"
+        eod['pnl_display'] = f"{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}"
+        eod['summary'] = f"{exit_time_label} session close exit. Entry: ₹{entry_p:,.2f} -> Exit: ₹{close_p:,.2f} ({pnl_pts:+.2f} pts | {'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}). Margin released."
         
         summary_lines.append(
             f"• <b>{trade['name']} ({action})</b>: Entry ₹{entry_p:,.2f} ➔ Exit ₹{close_p:,.2f} | P&L: <b>{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}</b> ({'Correct ✅' if is_correct else 'Wrong ❌'})"

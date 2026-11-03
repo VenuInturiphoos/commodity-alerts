@@ -580,17 +580,15 @@ class PositionSizer:
     }
 
     @classmethod
-    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=1000.0, atr=None):
+    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=3000.0, atr=None):
         """
         Resolves the appropriate contract (Standard vs Mini) and safe lot size
-        so that total rupee risk at stop-loss strictly fits inside max_risk_inr (default ₹1,000).
-        Always prioritizes Mini/Micro contracts for MCX commodities to protect capital.
+        calibrated for ~₹1.2L to ₹1.5L purchase/margin value parity.
+        Commodities strictly trade in standardized whole lots (e.g., ALUMINI = 1000 kg, CRUDEOILM = 50 bbl).
+        Never splits commodities into odd fractional unit counts.
         """
         if entry <= 0 or stop <= 0 or entry == stop:
             return symbol, name, default_lot
-
-        risk_pts = abs(entry - stop)
-        effective_risk_pts = max(risk_pts, atr * 0.8) if (atr and atr > 0) else risk_pts
 
         # 1. Route to contract calibrated for ~₹1.2L to ₹1.5L value
         base_sym = symbol.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '')
@@ -604,32 +602,29 @@ class PositionSizer:
         return symbol, name, 1
 
     @classmethod
-    def calculate_adaptive_lot(cls, symbol, entry, stop, default_lot, max_risk_inr=1000.0, atr=None):
+    def calculate_adaptive_lot(cls, symbol, entry, stop, default_lot, max_risk_inr=3000.0, atr=None):
         """
-        Calculates safe integer lot size where:
-        Total Risk = abs(entry - stop) * lot_size <= max_risk_inr (default ₹1,000.00).
+        Calculates safe integer lot size.
+        For MCX Commodities: Strictly respects whole standardized exchange lots (no fractional units).
+        For Equities: Sized strictly within max_risk_inr.
         """
         if entry <= 0 or stop <= 0 or entry == stop or default_lot <= 0:
             return default_lot
 
-        risk_pts = abs(entry - stop)
-        effective_risk_pts = max(risk_pts, atr * 0.8) if (atr and atr > 0) else risk_pts
-
-        # Check mini contract fallback
         base_sym = symbol.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '')
         mini_info = cls.MINI_ROUTES.get(symbol) or cls.MINI_ROUTES.get(base_sym)
-        if mini_info and (effective_risk_pts * mini_info['lot_size'] <= max_risk_inr):
-            return mini_info['lot_size']
+        
+        # If commodity, strictly return standardized lot size (~₹1.5L value parity)
+        if mini_info or symbol in cls.POINT_VALUE or base_sym in cls.POINT_VALUE:
+            return mini_info['lot_size'] if mini_info else default_lot
 
-        total_risk_default = effective_risk_pts * default_lot
-        if total_risk_default <= max_risk_inr:
-            return default_lot
-
-        # Scale down lot size to fit inside max_risk_inr (for equities or divisible contracts)
-        scaled_lot = math.floor(max_risk_inr / effective_risk_pts)
-        if scaled_lot < 1:
+        # For Equities: scale down share count to fit max_risk_inr
+        risk_pts = abs(entry - stop)
+        effective_risk_pts = max(risk_pts, atr * 0.8) if (atr and atr > 0) else risk_pts
+        scaled_shares = math.floor(max_risk_inr / effective_risk_pts)
+        if scaled_shares < 1:
             return 0
-        return min(default_lot, scaled_lot)
+        return min(default_lot, scaled_shares)
 
 
 class OptionsMonteCarloEngine:
@@ -1170,29 +1165,29 @@ class CircuitMonteCarloPredictor:
 
 class MarketRegimeDetector:
     """
-    Institutional Market Regime Classifier.
+    Institutional Market Regime Classifier & False Signal Filter.
     Categorizes any asset (Equity, Commodity, Index) into one of the mathematical market regimes:
     
     1. BULL_TREND 🚀:
        - Structure: Close >= EMA50 >= EMA200
-       - Trend Strength: ADX >= 21.0
+       - Trend Strength: ADX >= 20.0
        - Momentum: RSI >= 50.0
        - Trading Mandate: BUY DIPS & BREAKOUTS. Trend continuation in effect.
        - Disallowed: NAKED CALL SELLING, BLIND SHORTING.
        
-    2. BEAR_TREND 🔻:
+    2. CHOP_CONSOLIDATION 💤:
+       - Volatility: Bollinger Bandwidth <= 12.5% or ADX < 20.0
+       - Trend Strength: Non-trending / rangebound oscillation
+       - Momentum: 38.0 <= RSI <= 62.0 (Neutral oscillation)
+       - Trading Mandate: THETA DECAY OPTION HARVEST (Strangles / Condors / Channel Boundary fades).
+       - Disallowed: BUYING BREAKOUTS / CROSSOVERS (High whipsaw & fakeout risk).
+       
+    3. BREAKDOWN 🔻:
        - Structure: Close <= EMA50 <= EMA200
-       - Trend Strength: ADX >= 21.0
+       - Trend Strength: ADX >= 20.0 or downward breakdown
        - Momentum: RSI <= 50.0
        - Trading Mandate: SELL RALLIES / SHORT BREAKDOWNS. Capital preservation priority.
        - Disallowed: NAKED PUT SELLING, BUYING FALLING KNIVES.
-       
-    3. COMPRESSED_RANGE 💤:
-       - Volatility: Bollinger Bandwidth <= 12.5%
-       - Trend Strength: ADX < 20.5 (Trend exhausted / non-trending)
-       - Momentum: 38.0 <= RSI <= 62.0 (Neutral oscillation)
-       - Trading Mandate: THETA DECAY OPTION HARVEST (Strangles / Condors / Channel Range).
-       - Disallowed: BUYING BREAKOUTS (High fakeout risk).
        
     4. VOLATILE_EXPANSION ⚡:
        - Volatility: Bollinger Bandwidth > 16.0% or Daily Volatility > 3.0%
@@ -1217,8 +1212,8 @@ class MarketRegimeDetector:
         bb_width_pct = round(((bb_high - bb_low) / close) * 100, 2) if close > 0 else 10.0
         daily_vol = float(daily_vol_pct) if daily_vol_pct else (round((atr / close) * 100, 2) if (atr and close > 0) else 1.8)
 
-        # 1. Check Compressed Range (Theta Zone) first
-        is_compressed = (adx < 20.5) and (bb_width_pct <= 12.5) and (38.0 <= rsi <= 62.0)
+        # 1. Check Chop / Consolidation (Theta Zone) first
+        is_chop = (adx < 20.0) or (bb_width_pct <= 12.5 and 38.0 <= rsi <= 62.0)
         
         # 2. Check Volatility Expansion
         is_volatile_expansion = (bb_width_pct >= 16.0) or (daily_vol >= 3.0)
@@ -1226,19 +1221,19 @@ class MarketRegimeDetector:
         # 3. Directional Alignment
         is_bull_structure = (close >= ema50) and (ema50 >= (ema200 * 0.985)) and (rsi >= 48.0)
         is_bear_structure = (close <= ema50) and (ema50 <= (ema200 * 1.015)) and (rsi <= 52.0)
-        has_trend_strength = (adx >= 21.0)
+        has_trend_strength = (adx >= 20.0)
 
-        if is_compressed:
-            regime = "COMPRESSED_RANGE"
-            badge = "💤 Compressed Range"
-            short_tag = "Rangebound"
+        if is_chop and not (has_trend_strength and (is_bull_structure or is_bear_structure)):
+            regime = "CHOP_CONSOLIDATION"
+            badge = "💤 Chop / Consolidation"
+            short_tag = "Chop / Range"
             color = "#c084fc"
             bg_color = "rgba(192, 132, 252, 0.12)"
             border_color = "rgba(192, 132, 252, 0.35)"
-            mandate = f"Non-trending channel (ADX: {adx:.1f}, BBW: {bb_width_pct:.1f}%). Ideal for Options Theta Harvesting & boundary oscillations."
+            mandate = f"Non-trending chop (ADX: {adx:.1f}, BBW: {bb_width_pct:.1f}%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds."
             allowed = ["OPTION_SELLING", "RANGE_BOUND_SUPPORT_BUY", "STRANGLE"]
-            blocked = ["TREND_BREAKOUT_BUY", "HIGH_BETA_FUTURES"]
-            regime_icon = "fa-solid fa-compress"
+            blocked = ["TREND_BREAKOUT_BUY", "HIGH_BETA_FUTURES", "GOLDEN_CROSS"]
+            regime_icon = "fa-solid fa-arrows-left-right"
 
         elif is_volatile_expansion and not (has_trend_strength and is_bull_structure):
             regime = "VOLATILE_EXPANSION"
@@ -1254,7 +1249,7 @@ class MarketRegimeDetector:
 
         elif is_bull_structure and has_trend_strength:
             regime = "BULL_TREND"
-            badge = "🚀 Low-Vol Bull Trend"
+            badge = "🚀 Bull Trend"
             short_tag = "Bull Trend"
             color = "#34d399"
             bg_color = "rgba(52, 211, 153, 0.12)"
@@ -1265,40 +1260,40 @@ class MarketRegimeDetector:
             regime_icon = "fa-solid fa-arrow-trend-up"
 
         elif is_bear_structure and has_trend_strength:
-            regime = "BEAR_TREND"
-            badge = "🔻 Bear Breakdown"
-            short_tag = "Bear Trend"
+            regime = "BREAKDOWN"
+            badge = "🔻 Breakdown / Bear Trend"
+            short_tag = "Breakdown"
             color = "#fb7185"
             bg_color = "rgba(251, 113, 133, 0.12)"
             border_color = "rgba(251, 113, 133, 0.35)"
-            mandate = f"Downtrend in effect (Close < 50E, ADX: {adx:.1f}, RSI: {rsi:.1f}). Only take oversold bounces with tight stops; do not sell naked puts."
-            allowed = ["DEFENSIVE_HEDGING", "BEAR_CALL_SPREAD", "TIGHT_STOP_BOUNCE"]
-            blocked = ["NAKED_PUT_SELLING", "AGGRESSIVE_BUYING"]
+            mandate = f"Downtrend in effect (Close < 50E, ADX: {adx:.1f}, RSI: {rsi:.1f}). Capital preservation priority; falling knife defense. Do not take long breakouts."
+            allowed = ["DEFENSIVE_HEDGING", "BEAR_CALL_SPREAD", "SHORT_FUTURES"]
+            blocked = ["NAKED_PUT_SELLING", "BUY_EQUITY", "GOLDEN_CROSS_BUY"]
             regime_icon = "fa-solid fa-arrow-trend-down"
 
         elif is_bull_structure:
-            regime = "MILD_BULLISH"
-            badge = "🌱 Mild Bullish Accumulation"
-            short_tag = "Mild Bull"
+            regime = "BULL_TREND"
+            badge = "🚀 Bull Trend (Emerging)"
+            short_tag = "Bull Trend"
             color = "#86efac"
             bg_color = "rgba(134, 239, 172, 0.12)"
             border_color = "rgba(134, 239, 172, 0.35)"
             mandate = f"Constructive basing above 50/200 EMA (ADX: {adx:.1f}). Accumulating with defined support."
             allowed = ["SWING_BUY", "COVERED_CALL"]
             blocked = ["AGGRESSIVE_BREAKOUT"]
-            regime_icon = "fa-solid fa-seedling"
+            regime_icon = "fa-solid fa-arrow-trend-up"
 
         else:
-            regime = "MILD_BEARISH"
-            badge = "🌧️ Mild Consolidation / Soft"
-            short_tag = "Soft"
+            regime = "CHOP_CONSOLIDATION"
+            badge = "💤 Chop / Consolidation"
+            short_tag = "Chop / Range"
             color = "#94a3b8"
             bg_color = "rgba(148, 163, 184, 0.12)"
             border_color = "rgba(148, 163, 184, 0.35)"
-            mandate = f"Neutral to soft consolidation (ADX: {adx:.1f}). Wait for directional break."
-            allowed = ["WATCHLIST", "STAGED_LIMIT_ORDERS"]
-            blocked = ["MARKET_ORDERS"]
-            regime_icon = "fa-solid fa-cloud"
+            mandate = f"Neutral consolidation (ADX: {adx:.1f}). Whipsaw risk for breakouts."
+            allowed = ["WATCHLIST", "STAGED_LIMIT_ORDERS", "OPTION_SELLING"]
+            blocked = ["MARKET_ORDERS", "BREAKOUT_BUY"]
+            regime_icon = "fa-solid fa-arrows-left-right"
 
         return {
             "regime": regime,
@@ -1316,6 +1311,54 @@ class MarketRegimeDetector:
             "bb_width_pct": bb_width_pct,
             "daily_vol_pct": round(daily_vol, 2)
         }
+
+    @classmethod
+    def validate_signal(cls, regime_info, action, setup_name=""):
+        """
+        Actively filters out false signals based on institutional market regime:
+        - CHOP_CONSOLIDATION: Filters out all breakout trades and trend crossovers (high whipsaw / fakeout risk).
+        - BREAKDOWN: Filters out all BUY signals (prevents buying into falling knives).
+        - BULL_TREND: Filters out all SELL / fade signals (prevents counter-trend shorting).
+        - VOLATILE_EXPANSION: Flags extreme volatility shock (advises 50% size or tight SL).
+        """
+        if not regime_info:
+            return {"passed": True, "reason": "No regime constraint"}
+
+        regime = regime_info.get("regime") if isinstance(regime_info, dict) else str(regime_info)
+        setup_lower = (setup_name or "").lower()
+        act_upper = (action or "").upper()
+
+        if regime in ["CHOP_CONSOLIDATION", "COMPRESSED_RANGE"]:
+            # In chop/consolidation, breakout or crossover signals are high-probability whipsaws
+            if any(term in setup_lower for term in ['breakout', 'breakdown', 'crossover', 'cross', 'golden cross', 'high-beta']):
+                return {
+                    "passed": False,
+                    "reason": f"FALSE SIGNAL FILTER: Blocked {action} '{setup_name}' during CHOP_CONSOLIDATION (ADX {regime_info.get('adx', 'low')}). High whipsaw & fakeout risk.",
+                    "regime": "CHOP_CONSOLIDATION",
+                    "filter_tag": "CHOP_WHIPSAW_GUARD"
+                }
+
+        elif regime in ["BREAKDOWN", "BEAR_TREND"]:
+            # In structural breakdown, never buy falling knives or long crossovers
+            if act_upper == "BUY":
+                return {
+                    "passed": False,
+                    "reason": f"FALSE SIGNAL FILTER: Blocked BUY '{setup_name}' during BREAKDOWN regime (RSI {regime_info.get('rsi', 'low')}). Falling knife defense active.",
+                    "regime": "BREAKDOWN",
+                    "filter_tag": "FALLING_KNIFE_GUARD"
+                }
+
+        elif regime == "BULL_TREND":
+            # In structural bull trend, never short or fade
+            if act_upper == "SELL":
+                return {
+                    "passed": False,
+                    "reason": f"FALSE SIGNAL FILTER: Blocked SELL '{setup_name}' during BULL_TREND regime (ADX {regime_info.get('adx', 'high')}). Counter-trend shorting blocked.",
+                    "regime": "BULL_TREND",
+                    "filter_tag": "COUNTER_TREND_GUARD"
+                }
+
+        return {"passed": True, "reason": f"Signal aligned with {regime} regime.", "regime": regime}
 
 
 

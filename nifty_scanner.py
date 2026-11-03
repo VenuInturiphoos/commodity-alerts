@@ -411,6 +411,23 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
             except Exception:
                 pass
 
+        # Validate Signal against Market Regime to filter out false signals
+        is_false_signal = False
+        false_signal_reason = None
+        signal_quality = 'REGIME_VERIFIED'
+        signal_quality_badge = '🛡️ Regime Verified'
+        
+        if regime_info and HAS_TIME_MACHINE:
+            try:
+                reg_chk = MarketRegimeDetector.validate_signal(regime_info, 'BUY', crossover_label or 'Golden Crossover')
+                if not reg_chk.get('passed'):
+                    is_false_signal = True
+                    false_signal_reason = reg_chk.get('reason')
+                    signal_quality = 'FALSE_SIGNAL_RISK'
+                    signal_quality_badge = '⚠️ False Signal (Chop/Breakdown)'
+            except Exception:
+                pass
+
         opportunities.append({
             'symbol': orig_sym,
             'name': name,
@@ -458,6 +475,10 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
             'regime_short': regime_info.get('short_tag') if regime_info else 'Neutral',
             'regime_color': regime_info.get('color') if regime_info else '#94a3b8',
             'regime_mandate': regime_info.get('mandate') if regime_info else '',
+            'is_false_signal': is_false_signal,
+            'false_signal_reason': false_signal_reason,
+            'signal_quality': signal_quality,
+            'signal_quality_badge': signal_quality_badge,
             'prob_tier': prob_tier,
             'prob_label': prob_label,
             'prob_badge': prob_badge,
