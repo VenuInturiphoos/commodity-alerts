@@ -54,16 +54,16 @@ class PreTradeRiskEngine:
     Evaluates proposed orders against hard risk rules before any recommendation is dispatched.
     Derived from day-trader-skill (trader-risk).
     Calibrated for ₹3,00,000 capital pool:
-    - Max Loss Per Trade: ₹3,000 (strictly 1.0% of capital)
-    - Max Daily Loss: ₹6,000 (strictly 2.0% of capital; system halts after 2 losses)
-    - Max Active Positions: 2 (Max 1 Commodity + Max 1 Equity)
+    - Max Loss Per Trade: ₹1,000 (strictly 0.35% of capital)
+    - Max Daily Loss: ₹3,000 (strictly 1.0% of capital; allows 3-4 trade buffer before halting)
+    - Max Active Positions: 3 (Max 2 Futures + Max 1 Intraday Stock)
     - Min Reward-to-Risk: 1.5R (strictly positive expectancy)
     """
 
     @staticmethod
     def check_risk(symbol, action, entry, stop, target, lot_size, existing_trades,
-                   max_loss_per_trade_inr=1000.0, max_daily_loss_inr=2000.0,
-                   min_reward_risk=1.5, max_active_positions=2):
+                   max_loss_per_trade_inr=1000.0, max_daily_loss_inr=3000.0,
+                   min_reward_risk=1.5, max_active_positions=3):
         """
         Runs comprehensive pre-trade risk validation:
         1. Stop loss presence and direction

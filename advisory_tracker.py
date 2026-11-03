@@ -55,15 +55,18 @@ MARGIN_RATES = {
 # 🛡️ CAPITAL DEFENSE & RECOVERY PROTOCOL (CALIBRATED FOR ₹2.9L TRADING CAPITAL)
 # =========================================================================
 MAX_LOSS_PER_TRADE_INR = 1000.0   # Strictly 0.35% of capital (290+ consecutive loss runway for Futures)
-MAX_DAILY_LOSS_INR = 2000.0       # Strictly 0.70% daily circuit breaker for Futures (halts after 2 losses)
+MAX_DAILY_LOSS_INR = 3000.0       # Strictly 1.0% daily circuit breaker for Futures (allows 3-4 trade loss buffer)
 MAX_INTRADAY_STOCK_MARGIN_INR = 10000.0 # Dedicated max ₹10,000 margin allocated per day for Intraday Stock Trading
 INTRADAY_STOCK_MIS_LEVERAGE = 5.0 # 5x leverage for MIS intraday equity (20% margin requirement)
 MAX_INTRADAY_STOCK_POSITION_INR = MAX_INTRADAY_STOCK_MARGIN_INR * INTRADAY_STOCK_MIS_LEVERAGE # ₹50,000 buying power
 MAX_EQUITY_POSITION_INR = MAX_INTRADAY_STOCK_POSITION_INR # Backward compatibility alias
 MAX_INTRADAY_STOCK_RISK_INR = 250.0 # Strictly capped at ₹250 loss per stock trade (~2.5% of allocation)
-MAX_INTRADAY_STOCK_DAILY_LOSS_INR = 500.0 # Halts intraday stock trading if 2 losses occur in a day
-MAX_CONCURRENT_COMMODITIES = 1    # Strictly max 1 active futures trade
-MAX_CONCURRENT_EQUITIES = 1       # Strictly max 1 active intraday equity trade
+MAX_INTRADAY_STOCK_DAILY_LOSS_INR = 750.0 # Halts intraday stock trading if 3 losses occur in a day
+MAX_CONCURRENT_COMMODITIES = 2    # Allows 2 concurrent active mini futures (e.g. 1 Energy + 1 Metal)
+MAX_CONCURRENT_EQUITIES = 1       # Strictly max 1 active intraday equity trade (keeps margin <= ₹10k)
+MAX_CONCURRENT_TOTAL = 3          # Max 3 concurrent active trades across the entire portfolio
+MAX_TRADES_PER_SYMBOL_DAY = 3     # Allows up to 3 trades per symbol per day (expanded from 2)
+COOLDOWN_MINUTES_BETWEEN_TRADES = 60 # 60-min spacing between trades on the same symbol (streamlined from 120m)
 ENFORCE_MINI_ONLY_COMMODITIES = True # Hard ban on heavy standard lots (e.g. AL2500, CRUDE50) until full capital recovery
 
 # Direct mapping to low-margin, micro/mini contracts for capital defense
@@ -2261,7 +2264,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
         print(f"🛑 PORTFOLIO CIRCUIT BREAKER: Today's realized loss (₹{today_realized_loss:,.2f}) reached daily limit (₹{MAX_DAILY_LOSS_INR:,.2f}). Trading halted for the day.")
         return False
 
-    # 2. Maximum Concurrent Open Positions Cap (Strictly Max 1 Futures, Max 1 Intraday Stock)
+    # 2. Maximum Concurrent Open Positions Cap (Max 2 Futures, Max 1 Intraday Stock, Max 3 Total)
     active_commodity_trades = [
         t for t in trades 
         if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
@@ -2274,7 +2277,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
     ]
     if len(active_commodity_trades) >= MAX_CONCURRENT_COMMODITIES and len(active_equity_trades) >= MAX_CONCURRENT_EQUITIES:
         return False
-    if (len(active_commodity_trades) + len(active_equity_trades)) >= 2:
+    if (len(active_commodity_trades) + len(active_equity_trades)) >= MAX_CONCURRENT_TOTAL:
         return False
 
     new_trades = []
@@ -2302,8 +2305,8 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
     }
 
     for item in commodities:
-        # Check if we already reached max concurrent positions during this pass
-        if len(active_commodity_trades) + sum(1 for t in new_trades if t.get('symbol') in LOT_SIZES) >= 2:
+        # Check if we already reached max concurrent futures positions during this pass
+        if len(active_commodity_trades) + sum(1 for t in new_trades if (t.get('asset_type') in ['FUTURES', 'COMMODITY'] or t.get('symbol') in LOT_SIZES)) >= MAX_CONCURRENT_COMMODITIES:
             break
 
         sym = item.get('symbol')
@@ -2321,10 +2324,10 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
             and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
             and t.get('paper_trade', {}).get('quantity', 0) > 0
         ]
-        if len(sym_today_trades) >= 2:
-            continue  # Max 2 trades per commodity per day
+        if len(sym_today_trades) >= MAX_TRADES_PER_SYMBOL_DAY:
+            continue  # Max 3 trades per commodity per day
 
-        # Check 120-minute cooldown from last trade on this symbol
+        # Check 60-minute cooldown from last trade on this symbol
         if sym_today_trades:
             last_t = sym_today_trades[0]
             last_entry_time = last_t.get('paper_trade', {}).get('entry_time') or last_t.get('time_trigger')
@@ -2333,8 +2336,8 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     clean_time = last_entry_time.replace(' IST', '').strip()
                     t_struct = datetime.strptime(f"{today_str} {clean_time}", "%d %b %Y %I:%M %p").replace(tzinfo=pytz.timezone('Asia/Kolkata'))
                     diff_mins = (now_dt - t_struct).total_seconds() / 60.0
-                    if diff_mins < 120:
-                        continue  # In 2-hour cooldown period
+                    if diff_mins < COOLDOWN_MINUTES_BETWEEN_TRADES:
+                        continue  # In 60-minute cooldown period
                 except Exception:
                     pass
 
@@ -2602,14 +2605,14 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 if cur_p <= 0:
                     continue
 
-                # Check symbol cooldown today (max 2 trades per equity, 120-min cooldown)
+                # Check symbol cooldown today (max 3 trades per equity, 60-min cooldown)
                 eq_today_trades = [
                     t for t in (trades + new_trades)
                     if t.get('date') == today_str and (t.get('symbol') == sym or t.get('symbol') == clean_sym)
                     and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
                     and t.get('paper_trade', {}).get('quantity', 0) > 0
                 ]
-                if len(eq_today_trades) >= 2:
+                if len(eq_today_trades) >= MAX_TRADES_PER_SYMBOL_DAY:
                     continue
 
                 if eq_today_trades:
@@ -2620,7 +2623,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             clean_time = last_entry_time.replace(' IST', '').strip()
                             t_struct = datetime.strptime(f"{today_str} {clean_time}", "%d %b %Y %I:%M %p").replace(tzinfo=pytz.timezone('Asia/Kolkata'))
                             diff_mins = (now_dt - t_struct).total_seconds() / 60.0
-                            if diff_mins < 120:
+                            if diff_mins < COOLDOWN_MINUTES_BETWEEN_TRADES:
                                 continue
                         except Exception:
                             pass
