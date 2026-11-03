@@ -1,5 +1,5 @@
 {
-  "last_updated": "04 Nov 2026, 01:05:47 AM IST",
+  "last_updated": "04 Nov 2026, 01:12:04 AM IST",
   "source": "Direct Exchange Feed (MCX / TradingView Internet)",
   "count": 7,
   "commodities": [
@@ -42,48 +42,50 @@
       "ema_50": 148546.23513450308,
       "circuit_sim": {
         "replays": 5000,
-        "minutes_remaining": 1344,
-        "prob_upper_circuit_pct": 22.3,
-        "prob_lower_circuit_pct": 38.0,
-        "var_95_expected_high": 147534.98,
-        "var_95_expected_low": 131858.82,
+        "minutes_remaining": 1337,
+        "prob_upper_circuit_pct": 22.7,
+        "prob_lower_circuit_pct": 37.4,
+        "var_95_expected_high": 147596.15,
+        "var_95_expected_low": 131904.53,
         "circuit_risk_rating": "HIGH_CIRCUIT_RISK",
         "rating_badge": "\u26a0\ufe0f High Circuit Risk",
         "rating_color": "#f97316",
-        "summary": "Circuit Odds: 22.3% Upper Lock | 38.0% Lower Lock | 95% Band: \u20b9131,858.8 - \u20b9147,535.0"
+        "summary": "Circuit Odds: 22.7% Upper Lock | 37.4% Lower Lock | 95% Band: \u20b9131,904.5 - \u20b9147,596.1"
       },
-      "prob_upper_circuit_pct": 22.3,
-      "prob_lower_circuit_pct": 38.0,
+      "prob_upper_circuit_pct": 22.7,
+      "prob_lower_circuit_pct": 37.4,
       "circuit_risk_rating": "HIGH_CIRCUIT_RISK",
       "circuit_risk_badge": "\u26a0\ufe0f High Circuit Risk",
       "circuit_risk_color": "#f97316",
-      "var_95_high": 147534.98,
-      "var_95_low": 131858.82,
+      "var_95_high": 147596.15,
+      "var_95_low": 131904.53,
       "market_regime": {
-        "regime": "MILD_BEARISH",
-        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
-        "short_tag": "Soft",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#94a3b8",
         "bg_color": "rgba(148, 163, 184, 0.12)",
         "border_color": "rgba(148, 163, 184, 0.35)",
-        "mandate": "Neutral to soft consolidation (ADX: 41.5). Wait for directional break.",
+        "mandate": "Neutral consolidation (ADX: 41.5). Whipsaw risk for breakouts.",
         "allowed_strategies": [
           "WATCHLIST",
-          "STAGED_LIMIT_ORDERS"
+          "STAGED_LIMIT_ORDERS",
+          "OPTION_SELLING"
         ],
         "blocked_strategies": [
-          "MARKET_ORDERS"
+          "MARKET_ORDERS",
+          "BREAKOUT_BUY"
         ],
-        "icon": "fa-solid fa-cloud",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 41.5,
         "rsi": 31.8,
         "bb_width_pct": 6.03,
         "daily_vol_pct": 1.57
       },
-      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
-      "regime_short": "Soft",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#94a3b8",
-      "regime_mandate": "Neutral to soft consolidation (ADX: 41.5). Wait for directional break."
+      "regime_mandate": "Neutral consolidation (ADX: 41.5). Whipsaw risk for breakouts."
     },
     {
       "symbol": "SILVER",
@@ -124,23 +126,23 @@
       "ema_50": 217001.88920911864,
       "circuit_sim": {
         "replays": 5000,
-        "minutes_remaining": 1344,
-        "prob_upper_circuit_pct": 28.9,
-        "prob_lower_circuit_pct": 74.3,
-        "var_95_expected_high": 201821.31,
-        "var_95_expected_low": 159859.52,
+        "minutes_remaining": 1337,
+        "prob_upper_circuit_pct": 29.1,
+        "prob_lower_circuit_pct": 74.5,
+        "var_95_expected_high": 202079.52,
+        "var_95_expected_low": 159933.71,
         "circuit_risk_rating": "EXTREME_CIRCUIT_RISK",
         "rating_badge": "\ud83d\udea8 Extreme Circuit Risk",
         "rating_color": "#ef4444",
-        "summary": "Circuit Odds: 28.9% Upper Lock | 74.3% Lower Lock | 95% Band: \u20b9159,859.5 - \u20b9201,821.3"
+        "summary": "Circuit Odds: 29.1% Upper Lock | 74.5% Lower Lock | 95% Band: \u20b9159,933.7 - \u20b9202,079.5"
       },
-      "prob_upper_circuit_pct": 28.9,
-      "prob_lower_circuit_pct": 74.3,
+      "prob_upper_circuit_pct": 29.1,
+      "prob_lower_circuit_pct": 74.5,
       "circuit_risk_rating": "EXTREME_CIRCUIT_RISK",
       "circuit_risk_badge": "\ud83d\udea8 Extreme Circuit Risk",
       "circuit_risk_color": "#ef4444",
-      "var_95_high": 201821.31,
-      "var_95_low": 159859.52,
+      "var_95_high": 202079.52,
+      "var_95_low": 159933.71,
       "market_regime": {
         "regime": "VOLATILE_EXPANSION",
         "badge": "\u26a1 Volatile Expansion",
@@ -208,50 +210,51 @@
       "ema_50": 8832.13757143252,
       "circuit_sim": {
         "replays": 5000,
-        "minutes_remaining": 1344,
-        "prob_upper_circuit_pct": 60.8,
-        "prob_lower_circuit_pct": 56.2,
-        "var_95_expected_high": 10536.58,
-        "var_95_expected_low": 7847.85,
+        "minutes_remaining": 1337,
+        "prob_upper_circuit_pct": 61.0,
+        "prob_lower_circuit_pct": 55.6,
+        "var_95_expected_high": 10553.41,
+        "var_95_expected_low": 7853.6,
         "circuit_risk_rating": "EXTREME_CIRCUIT_RISK",
         "rating_badge": "\ud83d\udea8 Extreme Circuit Risk",
         "rating_color": "#ef4444",
-        "summary": "Circuit Odds: 60.8% Upper Lock | 56.2% Lower Lock | 95% Band: \u20b97,847.9 - \u20b910,536.6"
+        "summary": "Circuit Odds: 61.0% Upper Lock | 55.6% Lower Lock | 95% Band: \u20b97,853.6 - \u20b910,553.4"
       },
-      "prob_upper_circuit_pct": 60.8,
-      "prob_lower_circuit_pct": 56.2,
+      "prob_upper_circuit_pct": 61.0,
+      "prob_lower_circuit_pct": 55.6,
       "circuit_risk_rating": "EXTREME_CIRCUIT_RISK",
       "circuit_risk_badge": "\ud83d\udea8 Extreme Circuit Risk",
       "circuit_risk_color": "#ef4444",
-      "var_95_high": 10536.58,
-      "var_95_low": 7847.85,
+      "var_95_high": 10553.41,
+      "var_95_low": 7853.6,
       "market_regime": {
-        "regime": "VOLATILE_EXPANSION",
-        "badge": "\u26a1 Volatile Expansion",
-        "short_tag": "High Volatility",
-        "color": "#fbbf24",
-        "bg_color": "rgba(251, 191, 36, 0.12)",
-        "border_color": "rgba(251, 191, 36, 0.35)",
-        "mandate": "Wide volatility band (BBW: 8.0%, Vol: 4.1%). High whipsaw risk. Reduce position sizing by 50%.",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending chop (ADX: 36.1, BBW: 8.0%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
-          "STRADDLE",
-          "DEFENSIVE_SCALPING",
-          "REDUCED_SIZING"
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
         ],
         "blocked_strategies": [
-          "NAKED_OPTION_SELLING",
-          "FULL_LEVERAGE"
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-bolt",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 36.1,
         "rsi": 48.7,
         "bb_width_pct": 7.97,
         "daily_vol_pct": 4.12
       },
-      "regime_badge": "\u26a1 Volatile Expansion",
-      "regime_short": "High Volatility",
-      "regime_color": "#fbbf24",
-      "regime_mandate": "Wide volatility band (BBW: 8.0%, Vol: 4.1%). High whipsaw risk. Reduce position sizing by 50%."
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending chop (ADX: 36.1, BBW: 8.0%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds."
     },
     {
       "symbol": "NATURALGAS",
@@ -292,23 +295,23 @@
       "ema_50": 319.2506251734386,
       "circuit_sim": {
         "replays": 5000,
-        "minutes_remaining": 1344,
-        "prob_upper_circuit_pct": 45.3,
+        "minutes_remaining": 1337,
+        "prob_upper_circuit_pct": 44.3,
         "prob_lower_circuit_pct": 33.5,
-        "var_95_expected_high": 315.06,
-        "var_95_expected_low": 238.9,
+        "var_95_expected_high": 315.53,
+        "var_95_expected_low": 239.04,
         "circuit_risk_rating": "EXTREME_CIRCUIT_RISK",
         "rating_badge": "\ud83d\udea8 Extreme Circuit Risk",
         "rating_color": "#ef4444",
-        "summary": "Circuit Odds: 45.3% Upper Lock | 33.5% Lower Lock | 95% Band: \u20b9238.9 - \u20b9315.1"
+        "summary": "Circuit Odds: 44.3% Upper Lock | 33.5% Lower Lock | 95% Band: \u20b9239.0 - \u20b9315.5"
       },
-      "prob_upper_circuit_pct": 45.3,
+      "prob_upper_circuit_pct": 44.3,
       "prob_lower_circuit_pct": 33.5,
       "circuit_risk_rating": "EXTREME_CIRCUIT_RISK",
       "circuit_risk_badge": "\ud83d\udea8 Extreme Circuit Risk",
       "circuit_risk_color": "#ef4444",
-      "var_95_high": 315.06,
-      "var_95_low": 238.9,
+      "var_95_high": 315.53,
+      "var_95_low": 239.04,
       "market_regime": {
         "regime": "VOLATILE_EXPANSION",
         "badge": "\u26a1 Volatile Expansion",
@@ -376,39 +379,40 @@
       "ema_50": 1397.8402828012943,
       "circuit_sim": {
         "replays": 5000,
-        "minutes_remaining": 1344,
-        "prob_upper_circuit_pct": 4.1,
-        "prob_lower_circuit_pct": 45.1,
-        "var_95_expected_high": 1444.03,
-        "var_95_expected_low": 1291.52,
+        "minutes_remaining": 1337,
+        "prob_upper_circuit_pct": 4.3,
+        "prob_lower_circuit_pct": 44.4,
+        "var_95_expected_high": 1444.62,
+        "var_95_expected_low": 1291.96,
         "circuit_risk_rating": "EXTREME_CIRCUIT_RISK",
         "rating_badge": "\ud83d\udea8 Extreme Circuit Risk",
         "rating_color": "#ef4444",
-        "summary": "Circuit Odds: 4.1% Upper Lock | 45.1% Lower Lock | 95% Band: \u20b91,291.5 - \u20b91,444.0"
+        "summary": "Circuit Odds: 4.3% Upper Lock | 44.4% Lower Lock | 95% Band: \u20b91,292.0 - \u20b91,444.6"
       },
-      "prob_upper_circuit_pct": 4.1,
-      "prob_lower_circuit_pct": 45.1,
+      "prob_upper_circuit_pct": 4.3,
+      "prob_lower_circuit_pct": 44.4,
       "circuit_risk_rating": "EXTREME_CIRCUIT_RISK",
       "circuit_risk_badge": "\ud83d\udea8 Extreme Circuit Risk",
       "circuit_risk_color": "#ef4444",
-      "var_95_high": 1444.03,
-      "var_95_low": 1291.52,
+      "var_95_high": 1444.62,
+      "var_95_low": 1291.96,
       "market_regime": {
-        "regime": "BEAR_TREND",
-        "badge": "\ud83d\udd3b Bear Breakdown",
-        "short_tag": "Bear Trend",
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
         "border_color": "rgba(251, 113, 133, 0.35)",
-        "mandate": "Downtrend in effect (Close < 50E, ADX: 34.1, RSI: 39.2). Only take oversold bounces with tight stops; do not sell naked puts.",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 34.1, RSI: 39.2). Capital preservation priority; falling knife defense. Do not take long breakouts.",
         "allowed_strategies": [
           "DEFENSIVE_HEDGING",
           "BEAR_CALL_SPREAD",
-          "TIGHT_STOP_BOUNCE"
+          "SHORT_FUTURES"
         ],
         "blocked_strategies": [
           "NAKED_PUT_SELLING",
-          "AGGRESSIVE_BUYING"
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
         ],
         "icon": "fa-solid fa-arrow-trend-down",
         "adx": 34.1,
@@ -416,10 +420,10 @@
         "bb_width_pct": 8.16,
         "daily_vol_pct": 1.56
       },
-      "regime_badge": "\ud83d\udd3b Bear Breakdown",
-      "regime_short": "Bear Trend",
+      "regime_badge": "\ud83d\udd3b Breakdown / Bear Trend",
+      "regime_short": "Breakdown",
       "regime_color": "#fb7185",
-      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 34.1, RSI: 39.2). Only take oversold bounces with tight stops; do not sell naked puts."
+      "regime_mandate": "Downtrend in effect (Close < 50E, ADX: 34.1, RSI: 39.2). Capital preservation priority; falling knife defense. Do not take long breakouts."
     },
     {
       "symbol": "ZINC",
@@ -460,31 +464,31 @@
       "ema_50": 399.1554282882694,
       "circuit_sim": {
         "replays": 5000,
-        "minutes_remaining": 1344,
-        "prob_upper_circuit_pct": 12.4,
-        "prob_lower_circuit_pct": 50.3,
-        "var_95_expected_high": 441.32,
-        "var_95_expected_low": 383.31,
+        "minutes_remaining": 1337,
+        "prob_upper_circuit_pct": 12.2,
+        "prob_lower_circuit_pct": 49.3,
+        "var_95_expected_high": 441.58,
+        "var_95_expected_low": 383.46,
         "circuit_risk_rating": "EXTREME_CIRCUIT_RISK",
         "rating_badge": "\ud83d\udea8 Extreme Circuit Risk",
         "rating_color": "#ef4444",
-        "summary": "Circuit Odds: 12.4% Upper Lock | 50.3% Lower Lock | 95% Band: \u20b9383.3 - \u20b9441.3"
+        "summary": "Circuit Odds: 12.2% Upper Lock | 49.3% Lower Lock | 95% Band: \u20b9383.5 - \u20b9441.6"
       },
-      "prob_upper_circuit_pct": 12.4,
-      "prob_lower_circuit_pct": 50.3,
+      "prob_upper_circuit_pct": 12.2,
+      "prob_lower_circuit_pct": 49.3,
       "circuit_risk_rating": "EXTREME_CIRCUIT_RISK",
       "circuit_risk_badge": "\ud83d\udea8 Extreme Circuit Risk",
       "circuit_risk_color": "#ef4444",
-      "var_95_high": 441.32,
-      "var_95_low": 383.31,
+      "var_95_high": 441.58,
+      "var_95_low": 383.46,
       "market_regime": {
-        "regime": "COMPRESSED_RANGE",
-        "badge": "\ud83d\udca4 Compressed Range",
-        "short_tag": "Rangebound",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending channel (ADX: 15.2, BBW: 8.1%). Ideal for Options Theta Harvesting & boundary oscillations.",
+        "mandate": "Non-trending chop (ADX: 15.2, BBW: 8.1%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -492,18 +496,19 @@
         ],
         "blocked_strategies": [
           "TREND_BREAKOUT_BUY",
-          "HIGH_BETA_FUTURES"
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-compress",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 15.2,
         "rsi": 54.0,
         "bb_width_pct": 8.13,
         "daily_vol_pct": 1.97
       },
-      "regime_badge": "\ud83d\udca4 Compressed Range",
-      "regime_short": "Rangebound",
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
-      "regime_mandate": "Non-trending channel (ADX: 15.2, BBW: 8.1%). Ideal for Options Theta Harvesting & boundary oscillations."
+      "regime_mandate": "Non-trending chop (ADX: 15.2, BBW: 8.1%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds."
     },
     {
       "symbol": "ALUMINIUM",
@@ -544,48 +549,51 @@
       "ema_50": 335.248557126392,
       "circuit_sim": {
         "replays": 5000,
-        "minutes_remaining": 1344,
-        "prob_upper_circuit_pct": 4.8,
-        "prob_lower_circuit_pct": 32.6,
-        "var_95_expected_high": 344.37,
-        "var_95_expected_low": 309.77,
+        "minutes_remaining": 1337,
+        "prob_upper_circuit_pct": 5.0,
+        "prob_lower_circuit_pct": 32.5,
+        "var_95_expected_high": 344.5,
+        "var_95_expected_low": 309.87,
         "circuit_risk_rating": "HIGH_CIRCUIT_RISK",
         "rating_badge": "\u26a0\ufe0f High Circuit Risk",
         "rating_color": "#f97316",
-        "summary": "Circuit Odds: 4.8% Upper Lock | 32.6% Lower Lock | 95% Band: \u20b9309.8 - \u20b9344.4"
+        "summary": "Circuit Odds: 5.0% Upper Lock | 32.5% Lower Lock | 95% Band: \u20b9309.9 - \u20b9344.5"
       },
-      "prob_upper_circuit_pct": 4.8,
-      "prob_lower_circuit_pct": 32.6,
+      "prob_upper_circuit_pct": 5.0,
+      "prob_lower_circuit_pct": 32.5,
       "circuit_risk_rating": "HIGH_CIRCUIT_RISK",
       "circuit_risk_badge": "\u26a0\ufe0f High Circuit Risk",
       "circuit_risk_color": "#f97316",
-      "var_95_high": 344.37,
-      "var_95_low": 309.77,
+      "var_95_high": 344.5,
+      "var_95_low": 309.87,
       "market_regime": {
-        "regime": "MILD_BEARISH",
-        "badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
-        "short_tag": "Soft",
-        "color": "#94a3b8",
-        "bg_color": "rgba(148, 163, 184, 0.12)",
-        "border_color": "rgba(148, 163, 184, 0.35)",
-        "mandate": "Neutral to soft consolidation (ADX: 28.3). Wait for directional break.",
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending chop (ADX: 28.3, BBW: 8.1%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
-          "WATCHLIST",
-          "STAGED_LIMIT_ORDERS"
+          "OPTION_SELLING",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STRANGLE"
         ],
         "blocked_strategies": [
-          "MARKET_ORDERS"
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
         ],
-        "icon": "fa-solid fa-cloud",
+        "icon": "fa-solid fa-arrows-left-right",
         "adx": 28.3,
         "rsi": 42.1,
         "bb_width_pct": 8.12,
         "daily_vol_pct": 1.48
       },
-      "regime_badge": "\ud83c\udf27\ufe0f Mild Consolidation / Soft",
-      "regime_short": "Soft",
-      "regime_color": "#94a3b8",
-      "regime_mandate": "Neutral to soft consolidation (ADX: 28.3). Wait for directional break."
+      "regime_badge": "\ud83d\udca4 Chop / Consolidation",
+      "regime_short": "Chop / Range",
+      "regime_color": "#c084fc",
+      "regime_mandate": "Non-trending chop (ADX: 28.3, BBW: 8.1%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds."
     }
   ]
 }
