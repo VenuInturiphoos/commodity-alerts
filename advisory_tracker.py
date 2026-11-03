@@ -56,7 +56,9 @@ MARGIN_RATES = {
 # =========================================================================
 MAX_LOSS_PER_TRADE_INR = 1000.0   # Strictly 0.35% of capital (290+ consecutive loss runway)
 MAX_DAILY_LOSS_INR = 2000.0       # Strictly 0.70% daily circuit breaker (halts trading after 2 losses)
-MAX_EQUITY_POSITION_INR = 25000.0 # Intraday equity capital cap (~8% of account)
+MAX_EQUITY_POSITION_INR = 10000.0 # Dedicated ₹10,000 daily budget for Intraday Stock Trading
+MAX_INTRADAY_STOCK_RISK_INR = 250.0 # Strictly capped at ₹250 loss per stock trade (~2.5% of allocation)
+MAX_INTRADAY_STOCK_DAILY_LOSS_INR = 500.0 # Halts intraday stock trading if 2 losses occur in a day
 MAX_CONCURRENT_COMMODITIES = 1    # Strictly max 1 active commodity trade
 MAX_CONCURRENT_EQUITIES = 1       # Strictly max 1 active equity trade
 ENFORCE_MINI_ONLY_COMMODITIES = True # Hard ban on heavy standard lots (e.g. AL2500, CRUDE50) until full capital recovery
@@ -2671,23 +2673,32 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     if any(t.get('id') == trade_id for t in (trades + new_trades)):
                         continue
 
-                    # Dynamic Risk Sizing: Max loss strictly <= ₹3,000 (1% of 3L), max position capital ~₹35,000
+                    # ⚡ Sizing for ₹10,000 Dedicated Daily Intraday Stock Allocation:
+                    # Position value strictly <= ₹10,000 | Max loss at stop strictly <= ₹250
                     risk_per_share = abs(cur_p - eq_sl)
                     if risk_per_share <= 0:
                         continue
                     cap_shares = math.floor(MAX_EQUITY_POSITION_INR / cur_p) if cur_p > 0 else 0
-                    risk_shares = math.floor(MAX_LOSS_PER_TRADE_INR / risk_per_share)
+                    risk_shares = math.floor(MAX_INTRADAY_STOCK_RISK_INR / risk_per_share)
                     eq_shares = min(cap_shares, risk_shares)
                     if eq_shares < 1:
                         continue
-                    if (risk_per_share * eq_shares) > MAX_LOSS_PER_TRADE_INR:
-                        eq_shares = math.floor(MAX_LOSS_PER_TRADE_INR / risk_per_share)
+                    if (cur_p * eq_shares) > MAX_EQUITY_POSITION_INR:
+                        eq_shares = math.floor(MAX_EQUITY_POSITION_INR / cur_p)
+                    if eq_shares < 1:
+                        continue
+                    if (risk_per_share * eq_shares) > MAX_INTRADAY_STOCK_RISK_INR:
+                        eq_shares = math.floor(MAX_INTRADAY_STOCK_RISK_INR / risk_per_share)
                     if eq_shares < 1:
                         continue
 
-                    # 14-Point Pre-Trade Risk Engine Check
+                    # 14-Point Pre-Trade Risk Engine Check (Capped at ₹250 trade risk / ₹500 daily equity loss)
                     all_existing = new_trades + trades
-                    risk_metrics = PreTradeRiskEngine.check_risk(sym, eq_action, cur_p, eq_sl, eq_tgt, eq_shares, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
+                    risk_metrics = PreTradeRiskEngine.check_risk(
+                        sym, eq_action, cur_p, eq_sl, eq_tgt, eq_shares, all_existing,
+                        max_loss_per_trade_inr=MAX_INTRADAY_STOCK_RISK_INR,
+                        max_daily_loss_inr=MAX_INTRADAY_STOCK_DAILY_LOSS_INR
+                    )
                     if not risk_metrics.get('passed'):
                         print(f"🛡️ Pre-Trade Risk Engine Blocked {clean_sym} {eq_action}: {risk_metrics.get('reason')}")
                         continue
