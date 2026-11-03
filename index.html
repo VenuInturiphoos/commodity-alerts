@@ -1353,15 +1353,29 @@ let lastNiftyFetchTime = 0;
 // Guarantees 100% price parity between Circuit Limits,
 // Paper Trading Terminal, Portfolio P&L, Trade Modal & Advisory Tracker
 // ==========================================
+const COMMODITY_BASE_MAP = {
+    'ALUMINI': 'ALUMINIUM',
+    'CRUDEOILM': 'CRUDEOIL',
+    'NATURALGASM': 'NATURALGAS',
+    'GOLDM': 'GOLD',
+    'GOLDTEN': 'GOLD',
+    'SILVERMIC': 'SILVER',
+    'SILVERM': 'SILVER',
+    'COPPERM': 'COPPER',
+    'ZINCM': 'ZINC',
+    'ZINCMINI': 'ZINC'
+};
+
 function getSynchronizedCommodityPrice(symbol, defaultPrice = 0) {
     if (!symbol) return Number(defaultPrice) || 0;
     const cleanSym = String(symbol).replace('-FUT', '').toUpperCase();
+    const baseSym = COMMODITY_BASE_MAP[cleanSym] || cleanSym;
     
     // 1. Authoritative: Live Exchange quote from rawCircuitsData
     if (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData) && rawCircuitsData.length > 0) {
         const cItem = rawCircuitsData.find(c => {
             const cs = (c.symbol || '').toUpperCase();
-            return cs === cleanSym || cs === String(symbol).toUpperCase();
+            return cs === cleanSym || cs === baseSym || cs === String(symbol).toUpperCase();
         });
         if (cItem && cItem.current_price !== undefined && cItem.current_price !== null && !isNaN(Number(cItem.current_price))) {
             return Number(cItem.current_price);
@@ -1372,7 +1386,7 @@ function getSynchronizedCommodityPrice(symbol, defaultPrice = 0) {
     if (typeof marketData !== 'undefined' && Array.isArray(marketData) && marketData.length > 0) {
         const mItem = marketData.find(m => {
             const ms = (m.symbol || '').toUpperCase();
-            return ms === String(symbol).toUpperCase() || ms === cleanSym;
+            return ms === String(symbol).toUpperCase() || ms === cleanSym || ms === baseSym;
         });
         if (mItem && mItem.current_price !== undefined && mItem.current_price !== null && !isNaN(Number(mItem.current_price))) {
             return Number(mItem.current_price);
@@ -5764,11 +5778,18 @@ function renderAdvisoryTradesTable() {
 
         // Find live market data: prioritized from rawCircuitsData (authoritative exchange feed), then marketData, then niftyOpportunitiesData
         const cleanSym = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
+        const baseSym = (typeof COMMODITY_BASE_MAP !== 'undefined' && COMMODITY_BASE_MAP[cleanSym]) ? COMMODITY_BASE_MAP[cleanSym] : cleanSym;
         const circuitItem = (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) 
-            ? rawCircuitsData.find(c => (c.symbol || '').toUpperCase() === cleanSym || (c.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase()) 
+            ? rawCircuitsData.find(c => {
+                const cs = (c.symbol || '').toUpperCase();
+                return cs === cleanSym || cs === baseSym || cs === (t.symbol || '').toUpperCase();
+            }) 
             : null;
         const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) 
-            ? marketData.find(m => (m.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase() || (m.symbol || '').toUpperCase() === cleanSym) 
+            ? marketData.find(m => {
+                const ms = (m.symbol || '').toUpperCase();
+                return ms === (t.symbol || '').toUpperCase() || ms === cleanSym || ms === baseSym;
+            }) 
             : null;
         let liveSource = circuitItem || mktItem;
         if (!liveSource && typeof niftyOpportunitiesData !== 'undefined' && Array.isArray(niftyOpportunitiesData?.stocks)) {
@@ -5882,6 +5903,13 @@ function renderAdvisoryTradesTable() {
                 <div>
                     <span style="color:#4ade80; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-rotate-left"></i> Gap Fade Entered</span>
                     <div style="font-size:0.75rem; color:#cbd5e1;">Bounce towards PDC</div>
+                </div>
+            `;
+        } else if (c15.status === 'TECHNICAL_TRIGGER_ENTERED' || (pt.status === 'ACTIVE' && c15.checked)) {
+            check615Html = `
+                <div>
+                    <span style="color:#4ade80; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-bolt"></i> Triggered & Entered</span>
+                    <div style="font-size:0.75rem; color:#cbd5e1;">Executed @ ₹${Number(pt.entry_price || c15.price_615).toLocaleString('en-IN', {minimumFractionDigits:2})}</div>
                 </div>
             `;
         } else if (c15.status === 'EXTENSION_CONFIRMED') {
