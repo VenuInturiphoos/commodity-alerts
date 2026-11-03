@@ -613,6 +613,8 @@
                 <div class="nifty-toolbar">
                     <div class="nifty-filters">
                         <button class="circuit-filter-pill active" onclick="filterNiftyCategory('ALL', this)">🔥 All Setups (<span id="nifty-cnt-all">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('LARGE', this)">🏛️ Large Cap (<span id="nifty-cnt-large">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterNiftyCategory('MIDCAP', this)">🚀 Mid Cap (<span id="nifty-cnt-mid">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('GOLDEN', this)">🌟 Golden Cross (<span id="nifty-cnt-golden">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('OVERSOLD', this)">📉 Deeply Oversold (<span id="nifty-cnt-oversold">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('DISCOUNT', this)">🏷️ Deep Discount &gt;15% (<span id="nifty-cnt-discount">0</span>)</button>
@@ -943,7 +945,7 @@
                             <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
                                 <div style="flex: 1; min-width: 260px; position: relative;">
                                     <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"></i>
-                                    <input type="text" id="stock-invest-search" placeholder="Search 50 Nifty stocks (e.g., Reliance, TCS, Infosys, HDFC)..." oninput="filterStockInvestingTable()" style="width: 100%; padding: 10px 14px 10px 38px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0, 0, 0, 0.25); color: white; font-size: 0.9rem;">
+                                    <input type="text" id="stock-invest-search" placeholder="Search 100 Large & Midcap stocks (e.g., Reliance, Polycab, Dixon, TCS, Persistent)..." oninput="filterStockInvestingTable()" style="width: 100%; padding: 10px 14px 10px 38px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0, 0, 0, 0.25); color: white; font-size: 0.9rem;">
                                 </div>
                             </div>
 
@@ -2261,12 +2263,16 @@ async function fetchNiftyOpportunities(forceNetwork = false) {
     // Update Filter Button Count Labels
     const stocks = loadedData.stocks || [];
     const cntAll = document.getElementById('nifty-cnt-all');
+    const cntLarge = document.getElementById('nifty-cnt-large');
+    const cntMid = document.getElementById('nifty-cnt-mid');
     const cntGolden = document.getElementById('nifty-cnt-golden');
     const cntOversold = document.getElementById('nifty-cnt-oversold');
     const cntDiscount = document.getElementById('nifty-cnt-discount');
     const cntElite = document.getElementById('nifty-cnt-elite');
     
     if (cntAll) cntAll.textContent = stocks.length;
+    if (cntLarge) cntLarge.textContent = stocks.filter(x => x.cap_category === 'Large Cap' || !x.is_midcap).length;
+    if (cntMid) cntMid.textContent = stocks.filter(x => x.cap_category === 'Mid Cap' || x.is_midcap).length;
     if (cntGolden) cntGolden.textContent = stocks.filter(x => x.is_golden).length;
     if (cntOversold) cntOversold.textContent = stocks.filter(x => x.rsi < 40).length;
     if (cntDiscount) cntDiscount.textContent = stocks.filter(x => x.discount_pct >= 15).length;
@@ -2324,6 +2330,8 @@ function renderNiftyOpportunities() {
     
     let filtered = niftyOpportunitiesData.stocks.filter(s => {
         // Category Filter
+        if (activeNiftyFilter === 'LARGE' && (s.cap_category !== 'Large Cap' && s.is_midcap)) return false;
+        if (activeNiftyFilter === 'MIDCAP' && (s.cap_category !== 'Mid Cap' && !s.is_midcap)) return false;
         if (activeNiftyFilter === 'GOLDEN' && !s.is_golden) return false;
         if (activeNiftyFilter === 'OVERSOLD' && s.rsi >= 40) return false;
         if (activeNiftyFilter === 'DISCOUNT' && s.discount_pct < 15) return false;
@@ -2370,7 +2378,7 @@ function renderNiftyOpportunities() {
                         <div class="nifty-card-top">
                             <div class="nifty-asset-meta">
                                 <h3>${item.name} <small style="font-size:0.75rem; color:var(--text-secondary); font-weight:400;">(${item.symbol})</small></h3>
-                                <p>${item.full_name} • <span style="color:#a855f7;">${item.sector}</span></p>
+                                <p>${item.full_name} • <span style="color:#a855f7;">${item.sector}</span> • <span style="font-size:0.7rem; color:${item.cap_category === 'Mid Cap' ? '#38bdf8' : '#a78bfa'}; background:${item.cap_category === 'Mid Cap' ? 'rgba(56,189,248,0.15)' : 'rgba(167,139,250,0.15)'}; border:1px solid ${item.cap_category === 'Mid Cap' ? 'rgba(56,189,248,0.3)' : 'rgba(167,139,250,0.3)'}; padding:1px 5px; border-radius:4px; font-weight:700;">${item.cap_category || 'Large Cap'}</span></p>
                             </div>
                             <div class="nifty-win-badge ${tierClass}">
                                 <i class="fa-solid fa-bolt"></i> ${item.win_probability}% Win Prob
@@ -2488,7 +2496,7 @@ function renderNiftyOpportunities() {
                     <tr>
                         <td>
                             <strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>
-                            <div style="font-size:0.72rem; color:#a855f7;">${item.sector}</div>
+                            <div style="font-size:0.72rem; color:#a855f7;">${item.sector} • <span style="color:${item.cap_category === 'Mid Cap' ? '#38bdf8' : '#a78bfa'}; font-weight:700;">${item.cap_category || 'Large Cap'}</span></div>
                         </td>
                         <td>
                             <strong style="font-size:0.95rem;">₹${item.close.toFixed(2)}</strong>
@@ -2634,8 +2642,21 @@ function renderNiftyDailyPickHeroCard(pick) {
         return;
     }
     
-    const pnl = Number(pick.pnl_inr || 0);
-    const pnlPct = Number(pick.pnl_pct || 0);
+    // Dynamic real-time synchronized MTM calculation matching portfolio table exactly
+    const livePrice = (typeof getSynchronizedCommodityPrice === 'function') 
+        ? getSynchronizedCommodityPrice(pick.symbol, pick.current_price || pick.entry_price)
+        : (pick.current_price || pick.entry_price);
+    const sharesCount = Number(pick.shares || 1);
+    const costBasis = Number(pick.invested_value || (sharesCount * Number(pick.entry_price || 0)));
+    const currentValue = sharesCount * livePrice;
+
+    let pnl = Number(pick.pnl_inr || 0);
+    let pnlPct = Number(pick.pnl_pct || 0);
+    if (pick.status === 'ACTIVE' || !pick.status) {
+        pnl = currentValue - costBasis;
+        pnlPct = costBasis > 0 ? (pnl / costBasis) * 100 : 0;
+    }
+
     const pnlColor = pnl >= 0 ? '#4ade80' : '#fb7185';
     const pnlSign = pnl > 0 ? '+' : (pnl < 0 ? '-' : '');
     const pnlText = `${pnlSign}₹${Math.abs(pnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -2661,7 +2682,7 @@ function renderNiftyDailyPickHeroCard(pick) {
                         <span style="font-size: 0.75rem; color: ${statusColor}; background: ${statusBg}; border: 1px solid ${statusBorder}; padding: 2px 8px; border-radius: 4px; font-weight: 700;">${statusLabel}</span>
                     </div>
                     <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">
-                        <i class="fa-regular fa-calendar-check" style="color: #818cf8; margin-right: 4px;"></i> Executed at Start of Day (${pick.date}) · ${pick.sector || 'Indian Equities'} · 50 EMA (₹${pick.ema_50}) &gt; 200 EMA (₹${pick.ema_200})
+                        <i class="fa-regular fa-calendar-check" style="color: #818cf8; margin-right: 4px;"></i> Executed at Start of Day (${pick.date}) · <span style="color:${pick.cap_category === 'Mid Cap' ? '#38bdf8' : '#fbbf24'}; font-weight:700;">${pick.cap_category || 'Large Cap'}</span> · ${pick.sector || 'Indian Equities'} · 50 EMA (₹${pick.ema_50}) &gt; 200 EMA (₹${pick.ema_200})
                     </div>
                 </div>
                 <div style="text-align: right;">
@@ -4262,6 +4283,11 @@ function renderPortfolio() {
     if (plEl) {
         plEl.textContent = `${plSign}₹${Math.abs(totalPl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         plEl.style.color = plColor;
+    }
+
+    // Keep Today's Hero Card Live MTM in exact real-time sync with portfolio holdings
+    if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.today_pick) {
+        renderNiftyDailyPickHeroCard(stockInvestmentsData.today_pick);
     }
 }
 window.renderTradePortfolio = renderPortfolio;

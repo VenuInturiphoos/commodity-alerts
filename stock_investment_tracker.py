@@ -276,6 +276,7 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         'name': chosen_stock.get('name'),
         'full_name': chosen_stock.get('full_name', chosen_stock.get('name')),
         'sector': chosen_stock.get('sector', 'Indian Equities'),
+        'cap_category': chosen_stock.get('cap_category', 'Large Cap'),
         'entry_price': price,
         'shares': shares,
         'invested_value': invested_val,

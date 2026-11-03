@@ -1,248 +1,498 @@
 {
-  "email_settings": {
-    "sender_email": "venu.photos1@gmail.com",
-    "sender_password": "",
-    "recipient_emails": [
-      "venu.photos1@gmail.com"
-    ],
-    "smtp_server": "smtp.gmail.com",
-    "smtp_port": 465
-  },
-  "commodities": {
-    "GOLD": {
-      "name": "Gold",
-      "yf_symbol": "GC=F",
-      "tv_ticker": "MCX:GOLD1!",
-      "mcx_multiplier": 0.373273,
-      "dpl_initial": 0.03,
-      "dpl_max": 0.06,
-      "category": "Bullion",
-      "unit": "10 g"
+    "email_settings": {
+        "sender_email": "venu.photos1@gmail.com",
+        "sender_password": "",
+        "recipient_emails": [
+            "venu.photos1@gmail.com"
+        ],
+        "smtp_server": "smtp.gmail.com",
+        "smtp_port": 465
     },
-    "SILVER": {
-      "name": "Silver",
-      "yf_symbol": "SI=F",
-      "tv_ticker": "MCX:SILVER1!",
-      "mcx_multiplier": 38.536532,
-      "dpl_initial": 0.04,
-      "dpl_max": 0.06,
-      "category": "Bullion",
-      "unit": "1 kg"
+    "commodities": {
+        "GOLD": {
+            "name": "Gold",
+            "yf_symbol": "GC=F",
+            "tv_ticker": "MCX:GOLD1!",
+            "mcx_multiplier": 0.373273,
+            "dpl_initial": 0.03,
+            "dpl_max": 0.06,
+            "category": "Bullion",
+            "unit": "10 g"
+        },
+        "SILVER": {
+            "name": "Silver",
+            "yf_symbol": "SI=F",
+            "tv_ticker": "MCX:SILVER1!",
+            "mcx_multiplier": 38.536532,
+            "dpl_initial": 0.04,
+            "dpl_max": 0.06,
+            "category": "Bullion",
+            "unit": "1 kg"
+        },
+        "CRUDEOIL": {
+            "name": "Crude Oil",
+            "yf_symbol": "CL=F",
+            "tv_ticker": "MCX:CRUDEOIL1!",
+            "mcx_multiplier": 1.000049,
+            "dpl_initial": 0.04,
+            "dpl_max": 0.07,
+            "category": "Energy",
+            "unit": "1 bbl"
+        },
+        "NATURALGAS": {
+            "name": "Natural Gas",
+            "yf_symbol": "NG=F",
+            "tv_ticker": "MCX:NATURALGASX2026",
+            "mcx_multiplier": 1.004089,
+            "dpl_initial": 0.06,
+            "dpl_max": 0.09,
+            "category": "Energy",
+            "unit": "1 mmBtu"
+        },
+        "COPPER": {
+            "name": "Copper",
+            "yf_symbol": "HG=F",
+            "tv_ticker": "MCX:COPPER1!",
+            "mcx_multiplier": 2.210742,
+            "dpl_initial": 0.04,
+            "dpl_max": 0.06,
+            "category": "Base Metals",
+            "unit": "1 kg"
+        },
+        "ZINC": {
+            "name": "Zinc",
+            "yf_symbol": "ZNC=F",
+            "tv_ticker": "MCX:ZINC1!",
+            "mcx_multiplier": 0.1039,
+            "dpl_initial": 0.04,
+            "dpl_max": 0.06,
+            "category": "Base Metals",
+            "unit": "1 kg"
+        },
+        "ALUMINIUM": {
+            "name": "Aluminium",
+            "yf_symbol": "ALI=F",
+            "tv_ticker": "MCX:ALUMINIUM1!",
+            "mcx_multiplier": 0.1037,
+            "dpl_initial": 0.04,
+            "dpl_max": 0.06,
+            "category": "Base Metals",
+            "unit": "1 kg"
+        }
     },
-    "CRUDEOIL": {
-      "name": "Crude Oil",
-      "yf_symbol": "CL=F",
-      "tv_ticker": "MCX:CRUDEOIL1!",
-      "mcx_multiplier": 1.000049,
-      "dpl_initial": 0.04,
-      "dpl_max": 0.07,
-      "category": "Energy",
-      "unit": "1 bbl"
+    "derivatives": {
+        "NIFTY": {
+            "name": "NIFTY 50",
+            "track_futures": true,
+            "track_atm_options": true
+        },
+        "BANKNIFTY": {
+            "name": "BANK NIFTY",
+            "track_futures": true,
+            "track_atm_options": true
+        }
     },
-    "NATURALGAS": {
-      "name": "Natural Gas",
-      "yf_symbol": "NG=F",
-      "tv_ticker": "MCX:NATURALGASX2026",
-      "mcx_multiplier": 1.004089,
-      "dpl_initial": 0.06,
-      "dpl_max": 0.09,
-      "category": "Energy",
-      "unit": "1 mmBtu"
-    },
-    "COPPER": {
-      "name": "Copper",
-      "yf_symbol": "HG=F",
-      "tv_ticker": "MCX:COPPER1!",
-      "mcx_multiplier": 2.210742,
-      "dpl_initial": 0.04,
-      "dpl_max": 0.06,
-      "category": "Base Metals",
-      "unit": "1 kg"
-    },
-    "ZINC": {
-      "name": "Zinc",
-      "yf_symbol": "ZNC=F",
-      "tv_ticker": "MCX:ZINC1!",
-      "mcx_multiplier": 0.1039,
-      "dpl_initial": 0.04,
-      "dpl_max": 0.06,
-      "category": "Base Metals",
-      "unit": "1 kg"
-    },
-    "ALUMINIUM": {
-      "name": "Aluminium",
-      "yf_symbol": "ALI=F",
-      "tv_ticker": "MCX:ALUMINIUM1!",
-      "mcx_multiplier": 0.1037,
-      "dpl_initial": 0.04,
-      "dpl_max": 0.06,
-      "category": "Base Metals",
-      "unit": "1 kg"
+    "check_interval_seconds": 300,
+    "stocks": {
+        "ADANIENT.NS": {
+            "name": "ADANIENT",
+            "market_cap": "Large Cap"
+        },
+        "ADANIPORTS.NS": {
+            "name": "ADANIPORTS",
+            "market_cap": "Large Cap"
+        },
+        "APOLLOHOSP.NS": {
+            "name": "APOLLOHOSP",
+            "market_cap": "Large Cap"
+        },
+        "ASIANPAINT.NS": {
+            "name": "ASIANPAINT",
+            "market_cap": "Large Cap"
+        },
+        "AXISBANK.NS": {
+            "name": "AXISBANK",
+            "market_cap": "Large Cap"
+        },
+        "BAJAJ-AUTO.NS": {
+            "name": "BAJAJ-AUTO",
+            "market_cap": "Large Cap"
+        },
+        "BAJFINANCE.NS": {
+            "name": "BAJFINANCE",
+            "market_cap": "Large Cap"
+        },
+        "BAJAJFINSV.NS": {
+            "name": "BAJAJFINSV",
+            "market_cap": "Large Cap"
+        },
+        "BPCL.NS": {
+            "name": "BPCL",
+            "market_cap": "Large Cap"
+        },
+        "BHARTIARTL.NS": {
+            "name": "BHARTIARTL",
+            "market_cap": "Large Cap"
+        },
+        "BRITANNIA.NS": {
+            "name": "BRITANNIA",
+            "market_cap": "Large Cap"
+        },
+        "CIPLA.NS": {
+            "name": "CIPLA",
+            "market_cap": "Large Cap"
+        },
+        "COALINDIA.NS": {
+            "name": "COALINDIA",
+            "market_cap": "Large Cap"
+        },
+        "DIVISLAB.NS": {
+            "name": "DIVISLAB",
+            "market_cap": "Large Cap"
+        },
+        "DRREDDY.NS": {
+            "name": "DRREDDY",
+            "market_cap": "Large Cap"
+        },
+        "EICHERMOT.NS": {
+            "name": "EICHERMOT",
+            "market_cap": "Large Cap"
+        },
+        "GRASIM.NS": {
+            "name": "GRASIM",
+            "market_cap": "Large Cap"
+        },
+        "HCLTECH.NS": {
+            "name": "HCLTECH",
+            "market_cap": "Large Cap"
+        },
+        "HDFCBANK.NS": {
+            "name": "HDFCBANK",
+            "market_cap": "Large Cap"
+        },
+        "HDFCLIFE.NS": {
+            "name": "HDFCLIFE",
+            "market_cap": "Large Cap"
+        },
+        "HEROMOTOCO.NS": {
+            "name": "HEROMOTOCO",
+            "market_cap": "Large Cap"
+        },
+        "HINDALCO.NS": {
+            "name": "HINDALCO",
+            "market_cap": "Large Cap"
+        },
+        "HINDUNILVR.NS": {
+            "name": "HINDUNILVR",
+            "market_cap": "Large Cap"
+        },
+        "ICICIBANK.NS": {
+            "name": "ICICIBANK",
+            "market_cap": "Large Cap"
+        },
+        "ITC.NS": {
+            "name": "ITC",
+            "market_cap": "Large Cap"
+        },
+        "INDUSINDBK.NS": {
+            "name": "INDUSINDBK",
+            "market_cap": "Large Cap"
+        },
+        "INFY.NS": {
+            "name": "INFY",
+            "market_cap": "Large Cap"
+        },
+        "JSWSTEEL.NS": {
+            "name": "JSWSTEEL",
+            "market_cap": "Large Cap"
+        },
+        "KOTAKBANK.NS": {
+            "name": "KOTAKBANK",
+            "market_cap": "Large Cap"
+        },
+        "LTIM.NS": {
+            "name": "LTIM",
+            "market_cap": "Large Cap"
+        },
+        "LT.NS": {
+            "name": "LT",
+            "market_cap": "Large Cap"
+        },
+        "M&M.NS": {
+            "name": "M&M",
+            "market_cap": "Large Cap"
+        },
+        "MARUTI.NS": {
+            "name": "MARUTI",
+            "market_cap": "Large Cap"
+        },
+        "NTPC.NS": {
+            "name": "NTPC",
+            "market_cap": "Large Cap"
+        },
+        "NESTLEIND.NS": {
+            "name": "NESTLEIND",
+            "market_cap": "Large Cap"
+        },
+        "ONGC.NS": {
+            "name": "ONGC",
+            "market_cap": "Large Cap"
+        },
+        "POWERGRID.NS": {
+            "name": "POWERGRID",
+            "market_cap": "Large Cap"
+        },
+        "RELIANCE.NS": {
+            "name": "RELIANCE",
+            "market_cap": "Large Cap"
+        },
+        "SBILIFE.NS": {
+            "name": "SBILIFE",
+            "market_cap": "Large Cap"
+        },
+        "SBIN.NS": {
+            "name": "SBIN",
+            "market_cap": "Large Cap"
+        },
+        "SUNPHARMA.NS": {
+            "name": "SUNPHARMA",
+            "market_cap": "Large Cap"
+        },
+        "TCS.NS": {
+            "name": "TCS",
+            "market_cap": "Large Cap"
+        },
+        "TATACONSUM.NS": {
+            "name": "TATACONSUM",
+            "market_cap": "Large Cap"
+        },
+        "TATAMOTORS.NS": {
+            "name": "TATAMOTORS",
+            "market_cap": "Large Cap"
+        },
+        "TATASTEEL.NS": {
+            "name": "TATASTEEL",
+            "market_cap": "Large Cap"
+        },
+        "TECHM.NS": {
+            "name": "TECHM",
+            "market_cap": "Large Cap"
+        },
+        "TITAN.NS": {
+            "name": "TITAN",
+            "market_cap": "Large Cap"
+        },
+        "SHRIRAMFIN.NS": {
+            "name": "SHRIRAMFIN",
+            "market_cap": "Large Cap"
+        },
+        "ULTRACEMCO.NS": {
+            "name": "ULTRACEMCO",
+            "market_cap": "Large Cap"
+        },
+        "WIPRO.NS": {
+            "name": "WIPRO",
+            "market_cap": "Large Cap"
+        },
+        "POLYCAB.NS": {
+            "name": "POLYCAB",
+            "market_cap": "Mid Cap"
+        },
+        "PERSISTENT.NS": {
+            "name": "PERSISTENT",
+            "market_cap": "Mid Cap"
+        },
+        "COFORGE.NS": {
+            "name": "COFORGE",
+            "market_cap": "Mid Cap"
+        },
+        "MPHASIS.NS": {
+            "name": "MPHASIS",
+            "market_cap": "Mid Cap"
+        },
+        "DIXON.NS": {
+            "name": "DIXON",
+            "market_cap": "Mid Cap"
+        },
+        "CUMMINSIND.NS": {
+            "name": "CUMMINSIND",
+            "market_cap": "Mid Cap"
+        },
+        "VOLTAS.NS": {
+            "name": "VOLTAS",
+            "market_cap": "Mid Cap"
+        },
+        "FEDERALBNK.NS": {
+            "name": "FEDERALBNK",
+            "market_cap": "Mid Cap"
+        },
+        "ASHOKLEY.NS": {
+            "name": "ASHOKLEY",
+            "market_cap": "Mid Cap"
+        },
+        "ASTRAL.NS": {
+            "name": "ASTRAL",
+            "market_cap": "Mid Cap"
+        },
+        "OBEROIRLTY.NS": {
+            "name": "OBEROIRLTY",
+            "market_cap": "Mid Cap"
+        },
+        "TATACOMM.NS": {
+            "name": "TATACOMM",
+            "market_cap": "Mid Cap"
+        },
+        "JUBLFOOD.NS": {
+            "name": "JUBLFOOD",
+            "market_cap": "Mid Cap"
+        },
+        "PIDILITIND.NS": {
+            "name": "PIDILITIND",
+            "market_cap": "Mid Cap"
+        },
+        "SUNDARMFIN.NS": {
+            "name": "SUNDARMFIN",
+            "market_cap": "Mid Cap"
+        },
+        "SUPREMEIND.NS": {
+            "name": "SUPREMEIND",
+            "market_cap": "Mid Cap"
+        },
+        "MAXHEALTH.NS": {
+            "name": "MAXHEALTH",
+            "market_cap": "Mid Cap"
+        },
+        "HDFCAMC.NS": {
+            "name": "HDFCAMC",
+            "market_cap": "Mid Cap"
+        },
+        "BHEL.NS": {
+            "name": "BHEL",
+            "market_cap": "Mid Cap"
+        },
+        "IDFCFIRSTB.NS": {
+            "name": "IDFCFIRSTB",
+            "market_cap": "Mid Cap"
+        },
+        "AUROPHARMA.NS": {
+            "name": "AUROPHARMA",
+            "market_cap": "Mid Cap"
+        },
+        "LUPIN.NS": {
+            "name": "LUPIN",
+            "market_cap": "Mid Cap"
+        },
+        "PAGEIND.NS": {
+            "name": "PAGEIND",
+            "market_cap": "Mid Cap"
+        },
+        "COLPAL.NS": {
+            "name": "COLPAL",
+            "market_cap": "Mid Cap"
+        },
+        "GODREJPROP.NS": {
+            "name": "GODREJPROP",
+            "market_cap": "Mid Cap"
+        },
+        "DALBHARAT.NS": {
+            "name": "DALBHARAT",
+            "market_cap": "Mid Cap"
+        },
+        "PIIND.NS": {
+            "name": "PIIND",
+            "market_cap": "Mid Cap"
+        },
+        "BALKRISIND.NS": {
+            "name": "BALKRISIND",
+            "market_cap": "Mid Cap"
+        },
+        "DEEPAKNTR.NS": {
+            "name": "DEEPAKNTR",
+            "market_cap": "Mid Cap"
+        },
+        "PETRONET.NS": {
+            "name": "PETRONET",
+            "market_cap": "Mid Cap"
+        },
+        "CONCOR.NS": {
+            "name": "CONCOR",
+            "market_cap": "Mid Cap"
+        },
+        "ESCORTS.NS": {
+            "name": "ESCORTS",
+            "market_cap": "Mid Cap"
+        },
+        "ALKEM.NS": {
+            "name": "ALKEM",
+            "market_cap": "Mid Cap"
+        },
+        "BANDHANBNK.NS": {
+            "name": "BANDHANBNK",
+            "market_cap": "Mid Cap"
+        },
+        "MRF.NS": {
+            "name": "MRF",
+            "market_cap": "Mid Cap"
+        },
+        "MUTHOOTFIN.NS": {
+            "name": "MUTHOOTFIN",
+            "market_cap": "Mid Cap"
+        },
+        "LICHSGFIN.NS": {
+            "name": "LICHSGFIN",
+            "market_cap": "Mid Cap"
+        },
+        "BHARATFORG.NS": {
+            "name": "BHARATFORG",
+            "market_cap": "Mid Cap"
+        },
+        "ABCAPITAL.NS": {
+            "name": "ABCAPITAL",
+            "market_cap": "Mid Cap"
+        },
+        "SAIL.NS": {
+            "name": "SAIL",
+            "market_cap": "Mid Cap"
+        },
+        "NMDC.NS": {
+            "name": "NMDC",
+            "market_cap": "Mid Cap"
+        },
+        "GMRAIRPORT.NS": {
+            "name": "GMRAIRPORT",
+            "market_cap": "Mid Cap"
+        },
+        "TATAELXSI.NS": {
+            "name": "TATAELXSI",
+            "market_cap": "Mid Cap"
+        },
+        "IPCALAB.NS": {
+            "name": "IPCALAB",
+            "market_cap": "Mid Cap"
+        },
+        "ZYDUSLIFE.NS": {
+            "name": "ZYDUSLIFE",
+            "market_cap": "Mid Cap"
+        },
+        "AUBANK.NS": {
+            "name": "AUBANK",
+            "market_cap": "Mid Cap"
+        },
+        "METROPOLIS.NS": {
+            "name": "METROPOLIS",
+            "market_cap": "Mid Cap"
+        },
+        "PVRINOX.NS": {
+            "name": "PVRINOX",
+            "market_cap": "Mid Cap"
+        },
+        "APLAPOLLO.NS": {
+            "name": "APLAPOLLO",
+            "market_cap": "Mid Cap"
+        },
+        "PRESTIGE.NS": {
+            "name": "PRESTIGE",
+            "market_cap": "Mid Cap"
+        }
     }
-  },
-  "derivatives": {
-    "NIFTY": {
-      "name": "NIFTY 50",
-      "track_futures": true,
-      "track_atm_options": true
-    },
-    "BANKNIFTY": {
-      "name": "BANK NIFTY",
-      "track_futures": true,
-      "track_atm_options": true
-    }
-  },
-  "check_interval_seconds": 300,
-  "stocks": {
-    "ADANIENT.NS": {
-      "name": "ADANIENT"
-    },
-    "ADANIPORTS.NS": {
-      "name": "ADANIPORTS"
-    },
-    "APOLLOHOSP.NS": {
-      "name": "APOLLOHOSP"
-    },
-    "ASIANPAINT.NS": {
-      "name": "ASIANPAINT"
-    },
-    "AXISBANK.NS": {
-      "name": "AXISBANK"
-    },
-    "BAJAJ-AUTO.NS": {
-      "name": "BAJAJ-AUTO"
-    },
-    "BAJFINANCE.NS": {
-      "name": "BAJFINANCE"
-    },
-    "BAJAJFINSV.NS": {
-      "name": "BAJAJFINSV"
-    },
-    "BPCL.NS": {
-      "name": "BPCL"
-    },
-    "BHARTIARTL.NS": {
-      "name": "BHARTIARTL"
-    },
-    "BRITANNIA.NS": {
-      "name": "BRITANNIA"
-    },
-    "CIPLA.NS": {
-      "name": "CIPLA"
-    },
-    "COALINDIA.NS": {
-      "name": "COALINDIA"
-    },
-    "DIVISLAB.NS": {
-      "name": "DIVISLAB"
-    },
-    "DRREDDY.NS": {
-      "name": "DRREDDY"
-    },
-    "EICHERMOT.NS": {
-      "name": "EICHERMOT"
-    },
-    "GRASIM.NS": {
-      "name": "GRASIM"
-    },
-    "HCLTECH.NS": {
-      "name": "HCLTECH"
-    },
-    "HDFCBANK.NS": {
-      "name": "HDFCBANK"
-    },
-    "HDFCLIFE.NS": {
-      "name": "HDFCLIFE"
-    },
-    "HEROMOTOCO.NS": {
-      "name": "HEROMOTOCO"
-    },
-    "HINDALCO.NS": {
-      "name": "HINDALCO"
-    },
-    "HINDUNILVR.NS": {
-      "name": "HINDUNILVR"
-    },
-    "ICICIBANK.NS": {
-      "name": "ICICIBANK"
-    },
-    "ITC.NS": {
-      "name": "ITC"
-    },
-    "INDUSINDBK.NS": {
-      "name": "INDUSINDBK"
-    },
-    "INFY.NS": {
-      "name": "INFY"
-    },
-    "JSWSTEEL.NS": {
-      "name": "JSWSTEEL"
-    },
-    "KOTAKBANK.NS": {
-      "name": "KOTAKBANK"
-    },
-    "LTIM.NS": {
-      "name": "LTIM"
-    },
-    "LT.NS": {
-      "name": "LT"
-    },
-    "M&M.NS": {
-      "name": "M&M"
-    },
-    "MARUTI.NS": {
-      "name": "MARUTI"
-    },
-    "NTPC.NS": {
-      "name": "NTPC"
-    },
-    "NESTLEIND.NS": {
-      "name": "NESTLEIND"
-    },
-    "ONGC.NS": {
-      "name": "ONGC"
-    },
-    "POWERGRID.NS": {
-      "name": "POWERGRID"
-    },
-    "RELIANCE.NS": {
-      "name": "RELIANCE"
-    },
-    "SBILIFE.NS": {
-      "name": "SBILIFE"
-    },
-    "SBIN.NS": {
-      "name": "SBIN"
-    },
-    "SUNPHARMA.NS": {
-      "name": "SUNPHARMA"
-    },
-    "TCS.NS": {
-      "name": "TCS"
-    },
-    "TATACONSUM.NS": {
-      "name": "TATACONSUM"
-    },
-    "TATAMOTORS.NS": {
-      "name": "TATAMOTORS"
-    },
-    "TATASTEEL.NS": {
-      "name": "TATASTEEL"
-    },
-    "TECHM.NS": {
-      "name": "TECHM"
-    },
-    "TITAN.NS": {
-      "name": "TITAN"
-    },
-    "SHRIRAMFIN.NS": {
-      "name": "SHRIRAMFIN"
-    },
-    "ULTRACEMCO.NS": {
-      "name": "ULTRACEMCO"
-    },
-    "WIPRO.NS": {
-      "name": "WIPRO"
-    }
-  }
 }

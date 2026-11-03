@@ -19,46 +19,60 @@ HEADERS = {
 ALIAS_MAP = {
     'BAJAJ-AUTO': 'BAJAJ_AUTO',
     'TATAMOTORS': 'TMCV',
-    'LTIM': 'LTI'
+    'LTIM': 'LTI',
+    'M&M': 'M_M'
 }
 
 REVERSE_ALIAS = {
     'BAJAJ_AUTO': 'BAJAJ-AUTO.NS',
     'TMCV': 'TATAMOTORS.NS',
     'TMPV': 'TMPV.NS',
-    'LTI': 'LTIM.NS'
+    'LTI': 'LTIM.NS',
+    'M_M': 'M&M.NS'
 }
 
+NIFTY_50_SYMBOLS = [
+    'ADANIENT.NS', 'ADANIPORTS.NS', 'APOLLOHOSP.NS', 'ASIANPAINT.NS', 'AXISBANK.NS',
+    'BAJAJ-AUTO.NS', 'BAJFINANCE.NS', 'BAJAJFINSV.NS', 'BPCL.NS', 'BHARTIARTL.NS',
+    'BRITANNIA.NS', 'CIPLA.NS', 'COALINDIA.NS', 'DIVISLAB.NS', 'DRREDDY.NS',
+    'EICHERMOT.NS', 'GRASIM.NS', 'HCLTECH.NS', 'HDFCBANK.NS', 'HDFCLIFE.NS',
+    'HEROMOTOCO.NS', 'HINDALCO.NS', 'HINDUNILVR.NS', 'ICICIBANK.NS', 'ITC.NS',
+    'INDUSINDBK.NS', 'INFY.NS', 'JSWSTEEL.NS', 'KOTAKBANK.NS', 'LTIM.NS',
+    'LT.NS', 'M&M.NS', 'MARUTI.NS', 'NTPC.NS', 'NESTLEIND.NS',
+    'ONGC.NS', 'POWERGRID.NS', 'RELIANCE.NS', 'SBILIFE.NS', 'SBIN.NS',
+    'SUNPHARMA.NS', 'TCS.NS', 'TATACONSUM.NS', 'TATAMOTORS.NS', 'TATASTEEL.NS',
+    'TECHM.NS', 'TITAN.NS', 'SHRIRAMFIN.NS', 'ULTRACEMCO.NS', 'WIPRO.NS'
+]
+
+MIDCAP_SYMBOLS = [
+    'POLYCAB.NS', 'PERSISTENT.NS', 'COFORGE.NS', 'MPHASIS.NS', 'DIXON.NS',
+    'CUMMINSIND.NS', 'VOLTAS.NS', 'FEDERALBNK.NS', 'ASHOKLEY.NS', 'ASTRAL.NS',
+    'OBEROIRLTY.NS', 'TATACOMM.NS', 'JUBLFOOD.NS', 'PIDILITIND.NS', 'SUNDARMFIN.NS',
+    'SUPREMEIND.NS', 'MAXHEALTH.NS', 'HDFCAMC.NS', 'BHEL.NS', 'IDFCFIRSTB.NS',
+    'AUROPHARMA.NS', 'LUPIN.NS', 'PAGEIND.NS', 'COLPAL.NS', 'GODREJPROP.NS',
+    'DALBHARAT.NS', 'PIIND.NS', 'BALKRISIND.NS', 'DEEPAKNTR.NS', 'PETRONET.NS',
+    'CONCOR.NS', 'ESCORTS.NS', 'ALKEM.NS', 'BANDHANBNK.NS', 'MRF.NS',
+    'MUTHOOTFIN.NS', 'LICHSGFIN.NS', 'BHARATFORG.NS', 'ABCAPITAL.NS', 'SAIL.NS',
+    'NMDC.NS', 'GMRAIRPORT.NS', 'TATAELXSI.NS', 'IPCALAB.NS', 'ZYDUSLIFE.NS',
+    'AUBANK.NS', 'METROPOLIS.NS', 'PVRINOX.NS', 'APLAPOLLO.NS', 'PRESTIGE.NS'
+]
+
 def load_nifty50_symbols(config_path='config.json'):
-    try:
-        with open(config_path, 'r') as f:
-            cfg = json.load(f)
-        stocks = cfg.get('stocks', {})
-        if stocks:
-            return list(stocks.keys())
-    except Exception as e:
-        print(f"Warning: Could not read config.json: {e}")
-        
-    # Standard Nifty 50 Fallback List
-    return [
-        'ADANIENT.NS', 'ADANIPORTS.NS', 'APOLLOHOSP.NS', 'ASIANPAINT.NS', 'AXISBANK.NS',
-        'BAJAJ-AUTO.NS', 'BAJFINANCE.NS', 'BAJAJFINSV.NS', 'BPCL.NS', 'BHARTIARTL.NS',
-        'BRITANNIA.NS', 'CIPLA.NS', 'COALINDIA.NS', 'DIVISLAB.NS', 'DRREDDY.NS',
-        'EICHERMOT.NS', 'GRASIM.NS', 'HCLTECH.NS', 'HDFCBANK.NS', 'HDFCLIFE.NS',
-        'HEROMOTOCO.NS', 'HINDALCO.NS', 'HINDUNILVR.NS', 'ICICIBANK.NS', 'ITC.NS',
-        'INDUSINDBK.NS', 'INFY.NS', 'JSWSTEEL.NS', 'KOTAKBANK.NS', 'LTIM.NS',
-        'LT.NS', 'M&M.NS', 'MARUTI.NS', 'NTPC.NS', 'NESTLEIND.NS',
-        'ONGC.NS', 'POWERGRID.NS', 'RELIANCE.NS', 'SBILIFE.NS', 'SBIN.NS',
-        'SUNPHARMA.NS', 'TCS.NS', 'TATACONSUM.NS', 'TATAMOTORS.NS', 'TATASTEEL.NS',
-        'TECHM.NS', 'TITAN.NS', 'SHRIRAMFIN.NS', 'ULTRACEMCO.NS', 'WIPRO.NS'
-    ]
+    return list(NIFTY_50_SYMBOLS)
+
+def load_midcap_symbols():
+    return list(MIDCAP_SYMBOLS)
+
+def load_all_scannable_symbols():
+    return list(NIFTY_50_SYMBOLS) + list(MIDCAP_SYMBOLS)
 
 def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
     """
-    Scans all Nifty 50 stocks for Golden Crossovers and Oversold opportunities
-    and writes results to JSON for the frontend dashboard.
+    Scans all Nifty 50 and premier liquid Midcap stocks for Golden Crossovers and Oversold opportunities
+    and writes results to JSON for the frontend dashboard and daily stock investment engine.
     """
-    raw_symbols = load_nifty50_symbols()
+    raw_symbols = load_all_scannable_symbols()
+    large_cap_set = set(NIFTY_50_SYMBOLS)
     clean_map = {}
     for sym in raw_symbols:
         base = sym.replace('.NS', '')
@@ -306,11 +320,16 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
 
         rationale_text = "; ".join(reasons) if reasons else "Favorable risk-reward swing structure on daily timeframe."
 
+        is_large_cap = orig_sym in large_cap_set
+        cap_category = 'Large Cap' if is_large_cap else 'Mid Cap'
+
         opportunities.append({
             'symbol': orig_sym,
             'name': name,
             'full_name': full_name,
             'sector': sector,
+            'cap_category': cap_category,
+            'is_midcap': not is_large_cap,
             'close': round(close, 2),
             'change_pct': round(change_pct, 2),
             'change_abs': round(change_abs, 2),
@@ -370,6 +389,8 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
     golden_cross_count = len([o for o in opportunities if o['is_golden']])
     oversold_count = len([o for o in opportunities if o['rsi'] < 40.0])
     deep_discount_count = len([o for o in opportunities if o['discount_pct'] >= 15.0])
+    large_cap_count = len([o for o in opportunities if o.get('cap_category') == 'Large Cap'])
+    mid_cap_count = len([o for o in opportunities if o.get('cap_category') == 'Mid Cap'])
     
     top_10 = opportunities[:10]
     avg_discount_top_10 = round(sum(o['discount_pct'] for o in top_10) / len(top_10), 1) if top_10 else 0.0
@@ -378,6 +399,8 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         'last_updated': timestamp_str,
         'summary': {
             'total_scanned': len(opportunities),
+            'large_cap_count': large_cap_count,
+            'mid_cap_count': mid_cap_count,
             'high_win_prob_count': high_win_prob_count,
             'golden_cross_count': golden_cross_count,
             'oversold_count': oversold_count,
