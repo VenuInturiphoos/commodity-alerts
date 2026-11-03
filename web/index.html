@@ -696,18 +696,28 @@
                     <p>Autonomous trading pool (Commodity Mini & Intraday Stocks) for <strong>venu.photos1@gmail.com</strong> with strict ₹1,000 max risk per trade and ₹2,000 daily circuit breaker. <strong>Completely separate from Stock Delivery Investments.</strong></p>
                 </div>
 
+                <!-- Sub-Tab Navigation: MCX Commodities vs Intraday Stock Trading -->
+                <div style="display: flex; gap: 10px; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.85rem; flex-wrap: wrap;">
+                    <button class="sub-tab-btn" id="trading-subtab-commodities-btn" onclick="switchTradingSubTab('commodities')" style="background: rgba(99, 102, 241, 0.25); border: 1px solid rgba(99, 102, 241, 0.5); color: #c7d2fe; padding: 9px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.88rem;">
+                        <i class="fa-solid fa-gem" style="color: #a5b4fc;"></i> 🎯 MCX Commodities (Mini Contracts)
+                    </button>
+                    <button class="sub-tab-btn" id="trading-subtab-stocks-btn" onclick="switchTradingSubTab('stocks')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); color: #94a3b8; padding: 9px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.88rem;">
+                        <i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> ⚡ Intraday Stock Trading (Max ₹10,000 Allocation)
+                    </button>
+                </div>
+
                 <!-- Advisory Signals View -->
                 <div id="trade-view-advisory" style="display: block;">
                     <!-- 🎯 6:00 PM IST Advisory Signals & Paper Trade Tracker -->
                     <div id="advisory-tracker-section" class="glass-card full-width" style="margin-bottom: 2.5rem; border: 1px solid rgba(99, 102, 241, 0.35); background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1rem;">
                         <div>
-                            <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 0.5rem; text-transform: uppercase;">
-                                <i class="fa-solid fa-crosshairs"></i> Dedicated Trading Capital: ₹3,00,000
+                            <div id="trading-subtab-badge" style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 0.5rem; text-transform: uppercase;">
+                                <i class="fa-solid fa-gem"></i> Dedicated Commodity Pool: ₹3,00,000 (Mini Only)
                             </div>
-                            <h2 style="margin: 0; font-size: 1.35rem; color: #f8fafc;">🎯 Trading Tracker (₹3,00,000 Dedicated Pool)</h2>
-                            <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">
-                                Autonomous trading pool (Commodity Mini & Intraday Stocks) for <strong>venu.photos1@gmail.com</strong> with strict ₹1,000 max risk per trade and ₹2,000 daily circuit breaker. <strong>Completely separate from Stock Delivery Investments.</strong>
+                            <h2 id="trading-subtab-title" style="margin: 0; font-size: 1.35rem; color: #f8fafc;">🎯 MCX Commodity Trading Tracker (Mini Contracts Only)</h2>
+                            <p id="trading-subtab-desc" style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">
+                                Autonomous MCX commodity trading (Alumini, CrudeOilM, NatGasM, SilverMic) with strict ₹1,000 max risk per trade and ₹2,000 daily circuit breaker. Evening sessions active till 11:30 PM IST.
                             </p>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -766,7 +776,7 @@
                     </div>
 
                     <!-- Session Timing & Win Probability Filter Bar -->
-                    <div style="background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 0.85rem;">
+                    <div id="adv-session-filter-container" style="background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 0.85rem;">
                         <div style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
                             <span><i class="fa-regular fa-clock" style="color: #818cf8; margin-right: 5px;"></i> Filter by Advisory Entry Session & Win Probability:</span>
                             <span id="session-stats-summary" style="font-size: 0.78rem; color: #a5b4fc; font-weight: 600; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); padding: 2px 8px; border-radius: 6px;"></span>
@@ -5165,6 +5175,55 @@ let archiveTrackerCache = null;
 let currentAdvMonth = 'CURRENT_MONTH';
 let activeAdvFilter = 'CALLED';
 let activeAdvSession = 'ALL';
+let currentTradingSubTab = localStorage.getItem('trading_subtab') || 'commodities';
+
+function switchTradingSubTab(subtab) {
+    currentTradingSubTab = subtab;
+    localStorage.setItem('trading_subtab', subtab);
+
+    const btnCommodities = document.getElementById('trading-subtab-commodities-btn');
+    const btnStocks = document.getElementById('trading-subtab-stocks-btn');
+
+    if (btnCommodities && btnStocks) {
+        if (subtab === 'commodities') {
+            btnCommodities.style.background = 'rgba(99, 102, 241, 0.25)';
+            btnCommodities.style.borderColor = 'rgba(99, 102, 241, 0.5)';
+            btnCommodities.style.color = '#c7d2fe';
+            btnStocks.style.background = 'rgba(255, 255, 255, 0.05)';
+            btnStocks.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+            btnStocks.style.color = '#94a3b8';
+        } else {
+            btnStocks.style.background = 'rgba(245, 158, 11, 0.25)';
+            btnStocks.style.borderColor = 'rgba(245, 158, 11, 0.5)';
+            btnStocks.style.color = '#fbbf24';
+            btnCommodities.style.background = 'rgba(255, 255, 255, 0.05)';
+            btnCommodities.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+            btnCommodities.style.color = '#94a3b8';
+        }
+    }
+
+    const badgeEl = document.getElementById('trading-subtab-badge');
+    const titleEl = document.getElementById('trading-subtab-title');
+    const descEl = document.getElementById('trading-subtab-desc');
+    const sessionFilterContainer = document.getElementById('adv-session-filter-container');
+
+    if (subtab === 'commodities') {
+        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-gem"></i> Dedicated Commodity Pool: ₹3,00,000 (Mini Only)';
+        if (titleEl) titleEl.innerHTML = '🎯 MCX Commodity Trading Tracker (Mini Contracts Only)';
+        if (descEl) descEl.innerHTML = 'Autonomous MCX commodity trading (Alumini, CrudeOilM, NatGasM, SilverMic) with strict ₹1,000 max risk per trade and ₹2,000 daily circuit breaker. Evening sessions active till 11:30 PM IST.';
+        if (sessionFilterContainer) sessionFilterContainer.style.display = 'block';
+    } else {
+        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday Stock Allocation: Max ₹10,000 (from Trading Pool)';
+        if (titleEl) titleEl.innerHTML = '⚡ Nifty 50 Intraday Stock Trading Tracker';
+        if (descEl) descEl.innerHTML = 'Autonomous liquid Nifty 50 stock day-trades allocated from trading capital (Max ₹10,000 per day). Strict ₹250 max loss per trade and mandatory 03:25 PM IST EOD square-off (Zero overnight risk).';
+        if (sessionFilterContainer) sessionFilterContainer.style.display = 'none';
+    }
+
+    if (typeof applyAdvisoryMonthFilter === 'function') {
+        applyAdvisoryMonthFilter(currentAdvMonth);
+    }
+}
+window.switchTradingSubTab = switchTradingSubTab;
 
 function extractTradeMonth(t) {
     if (!t || !t.date) return '';
@@ -5468,9 +5527,14 @@ function applyAdvisoryMonthFilter(monthValue) {
         advisoryTrackerData = { trades: [], summary: {} };
     }
 
-    // Update summary KPI cards
+    // Update summary KPI cards dynamically filtered for active sub-tab
     const summary = advisoryTrackerData.summary || {};
-    const trades = advisoryTrackerData.trades || [];
+    const allDatasetTrades = advisoryTrackerData.trades || [];
+    const trades = allDatasetTrades.filter(t => {
+        const isStock = (t.asset_type === 'EQUITY' || (t.symbol && t.symbol.endsWith('.NS')));
+        return currentTradingSubTab === 'stocks' ? isStock : !isStock;
+    });
+
     const countAll = trades.length;
     const calledTrades = trades.filter(isCalledAdvisoryTrade);
     const countCalled = calledTrades.length;
@@ -5478,6 +5542,10 @@ function applyAdvisoryMonthFilter(monthValue) {
     const countWrong = trades.filter(t => t.eod_outcome && (t.eod_outcome.outcome === 'WRONG' || t.eod_outcome.outcome === 'INCORRECT')).length;
     const countProtected = trades.filter(t => t.eod_outcome?.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t)).length;
     const countActive = trades.filter(t => (t.paper_trade && (t.paper_trade.status === 'ACTIVE' || t.paper_trade.status === 'PENDING_615')) || (isTradeFromToday(t) && isCalledAdvisoryTrade(t))).length;
+
+    const subPnl = trades.reduce((acc, t) => acc + (Number(t.paper_trade?.pnl_inr) || 0), 0);
+    const resolvedCount = countCorrect + countWrong;
+    const winRate = resolvedCount > 0 ? Number(((countCorrect / resolvedCount) * 100).toFixed(1)) : (currentTradingSubTab === 'stocks' ? 100.0 : (summary.win_rate_pct || 0));
 
     const totalEl = document.getElementById('kpi-adv-total');
     const totalSubEl = document.getElementById('kpi-adv-total-sub');
@@ -5487,28 +5555,35 @@ function applyAdvisoryMonthFilter(monthValue) {
     
     if (totalEl) totalEl.textContent = `${countCalled} Called`;
     if (totalSubEl) totalSubEl.textContent = `${countAll} Total Signals (${countProtected} Avoided Traps)`;
-    if (winrateEl) winrateEl.textContent = (summary.win_rate_pct || 0) + '%';
+    if (winrateEl) winrateEl.textContent = winRate + '%';
     if (correctSubEl) {
-        const correct = summary.correct_count ?? countCorrect;
-        const wrong = summary.wrong_count ?? countWrong;
-        const prot = summary.protected_count ?? countProtected;
-        correctSubEl.textContent = `${correct} Won / ${wrong} Lost (${prot} Filtered)`;
+        correctSubEl.textContent = `${countCorrect} Won / ${countWrong} Lost (${countProtected} Filtered)`;
     }
     if (pnlEl) {
-        const pnl = summary.total_pnl_inr || 0;
-        pnlEl.textContent = (pnl >= 0 ? '+₹' : '-₹') + Math.abs(pnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        pnlEl.style.color = pnl >= 0 ? '#4ade80' : '#fb7185';
+        pnlEl.textContent = (subPnl >= 0 ? '+₹' : '-₹') + Math.abs(subPnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        pnlEl.style.color = subPnl >= 0 ? '#4ade80' : '#fb7185';
     }
     
     const cashEl = document.getElementById('kpi-adv-cash');
     const marginSubEl = document.getElementById('kpi-adv-margin-sub');
     if (cashEl) {
-        const availCash = summary.available_cash_inr ?? 300000;
-        cashEl.textContent = '₹' + Number(availCash).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        if (currentTradingSubTab === 'stocks') {
+            cashEl.textContent = '₹10,000.00';
+            cashEl.style.color = '#fbbf24';
+        } else {
+            const availCash = summary.available_cash_inr ?? 300000;
+            cashEl.textContent = '₹' + Number(availCash).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            cashEl.style.color = '#60a5fa';
+        }
     }
     if (marginSubEl) {
-        const usedMargin = summary.used_margin_inr || 0;
-        marginSubEl.textContent = `Used Margin: ₹${Number(usedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | venu.photos1@gmail.com`;
+        if (currentTradingSubTab === 'stocks') {
+            const activeStockVal = trades.filter(t => t.paper_trade && t.paper_trade.status === 'ACTIVE').reduce((sum, t) => sum + ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0)), 0);
+            marginSubEl.textContent = `Allocated from Trading Pool | Active: ₹${activeStockVal.toFixed(2)} | Flat by 03:25 PM`;
+        } else {
+            const usedMargin = summary.used_margin_inr || 0;
+            marginSubEl.textContent = `Used Margin: ₹${Number(usedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | venu.photos1@gmail.com`;
+        }
     }
     
     if (timeEl) timeEl.textContent = 'Updated: ' + (advisoryTrackerData.last_updated || 'Just now');
@@ -5547,10 +5622,15 @@ function renderAdvisoryTradesTable() {
     const tbody = document.getElementById('advisory-tracker-body');
     if (!tbody || !advisoryTrackerData) return;
 
-    const trades = advisoryTrackerData.trades || [];
+    const allTrades = advisoryTrackerData.trades || [];
     const searchVal = (document.getElementById('adv-search-input')?.value || '').trim().toLowerCase();
 
-    const filtered = trades.filter(t => {
+    const filtered = allTrades.filter(t => {
+        // Filter by active sub-tab (Commodities vs Intraday Stocks)
+        const isStock = (t.asset_type === 'EQUITY' || (t.symbol && t.symbol.endsWith('.NS')));
+        if (currentTradingSubTab === 'stocks' && !isStock) return false;
+        if (currentTradingSubTab === 'commodities' && isStock) return false;
+
         // Filter by Session Timing
         if (activeAdvSession !== 'ALL') {
             const sessCat = getTradeSessionCategory(t);
@@ -6070,6 +6150,7 @@ window.setMobileViewMode = function(mode) {
 // Initialize App after all modules, functions, and state are defined
 function startApp() {
     try { initApp(); } catch(e) { console.error("Init Error:", e); }
+    try { if (typeof switchTradingSubTab === 'function') switchTradingSubTab(currentTradingSubTab); } catch(e) {}
     try { if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker(); } catch(e) { console.error("Load Advisory Error:", e); }
     try { if (typeof fetchNiftyOpportunities === 'function') fetchNiftyOpportunities(); } catch(e) { console.error("Load Nifty Error:", e); }
     try { if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker(); } catch(e) { console.error("Load Stock Investments Error:", e); }
