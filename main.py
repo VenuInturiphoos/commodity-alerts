@@ -177,15 +177,16 @@ def main():
     except Exception as e:
         print(f"Error checking 8:00 PM advisory: {e}")
 
-    # Check and trigger 11:30 PM IST Session Close Exit & Evaluation (Monday - Friday)
+    # Check and trigger EOD Session Close Exit & Evaluation (11:30 PM IST or overnight sweep)
     try:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
-        if now_ist.weekday() < 5 and (now_ist.hour == 23 and now_ist.minute >= 15):
-            print("\n--- Checking 11:30 PM IST EOD Advisory Exit & Settlement ---")
+        is_eod_sweep_window = (now_ist.hour == 23 and now_ist.minute >= 15) or (now_ist.hour >= 0 and now_ist.hour < 9)
+        if is_eod_sweep_window:
+            print("\n--- Checking EOD Advisory Session Close Exit & Settlement ---")
             from advisory_tracker import exit_and_evaluate_eod_trades
             exit_and_evaluate_eod_trades(checker, alerter)
     except Exception as e:
-        print(f"Error executing 11:30 PM EOD exit: {e}")
+        print(f"Error executing EOD exit: {e}")
         
     print("\nCheck complete. Exiting.")
 
