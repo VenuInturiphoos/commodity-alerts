@@ -693,7 +693,7 @@
             <section id="trading-tab" class="tab-content">
                 <div class="dashboard-header">
                     <h2>🎯 Trading Tracker (₹3,00,000 Dedicated Margin Pool)</h2>
-                    <p>Autonomous trading pool (Commodity Mini & Intraday Stocks) for <strong>venu.photos1@gmail.com</strong> with strict ₹1,000 max risk per trade, max 2 concurrent futures positions, and ₹3,000 daily circuit breaker (1% capital preservation). <strong>Completely separate from Stock Delivery Investments.</strong></p>
+                    <p>Autonomous trading pool (Commodity Mini & Intraday Stocks) for <strong>venu.photos1@gmail.com</strong> with strict ₹1,000 max risk per trade and ₹2,000 daily circuit breaker. <strong>Completely separate from Stock Delivery Investments.</strong></p>
                 </div>
 
                 <!-- Sub-Tab Navigation: Futures (Commodities & Stock Futures) vs Intraday Stocks (MIS Margin Benefit) -->
@@ -713,11 +713,11 @@
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1rem;">
                         <div>
                             <div id="trading-subtab-badge" style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 0.5rem; text-transform: uppercase;">
-                                <i class="fa-solid fa-chart-line"></i> Dedicated Futures Pool: ₹3,00,000 (Commodity Minis & Stock Futures)
+                                <i class="fa-solid fa-gem"></i> Dedicated Commodity Pool: ₹3,00,000 (Mini Only)
                             </div>
-                            <h2 id="trading-subtab-title" style="margin: 0; font-size: 1.35rem; color: #f8fafc;">🎯 Futures Trading Tracker (Commodities & Stock Futures)</h2>
+                            <h2 id="trading-subtab-title" style="margin: 0; font-size: 1.35rem; color: #f8fafc;">🎯 MCX Commodity Trading Tracker (Mini Contracts Only)</h2>
                             <p id="trading-subtab-desc" style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">
-                                Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions active till 11:30 PM IST.
+                                Autonomous MCX commodity trading (Alumini, CrudeOilM, NatGasM, SilverMic) with strict ₹1,000 max risk per trade and ₹2,000 daily circuit breaker. Evening sessions active till 11:30 PM IST.
                             </p>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -5230,12 +5230,12 @@ function switchTradingSubTab(subtab) {
     if (subtab === 'futures') {
         if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-chart-line"></i> Dedicated Futures Pool: ₹3,00,000 (Commodity Minis & Stock Futures)';
         if (titleEl) titleEl.innerHTML = '🎯 Futures Trading Tracker (Commodities & Stock Futures)';
-        if (descEl) descEl.innerHTML = 'Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions active till 11:30 PM IST.';
+        if (descEl) descEl.innerHTML = 'Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade and ₹2,000 daily circuit breaker. Evening sessions active till 11:30 PM IST.';
         if (sessionFilterContainer) sessionFilterContainer.style.display = 'block';
     } else {
         if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday MIS Allocation: Max ₹10,000 Margin (5x Buying Power up to ₹50,000)';
         if (titleEl) titleEl.innerHTML = '⚡ Intraday Stock Trading Tracker (MIS Margin Benefit)';
-        if (descEl) descEl.innerHTML = 'Autonomous Nifty 50 intraday stock day-trades with 5x MIS margin benefit from your capital (Max ₹10,000 margin deployed). Strict ₹250 max loss per trade, ₹750 daily loss limit, and mandatory 03:25 PM IST EOD square-off (Zero overnight risk).';
+        if (descEl) descEl.innerHTML = 'Autonomous Nifty 50 intraday stock day-trades with 5x MIS margin benefit from your capital (Max ₹10,000 margin deployed). Strict ₹250 max loss per trade and mandatory 03:25 PM IST EOD square-off (Zero overnight risk).';
         if (sessionFilterContainer) sessionFilterContainer.style.display = 'none';
     }
 
