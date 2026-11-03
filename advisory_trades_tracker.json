@@ -1,110 +1,24 @@
 {
-  "last_updated": "03 Nov 2026, 09:45 AM IST",
+  "last_updated": "03 Nov 2026, 09:35 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 36,
-    "executed_count": 7,
+    "total_signals": 35,
+    "executed_count": 6,
     "correct_count": 1,
     "wrong_count": 3,
     "protected_count": 29,
     "win_rate_pct": 25.0,
     "total_pnl_inr": -9180.5,
-    "avg_trade_pnl_inr": -1311.5,
-    "active_trades_count": 3,
+    "avg_trade_pnl_inr": -1530.08,
+    "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 290819.5,
-    "used_margin_inr": 31668.54,
-    "available_cash_inr": 259150.96,
+    "used_margin_inr": 29044.04,
+    "available_cash_inr": 261775.46,
     "net_worth_inr": 290819.5
   },
   "trades": [
-    {
-      "id": "ADV-03Nov2026-0945-ADANIENT",
-      "date": "03 Nov 2026",
-      "session_name": "Real-Time Technical Trigger (EMA 50/200 Golden Cross Trend Pullback)",
-      "time_trigger": "09:45 AM IST",
-      "time_6pm": "09:45 AM IST",
-      "time_validation": "09:45 AM IST",
-      "time_615": "09:45 AM IST",
-      "time_exit": "03:25 PM IST",
-      "symbol": "ADANIENT.NS",
-      "name": "Adani Enterprises Limited",
-      "lot_size": 5,
-      "asset_type": "INTRADAY_STOCK",
-      "event_context": "Nifty Intraday MIS: EMA 50/200 Golden Cross Trend Pullback",
-      "time_machine": {
-        "replays": 1000,
-        "passed": true,
-        "verdict": "PARAMETRIC_STATISTICAL_PASS",
-        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
-        "p_target_pct": 45.3,
-        "p_stop_pct": 41.0,
-        "p_neither_pct": 13.7,
-        "resolved_win_rate_pct": 52.5,
-        "expected_r": 0.496,
-        "target_r": 2.0,
-        "sample_bars": 0,
-        "summary": "Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
-      },
-      "risk_check": {
-        "passed": true,
-        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
-        "reward_risk_ratio": 2.0,
-        "loss_at_stop_inr": 236.2,
-        "potential_gain_inr": 472.4
-      },
-      "orb_check": {
-        "passed": true,
-        "status": "CONFIRMED",
-        "reason": "Standard momentum confluence."
-      },
-      "event_check": {
-        "passed": true,
-        "status": "CLEAR",
-        "event_name": null,
-        "reason": "No high-impact event risk active."
-      },
-      "suggestion_6pm": {
-        "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ \u20b92,624.50",
-        "rationale": "50 EMA > 200 EMA Golden Cross confirmed with value pullback into demand zone (RSI: 45.3). Trend continuation entry targeting 2.0R swing upside. Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R",
-        "reference_price": 2624.5,
-        "stop_loss": 2577.26,
-        "target": 2718.98
-      },
-      "check_615": {
-        "checked": true,
-        "status": "TECHNICAL_TRIGGER_ENTERED",
-        "price_615": 2624.5,
-        "action_taken": "Entered BUY 5 shares @ \u20b92,624.50",
-        "detail": "EMA 50/200 Golden Cross Trend Pullback: 50 EMA > 200 EMA Golden Cross confirmed with value pullback into demand zone (RSI: 45.3). Trend continuation entry targeting 2.0R swing upside. | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
-      },
-      "paper_trade": {
-        "user": "venu.photos1@gmail.com",
-        "action": "BUY",
-        "quantity": 5,
-        "entry_price": 2624.5,
-        "entry_time": "09:45 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
-        "target": 2718.98,
-        "stop_loss": 2577.26,
-        "margin_required_inr": 2624.5,
-        "product_type": "MIS_INTRADAY"
-      },
-      "eod_outcome": {
-        "session_close": null,
-        "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "EMA 50/200 Golden Cross Trend Pullback active: BUY @ \u20b92,624.50 (Target: \u20b92,718.98, SL: \u20b92,577.26) | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
-      }
-    },
     {
       "id": "ADV-03Nov2026-0935-ALUMINI",
       "date": "03 Nov 2026",
