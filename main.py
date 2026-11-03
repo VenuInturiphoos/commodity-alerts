@@ -92,6 +92,13 @@ def main():
     except Exception as e:
         print(f"Error scanning Nifty 50 Golden Cross & Oversold opportunities: {e}")
 
+    try:
+        print("Scanning Options Selling & Theta Decay opportunities...")
+        from options_seller_scanner import scan_options_theta_opportunities
+        scan_options_theta_opportunities()
+    except Exception as e:
+        print(f"Error scanning Options Theta Selling opportunities: {e}")
+
     # Check and trigger Daily Golden Crossover Stock Investment (~₹30,000 Allocation)
     try:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
