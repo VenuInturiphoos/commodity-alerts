@@ -217,12 +217,13 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         print("No Golden Crossover stocks found in scanner.")
         return None
 
-    # Sort by multi-factor quantitative ranking:
-    # 1. Win Probability descending
-    # 2. 52-Week Discount percentage descending
-    # 3. RSI ascending (prefer deep oversold accumulation)
+    # Sort by multi-factor quantitative ranking (Skill-backed Capital Safety):
+    # 1. Capital Safety Score descending (Highest chance of not losing capital)
+    # 2. Win Probability descending (Multi-confluence statistical edge)
+    # 3. 52-Week Discount percentage descending (Margin of safety buffer)
+    # 4. RSI ascending (prefer deep oversold accumulation)
     golden_stocks.sort(
-        key=lambda s: (s.get('win_probability', 0), s.get('discount_pct', 0), -s.get('rsi', 50)),
+        key=lambda s: (s.get('capital_safety_score', 0), s.get('win_probability', 0), s.get('discount_pct', 0), -s.get('rsi', 50)),
         reverse=True
     )
 

@@ -2484,6 +2484,12 @@ function renderNiftyOpportunities() {
                             <div class="nifty-rationale-quote">
                                 "${plan.rationale}"
                             </div>
+                            
+                            ${item.time_machine ? `
+                            <div style="margin-top: 0.5rem; background: rgba(167, 139, 250, 0.08); border: 1px solid rgba(167, 139, 250, 0.25); border-radius: 6px; padding: 4px 8px; font-size: 0.7rem; color: #c4b5fd; display: flex; align-items: center; justify-content: space-between;">
+                                <span><i class="fa-solid fa-dice"></i> <strong>Time Machine:</strong> ${item.time_machine.p_stop_pct ? item.time_machine.p_stop_pct + '% Stop Risk' : 'Low Stop Risk'}</span>
+                                <span style="color: #34d399; font-weight: 700;">${(item.time_machine.expected_r >= 0 ? '+' : '') + item.time_machine.expected_r + 'R Exp'}</span>
+                            </div>` : ''}
                         </div>
                         
                         <div class="nifty-card-footer">
@@ -2556,6 +2562,7 @@ function renderNiftyOpportunities() {
                             <span class="nifty-action-badge ${actionClass}" style="font-size:0.68rem; padding:1px 6px;">${plan.action}</span>
                             <div style="font-size:0.72rem; color:#34d399; font-weight:600; margin-top:2px;">Target: ₹${plan.target_1} (+${plan.potential_upside_t1}%)</div>
                             <div style="font-size:0.68rem; color:#fb7185;">SL: ₹${plan.stop_loss}</div>
+                            ${item.time_machine ? `<div style="font-size:0.65rem; color:#c4b5fd;">🎲 ${item.time_machine.p_stop_pct}% Stop Risk</div>` : ''}
                         </td>
                         <td style="text-align: right;">
                             <div style="display:flex; justify-content:flex-end; gap:4px;">
