@@ -5610,20 +5610,27 @@ function applyAdvisoryMonthFilter(monthValue) {
     
     const cashEl = document.getElementById('kpi-adv-cash');
     const marginSubEl = document.getElementById('kpi-adv-margin-sub');
+    const cashTitleEl = cashEl ? cashEl.closest('.circuit-kpi-card')?.querySelector('.circuit-kpi-header span') : null;
+
+    const activeStockTrades = trades.filter(t => t.paper_trade && t.paper_trade.status === 'ACTIVE' && (t.asset_type === 'INTRADAY_STOCK' || t.paper_trade.product_type === 'MIS_INTRADAY'));
+    const activeStockVal = activeStockTrades.reduce((sum, t) => sum + ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0)), 0);
+    const activeMarginVal = activeStockTrades.reduce((sum, t) => sum + (t.paper_trade.margin_required_inr || ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0) * 0.20)), 0);
+    const intradayAvailMargin = Math.max(0, 10000 - activeMarginVal);
+
     if (cashEl) {
         if (isIntradayActive) {
-            cashEl.textContent = '₹10,000.00';
+            cashEl.textContent = '₹' + intradayAvailMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             cashEl.style.color = '#fbbf24';
+            if (cashTitleEl) cashTitleEl.textContent = 'Available MIS Margin';
         } else {
-            const availCash = summary.available_cash_inr ?? 300000;
+            const availCash = summary.available_cash_inr ?? 259150.96;
             cashEl.textContent = '₹' + Number(availCash).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             cashEl.style.color = '#60a5fa';
+            if (cashTitleEl) cashTitleEl.textContent = 'Available Cash & Margin';
         }
     }
     if (marginSubEl) {
         if (isIntradayActive) {
-            const activeStockVal = trades.filter(t => t.paper_trade && t.paper_trade.status === 'ACTIVE').reduce((sum, t) => sum + ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0)), 0);
-            const activeMarginVal = trades.filter(t => t.paper_trade && t.paper_trade.status === 'ACTIVE').reduce((sum, t) => sum + (t.paper_trade.margin_required_inr || ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0) * 0.20)), 0);
             marginSubEl.textContent = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Max ₹10k (Value: ₹${activeStockVal.toFixed(0)}) | Flat 03:25 PM`;
         } else {
             const usedMargin = summary.used_margin_inr || 0;
