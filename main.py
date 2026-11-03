@@ -160,7 +160,7 @@ def main():
     # Check and trigger 6:15 PM IST Confirmation Check (Monday - Friday)
     try:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
-        if now_ist.weekday() < 5 and (now_ist.hour == 18 and 14 <= now_ist.minute <= 25):
+        if now_ist.weekday() < 5 and (now_ist.hour > 18 or (now_ist.hour == 18 and now_ist.minute >= 14)):
             print("\n--- Checking 6:15 PM IST Confirmation & Paper Trade Execution ---")
             from advisory_tracker import check_and_execute_615_confirmation
             check_and_execute_615_confirmation(checker, alerter)

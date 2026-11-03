@@ -540,34 +540,43 @@ class PositionSizer:
     fits strictly within max_risk_inr (default ₹5,000.00).
     """
 
-    # Contract point value per unit
+    # Contract point value per unit (calibrated for ~₹1.2L to ₹1.5L purchase/margin value per trade)
     POINT_VALUE = {
-        'GOLD': 100.0,       # 1 point move on 1 kg / 10g quote = ₹100
+        'GOLD': 10.0,        # 10g quote on 100g = ₹10
         'GOLDM': 10.0,       # 1 point move on 100g = ₹10
-        'SILVER': 30.0,      # 1 point move on standard silver = ₹30 (mini/mic is 5/1)
+        'GOLDTEN': 10.0,
+        'SILVER': 5.0,       # 1 point move on 5 kg = ₹5
         'SILVERM': 5.0,      # 1 point move = ₹5
-        'SILVERMIC': 1.0,    # 1 point move = ₹1
-        'CRUDEOIL': 100.0,   # 1 barrel = ₹100 (standard is 100 bbl)
-        'CRUDEOILM': 10.0,   # 1 barrel = ₹10 (mini is 10 bbl)
-        'NATURALGAS': 1250.0,# 1 mmBtu = ₹1250
-        'NATURALGASM': 250.0,# 1 mmBtu = ₹250
-        'COPPER': 2500.0,    # 1 kg quote = ₹2500
-        'COPPERM': 1000.0,   # 1 kg quote = ₹1000
-        'ZINC': 5000.0,      # 1 kg quote = ₹5000
-        'ZINCM': 1000.0,     # 1 kg quote = ₹1000
-        'ALUMINIUM': 2500.0, # 1 kg quote = ₹2500
-        'ALUMINI': 1000.0    # 1 kg quote = ₹1000
+        'SILVERMIC': 5.0,    # 1 point move on 5 lots = ₹5
+        'CRUDEOIL': 50.0,    # 50 bbl = ₹50
+        'CRUDEOILM': 50.0,   # 50 bbl = ₹50
+        'NATURALGAS': 1250.0,# 1250 mmBtu = ₹1250
+        'NATURALGASM': 1250.0,# 1250 mmBtu = ₹1250
+        'COPPER': 1250.0,    # 1250 kg = ₹1250
+        'COPPERM': 1250.0,   # 1250 kg = ₹1250
+        'ZINC': 2500.0,      # 2500 kg = ₹2500
+        'ZINCM': 2500.0,     # 2500 kg = ₹2500
+        'ALUMINIUM': 1000.0, # 1000 kg = ₹1000
+        'ALUMINI': 1000.0    # 1000 kg = ₹1000
     }
 
-    # Mini / Micro Contract Routing Map for Volatility Relief
+    # Contract Routing Map for ~₹1.2L to ₹1.5L Value Parity
     MINI_ROUTES = {
         'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot_size': 1000},
-        'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot_size': 10},
-        'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot_size': 250},
-        'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot_size': 1},
+        'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot_size': 50},
+        'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot_size': 50},
+        'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot_size': 1250},
+        'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot_size': 1250},
+        'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot_size': 5},
+        'SILVERM': {'symbol': 'SILVERM', 'name': 'Silver Mini', 'lot_size': 5},
+        'SILVERMIC': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot_size': 5},
         'GOLD': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot_size': 10},
-        'ZINC': {'symbol': 'ZINCM', 'name': 'Zinc Mini', 'lot_size': 1000},
-        'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1000},
+        'GOLDM': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot_size': 10},
+        'GOLDTEN': {'symbol': 'GOLDTEN', 'name': 'Gold', 'lot_size': 10},
+        'ZINC': {'symbol': 'ZINCM', 'name': 'Zinc Mini', 'lot_size': 2500},
+        'ZINCM': {'symbol': 'ZINCM', 'name': 'Zinc Mini', 'lot_size': 2500},
+        'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1250},
+        'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1250},
     }
 
     @classmethod
@@ -583,32 +592,16 @@ class PositionSizer:
         risk_pts = abs(entry - stop)
         effective_risk_pts = max(risk_pts, atr * 0.8) if (atr and atr > 0) else risk_pts
 
-        # 1. Prefer Mini contract for MCX commodities to keep capital unencumbered
+        # 1. Route to contract calibrated for ~₹1.2L to ₹1.5L value
         base_sym = symbol.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '')
         mini_info = cls.MINI_ROUTES.get(symbol) or cls.MINI_ROUTES.get(base_sym)
         if mini_info:
-            mini_lot = mini_info['lot_size']
-            total_risk_mini = effective_risk_pts * mini_lot
-            if total_risk_mini <= max_risk_inr:
-                print(f"🔄 Sizer Route: Enforcing {mini_info['name']} ({mini_lot} units, risk ₹{total_risk_mini:,.0f} <= ₹{max_risk_inr:,.0f}).")
-                return mini_info['symbol'], mini_info['name'], mini_lot
-            
-            # If 1 mini lot risk is close, check affordable integer lots
-            afford_lot = math.floor(max_risk_inr / effective_risk_pts)
-            if afford_lot >= 1:
-                return mini_info['symbol'], mini_info['name'], afford_lot
+            return mini_info['symbol'], mini_info['name'], mini_info['lot_size']
 
-        # 2. Check if standard contract fits within risk cap
-        total_risk_standard = effective_risk_pts * default_lot
-        if total_risk_standard <= max_risk_inr:
+        if default_lot > 0:
             return symbol, name, default_lot
 
-        # 3. For equities or divisible instruments
-        scaled_lot = math.floor(max_risk_inr / effective_risk_pts)
-        if scaled_lot >= 1:
-            return symbol, name, min(default_lot, scaled_lot)
-
-        return symbol, name, 0  # Blocked: Cannot safely fit inside risk cap
+        return symbol, name, 1
 
     @classmethod
     def calculate_adaptive_lot(cls, symbol, entry, stop, default_lot, max_risk_inr=1000.0, atr=None):

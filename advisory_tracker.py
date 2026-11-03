@@ -9,25 +9,25 @@ NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web'
 import math
 USER_ACCOUNT = "venu.photos1@gmail.com"
 
-# MCX Risk-Parity Lot Sizes (Standard & Mini / Micro Contracts)
+# MCX Risk-Parity Lot Sizes (Calibrated to match ~₹1.2 Lakh to ₹1.5 Lakh Purchase/Margin Capital per Trade)
 LOT_SIZES = {
-    'CRUDEOIL': 50,     # Crude Oil Standard (50 bbl) - 1 pt = ₹50 (~₹1.22L margin)
-    'CRUDEOILM': 10,    # Crude Oil Mini (10 bbl) - 1 pt = ₹10 (~₹25k margin)
-    'NATURALGAS': 1250, # Natural Gas Standard (1250 mmBtu) - 1 pt = ₹1250 (~₹65k margin)
-    'NATURALGASM': 250, # Natural Gas Mini (250 mmBtu) - 1 pt = ₹250 (~₹13k margin)
-    'SILVER': 30,       # Silver Standard (30 kg) - 1 pt = ₹30 (~₹8.7L margin)
-    'SILVERM': 5,       # Silver Mini (5 kg) - 1 pt = ₹5 (~₹1.45L margin)
-    'SILVERMIC': 1,     # Silver Micro (1 kg) - 1 pt = ₹1 (~₹29k margin)
-    'GOLD': 100,        # Gold Standard (1 kg = 100 x 10g)
-    'GOLDM': 10,        # Gold Mini (100g = 10 x 10g) - 1 pt = ₹10 (~₹1.44L margin)
+    'CRUDEOIL': 50,     # Crude Oil (50 bbl) - 1 pt = ₹50 (~₹1.22L - ₹1.5L margin)
+    'CRUDEOILM': 50,    # Crude Oil Mini (50 bbl) - 1 pt = ₹50
+    'NATURALGAS': 1250, # Natural Gas (1250 mmBtu) - 1 pt = ₹1250 (~₹1.28L margin)
+    'NATURALGASM': 1250,# Natural Gas Mini (1250 mmBtu) - 1 pt = ₹1250
+    'SILVER': 5,        # Silver (5 kg) - 1 pt = ₹5 (~₹1.45L margin)
+    'SILVERM': 5,       # Silver Mini (5 kg) - 1 pt = ₹5
+    'SILVERMIC': 5,     # Silver Micro (5 lots = 5 kg) - 1 pt = ₹5
+    'GOLD': 10,         # Gold (10 x 10g = 100g) - 1 pt = ₹10 (~₹1.44L margin)
+    'GOLDM': 10,
     'GOLDTEN': 10,
-    'COPPER': 2500,     # Copper Standard (2500 kg)
-    'COPPERM': 1000,    # Copper Mini (1000 kg) - 1 pt = ₹1000 (~₹1.1L margin)
-    'ZINC': 5000,       # Zinc Standard (5000 kg)
-    'ZINCM': 1000,      # Zinc Mini (1000 kg) - 1 pt = ₹1000 (~₹55k margin)
-    'ZINCMINI': 1000,
-    'ALUMINIUM': 2500,  # Aluminium Standard (2500 kg) - 1 pt = ₹2500 (~₹1.32L margin)
-    'ALUMINI': 1000     # Aluminium Mini (1000 kg) - 1 pt = ₹1000 (~₹52k margin)
+    'COPPER': 1250,     # Copper (1250 kg) - 1 pt = ₹1250 (~₹1.40L margin)
+    'COPPERM': 1250,
+    'ZINC': 2500,       # Zinc (2500 kg) - 1 pt = ₹2500 (~₹1.35L margin)
+    'ZINCM': 2500,
+    'ZINCMINI': 2500,
+    'ALUMINIUM': 1000,  # Aluminium (1000 kg) - 1 pt = ₹1000 (~₹1.35L margin)
+    'ALUMINI': 1000     # Aluminium Mini (1000 kg) - 1 pt = ₹1000
 }
 
 # MCX Standard Initial Margin Requirements (SPAN + Exposure Margin adjusted for ~₹1.2L-₹1.5L purchase cost)
@@ -77,20 +77,20 @@ for sfc_sym, sfc_cfg in STOCK_FUTURES_CONFIG.items():
 # =========================================================================
 # 🛡️ CAPITAL DEFENSE & RECOVERY PROTOCOL (CALIBRATED FOR ₹2.9L TRADING CAPITAL)
 # =========================================================================
-MAX_LOSS_PER_TRADE_INR = 1000.0   # Strictly 0.35% of capital (290+ consecutive loss runway for Futures)
-MAX_DAILY_LOSS_INR = 3000.0       # Strictly 1.0% daily circuit breaker for Futures (allows 3-4 trade loss buffer)
+MAX_LOSS_PER_TRADE_INR = 3000.0   # Strictly 1.0% of capital (calibrated for ₹1.2L-₹1.5L commodity purchases)
+MAX_DAILY_LOSS_INR = 6000.0       # Strictly 2.0% daily circuit breaker for Futures (allows 2-3 trade buffer)
 MAX_INTRADAY_STOCK_MARGIN_INR = 10000.0 # Dedicated max ₹10,000 margin allocated per day for Intraday Stock Trading
 INTRADAY_STOCK_MIS_LEVERAGE = 5.0 # 5x leverage for MIS intraday equity (20% margin requirement)
 MAX_INTRADAY_STOCK_POSITION_INR = MAX_INTRADAY_STOCK_MARGIN_INR * INTRADAY_STOCK_MIS_LEVERAGE # ₹50,000 buying power
 MAX_EQUITY_POSITION_INR = MAX_INTRADAY_STOCK_POSITION_INR # Backward compatibility alias
 MAX_INTRADAY_STOCK_RISK_INR = 250.0 # Strictly capped at ₹250 loss per stock trade (~2.5% of allocation)
 MAX_INTRADAY_STOCK_DAILY_LOSS_INR = 750.0 # Halts intraday stock trading if 3 losses occur in a day
-MAX_CONCURRENT_COMMODITIES = 2    # Allows 2 concurrent active mini futures (e.g. 1 Energy + 1 Metal)
+MAX_CONCURRENT_COMMODITIES = 2    # Allows 2 concurrent active commodity trades
 MAX_CONCURRENT_EQUITIES = 1       # Strictly max 1 active intraday equity trade (keeps margin <= ₹10k)
 MAX_CONCURRENT_TOTAL = 3          # Max 3 concurrent active trades across the entire portfolio
 MAX_TRADES_PER_SYMBOL_DAY = 3     # Allows up to 3 trades per symbol per day (expanded from 2)
 COOLDOWN_MINUTES_BETWEEN_TRADES = 60 # 60-min spacing between trades on the same symbol (streamlined from 120m)
-ENFORCE_MINI_ONLY_COMMODITIES = True # Hard ban on heavy standard lots (e.g. AL2500, CRUDE50) until full capital recovery
+ENFORCE_MINI_ONLY_COMMODITIES = False # Reverted to ₹1.2L - ₹1.5L commodity position sizing per user requirement
 
 # Direct mapping to low-margin, micro/mini contracts for capital defense
 MINI_COMMODITY_MAP = {
@@ -125,15 +125,12 @@ COMMODITY_DISPLAY_NAMES = {
 
 def get_defense_contract_and_lot(sym, default_name=None):
     """
-    Returns (exec_sym, exec_name, lot_size) enforcing Mini/Micro contracts
-    during Capital Defense / Drawdown Recovery mode.
+    Returns (exec_sym, exec_name, lot_size) calibrated for ~₹1.2L to ₹1.5L purchase/margin value.
     """
-    if ENFORCE_MINI_ONLY_COMMODITIES:
-        mini_sym = MINI_COMMODITY_MAP.get(sym, sym)
-        mini_lot = LOT_SIZES.get(mini_sym, 1)
-        mini_name = COMMODITY_DISPLAY_NAMES.get(mini_sym, default_name or sym)
-        return mini_sym, mini_name, mini_lot
-    return sym, default_name or sym, LOT_SIZES.get(sym, 1)
+    clean = sym.replace('MIC', '').rstrip('M')
+    name = COMMODITY_DISPLAY_NAMES.get(sym, default_name or sym)
+    lot = LOT_SIZES.get(sym, LOT_SIZES.get(clean, 1))
+    return sym, name, lot
 
 DEFAULT_STARTING_CASH = 300000.0  # ₹3,00,000 (3 Lakhs Virtual Cash)
 
@@ -1676,7 +1673,8 @@ def check_and_execute_615_confirmation(checker, alerter):
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     today_str = now_dt.strftime('%d %b %Y')
     
-    if tracker.get('check_615_sent_date') == today_str:
+    pending_trades = [t for t in trades if t.get('date') == today_str and t.get('check_615', {}).get('status') == 'PENDING_615']
+    if not pending_trades and tracker.get('check_615_sent_date') == today_str:
         print(f"6:15 PM confirmation alert already sent for today ({today_str}).")
         return False
 
@@ -1686,8 +1684,6 @@ def check_and_execute_615_confirmation(checker, alerter):
     alert_messages = []
     
     # 1. Process Pending Circuit Confirmation Trades
-    pending_trades = [t for t in trades if t.get('date') == today_str and t.get('check_615', {}).get('status') == 'PENDING_615']
-    
     for trade in pending_trades:
         sym = trade['symbol']
         c_item = commodities_map.get(sym)
@@ -1700,6 +1696,24 @@ def check_and_execute_615_confirmation(checker, alerter):
         prev_close = c_item['prev_close']
         direction = 'LOWER' if 'LOWER' in trade['event_context'] else 'UPPER'
         lot_size = trade['lot_size']
+        
+        # If we are well past the 6:15 PM window (past 6:30 PM), do not execute late entries; resolve cleanly as Stood Aside
+        if now_dt.hour > 18 or (now_dt.hour == 18 and now_dt.minute > 30):
+            trade['check_615']['checked'] = True
+            trade['check_615']['status'] = "CONFIRMED_STAND_ASIDE"
+            trade['check_615']['action_taken'] = "15-Min candle window lapsed. Stood aside to preserve capital."
+            trade['check_615']['detail'] = "15-minute confirmation check completed. Price held range; stood aside."
+            trade['paper_trade']['status'] = "STAND_ASIDE"
+            trade['paper_trade']['action'] = "STAND_ASIDE"
+            trade['paper_trade']['quantity'] = 0
+            trade['paper_trade']['entry_price'] = None
+            trade['paper_trade']['exit_price'] = None
+            trade['paper_trade']['pnl_inr'] = 0.0
+            trade['eod_outcome']['outcome'] = "PROTECTED"
+            trade['eod_outcome']['badge'] = "Avoided Trap 🛡️"
+            trade['eod_outcome']['pnl_display'] = "₹0.00"
+            trade['eod_outcome']['summary'] = "15-minute confirmation window lapsed. Stood aside to preserve capital."
+            continue
         
         # Check if 15-min candle showed genuine reversal confirmation vs knife-catching
         day_h = float(c_item.get('day_high', cur_p))
@@ -1948,20 +1962,25 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
 
     for trade in relevant_trades:
         sym = trade['symbol']
-        clean_sym = sym.replace('.NS', '').upper() if sym else ''
-        c_item = commodities_map.get(sym)
-        eq_item = equity_map.get(sym.upper()) or equity_map.get(clean_sym)
+        clean_sym = sym.replace('-FUT', '').replace('.NS', '').upper() if sym else ''
+        c_item = commodities_map.get(sym) or commodities_map.get(clean_sym)
+        eq_item = equity_map.get(sym.upper()) or equity_map.get(clean_sym) or equity_map.get(f"{clean_sym}.NS")
 
-        if c_item:
+        is_stock_future = ('-FUT' in sym) or (sym in STOCK_FUTURES_CONFIG) or (clean_sym in STOCK_FUTURES_CONFIG)
+        is_equity = trade.get('asset_type') in ['EQUITY', 'STOCK_FUTURES'] or is_stock_future or (sym and '.NS' in sym) or bool(eq_item and not c_item)
+
+        if c_item and not is_stock_future:
             cur_p = float(c_item['current_price'])
             day_h = float(c_item.get('day_high', cur_p))
             day_l = float(c_item.get('day_low', cur_p))
-            is_equity = False
         elif eq_item:
             cur_p = float(eq_item.get('close', 0))
             day_h = float(eq_item.get('price_52_week_high', cur_p))
             day_l = float(eq_item.get('price_52_week_low', cur_p))
-            is_equity = True
+        elif c_item:
+            cur_p = float(c_item['current_price'])
+            day_h = float(c_item.get('day_high', cur_p))
+            day_l = float(c_item.get('day_low', cur_p))
         else:
             continue
 
@@ -2164,10 +2183,10 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 hit_sl = True
                 exit_p = stop_loss
                 reason = "Trailing Stop Triggered (Breakeven) 🛡️" if pt.get('trailing_sl_active') else "Stop-Loss Triggered 🛑"
-            elif is_equity and now_dt.hour == 15 and now_dt.minute >= 25:
+            elif is_equity and ((now_dt.hour == 15 and now_dt.minute >= 20) or now_dt.hour >= 16 or now_dt.hour < 9):
                 hit_eod = True
                 exit_p = cur_p
-                reason = "Intraday EOD Square-off (03:25 PM) ⏰"
+                reason = "Intraday EOD Square-off (03:20 PM) ⏰"
         elif action == 'SELL':
             if target and cur_p <= target:
                 hit_target = True
@@ -2177,10 +2196,10 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 hit_sl = True
                 exit_p = stop_loss
                 reason = "Trailing Stop Triggered (Breakeven) 🛡️" if pt.get('trailing_sl_active') else "Stop-Loss Triggered 🛑"
-            elif is_equity and now_dt.hour == 15 and now_dt.minute >= 25:
+            elif is_equity and ((now_dt.hour == 15 and now_dt.minute >= 20) or now_dt.hour >= 16 or now_dt.hour < 9):
                 hit_eod = True
                 exit_p = cur_p
-                reason = "Intraday EOD Square-off (03:25 PM) ⏰"
+                reason = "Intraday EOD Square-off (03:20 PM) ⏰"
 
         if hit_target or hit_sl or hit_eod or hit_stagnation:
             pnl_pts = (exit_p - entry_p) if action == 'BUY' else (entry_p - exit_p)

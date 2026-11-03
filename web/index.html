@@ -6383,7 +6383,12 @@ function renderAdvisoryTradesTable() {
             `;
         } else if (c15.status === 'PENDING_615' || c15.status === 'PENDING_615_CHECK') {
             const tradeDate = new Date(t.date);
-            const isPast = !isNaN(tradeDate.getTime()) && (new Date().toDateString() !== tradeDate.toDateString()) && (new Date() > tradeDate);
+            const now = new Date();
+            const nowHours = now.getHours();
+            const nowMins = now.getMinutes();
+            const isToday = !isNaN(tradeDate.getTime()) && (now.toDateString() === tradeDate.toDateString());
+            const isPastTime = isToday && (nowHours > 18 || (nowHours === 18 && nowMins >= 15));
+            const isPast = (!isToday && now > tradeDate) || isPastTime;
             if (isPast) {
                 check615Html = `<span style="color:#94a3b8; font-size:0.8rem;"><i class="fa-solid fa-clock-rotate-left"></i> Window Lapsed (Stood Aside)</span>`;
             } else {
@@ -6401,7 +6406,7 @@ function renderAdvisoryTradesTable() {
             check615Html = `<span style="color:#60a5fa; font-size:0.8rem;"><i class="fa-solid fa-ban"></i> Stood Aside (Protected)</span>`;
         }
 
-        const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && t.symbol.includes('.NS'));
+        const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
         let paperTradeCell = `<span style="color:#94a3b8; font-size:0.8rem;">Stood Aside</span>`;
         if (pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price) {
             const actColor = pt.action === 'BUY' ? 'adv-action-buy' : 'adv-action-sell';
@@ -6425,7 +6430,12 @@ function renderAdvisoryTradesTable() {
             exitDetailHtml = `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</div>`;
         } else if (pt.status === 'PENDING_615') {
             const tradeDate = new Date(t.date);
-            const isPast = !isNaN(tradeDate.getTime()) && (new Date().toDateString() !== tradeDate.toDateString()) && (new Date() > tradeDate);
+            const now = new Date();
+            const nowHours = now.getHours();
+            const nowMins = now.getMinutes();
+            const isToday = !isNaN(tradeDate.getTime()) && (now.toDateString() === tradeDate.toDateString());
+            const isPastTime = isToday && (nowHours > 18 || (nowHours === 18 && nowMins >= 15));
+            const isPast = (!isToday && now > tradeDate) || isPastTime;
             exitDetailHtml = isPast
                 ? `<div style="font-size:0.75rem; color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</div>`
                 : `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Pending Check</div>`;
@@ -6576,7 +6586,12 @@ function renderAdvisoryTradesTable() {
             else if (c15.status === 'EXTENSION_CONFIRMED') checkLabel = 'Limit Broken (Stood Aside)';
             else if (c15.status === 'PENDING_615' || c15.status === 'PENDING_615_CHECK') {
                 const tradeDate = new Date(t.date);
-                const isPast = !isNaN(tradeDate.getTime()) && (new Date().toDateString() !== tradeDate.toDateString()) && (new Date() > tradeDate);
+                const now = new Date();
+                const nowHours = now.getHours();
+                const nowMins = now.getMinutes();
+                const isToday = !isNaN(tradeDate.getTime()) && (now.toDateString() === tradeDate.toDateString());
+                const isPastTime = isToday && (nowHours > 18 || (nowHours === 18 && nowMins >= 15));
+                const isPast = (!isToday && now > tradeDate) || isPastTime;
                 checkLabel = isPast ? 'Window Lapsed (Stood Aside)' : 'Awaiting Confirmation';
             }
             else if (c15.status === 'EVENT_GUARD_STAND_ASIDE') checkLabel = 'Event Blackout (Protected)';
@@ -6585,7 +6600,7 @@ function renderAdvisoryTradesTable() {
             else if (c15.status === 'RISK_GUARD_STAND_ASIDE') checkLabel = 'Risk Guard Block';
             else if (c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') checkLabel = 'Stood Aside (Protected)';
 
-            const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && t.symbol.includes('.NS'));
+            const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
             const assetBadge = isEqTrade 
                 ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.4); color:#6ee7b7; padding:1px 5px; border-radius:3px;">NIFTY F&O</span>`
                 : `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 5px; border-radius:3px;">MCX</span>`;
@@ -6605,7 +6620,12 @@ function renderAdvisoryTradesTable() {
                 mobileExitVal = '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</span>';
             } else if (pt.status === 'PENDING_615') {
                 const tradeDate = new Date(t.date);
-                const isPast = !isNaN(tradeDate.getTime()) && (new Date().toDateString() !== tradeDate.toDateString()) && (new Date() > tradeDate);
+                const now = new Date();
+                const nowHours = now.getHours();
+                const nowMins = now.getMinutes();
+                const isToday = !isNaN(tradeDate.getTime()) && (now.toDateString() === tradeDate.toDateString());
+                const isPastTime = isToday && (nowHours > 18 || (nowHours === 18 && nowMins >= 15));
+                const isPast = (!isToday && now > tradeDate) || isPastTime;
                 mobileExitLabel = 'Position Status';
                 mobileExitVal = isPast 
                     ? '<span style="color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</span>'
