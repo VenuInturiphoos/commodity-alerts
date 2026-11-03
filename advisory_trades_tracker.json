@@ -195,6 +195,79 @@
       }
     },
     {
+      "id": "ADV-03Nov2026-0935-ALUMINI",
+      "date": "03 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (EMA 20/50 Bearish Trend Confluence)",
+      "time_trigger": "09:35 AM IST",
+      "time_6pm": "09:35 AM IST",
+      "time_validation": "09:35 AM IST",
+      "time_615": "09:35 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 276,
+      "event_context": "Indicator Confluence: EMA 20/50 Bearish Trend Confluence",
+      "time_machine": {
+        "replays": 1000,
+        "passed": true,
+        "verdict": "PARAMETRIC_STATISTICAL_PASS",
+        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
+        "p_target_pct": 47.7,
+        "p_stop_pct": 39.2,
+        "p_neither_pct": 13.1,
+        "resolved_win_rate_pct": 54.9,
+        "expected_r": 0.467,
+        "target_r": 1.8,
+        "sample_bars": 0,
+        "summary": "Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 1.8,
+        "loss_at_stop_inr": 568.56,
+        "potential_gain_inr": 1023.96
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b9329.10",
+        "rationale": "20 EMA (\u20b9330.26) < 50 EMA (\u20b9335.35) with ADX 27.6 >= 20 and healthy RSI 45.5. Downward trend continuation in effect. Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R",
+        "reference_price": 329.1,
+        "stop_loss": 331.16,
+        "target": 325.39
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 329.1,
+        "action_taken": "Entered SELL 276 units @ \u20b9329.10",
+        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (\u20b9330.26) < 50 EMA (\u20b9335.35) with ADX 27.6 >= 20 and healthy RSI 45.5. Downward trend continuation in effect. | Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 276,
+        "entry_price": 329.1,
+        "entry_time": "09:35 AM IST",
+        "exit_price": 329.1,
+        "exit_time": "09:40 AM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED",
+        "target": 325.39,
+        "stop_loss": 331.16,
+        "margin_required_inr": 14533.06
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Consolidated Duplicate \ud83d\udee1\ufe0f",
+        "pnl_display": "Ticking Live...",
+        "summary": "Consolidated into primary 09:05 AM ALUMINI position to enforce single-contract symbol limit."
+      }
+    },
+    {
       "id": "ADV-03Nov2026-0905-ALUMINI",
       "date": "03 Nov 2026",
       "session_name": "Real-Time Technical Trigger (EMA 20/50 Bearish Trend Confluence)",
