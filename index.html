@@ -696,13 +696,13 @@
                     <p>Autonomous trading pool (Commodity Mini & Intraday Stocks) for <strong>venu.photos1@gmail.com</strong> with strict ₹1,000 max risk per trade and ₹2,000 daily circuit breaker. <strong>Completely separate from Stock Delivery Investments.</strong></p>
                 </div>
 
-                <!-- Sub-Tab Navigation: MCX Commodities vs Intraday Stock Trading -->
+                <!-- Sub-Tab Navigation: Futures (Commodities & Stock Futures) vs Intraday Stocks (MIS Margin Benefit) -->
                 <div style="display: flex; gap: 10px; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.85rem; flex-wrap: wrap;">
-                    <button class="sub-tab-btn" id="trading-subtab-commodities-btn" onclick="switchTradingSubTab('commodities')" style="background: rgba(99, 102, 241, 0.25); border: 1px solid rgba(99, 102, 241, 0.5); color: #c7d2fe; padding: 9px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.88rem;">
-                        <i class="fa-solid fa-gem" style="color: #a5b4fc;"></i> 🎯 MCX Commodities (Mini Contracts)
+                    <button class="sub-tab-btn" id="trading-subtab-futures-btn" onclick="switchTradingSubTab('futures')" style="background: rgba(99, 102, 241, 0.25); border: 1px solid rgba(99, 102, 241, 0.5); color: #c7d2fe; padding: 9px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.88rem;">
+                        <i class="fa-solid fa-chart-line" style="color: #a5b4fc;"></i> 🎯 Futures (Commodities & Stock Futures)
                     </button>
-                    <button class="sub-tab-btn" id="trading-subtab-stocks-btn" onclick="switchTradingSubTab('stocks')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); color: #94a3b8; padding: 9px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.88rem;">
-                        <i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> ⚡ Intraday Stock Trading (Max ₹10,000 Allocation)
+                    <button class="sub-tab-btn" id="trading-subtab-intraday-btn" onclick="switchTradingSubTab('intraday')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); color: #94a3b8; padding: 9px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.88rem;">
+                        <i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> ⚡ Intraday Stocks (MIS Margin Benefit)
                     </button>
                 </div>
 
@@ -5175,30 +5175,50 @@ let archiveTrackerCache = null;
 let currentAdvMonth = 'CURRENT_MONTH';
 let activeAdvFilter = 'CALLED';
 let activeAdvSession = 'ALL';
-let currentTradingSubTab = localStorage.getItem('trading_subtab') || 'commodities';
+let currentTradingSubTab = localStorage.getItem('trading_subtab') || 'futures';
+if (currentTradingSubTab === 'commodities') currentTradingSubTab = 'futures';
+if (currentTradingSubTab === 'stocks') currentTradingSubTab = 'intraday';
+
+function isFuturesTrade(t) {
+    if (!t) return false;
+    const asset = (t.asset_type || '').toUpperCase();
+    const sym = (t.symbol || '').toUpperCase();
+    if (asset === 'FUTURES' || asset === 'COMMODITY') return true;
+    if (sym.includes('-FUT') || sym.includes('.FUT') || sym.endsWith('FUT')) return true;
+    const commoditySymbols = ['CRUDEOIL', 'CRUDEOILM', 'NATURALGAS', 'NATURALGASM', 'SILVER', 'SILVERM', 'SILVERMIC', 'GOLD', 'GOLDM', 'GOLDTEN', 'COPPER', 'COPPERM', 'ZINC', 'ZINCM', 'ZINCMINI', 'ALUMINIUM', 'ALUMINI'];
+    if (commoditySymbols.includes(sym)) return true;
+    if (asset === 'EQUITY' || asset === 'INTRADAY_STOCK' || (sym.endsWith('.NS') && !sym.includes('FUT'))) return false;
+    return true; // default MCX trades
+}
+
+function isIntradayStockTrade(t) {
+    return !isFuturesTrade(t);
+}
 
 function switchTradingSubTab(subtab) {
+    if (subtab === 'commodities') subtab = 'futures';
+    if (subtab === 'stocks') subtab = 'intraday';
     currentTradingSubTab = subtab;
     localStorage.setItem('trading_subtab', subtab);
 
-    const btnCommodities = document.getElementById('trading-subtab-commodities-btn');
-    const btnStocks = document.getElementById('trading-subtab-stocks-btn');
+    const btnFutures = document.getElementById('trading-subtab-futures-btn') || document.getElementById('trading-subtab-commodities-btn');
+    const btnIntraday = document.getElementById('trading-subtab-intraday-btn') || document.getElementById('trading-subtab-stocks-btn');
 
-    if (btnCommodities && btnStocks) {
-        if (subtab === 'commodities') {
-            btnCommodities.style.background = 'rgba(99, 102, 241, 0.25)';
-            btnCommodities.style.borderColor = 'rgba(99, 102, 241, 0.5)';
-            btnCommodities.style.color = '#c7d2fe';
-            btnStocks.style.background = 'rgba(255, 255, 255, 0.05)';
-            btnStocks.style.borderColor = 'rgba(255, 255, 255, 0.12)';
-            btnStocks.style.color = '#94a3b8';
+    if (btnFutures && btnIntraday) {
+        if (subtab === 'futures') {
+            btnFutures.style.background = 'rgba(99, 102, 241, 0.25)';
+            btnFutures.style.borderColor = 'rgba(99, 102, 241, 0.5)';
+            btnFutures.style.color = '#c7d2fe';
+            btnIntraday.style.background = 'rgba(255, 255, 255, 0.05)';
+            btnIntraday.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+            btnIntraday.style.color = '#94a3b8';
         } else {
-            btnStocks.style.background = 'rgba(245, 158, 11, 0.25)';
-            btnStocks.style.borderColor = 'rgba(245, 158, 11, 0.5)';
-            btnStocks.style.color = '#fbbf24';
-            btnCommodities.style.background = 'rgba(255, 255, 255, 0.05)';
-            btnCommodities.style.borderColor = 'rgba(255, 255, 255, 0.12)';
-            btnCommodities.style.color = '#94a3b8';
+            btnIntraday.style.background = 'rgba(245, 158, 11, 0.25)';
+            btnIntraday.style.borderColor = 'rgba(245, 158, 11, 0.5)';
+            btnIntraday.style.color = '#fbbf24';
+            btnFutures.style.background = 'rgba(255, 255, 255, 0.05)';
+            btnFutures.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+            btnFutures.style.color = '#94a3b8';
         }
     }
 
@@ -5207,15 +5227,15 @@ function switchTradingSubTab(subtab) {
     const descEl = document.getElementById('trading-subtab-desc');
     const sessionFilterContainer = document.getElementById('adv-session-filter-container');
 
-    if (subtab === 'commodities') {
-        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-gem"></i> Dedicated Commodity Pool: ₹3,00,000 (Mini Only)';
-        if (titleEl) titleEl.innerHTML = '🎯 MCX Commodity Trading Tracker (Mini Contracts Only)';
-        if (descEl) descEl.innerHTML = 'Autonomous MCX commodity trading (Alumini, CrudeOilM, NatGasM, SilverMic) with strict ₹1,000 max risk per trade and ₹2,000 daily circuit breaker. Evening sessions active till 11:30 PM IST.';
+    if (subtab === 'futures') {
+        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-chart-line"></i> Dedicated Futures Pool: ₹3,00,000 (Commodity Minis & Stock Futures)';
+        if (titleEl) titleEl.innerHTML = '🎯 Futures Trading Tracker (Commodities & Stock Futures)';
+        if (descEl) descEl.innerHTML = 'Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade and ₹2,000 daily circuit breaker. Evening sessions active till 11:30 PM IST.';
         if (sessionFilterContainer) sessionFilterContainer.style.display = 'block';
     } else {
-        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday Stock Allocation: Max ₹10,000 (from Trading Pool)';
-        if (titleEl) titleEl.innerHTML = '⚡ Nifty 50 Intraday Stock Trading Tracker';
-        if (descEl) descEl.innerHTML = 'Autonomous liquid Nifty 50 stock day-trades allocated from trading capital (Max ₹10,000 per day). Strict ₹250 max loss per trade and mandatory 03:25 PM IST EOD square-off (Zero overnight risk).';
+        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday MIS Allocation: Max ₹10,000 Margin (5x Buying Power up to ₹50,000)';
+        if (titleEl) titleEl.innerHTML = '⚡ Intraday Stock Trading Tracker (MIS Margin Benefit)';
+        if (descEl) descEl.innerHTML = 'Autonomous Nifty 50 intraday stock day-trades with 5x MIS margin benefit from your capital (Max ₹10,000 margin deployed). Strict ₹250 max loss per trade and mandatory 03:25 PM IST EOD square-off (Zero overnight risk).';
         if (sessionFilterContainer) sessionFilterContainer.style.display = 'none';
     }
 
@@ -5530,10 +5550,8 @@ function applyAdvisoryMonthFilter(monthValue) {
     // Update summary KPI cards dynamically filtered for active sub-tab
     const summary = advisoryTrackerData.summary || {};
     const allDatasetTrades = advisoryTrackerData.trades || [];
-    const trades = allDatasetTrades.filter(t => {
-        const isStock = (t.asset_type === 'EQUITY' || (t.symbol && t.symbol.endsWith('.NS')));
-        return currentTradingSubTab === 'stocks' ? isStock : !isStock;
-    });
+    const isIntradayActive = (currentTradingSubTab === 'intraday' || currentTradingSubTab === 'stocks');
+    const trades = allDatasetTrades.filter(t => isIntradayActive ? isIntradayStockTrade(t) : isFuturesTrade(t));
 
     const countAll = trades.length;
     const calledTrades = trades.filter(isCalledAdvisoryTrade);
@@ -5545,7 +5563,7 @@ function applyAdvisoryMonthFilter(monthValue) {
 
     const subPnl = trades.reduce((acc, t) => acc + (Number(t.paper_trade?.pnl_inr) || 0), 0);
     const resolvedCount = countCorrect + countWrong;
-    const winRate = resolvedCount > 0 ? Number(((countCorrect / resolvedCount) * 100).toFixed(1)) : (currentTradingSubTab === 'stocks' ? 100.0 : (summary.win_rate_pct || 0));
+    const winRate = resolvedCount > 0 ? Number(((countCorrect / resolvedCount) * 100).toFixed(1)) : (isIntradayActive ? 100.0 : (summary.win_rate_pct || 0));
 
     const totalEl = document.getElementById('kpi-adv-total');
     const totalSubEl = document.getElementById('kpi-adv-total-sub');
@@ -5567,7 +5585,7 @@ function applyAdvisoryMonthFilter(monthValue) {
     const cashEl = document.getElementById('kpi-adv-cash');
     const marginSubEl = document.getElementById('kpi-adv-margin-sub');
     if (cashEl) {
-        if (currentTradingSubTab === 'stocks') {
+        if (isIntradayActive) {
             cashEl.textContent = '₹10,000.00';
             cashEl.style.color = '#fbbf24';
         } else {
@@ -5577,12 +5595,13 @@ function applyAdvisoryMonthFilter(monthValue) {
         }
     }
     if (marginSubEl) {
-        if (currentTradingSubTab === 'stocks') {
+        if (isIntradayActive) {
             const activeStockVal = trades.filter(t => t.paper_trade && t.paper_trade.status === 'ACTIVE').reduce((sum, t) => sum + ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0)), 0);
-            marginSubEl.textContent = `Allocated from Trading Pool | Active: ₹${activeStockVal.toFixed(2)} | Flat by 03:25 PM`;
+            const activeMarginVal = trades.filter(t => t.paper_trade && t.paper_trade.status === 'ACTIVE').reduce((sum, t) => sum + (t.paper_trade.margin_required_inr || ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0) * 0.20)), 0);
+            marginSubEl.textContent = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Max ₹10k (Value: ₹${activeStockVal.toFixed(0)}) | Flat 03:25 PM`;
         } else {
             const usedMargin = summary.used_margin_inr || 0;
-            marginSubEl.textContent = `Used Margin: ₹${Number(usedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | venu.photos1@gmail.com`;
+            marginSubEl.textContent = `Used Margin: ₹${Number(usedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | Dedicated Pool: ₹3,00,000`;
         }
     }
     
@@ -5626,10 +5645,10 @@ function renderAdvisoryTradesTable() {
     const searchVal = (document.getElementById('adv-search-input')?.value || '').trim().toLowerCase();
 
     const filtered = allTrades.filter(t => {
-        // Filter by active sub-tab (Commodities vs Intraday Stocks)
-        const isStock = (t.asset_type === 'EQUITY' || (t.symbol && t.symbol.endsWith('.NS')));
-        if (currentTradingSubTab === 'stocks' && !isStock) return false;
-        if (currentTradingSubTab === 'commodities' && isStock) return false;
+        // Filter by active sub-tab (Futures vs Intraday Stocks)
+        const isIntradayActive = (currentTradingSubTab === 'intraday' || currentTradingSubTab === 'stocks');
+        if (isIntradayActive && !isIntradayStockTrade(t)) return false;
+        if (!isIntradayActive && isIntradayStockTrade(t)) return false;
 
         // Filter by Session Timing
         if (activeAdvSession !== 'ALL') {
@@ -5860,8 +5879,8 @@ function renderAdvisoryTradesTable() {
         }
 
         const assetBadge = isEqTrade 
-            ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.4); color:#6ee7b7; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> NIFTY F&O</span>`
-            : `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-gem"></i> MCX</span>`;
+            ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-bolt"></i> MIS INTRADAY (5x)</span>`
+            : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
 
         return `
             <tr>
@@ -5874,10 +5893,20 @@ function renderAdvisoryTradesTable() {
                     </div>
                     <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${t.date} | ${t.symbol} ${assetBadge}</div>
                     <div style="font-size:0.7rem; color:#818cf8; margin-top:2px;">${t.event_context || ''}</div>
-                    ${t.time_machine ? `
-                        <div style="font-size:0.68rem; margin-top:3px; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine (3,000 empirical replays): ${t.time_machine.summary || ''}">
-                            🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
-                        </div>` : ''}
+                    <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:3px;">
+                        ${t.time_machine ? `
+                            <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine (3,000 empirical replays): ${t.time_machine.summary || ''}">
+                                🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
+                            </div>` : ''}
+                        ${t.risk_check?.passed ? `
+                            <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); color:#7dd3fc; padding:1px 5px; border-radius:4px; font-weight:600;" title="Pre-Trade Risk Engine: 14-Point Checks Passed">
+                                🛡️ 14-Pt Risk Pass
+                            </div>` : ''}
+                        ${t.orb_check?.passed && t.orb_check?.status !== 'CONFIRMED' ? `
+                            <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3); color:#d8b4fe; padding:1px 5px; border-radius:4px; font-weight:600;" title="ORB Timer: ${t.orb_check.reason || ''}">
+                                ⏱️ ORB Verified
+                            </div>` : ''}
+                    </div>
                 </td>
                 <td>
                     <div style="font-size:0.85rem; font-weight:600; color:#f1f5f9;">${s6.action_text || '--'}</div>
@@ -6046,10 +6075,16 @@ function renderAdvisoryTradesTable() {
                                 </span>
                             </div>
                             <div class="mobile-card-meta">${t.date} · ${t.symbol} ${assetBadge} ${t.event_context ? '· ' + t.event_context : ''}</div>
-                            ${t.time_machine ? `
-                                <div style="font-size:0.68rem; margin-top:3px; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine: ${t.time_machine.summary || ''}">
-                                    🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
-                                </div>` : ''}
+                            <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:3px;">
+                                ${t.time_machine ? `
+                                    <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine: ${t.time_machine.summary || ''}">
+                                        🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
+                                    </div>` : ''}
+                                ${t.risk_check?.passed ? `
+                                    <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); color:#7dd3fc; padding:1px 5px; border-radius:4px; font-weight:600;" title="Pre-Trade Risk Engine Passed">
+                                        🛡️ 14-Pt Risk Pass
+                                    </div>` : ''}
+                            </div>
                         </div>
                         <div class="mobile-card-badges">
                             ${outcomeBadge}
