@@ -1,5 +1,5 @@
 {
-  "last_updated": "04 Nov 2026, 11:19 PM IST",
+  "last_updated": "04 Nov 2026, 11:16 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -7,16 +7,16 @@
     "executed_count": 10,
     "correct_count": 4,
     "wrong_count": 5,
-    "protected_count": 69,
-    "win_rate_pct": 44.4,
-    "total_pnl_inr": -7920.7,
-    "avg_trade_pnl_inr": -792.07,
+    "protected_count": 70,
+    "win_rate_pct": 40.0,
+    "total_pnl_inr": -26276.7,
+    "avg_trade_pnl_inr": -2627.67,
     "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 292079.3,
-    "used_margin_inr": 0,
-    "available_cash_inr": 292079.3,
-    "net_worth_inr": 292079.3
+    "current_cash_inr": 273723.3,
+    "used_margin_inr": 0.0,
+    "available_cash_inr": 273723.3,
+    "net_worth_inr": 273723.3
   },
   "trades": [
     {
@@ -27,7 +27,7 @@
       "time_6pm": "08:00 PM IST",
       "time_validation": "08:15 PM IST",
       "time_615": "08:15 PM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "11:16 PM IST",
       "symbol": "CRUDEOILM",
       "name": "Crude Oil Mini",
       "lot_size": 50,
@@ -53,24 +53,24 @@
         "quantity": 50,
         "entry_price": 9072.0,
         "entry_time": "08:00 PM IST",
-        "exit_price": 9072.0,
-        "exit_time": "11:30 PM IST",
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
+        "exit_price": 8704.88,
+        "exit_time": "11:16 PM IST",
+        "pnl_points": -367.12,
+        "pnl_inr": -18356.0,
         "status": "CLOSED",
         "target": 9104.0,
         "stop_loss": 8704.88,
-        "exit_trigger": "EOD_SQUAREOFF"
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": 9072.0,
+        "session_close": 8704.88,
         "circuit_limit": 8739.84,
         "outcome": "WRONG",
-        "badge": "Wrong \u274c (11:30 PM)",
-        "pnl_display": "+\u20b90.00",
-        "summary": "11:30 PM IST session close exit. Entry: \u20b99,072.00 -> Exit: \u20b99,072.00 (+0.00 pts | +\u20b90.00). Margin released.",
-        "exit_time": "11:30 PM IST",
-        "exit_trigger": "EOD_SQUAREOFF"
+        "badge": "Stop Loss Hit \ud83d\uded1 (11:16 PM IST)",
+        "pnl_display": "-\u20b918,356.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 11:16 PM IST. Entry: \u20b99,072.00 -> Exit: \u20b98,704.88 (-367.12 pts | -\u20b918,356.00).",
+        "exit_time": "11:16 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
       }
     },
     {
