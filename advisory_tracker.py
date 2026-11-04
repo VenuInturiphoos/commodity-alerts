@@ -83,10 +83,10 @@ MAX_INTRADAY_STOCK_MARGIN_INR = 10000.0 # Dedicated max ₹10,000 margin allocat
 INTRADAY_STOCK_MIS_LEVERAGE = 5.0 # 5x leverage for MIS intraday equity (20% margin requirement)
 MAX_INTRADAY_STOCK_POSITION_INR = MAX_INTRADAY_STOCK_MARGIN_INR * INTRADAY_STOCK_MIS_LEVERAGE # ₹50,000 buying power
 MAX_EQUITY_POSITION_INR = MAX_INTRADAY_STOCK_POSITION_INR # Backward compatibility alias
-MAX_INTRADAY_STOCK_RISK_INR = 250.0 # Strictly capped at ₹250 loss per stock trade (~2.5% of allocation)
-MAX_INTRADAY_STOCK_DAILY_LOSS_INR = 750.0 # Halts intraday stock trading if 3 losses occur in a day
+MAX_INTRADAY_STOCK_RISK_INR = 3000.0 # Full portfolio risk ceiling - no arbitrary micro-cap restriction per user instruction
+MAX_INTRADAY_STOCK_DAILY_LOSS_INR = 6000.0 # Full daily portfolio risk circuit breaker
 MAX_CONCURRENT_COMMODITIES = 2    # Allows 2 concurrent active commodity trades
-MAX_CONCURRENT_EQUITIES = 1       # Strictly max 1 active intraday equity trade (keeps margin <= ₹10k)
+MAX_CONCURRENT_EQUITIES = 2       # Allows multiple active intraday equity trades up to ₹10,000 margin total
 MAX_CONCURRENT_TOTAL = 3          # Max 3 concurrent active trades across the entire portfolio
 MAX_TRADES_PER_SYMBOL_DAY = 3     # Allows up to 3 trades per symbol per day (expanded from 2)
 COOLDOWN_MINUTES_BETWEEN_TRADES = 60 # 60-min spacing between trades on the same symbol (streamlined from 120m)
@@ -2970,18 +2970,33 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             continue
 
                         # 4. Adaptive Position Sizing with 5x MIS Leverage (trader-budget skill):
-                        # Margin allocated <= ₹10,000 | Buying power <= ₹50,000 | Max loss at stop <= ₹250
-                        risk_per_share = abs(cur_p - eq_sl)
-                        if risk_per_share <= 0:
+                        # Margin allocated up to complete ₹10,000 daily budget based on available trading candidates
+                        active_intraday_trades = [
+                            t for t in (trades + new_trades)
+                            if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT'] and t.get('asset_type') == 'INTRADAY_STOCK'
+                        ]
+                        used_intraday_margin = sum(
+                            t.get('paper_trade', {}).get('margin_required_inr', 0.0)
+                            for t in active_intraday_trades
+                        )
+                        avail_intraday_margin = max(0.0, MAX_INTRADAY_STOCK_MARGIN_INR - used_intraday_margin)
+                        if avail_intraday_margin < 500.0:
+                            print(f"Intraday margin pool fully utilized (₹{used_intraday_margin:,.2f} / ₹{MAX_INTRADAY_STOCK_MARGIN_INR:,.2f}). Standing aside.")
                             continue
-                        margin_per_share = cur_p * 0.20 # 20% SEBI MIS intraday margin requirement
-                        max_shares_by_margin = math.floor(MAX_INTRADAY_STOCK_MARGIN_INR / margin_per_share) if margin_per_share > 0 else 0
-                        max_shares_by_power = math.floor(MAX_INTRADAY_STOCK_POSITION_INR / cur_p) if cur_p > 0 else 0
-                        risk_shares = math.floor(MAX_INTRADAY_STOCK_RISK_INR / risk_per_share)
-                        eq_shares = min(max_shares_by_margin, max_shares_by_power, risk_shares)
+
+                        # Distribute remaining margin pool across open equity slots (assigning full available margin if single candidate)
+                        remaining_slots = max(1, MAX_CONCURRENT_EQUITIES - len(active_intraday_trades))
+                        allocated_margin = avail_intraday_margin if remaining_slots == 1 else max(avail_intraday_margin / remaining_slots, min(avail_intraday_margin, 5000.0))
+                        
+                        margin_per_share = cur_p * 0.20  # 20% SEBI MIS intraday margin requirement (5x leverage)
+                        if margin_per_share <= 0:
+                            continue
+
+                        # Sizing: Compute shares to utilize the complete allocated margin
+                        eq_shares = math.floor(allocated_margin / margin_per_share)
                         if eq_shares < 1:
                             continue
-                        while eq_shares > 1 and ((cur_p * eq_shares * 0.20) > MAX_INTRADAY_STOCK_MARGIN_INR or (risk_per_share * eq_shares) > MAX_INTRADAY_STOCK_RISK_INR):
+                        while eq_shares > 1 and ((cur_p * eq_shares * 0.20) > avail_intraday_margin):
                             eq_shares -= 1
                         if eq_shares < 1:
                             continue
