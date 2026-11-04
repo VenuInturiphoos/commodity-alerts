@@ -23,6 +23,11 @@ import pytz
 from datetime import datetime
 from trader_engine_bridge import MonteCarloTimeMachine
 
+try:
+    from tradingagents_bridge import TradingAgentsOrchestrator
+except ImportError:
+    TradingAgentsOrchestrator = None
+
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'stock_investments_tracker.json')
 NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'nifty_crossover_oversold.json')
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json')
@@ -267,6 +272,15 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         sim_stock_sym = f"{sim_stock_sym}.NS"
     sim_metrics = MonteCarloTimeMachine.run_simulation(sim_stock_sym, price, stop_loss, target_1, action='buy', replays=3000)
 
+    # 🤖 TradingAgents Multi-Agent Fundamental & Technical Deliberation
+    ta_verdict = None
+    if TradingAgentsOrchestrator and TradingAgentsOrchestrator.is_available():
+        print(f"🤖 Running TradingAgents Multi-Agent Deliberation for {chosen_stock.get('symbol')}...")
+        ta_verdict = TradingAgentsOrchestrator.deliberate_swing(chosen_stock.get('symbol'), price)
+        if not ta_verdict.get('approved', True):
+            print(f"🛡️ TradingAgents Risk Officer Vetoed {chosen_stock.get('name')}: {ta_verdict.get('reason')}. Standing aside.")
+            return None
+
     inv_id = f"STOCK-INV-{date_compact}-{chosen_stock['name'].replace('.NS','')}"
 
     new_investment = {
@@ -294,6 +308,7 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         'risk_pct': trade_plan.get('risk_pct', round(((price - stop_loss) / price) * 100, 1)),
         'win_probability': chosen_stock.get('win_probability', 90),
         'time_machine': sim_metrics,
+        'multi_agent_consensus': ta_verdict,
         'rsi': chosen_stock.get('rsi'),
         'discount_pct': chosen_stock.get('discount_pct'),
         'ema_50': chosen_stock.get('ema_50'),

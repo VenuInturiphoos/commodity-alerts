@@ -2,7 +2,7 @@ import os
 import json
 import pytz
 from datetime import datetime
-from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer, MarketRegimeDetector
+from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer, MarketRegimeDetector, TradingAgentsOrchestrator
 
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'advisory_trades_tracker.json')
 NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'nifty_crossover_oversold.json')
@@ -453,6 +453,14 @@ def record_live_9am_advisory(commodities_list):
                             rationale = f"Time Machine Simulation Block ({sim_metrics.get('summary')}): Replay leans toward stop loss."
                             c15_status = "SIM_GUARD_STAND_ASIDE"
                             c15_detail = sim_metrics.get('summary')
+                        elif TradingAgentsOrchestrator and TradingAgentsOrchestrator.is_available():
+                            ta_check = TradingAgentsOrchestrator.deliberate_intraday(sym, cur_p, action=action)
+                            if not ta_check.get('approved', True):
+                                action = "STAND_ASIDE"
+                                entry_text = "STAND ASIDE / AI MULTI-AGENT GUARD"
+                                rationale = f"TradingAgents AI Veto: {ta_check.get('reason')}"
+                                c15_status = "AI_GUARD_STAND_ASIDE"
+                                c15_detail = ta_check.get('reason')
 
             trade_qty = lot_size if action in ['BUY', 'SELL'] else 0
             trade_status = "ACTIVE" if action in ['BUY', 'SELL'] else "STAND_ASIDE"
@@ -578,6 +586,14 @@ def record_live_9am_advisory(commodities_list):
                             rationale = f"Time Machine Simulation Block ({sim_metrics.get('summary')}): Replay leans toward stop loss."
                             c15_status = "SIM_GUARD_STAND_ASIDE"
                             c15_detail = sim_metrics.get('summary')
+                        elif TradingAgentsOrchestrator and TradingAgentsOrchestrator.is_available():
+                            ta_check = TradingAgentsOrchestrator.deliberate_intraday(sym, cur_p, action=action)
+                            if not ta_check.get('approved', True):
+                                action = "STAND_ASIDE"
+                                entry_text = "STAND ASIDE / AI MULTI-AGENT GUARD"
+                                rationale = f"TradingAgents AI Veto: {ta_check.get('reason')}"
+                                c15_status = "AI_GUARD_STAND_ASIDE"
+                                c15_detail = ta_check.get('reason')
 
             trade_qty = lot_size if action in ['BUY', 'SELL'] else 0
             trade_status = "ACTIVE" if action in ['BUY', 'SELL'] else "STAND_ASIDE"
@@ -1398,6 +1414,15 @@ def record_live_8pm_advisory(commodities_list, day_name):
                     all_existing = new_entries + trades
                     risk_metrics = PreTradeRiskEngine.check_risk(c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, min_reward_risk=1.5)
 
+                    # 🤖 TradingAgents Commodity Benchmark Deliberation
+                    ta_check = None
+                    if not is_knife_catching and adaptive_lot > 0 and risk_metrics.get('passed'):
+                        if TradingAgentsOrchestrator and TradingAgentsOrchestrator.is_available():
+                            ta_check = TradingAgentsOrchestrator.deliberate_commodity(c_sym, cur_p, action=action)
+                            if not ta_check.get('approved', True):
+                                is_knife_catching = True
+                                knife_reason = f"TradingAgents AI Veto: {ta_check.get('reason')}"
+
                     if is_knife_catching or adaptive_lot <= 0 or not risk_metrics.get('passed'):
                         reason = knife_reason if is_knife_catching else (f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason'))
                         entry = {
@@ -1545,6 +1570,15 @@ def record_live_8pm_advisory(commodities_list, day_name):
                     c_sym, c_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(c_sym, c_name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
                     all_existing = new_entries + trades
                     risk_metrics = PreTradeRiskEngine.check_risk(c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, min_reward_risk=1.5)
+
+                    # 🤖 TradingAgents Commodity Benchmark Deliberation
+                    ta_check = None
+                    if not is_knife_catching and adaptive_lot > 0 and risk_metrics.get('passed'):
+                        if TradingAgentsOrchestrator and TradingAgentsOrchestrator.is_available():
+                            ta_check = TradingAgentsOrchestrator.deliberate_commodity(c_sym, cur_p, action=action)
+                            if not ta_check.get('approved', True):
+                                is_knife_catching = True
+                                knife_reason = f"TradingAgents AI Veto: {ta_check.get('reason')}"
 
                     if is_knife_catching or adaptive_lot <= 0 or not risk_metrics.get('passed'):
                         reason = knife_reason if is_knife_catching else (f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason'))
@@ -1755,9 +1789,19 @@ def record_live_8pm_advisory(commodities_list, day_name):
             all_existing = new_entries + trades
             risk_metrics = PreTradeRiskEngine.check_risk(contract_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
 
-            if adaptive_lot <= 0 or not risk_metrics.get('passed'):
+            # 3. TradingAgents Commodity Benchmark Deliberation
+            ta_blocked = False
+            ta_reason = ""
+            if adaptive_lot > 0 and risk_metrics.get('passed'):
+                if TradingAgentsOrchestrator and TradingAgentsOrchestrator.is_available():
+                    ta_check = TradingAgentsOrchestrator.deliberate_commodity(contract_sym, cur_p, action=action)
+                    if not ta_check.get('approved', True):
+                        ta_blocked = True
+                        ta_reason = f"TradingAgents AI Veto: {ta_check.get('reason')}"
+
+            if ta_blocked or adaptive_lot <= 0 or not risk_metrics.get('passed'):
                 # Risk Blocked: Stand Aside
-                reason = f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason')
+                reason = ta_reason if ta_blocked else (f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason'))
                 entry = {
                     "id": trade_id,
                     "date": today_str,
@@ -1987,9 +2031,19 @@ def check_and_execute_615_confirmation(checker, alerter):
             # 2. Run PreTradeRiskEngine check
             risk_metrics = PreTradeRiskEngine.check_risk(contract_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, trades, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
 
-            if adaptive_lot <= 0 or not risk_metrics.get('passed'):
+            # 3. TradingAgents Commodity Benchmark Deliberation
+            ta_blocked = False
+            ta_reason = ""
+            if adaptive_lot > 0 and risk_metrics.get('passed'):
+                if TradingAgentsOrchestrator and TradingAgentsOrchestrator.is_available():
+                    ta_check = TradingAgentsOrchestrator.deliberate_commodity(contract_sym, cur_p, action=action)
+                    if not ta_check.get('approved', True):
+                        ta_blocked = True
+                        ta_reason = f"TradingAgents AI Veto: {ta_check.get('reason')}"
+
+            if ta_blocked or adaptive_lot <= 0 or not risk_metrics.get('passed'):
                 # RISK BLOCKED: Stand aside
-                reason = f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason')
+                reason = ta_reason if ta_blocked else (f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason'))
                 trade['check_615']['status'] = "RISK_GUARD_STAND_ASIDE"
                 trade['check_615']['action_taken'] = f"Risk Engine Block: {reason}. Stood aside to preserve capital."
                 trade['check_615']['detail'] = reason

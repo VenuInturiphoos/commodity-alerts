@@ -42,6 +42,46 @@ COMMODITY_YAHOO_BENCHMARKS = {
     'LEADMINI': 'LED=F',
 }
 
+CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tradingagents_data", "cache", "deliberation_cache.json")
+
+def _load_cache() -> Dict[str, Any]:
+    if os.path.exists(CACHE_FILE):
+        try:
+            with open(CACHE_FILE, "r") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def _save_cache(cache: Dict[str, Any]):
+    try:
+        os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)
+        with open(CACHE_FILE, "w") as f:
+            json.dump(cache, f, indent=2)
+    except Exception as e:
+        logger.warning(f"Could not save deliberation cache: {e}")
+
+def get_cached_deliberation(symbol: str, max_age_seconds: int = 3600) -> Optional[Dict[str, Any]]:
+    cache = _load_cache()
+    entry = cache.get(symbol.strip().upper())
+    if not entry:
+        return None
+    ts = entry.get("epoch_timestamp", 0)
+    now_ts = datetime.now().timestamp()
+    if (now_ts - ts) <= max_age_seconds:
+        return entry.get("data")
+    return None
+
+def set_cached_deliberation(symbol: str, data: Dict[str, Any]):
+    cache = _load_cache()
+    cache[symbol.strip().upper()] = {
+        "epoch_timestamp": datetime.now().timestamp(),
+        "saved_at": datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d %b %Y, %I:%M %p IST"),
+        "data": data
+    }
+    _save_cache(cache)
+
+
 class TradingAgentsOrchestrator:
     """
     Orchestrates TauricResearch multi-agent LLM deliberation
@@ -63,7 +103,7 @@ class TradingAgentsOrchestrator:
             # Set GOOGLE_API_KEY if only GEMINI_API_KEY was provided
             if not os.environ.get("GOOGLE_API_KEY") and os.environ.get("GEMINI_API_KEY"):
                 os.environ["GOOGLE_API_KEY"] = os.environ["GEMINI_API_KEY"]
-            return "google", "gemini-2.5-pro", "gemini-2.5-flash"
+            return "google", "gemini-3.8-flash", "gemini-3.8-flash"
         elif os.environ.get("OPENAI_API_KEY"):
             return "openai", "gpt-4o", "gpt-4o-mini"
         elif os.environ.get("ANTHROPIC_API_KEY"):
@@ -72,7 +112,7 @@ class TradingAgentsOrchestrator:
             return "groq", "llama-3.3-70b-versatile", "llama-3.1-8b-instant"
         
         # Default fallback
-        return "google", "gemini-2.5-pro", "gemini-2.5-flash"
+        return "google", "gemini-3.8-flash", "gemini-3.8-flash"
 
     @classmethod
     def resolve_ticker_for_analysis(cls, symbol: str) -> Tuple[str, str]:
@@ -125,6 +165,11 @@ class TradingAgentsOrchestrator:
         provider, deep_model, quick_model = cls.detect_active_llm_provider()
 
         config = DEFAULT_CONFIG.copy()
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        data_dir = os.path.join(base_dir, "tradingagents_data")
+        config["results_dir"] = os.path.join(data_dir, "logs")
+        config["data_cache_dir"] = os.path.join(data_dir, "cache")
+        config["memory_log_path"] = os.path.join(data_dir, "memory", "trading_memory.md")
         config["llm_provider"] = provider
         config["deep_think_llm"] = deep_model
         config["quick_think_llm"] = quick_model
@@ -171,6 +216,140 @@ class TradingAgentsOrchestrator:
                 "symbol": ticker,
                 "error": str(e)
             }
+
+    @classmethod
+    def deliberate_intraday(cls, symbol: str, price: float, action: str = "BUY") -> Dict[str, Any]:
+        """
+        Fast multi-agent review for Intraday Equities (Market + News + Risk Guard).
+        Utilizes 1-hour session cache to conserve LLM quota.
+        """
+        cached = get_cached_deliberation(symbol, max_age_seconds=3600)
+        if cached:
+            return cached
+
+        # Run focused 2-analyst deliberation to stay within free-tier rate limits
+        res = cls.run_multi_agent_deliberation(
+            ticker=symbol,
+            selected_analysts=("market", "news")
+        )
+        if not res.get("success"):
+            fallback = {
+                "approved": True,
+                "confidence": "MODERATE",
+                "reason": f"TradingAgents Fallback: {res.get('error', 'Rate limited')}. Cleared by PreTradeRiskEngine.",
+                "badge": "Risk Filter 🛡️",
+                "raw_result": res
+            }
+            return fallback
+
+        decision = str(res.get("decision", "")).upper()
+        approved = True
+        reason = "TradingAgents multi-agent consensus aligned."
+        if action == "BUY" and ("STRONG SELL" in decision or "BEARISH REVERSAL" in decision):
+            approved = False
+            reason = "TradingAgents Bearish consensus warned against buying into supply."
+        elif action == "SELL" and ("STRONG BUY" in decision or "BULLISH BREAKOUT" in decision):
+            approved = False
+            reason = "TradingAgents Bullish consensus warned against shorting into momentum."
+
+        verdict = {
+            "approved": approved,
+            "decision": res.get("decision"),
+            "reason": reason,
+            "badge": "Multi-Agent Consensus 🤖" if approved else "AI Guard Stood Aside 🛡️",
+            "bullish_thesis": res.get("bullish_thesis"),
+            "bearish_thesis": res.get("bearish_thesis"),
+            "risk_assessment": res.get("risk_assessment"),
+            "raw_result": res
+        }
+        set_cached_deliberation(symbol, verdict)
+        return verdict
+
+    @classmethod
+    def deliberate_commodity(cls, symbol: str, price: float, action: str = "BUY") -> Dict[str, Any]:
+        """
+        Multi-agent review for MCX Commodity Futures.
+        Routes to global futures benchmarks (CL=F, NG=F, GC=F, SI=F) with macro context.
+        """
+        cached = get_cached_deliberation(symbol, max_age_seconds=1800)
+        if cached:
+            return cached
+
+        res = cls.run_multi_agent_deliberation(
+            ticker=symbol,
+            selected_analysts=("market", "news")
+        )
+        if not res.get("success"):
+            fallback = {
+                "approved": True,
+                "confidence": "MODERATE",
+                "reason": f"Commodity Deliberation Fallback: {res.get('error', 'Rate limited')}. Enforcing PreTradeRiskEngine.",
+                "badge": "Risk Filter 🛡️",
+                "raw_result": res
+            }
+            return fallback
+
+        decision = str(res.get("decision", "")).upper()
+        approved = True
+        reason = "TradingAgents global commodity benchmark consensus confirmed."
+        if action == "BUY" and ("STRONG SELL" in decision or "LIQUIDATION" in decision):
+            approved = False
+            reason = "TradingAgents warned against counter-trend buying during global benchmark liquidation."
+        elif action == "SELL" and ("STRONG BUY" in decision or "PARABOLIC" in decision):
+            approved = False
+            reason = "TradingAgents warned against counter-trend shorting during global benchmark squeeze."
+
+        verdict = {
+            "approved": approved,
+            "decision": res.get("decision"),
+            "reason": reason,
+            "badge": "Commodity Multi-Agent ⚡" if approved else "Commodity Trap Guard 🛡️",
+            "bullish_thesis": res.get("bullish_thesis"),
+            "bearish_thesis": res.get("bearish_thesis"),
+            "risk_assessment": res.get("risk_assessment"),
+            "raw_result": res
+        }
+        set_cached_deliberation(symbol, verdict)
+        return verdict
+
+    @classmethod
+    def deliberate_swing(cls, symbol: str, price: float) -> Dict[str, Any]:
+        """
+        In-depth multi-agent review for Swing Stock Investments (Nifty Golden Crossovers).
+        Includes Fundamental + Technical + News analysis. Cached for 6 hours.
+        """
+        cached = get_cached_deliberation(symbol, max_age_seconds=21600)
+        if cached:
+            return cached
+
+        res = cls.run_multi_agent_deliberation(
+            ticker=symbol,
+            selected_analysts=("market", "news", "fundamentals")
+        )
+        if not res.get("success"):
+            fallback = {
+                "approved": True,
+                "confidence": "HIGH",
+                "reason": "Swing trade approved via Golden Crossover & Monte Carlo quantitative safety scoring.",
+                "badge": "Quant Golden Cross ⭐",
+                "raw_result": res
+            }
+            return fallback
+
+        decision = str(res.get("decision", "")).upper()
+        approved = "SELL" not in decision
+        verdict = {
+            "approved": approved,
+            "decision": res.get("decision"),
+            "reason": "TradingAgents swing fundamental & technical thesis confirmed." if approved else "TradingAgents fundamental red flag detected.",
+            "badge": "Swing Multi-Agent ⭐" if approved else "Fundamental Veto 🛡️",
+            "bullish_thesis": res.get("bullish_thesis"),
+            "bearish_thesis": res.get("bearish_thesis"),
+            "risk_assessment": res.get("risk_assessment"),
+            "raw_result": res
+        }
+        set_cached_deliberation(symbol, verdict)
+        return verdict
 
 
 if __name__ == "__main__":

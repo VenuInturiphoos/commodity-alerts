@@ -1,7 +1,8 @@
 from __future__ import annotations
 import os
 
-_TRADINGAGENTS_HOME = os.path.join(os.path.expanduser("~"), ".tradingagents")
+_PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_TRADINGAGENTS_HOME = os.getenv("TRADINGAGENTS_DATA_DIR") or os.path.join(_PROJECT_DIR, "tradingagents_data")
 
 # Single source of truth for env-var → config-key overrides. To expose
 # a new config key for environment-based override, add a row here — no
