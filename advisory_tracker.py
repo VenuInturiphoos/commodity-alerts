@@ -86,8 +86,8 @@ MAX_EQUITY_POSITION_INR = MAX_INTRADAY_STOCK_POSITION_INR # Backward compatibili
 MAX_INTRADAY_STOCK_RISK_INR = 3000.0 # Full portfolio risk ceiling - no arbitrary micro-cap restriction per user instruction
 MAX_INTRADAY_STOCK_DAILY_LOSS_INR = 6000.0 # Full daily portfolio risk circuit breaker
 MAX_CONCURRENT_COMMODITIES = 2    # Allows 2 concurrent active commodity trades
-MAX_CONCURRENT_EQUITIES = 2       # Allows multiple active intraday equity trades up to ₹10,000 margin total
-MAX_CONCURRENT_TOTAL = 3          # Max 3 concurrent active trades across the entire portfolio
+MAX_CONCURRENT_EQUITIES = 3       # Diversify into up to 3 distinct intraday stocks within ₹10,000 margin
+MAX_CONCURRENT_TOTAL = 5          # Max 5 concurrent active trades across portfolio (2 commodities + 3 intraday equities)
 MAX_TRADES_PER_SYMBOL_DAY = 3     # Allows up to 3 trades per symbol per day (expanded from 2)
 COOLDOWN_MINUTES_BETWEEN_TRADES = 60 # 60-min spacing between trades on the same symbol (streamlined from 120m)
 ENFORCE_MINI_ONLY_COMMODITIES = False # Reverted to ₹1.2L - ₹1.5L commodity position sizing per user requirement
@@ -2984,15 +2984,16 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             print(f"Intraday margin pool fully utilized (₹{used_intraday_margin:,.2f} / ₹{MAX_INTRADAY_STOCK_MARGIN_INR:,.2f}). Standing aside.")
                             continue
 
-                        # Distribute remaining margin pool across open equity slots (assigning full available margin if single candidate)
-                        remaining_slots = max(1, MAX_CONCURRENT_EQUITIES - len(active_intraday_trades))
-                        allocated_margin = avail_intraday_margin if remaining_slots == 1 else max(avail_intraday_margin / remaining_slots, min(avail_intraday_margin, 5000.0))
+                        # Diversified Position Sizing across distinct stocks within ₹10,000 margin:
+                        # Rather than allocating 100% margin to a single stock, diversify equally (~₹3,333 margin / ₹16,666 buying power each)
+                        target_margin_per_stock = round(MAX_INTRADAY_STOCK_MARGIN_INR / MAX_CONCURRENT_EQUITIES, 2)
+                        allocated_margin = min(target_margin_per_stock, avail_intraday_margin)
                         
                         margin_per_share = cur_p * 0.20  # 20% SEBI MIS intraday margin requirement (5x leverage)
                         if margin_per_share <= 0:
                             continue
 
-                        # Sizing: Compute shares to utilize the complete allocated margin
+                        # Sizing: Compute shares for this diversified position
                         eq_shares = math.floor(allocated_margin / margin_per_share)
                         if eq_shares < 1:
                             continue
@@ -3000,6 +3001,8 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             eq_shares -= 1
                         if eq_shares < 1:
                             continue
+
+                        risk_per_share = abs(cur_p - eq_sl)
 
                         # 5. Institutional Market Regime Classifier & False Signal Filter
                         regime_info = s.get('regime') or MarketRegimeDetector.classify_regime(
@@ -3102,7 +3105,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             f"• <b>Setup</b>: {eq_setup}\n"
                             f"• <b>Technical Rationale</b>: {eq_rationale}\n"
                             f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
-                            f"• <b>Stop-Loss</b>: <b>₹{eq_sl:,.2f}</b> (Max loss strictly ₹{round(risk_per_share * eq_shares, 2):,.2f} <= ₹250)\n"
+                            f"• <b>Stop-Loss</b>: <b>₹{eq_sl:,.2f}</b> (Risk at stop: ₹{round(risk_per_share * eq_shares, 2):,.2f})\n"
                             f"• <b>Target (2.0R)</b>: <b>₹{eq_tgt:,.2f}</b>\n"
                             f"• <b>Position Value</b>: ₹{cur_p * eq_shares:,.2f} (MIS Margin Blocked: ₹{round(cur_p * eq_shares * 0.20, 2):,.2f} / Max ₹10k)\n"
                             f"• <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit (Zero overnight risk)\n\n"
@@ -3110,7 +3113,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                         )
                         alerts_to_send.append({'subject': subject, 'body': body})
                         print(f"⚡ Nifty Intraday Stock Trigger Fired: {name} {eq_action} @ ₹{cur_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
-                        can_enter_equity = False
+                        can_enter_equity = (len(active_intraday_trades) + len(new_trades) < MAX_CONCURRENT_EQUITIES)
 
     if new_trades:
         tracker['trades'] = new_trades + trades
