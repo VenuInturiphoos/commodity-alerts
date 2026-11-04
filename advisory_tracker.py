@@ -1362,18 +1362,95 @@ def record_live_8pm_advisory(commodities_list, day_name):
             if trade_id not in existing_today_ids:
                 cur_p = crude['current_price']
                 p_close = crude['prev_close']
-                chg = crude['change_pct']
+                chg = crude.get('change_pct', crude.get('pct_change', 0.0))
                 lc = crude['lower_circuit']
                 uc = crude['upper_circuit']
+                day_h = float(crude.get('day_high', cur_p))
+                day_l = float(crude.get('day_low', cur_p))
                 c_sym, c_name, lot_size = get_defense_contract_and_lot('CRUDEOIL', 'Crude Oil Mini')
 
                 # Fade overreaction if near circuit or spike > 1.5% with trend verification
                 if 'NEAR' in crude['status'] or 'HIT' in crude['status'] or abs(chg) >= 1.5:
                     action = "BUY" if chg < 0 else "SELL"
-                    sl = round(lc * 0.996 if action == "BUY" else uc * 1.004, 2)
-                    tgt = p_close
+                    
+                    # 🛡️ COUNTER-TREND KNIFE-CATCHING GUARD:
+                    # Never blind-buy a collapsing commodity during inventory dump.
+                    is_knife_catching = False
+                    knife_reason = ""
+                    if action == "BUY" and (cur_p <= day_l * 1.002 or chg <= -2.5):
+                        is_knife_catching = True
+                        knife_reason = f"Dumping into Day Low / Circuit ({chg:+.2f}%). Counter-trend knife catching prohibited."
+                    elif action == "SELL" and (cur_p >= day_h * 0.998 or chg >= 2.5):
+                        is_knife_catching = True
+                        knife_reason = f"Surging into Day High / Circuit ({chg:+.2f}%). Counter-trend fading extreme runaway momentum prohibited."
+
+                    # Dynamic stop strictly capped by ₹3,000 risk cap (for 50 bbl lot, max 60 pts)
+                    max_stop_pts = round(MAX_LOSS_PER_TRADE_INR / lot_size, 2)
+                    sl_pts = min(max_stop_pts, max(round(cur_p * 0.008, 2), round(cur_p * 0.002, 2)))
+                    sl = round(cur_p - sl_pts if action == "BUY" else cur_p + sl_pts, 2)
+
+                    # Dynamic target enforcing strict >= 1.5R minimum reward-to-risk ratio
+                    min_tgt_pts = round(sl_pts * 1.5, 2)
+                    tgt_pts = max(min_tgt_pts, abs(p_close - cur_p))
+                    tgt = round(cur_p + tgt_pts if action == "BUY" else cur_p - tgt_pts, 2)
+
                     c_sym, c_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(c_sym, c_name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
-                    if adaptive_lot > 0:
+                    all_existing = new_entries + trades
+                    risk_metrics = PreTradeRiskEngine.check_risk(c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, min_reward_risk=1.5)
+
+                    if is_knife_catching or adaptive_lot <= 0 or not risk_metrics.get('passed'):
+                        reason = knife_reason if is_knife_catching else (f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason'))
+                        entry = {
+                            "id": trade_id,
+                            "date": today_str,
+                            "session_name": "EIA Crude Inventory (8:00 PM)",
+                            "time_trigger": "08:00 PM IST",
+                            "time_6pm": "08:00 PM IST",
+                            "time_validation": "08:15 PM IST",
+                            "time_615": "08:15 PM IST",
+                            "time_exit": "11:30 PM IST",
+                            "symbol": c_sym,
+                            "name": c_name,
+                            "lot_size": lot_size,
+                            "event_context": "Wednesday EIA Petroleum Inventory Spike Fade",
+                            "suggestion_6pm": {
+                                "status": "STAND_ASIDE",
+                                "action_text": "STAND ASIDE / EIA RISK FILTER",
+                                "rationale": f"EIA setup stood aside: {reason}",
+                                "reference_price": cur_p,
+                                "stop_loss": None,
+                                "target": None
+                            },
+                            "check_615": {
+                                "checked": True,
+                                "status": "RISK_GUARD_STAND_ASIDE",
+                                "price_615": cur_p,
+                                "action_taken": "Stood Aside (0 Units)",
+                                "detail": reason
+                            },
+                            "paper_trade": {
+                                "user": USER_ACCOUNT,
+                                "action": "STAND_ASIDE",
+                                "quantity": 0,
+                                "entry_price": None,
+                                "entry_time": "08:00 PM IST",
+                                "exit_price": None,
+                                "exit_time": None,
+                                "pnl_points": 0.0,
+                                "pnl_inr": 0.0,
+                                "status": "STAND_ASIDE"
+                            },
+                            "eod_outcome": {
+                                "session_close": None,
+                                "circuit_limit": None,
+                                "outcome": "PROTECTED",
+                                "badge": "Avoided Trap 🛡️",
+                                "pnl_display": "₹0.00",
+                                "summary": f"Stood aside: {reason}"
+                            }
+                        }
+                        new_entries.append(entry)
+                    else:
                         entry = {
                             "id": trade_id,
                             "date": today_str,
@@ -1435,17 +1512,93 @@ def record_live_8pm_advisory(commodities_list, day_name):
             if trade_id not in existing_today_ids:
                 cur_p = natgas['current_price']
                 p_close = natgas['prev_close']
-                chg = natgas['change_pct']
+                chg = natgas.get('change_pct', natgas.get('pct_change', 0.0))
                 lc = natgas['lower_circuit']
                 uc = natgas['upper_circuit']
+                day_h = float(natgas.get('day_high', cur_p))
+                day_l = float(natgas.get('day_low', cur_p))
                 c_sym, c_name, lot_size = get_defense_contract_and_lot('NATURALGAS', 'Natural Gas Mini')
 
                 if 'NEAR' in natgas['status'] or 'HIT' in natgas['status'] or abs(chg) >= 2.0:
                     action = "BUY" if chg < 0 else "SELL"
-                    sl = round(lc * 0.996 if action == "BUY" else uc * 1.004, 2)
-                    tgt = p_close
+
+                    # 🛡️ COUNTER-TREND KNIFE-CATCHING GUARD:
+                    is_knife_catching = False
+                    knife_reason = ""
+                    if action == "BUY" and (cur_p <= day_l * 1.002 or chg <= -3.0):
+                        is_knife_catching = True
+                        knife_reason = f"Dumping into Day Low / Circuit ({chg:+.2f}%). Counter-trend knife catching prohibited."
+                    elif action == "SELL" and (cur_p >= day_h * 0.998 or chg >= 3.0):
+                        is_knife_catching = True
+                        knife_reason = f"Surging into Day High / Circuit ({chg:+.2f}%). Counter-trend fading extreme runaway momentum prohibited."
+
+                    # Dynamic stop strictly capped by ₹3,000 risk cap (for 250 lot, max 12 pts)
+                    max_stop_pts = round(MAX_LOSS_PER_TRADE_INR / lot_size, 2)
+                    sl_pts = min(max_stop_pts, max(round(cur_p * 0.015, 2), round(cur_p * 0.004, 2)))
+                    sl = round(cur_p - sl_pts if action == "BUY" else cur_p + sl_pts, 2)
+
+                    # Dynamic target enforcing strict >= 1.5R minimum reward-to-risk ratio
+                    min_tgt_pts = round(sl_pts * 1.5, 2)
+                    tgt_pts = max(min_tgt_pts, abs(p_close - cur_p))
+                    tgt = round(cur_p + tgt_pts if action == "BUY" else cur_p - tgt_pts, 2)
+
                     c_sym, c_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(c_sym, c_name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
-                    if adaptive_lot > 0:
+                    all_existing = new_entries + trades
+                    risk_metrics = PreTradeRiskEngine.check_risk(c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, min_reward_risk=1.5)
+
+                    if is_knife_catching or adaptive_lot <= 0 or not risk_metrics.get('passed'):
+                        reason = knife_reason if is_knife_catching else (f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason'))
+                        entry = {
+                            "id": trade_id,
+                            "date": today_str,
+                            "session_name": "EIA NatGas Storage (8:00 PM)",
+                            "time_trigger": "08:00 PM IST",
+                            "time_6pm": "08:00 PM IST",
+                            "time_validation": "08:15 PM IST",
+                            "time_615": "08:15 PM IST",
+                            "time_exit": "11:30 PM IST",
+                            "symbol": c_sym,
+                            "name": c_name,
+                            "lot_size": lot_size,
+                            "event_context": "Thursday EIA Natural Gas Storage Spike Fade",
+                            "suggestion_6pm": {
+                                "status": "STAND_ASIDE",
+                                "action_text": "STAND ASIDE / EIA RISK FILTER",
+                                "rationale": f"EIA setup stood aside: {reason}",
+                                "reference_price": cur_p,
+                                "stop_loss": None,
+                                "target": None
+                            },
+                            "check_615": {
+                                "checked": True,
+                                "status": "RISK_GUARD_STAND_ASIDE",
+                                "price_615": cur_p,
+                                "action_taken": "Stood Aside (0 Units)",
+                                "detail": reason
+                            },
+                            "paper_trade": {
+                                "user": USER_ACCOUNT,
+                                "action": "STAND_ASIDE",
+                                "quantity": 0,
+                                "entry_price": None,
+                                "entry_time": "08:00 PM IST",
+                                "exit_price": None,
+                                "exit_time": None,
+                                "pnl_points": 0.0,
+                                "pnl_inr": 0.0,
+                                "status": "STAND_ASIDE"
+                            },
+                            "eod_outcome": {
+                                "session_close": None,
+                                "circuit_limit": None,
+                                "outcome": "PROTECTED",
+                                "badge": "Avoided Trap 🛡️",
+                                "pnl_display": "₹0.00",
+                                "summary": f"Stood aside: {reason}"
+                            }
+                        }
+                        new_entries.append(entry)
+                    else:
                         entry = {
                             "id": trade_id,
                             "date": today_str,

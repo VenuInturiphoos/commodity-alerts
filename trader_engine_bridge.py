@@ -585,7 +585,7 @@ class PositionSizer:
         Resolves the appropriate contract (Standard vs Mini) and safe lot size
         calibrated for ~₹1.2L to ₹1.5L purchase/margin value parity.
         Commodities strictly trade in standardized whole lots (e.g., ALUMINI = 1000 kg, CRUDEOILM = 50 bbl).
-        Never splits commodities into odd fractional unit counts.
+        Strictly enforces max_risk_inr: If even 1 lot exceeds max_risk_inr, returns lot=0 (Hard Refusal).
         """
         if entry <= 0 or stop <= 0 or entry == stop:
             return symbol, name, default_lot
@@ -593,19 +593,24 @@ class PositionSizer:
         # 1. Route to contract calibrated for ~₹1.2L to ₹1.5L value
         base_sym = symbol.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '')
         mini_info = cls.MINI_ROUTES.get(symbol) or cls.MINI_ROUTES.get(base_sym)
-        if mini_info:
-            return mini_info['symbol'], mini_info['name'], mini_info['lot_size']
+        resolved_sym = mini_info['symbol'] if mini_info else symbol
+        resolved_name = mini_info['name'] if mini_info else name
+        resolved_lot = mini_info['lot_size'] if mini_info else (default_lot if default_lot > 0 else 1)
 
-        if default_lot > 0:
-            return symbol, name, default_lot
+        # 2. Strict Risk Budget Check: If potential loss at stop exceeds max_risk_inr, refuse entry (0 lots)
+        risk_pts = abs(entry - stop)
+        if max_risk_inr and max_risk_inr > 0 and (risk_pts * resolved_lot) > max_risk_inr:
+            print(f"🛑 Position Sizer Hard Refusal: Risk ₹{risk_pts * resolved_lot:,.2f} on {resolved_sym} exceeds ₹{max_risk_inr:,.2f} limit. Refusing order.")
+            return resolved_sym, resolved_name, 0
 
-        return symbol, name, 1
+        return resolved_sym, resolved_name, resolved_lot
 
     @classmethod
     def calculate_adaptive_lot(cls, symbol, entry, stop, default_lot, max_risk_inr=3000.0, atr=None):
         """
         Calculates safe integer lot size.
         For MCX Commodities: Strictly respects whole standardized exchange lots (no fractional units).
+        If risk exceeds max_risk_inr even on 1 lot, returns 0 to stand aside.
         For Equities: Sized strictly within max_risk_inr.
         """
         if entry <= 0 or stop <= 0 or entry == stop or default_lot <= 0:
@@ -616,7 +621,12 @@ class PositionSizer:
         
         # If commodity, strictly return standardized lot size (~₹1.5L value parity)
         if mini_info or symbol in cls.POINT_VALUE or base_sym in cls.POINT_VALUE:
-            return mini_info['lot_size'] if mini_info else default_lot
+            lot = mini_info['lot_size'] if mini_info else default_lot
+            risk_pts = abs(entry - stop)
+            if max_risk_inr and max_risk_inr > 0 and (risk_pts * lot) > max_risk_inr:
+                print(f"🛑 Position Sizer Hard Refusal: Risk ₹{risk_pts * lot:,.2f} on {symbol} exceeds ₹{max_risk_inr:,.2f}. Returning 0 lots.")
+                return 0
+            return lot
 
         # For Equities: scale down share count to fit max_risk_inr
         risk_pts = abs(entry - stop)
