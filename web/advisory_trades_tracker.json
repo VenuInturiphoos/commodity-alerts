@@ -1,24 +1,173 @@
 {
-  "last_updated": "04 Nov 2026, 06:14 PM IST",
+  "last_updated": "04 Nov 2026, 08:01 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 76,
-    "executed_count": 9,
+    "total_signals": 79,
+    "executed_count": 10,
     "correct_count": 4,
     "wrong_count": 4,
-    "protected_count": 67,
+    "protected_count": 69,
     "win_rate_pct": 50.0,
     "total_pnl_inr": -7920.7,
-    "avg_trade_pnl_inr": -880.08,
-    "active_trades_count": 0,
+    "avg_trade_pnl_inr": -792.07,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 292079.3,
-    "used_margin_inr": 0,
+    "used_margin_inr": 0.0,
     "available_cash_inr": 292079.3,
     "net_worth_inr": 292079.3
   },
   "trades": [
+    {
+      "id": "ADV-04Nov2026-2000-CRUDEOIL",
+      "date": "04 Nov 2026",
+      "session_name": "EIA Crude Inventory (8:00 PM)",
+      "time_trigger": "08:00 PM IST",
+      "time_6pm": "08:00 PM IST",
+      "time_validation": "08:15 PM IST",
+      "time_615": "08:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOILM",
+      "name": "Crude Oil Mini",
+      "lot_size": 50,
+      "event_context": "Wednesday EIA Petroleum Inventory Spike Fade",
+      "suggestion_6pm": {
+        "status": "EIA_FADE",
+        "action_text": "BUY / FADE EIA INVENTORY OVERREACTION",
+        "rationale": "Historical EIA inventory spikes show 60%+ mean-reversion rate back toward anchor.",
+        "reference_price": 9072.0,
+        "stop_loss": 8704.88,
+        "target": 9104.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECT_ENTRY",
+        "price_615": 9072.0,
+        "action_taken": "Entered BUY 50 units @ \u20b99,072.00",
+        "detail": "EIA Inventory setup entered at 8:00 PM IST."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 50,
+        "entry_price": 9072.0,
+        "entry_time": "08:00 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 9104.0,
+        "stop_loss": 8704.88
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 8739.84,
+        "outcome": "PENDING",
+        "badge": "Active Trade \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Active BUY position (50 units) entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+      }
+    },
+    {
+      "id": "ADV-04Nov2026-2000-GOLD",
+      "date": "04 Nov 2026",
+      "session_name": "Evening Pit Review (8:00 PM)",
+      "time_trigger": "08:00 PM IST",
+      "time_6pm": "08:00 PM IST",
+      "time_validation": "08:15 PM IST",
+      "time_615": "08:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 10,
+      "event_context": "Pre-Trade Risk Filter Guard",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RISK GUARD",
+        "rationale": "Risk check failed: EXCESSIVE_TRADE_RISK: Potential loss \u20b919,597.40 exceeds capital recovery risk cap \u20b93,000.00. Must route to Mini contract or stand aside.",
+        "reference_price": 142394.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RISK_GUARD_STAND_ASIDE",
+        "price_615": 142394.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "EXCESSIVE_TRADE_RISK: Potential loss \u20b919,597.40 exceeds capital recovery risk cap \u20b93,000.00. Must route to Mini contract or stand aside."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "08:00 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Filter \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: EXCESSIVE_TRADE_RISK: Potential loss \u20b919,597.40 exceeds capital recovery risk cap \u20b93,000.00. Must route to Mini contract or stand aside."
+      }
+    },
+    {
+      "id": "ADV-04Nov2026-2000-SILVER",
+      "date": "04 Nov 2026",
+      "session_name": "Evening Pit Review (8:00 PM)",
+      "time_trigger": "08:00 PM IST",
+      "time_6pm": "08:00 PM IST",
+      "time_validation": "08:15 PM IST",
+      "time_615": "08:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 5,
+      "event_context": "Pre-Trade Risk Filter Guard",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RISK GUARD",
+        "rationale": "Risk check failed: EXCESSIVE_TRADE_RISK: Potential loss \u20b97,453.70 exceeds capital recovery risk cap \u20b93,000.00. Must route to Mini contract or stand aside.",
+        "reference_price": 186343.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RISK_GUARD_STAND_ASIDE",
+        "price_615": 186343.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "EXCESSIVE_TRADE_RISK: Potential loss \u20b97,453.70 exceeds capital recovery risk cap \u20b93,000.00. Must route to Mini contract or stand aside."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "08:00 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Filter \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: EXCESSIVE_TRADE_RISK: Potential loss \u20b97,453.70 exceeds capital recovery risk cap \u20b93,000.00. Must route to Mini contract or stand aside."
+      }
+    },
     {
       "id": "ADV-04Nov2026-1800-GOLD",
       "date": "04 Nov 2026",
