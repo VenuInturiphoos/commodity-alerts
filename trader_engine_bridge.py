@@ -25,6 +25,12 @@ except ImportError:
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# Multi-Agent LLM Deliberation Engine Integration (TradingAgents)
+try:
+    from tradingagents_bridge import TradingAgentsOrchestrator
+except ImportError:
+    TradingAgentsOrchestrator = None
+
 # Benchmark Yahoo symbols for MCX commodities
 COMMODITY_YF_MAP = {
     'CRUDEOIL': 'CL=F',
