@@ -1,5 +1,5 @@
 {
-  "last_updated": "04 Nov 2026, 11:36 AM IST",
+  "last_updated": "04 Nov 2026, 11:51 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -9,14 +9,14 @@
     "wrong_count": 4,
     "protected_count": 53,
     "win_rate_pct": 33.3,
-    "total_pnl_inr": -8151.1,
-    "avg_trade_pnl_inr": -905.68,
-    "active_trades_count": 1,
+    "total_pnl_inr": -7920.7,
+    "avg_trade_pnl_inr": -880.08,
+    "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 291848.9,
-    "used_margin_inr": 9988.48,
-    "available_cash_inr": 281860.42,
-    "net_worth_inr": 291848.9
+    "current_cash_inr": 292079.3,
+    "used_margin_inr": 0,
+    "available_cash_inr": 292079.3,
+    "net_worth_inr": 292079.3
   },
   "trades": [
     {
@@ -27,7 +27,7 @@
       "time_6pm": "11:06 AM IST",
       "time_validation": "11:06 AM IST",
       "time_615": "11:06 AM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "11:51 AM IST",
       "symbol": "PRESTIGE.NS",
       "name": "Prestige Estates Projects Limited",
       "lot_size": 32,
@@ -109,23 +109,26 @@
         "quantity": 32,
         "entry_price": 1560.7,
         "entry_time": "11:06 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 1567.9,
+        "exit_time": "11:51 AM IST",
+        "pnl_points": 7.2,
+        "pnl_inr": 230.4,
+        "status": "CLOSED",
         "target": 1616.88,
         "stop_loss": 1532.61,
         "margin_required_inr": 9988.48,
-        "product_type": "MIS_INTRADAY"
+        "product_type": "MIS_INTRADAY",
+        "exit_trigger": "STAGNATION_EXIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 1567.9,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b91,560.70 (Target: \u20b91,616.88, SL: \u20b91,532.61) | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+        "outcome": "PROTECTED",
+        "badge": "Stagnation Exit \u23f1\ufe0f (11:51 AM IST)",
+        "pnl_display": "+\u20b9230.40",
+        "summary": "45-Minute Stagnation Exit \u23f1\ufe0f (Stalled for 45m; scratch to protect capital) at 11:51 AM IST. Entry: \u20b91,560.70 -> Exit: \u20b91,567.90 (+\u20b9230.40).",
+        "exit_time": "11:51 AM IST",
+        "exit_trigger": "STAGNATION_EXIT"
       }
     },
     {
