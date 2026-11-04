@@ -5975,14 +5975,17 @@ function renderAdvisoryTradesTable() {
             `;
         }
 
-        const isStandAsideTrade = isAvoidedAdvisoryTrade(t) ||
+        const isEnteredTrade = Boolean(pt.action === 'BUY' || pt.action === 'SELL' || (pt.entry_price && Number(pt.entry_price) > 0));
+        const isStandAsideTrade = !isEnteredTrade && (
+            isAvoidedAdvisoryTrade(t) ||
             pt.status === 'STAND_ASIDE' ||
             pt.action === 'STAND_ASIDE' ||
             c15.status === 'CONFIRMATION_EXPIRED' ||
             c15.status === 'CONFIRMED_STAND_ASIDE' ||
             c15.status === 'NO_REVERSAL_STAND_ASIDE' ||
             c15.status === 'NO_GAP_STAND_ASIDE' ||
-            outcome.outcome === 'PROTECTED';
+            outcome.outcome === 'PROTECTED'
+        );
 
         let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
         if (outcome.outcome === 'WRONG') {
@@ -6012,7 +6015,7 @@ function renderAdvisoryTradesTable() {
             if (liveSource && liveSource.current_price) {
                 const curPrice = Number(liveSource.current_price);
                 const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
-                const lot = t.lot_size || 1;
+                const lot = pt.quantity || t.lot_size || 1;
                 const liveMtm = Math.round(pts * lot * 100) / 100;
                 pnlColor = liveMtm >= 0 ? '#4ade80' : '#fb7185';
                 pnlText = `${liveMtm >= 0 ? '+' : ''}₹${liveMtm.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(Live MTM)</span>`;
@@ -6020,17 +6023,22 @@ function renderAdvisoryTradesTable() {
             } else {
                 pnlText = '<span style="color:#fbbf24; font-size:0.8rem;">Ticking...</span>';
             }
-        } else if (pt.pnl_inr > 0) {
-            pnlColor = '#4ade80';
-            pnlText = `+₹${Number(pt.pnl_inr).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            if (pt.pnl_points !== undefined && t.lot_size) {
-                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(+${Number(pt.pnl_points).toFixed(2)} pts × ₹${t.lot_size})</span>`;
-            }
-        } else if (pt.pnl_inr < 0) {
-            pnlColor = '#fb7185';
-            pnlText = `-₹${Math.abs(Number(pt.pnl_inr)).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            if (pt.pnl_points !== undefined && t.lot_size) {
-                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(${Number(pt.pnl_points).toFixed(2)} pts × ₹${t.lot_size})</span>`;
+        } else if (pt.pnl_inr !== undefined && pt.pnl_inr !== null) {
+            const pVal = Number(pt.pnl_inr);
+            const lot = pt.quantity || t.lot_size || 1;
+            const pts = pt.pnl_points !== undefined ? Number(pt.pnl_points) : (lot > 0 ? (pVal / lot) : 0);
+            if (pVal > 0) {
+                pnlColor = '#4ade80';
+                pnlText = `+₹${pVal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(+${pts.toFixed(2)} pts × ₹${lot})</span>`;
+            } else if (pVal < 0) {
+                pnlColor = '#fb7185';
+                pnlText = `-₹${Math.abs(pVal).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(${pts.toFixed(2)} pts × ₹${lot})</span>`;
+            } else {
+                pnlColor = '#94a3b8';
+                pnlText = `₹0.00 <span style="font-size:0.7rem; color:#60a5fa; display:block; font-weight:400;">(Breakeven)</span>`;
+                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(0.00 pts × ₹${lot})</span>`;
             }
         }
 
@@ -6127,6 +6135,8 @@ function renderAdvisoryTradesTable() {
             exitDetailHtml = isPast1815
                 ? `<div style="font-size:0.75rem; color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</div>`
                 : `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Pending Check</div>`;
+        } else if (pt.exit_trigger === 'STAGNATION_EXIT' || outcome.badge?.includes('Stagnation') || outcome.summary?.includes('Stagnation')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#60a5fa; font-weight:700;"><i class="fa-solid fa-hourglass-end"></i> Stagnation Exit (${exitTimeStr})</div>`;
         } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {
             exitDetailHtml = `<div style="font-size:0.75rem; color:#4ade80; font-weight:700;"><i class="fa-solid fa-bullseye"></i> Target Hit (${exitTimeStr})</div>`;
         } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || outcome.summary?.includes('Stop-Loss')) {
@@ -6230,14 +6240,17 @@ function renderAdvisoryTradesTable() {
                 }
             }
 
-            const isStandAsideTrade = isAvoidedAdvisoryTrade(t) ||
+            const isEnteredTrade = Boolean(pt.action === 'BUY' || pt.action === 'SELL' || (pt.entry_price && Number(pt.entry_price) > 0));
+            const isStandAsideTrade = !isEnteredTrade && (
+                isAvoidedAdvisoryTrade(t) ||
                 pt.status === 'STAND_ASIDE' ||
                 pt.action === 'STAND_ASIDE' ||
                 c15.status === 'CONFIRMATION_EXPIRED' ||
                 c15.status === 'CONFIRMED_STAND_ASIDE' ||
                 c15.status === 'NO_REVERSAL_STAND_ASIDE' ||
                 c15.status === 'NO_GAP_STAND_ASIDE' ||
-                outcome.outcome === 'PROTECTED';
+                outcome.outcome === 'PROTECTED'
+            );
 
             let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
             if (outcome.outcome === 'WRONG') {
@@ -6267,7 +6280,7 @@ function renderAdvisoryTradesTable() {
                 if (liveSource && liveSource.current_price) {
                     const curPrice = Number(liveSource.current_price);
                     const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
-                    const lot = t.lot_size || 1;
+                    const lot = pt.quantity || t.lot_size || 1;
                     const liveMtm = Math.round(pts * lot * 100) / 100;
                     pnlColor = liveMtm >= 0 ? '#4ade80' : '#fb7185';
                     pnlText = `${liveMtm >= 0 ? '+' : ''}₹${liveMtm.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <small style="font-size:0.68rem; color:#94a3b8; display:block; font-weight:400;">(Live MTM)</small>`;
@@ -6275,17 +6288,22 @@ function renderAdvisoryTradesTable() {
                 } else {
                     pnlText = '<span style="color:#fbbf24; font-size:0.8rem;">Ticking...</span>';
                 }
-            } else if (pt.pnl_inr > 0) {
-                pnlColor = '#4ade80';
-                pnlText = `+₹${Number(pt.pnl_inr).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                if (pt.pnl_points !== undefined && t.lot_size) {
-                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(+${Number(pt.pnl_points).toFixed(2)} pts × ₹${t.lot_size})</div>`;
-                }
-            } else if (pt.pnl_inr < 0) {
-                pnlColor = '#fb7185';
-                pnlText = `-₹${Math.abs(Number(pt.pnl_inr)).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                if (pt.pnl_points !== undefined && t.lot_size) {
-                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(${Number(pt.pnl_points).toFixed(2)} pts × ₹${t.lot_size})</div>`;
+            } else if (pt.pnl_inr !== undefined && pt.pnl_inr !== null) {
+                const pVal = Number(pt.pnl_inr);
+                const lot = pt.quantity || t.lot_size || 1;
+                const pts = pt.pnl_points !== undefined ? Number(pt.pnl_points) : (lot > 0 ? (pVal / lot) : 0);
+                if (pVal > 0) {
+                    pnlColor = '#4ade80';
+                    pnlText = `+₹${pVal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(+${pts.toFixed(2)} pts × ${lot})</div>`;
+                } else if (pVal < 0) {
+                    pnlColor = '#fb7185';
+                    pnlText = `-₹${Math.abs(pVal).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(${pts.toFixed(2)} pts × ${lot})</div>`;
+                } else {
+                    pnlColor = '#94a3b8';
+                    pnlText = `₹0.00 <small style="font-size:0.68rem; color:#60a5fa; display:block; font-weight:400;">(Breakeven)</small>`;
+                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(0.00 pts × ${lot})</div>`;
                 }
             }
 
@@ -6329,7 +6347,10 @@ function renderAdvisoryTradesTable() {
                 mobileExitVal = isPast1815
                     ? '<span style="color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</span>'
                     : '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Pending Check</span>';
-            } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {
+            } else if (pt.exit_trigger === 'STAGNATION_EXIT' || outcome.badge?.includes('Stagnation') || outcome.summary?.includes('Stagnation')) {
+                mobileExitLabel = `<i class="fa-solid fa-hourglass-end" style="color:#60a5fa;"></i> Stagnation Exit`;
+                mobileExitVal = `<span style="color:#60a5fa; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
+        } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {
                 mobileExitLabel = `<i class="fa-solid fa-bullseye" style="color:#4ade80;"></i> Target Hit`;
                 mobileExitVal = `<span style="color:#4ade80; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
             } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || outcome.summary?.includes('Stop-Loss')) {
