@@ -1,5 +1,5 @@
 {
-  "last_updated": "04 Nov 2026, 10:36 AM IST",
+  "last_updated": "04 Nov 2026, 10:37 AM IST",
   "summary": {
     "total_scanned": 16,
     "high_pop_count": 4,
@@ -7,7 +7,7 @@
     "put_sell_count": 5,
     "call_sell_count": 2,
     "avg_safety_buffer": 5.7,
-    "avg_mc_hold_pct": 63.7,
+    "avg_mc_hold_pct": 63.6,
     "risk_cleared_count": 16,
     "expiry_date": "26 Nov 2026",
     "days_to_expiry": 22
@@ -17,49 +17,49 @@
       "symbol": "HEROMOTOCO",
       "name": "HEROMOTOCO",
       "sector": "Consumer Durables",
-      "close": 5306,
-      "change_pct": 0.11,
+      "close": 5308,
+      "change_pct": 0.15,
       "lot_size": 150,
       "adx": 18.3,
       "adx_status": "Rangebound \ud83d\udfe2",
-      "rsi": 55.7,
+      "rsi": 55.8,
       "atr": 147.93,
-      "ema_50": 5225.52,
-      "ema_200": 5233.73,
-      "bb_lower": 4857.14,
-      "bb_upper": 5394.31,
-      "bb_width_pct": 10.12,
+      "ema_50": 5225.6,
+      "ema_200": 5233.75,
+      "bb_lower": 4856.97,
+      "bb_upper": 5394.68,
+      "bb_width_pct": 10.13,
       "daily_volatility_pct": 1.41,
       "expected_move_pct": 6.61,
       "strategy_type": "PUT_SELL",
       "strategy_label": "OTM Put Sell (Floor Defense)",
       "strategy_badge": "PUT_SELL",
       "primary_action": "SELL 4800 PE",
-      "primary_pop": 87.4,
-      "primary_buffer_pct": 9.5,
+      "primary_pop": 87.8,
+      "primary_buffer_pct": 9.6,
       "theta_safety_score": 60.0,
       "put_strike": 4800,
-      "put_buffer_pct": 9.5,
-      "put_pop_pct": 87.4,
-      "est_put_premium": 54.18,
+      "put_buffer_pct": 9.6,
+      "put_pop_pct": 87.8,
+      "est_put_premium": 53.96,
       "call_strike": 5500,
-      "call_buffer_pct": 3.7,
+      "call_buffer_pct": 3.6,
       "call_pop_pct": 76.0,
-      "est_call_premium": 62.31,
-      "est_total_premium": 54.18,
-      "est_inflow_inr": 8127.0,
+      "est_call_premium": 62.33,
+      "est_total_premium": 53.96,
+      "est_inflow_inr": 8094.0,
       "margin_required_inr": 159200.0,
-      "rom_pct": 5.1,
-      "support_desc": "BB Lower \u20b94857.1 & 50E \u20b95225.5",
-      "resist_desc": "BB Upper \u20b95394.3",
+      "rom_pct": 5.08,
+      "support_desc": "BB Lower \u20b94857.0 & 50E \u20b95225.6",
+      "resist_desc": "BB Upper \u20b95394.7",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Support Defense (ADX: 18.3, RSI: 55.7). Anchored above BB Lower \u20b94857.1 & 50E \u20b95225.5. 4800 PE sits safely below the volatility floor with a 9.5% safety buffer.",
+      "rationale": "Support Defense (ADX: 18.3, RSI: 55.8). Anchored above BB Lower \u20b94857.0 & 50E \u20b95225.6. 4800 PE sits safely below the volatility floor with a 9.6% safety buffer.",
       "timemachine": {
-        "channel_hold_prob_pct": 97.6,
-        "put_breach_risk_pct": 2.4,
-        "call_breach_risk_pct": 34.9,
-        "terminal_pop_pct": 93.0,
+        "channel_hold_prob_pct": 97.7,
+        "put_breach_risk_pct": 2.3,
+        "call_breach_risk_pct": 35.2,
+        "terminal_pop_pct": 93.1,
         "expected_r": 0.95,
         "confidence_rating": "EXCELLENT",
         "rating_badge": "\ud83d\udfe2 Excellent Hold",
@@ -67,7 +67,7 @@
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 97.6,
+      "mc_hold_pct": 97.7,
       "mc_rating": "EXCELLENT",
       "mc_badge": "\ud83d\udfe2 Excellent Hold",
       "mc_expected_r": 0.95,
@@ -76,7 +76,7 @@
         "passed_count": 14,
         "total_checks": 14,
         "verdict": "APPROVED FOR THETA HARVEST",
-        "tail_risk_cap_inr": 8127.0,
+        "tail_risk_cap_inr": 8094.0,
         "margin_required_inr": 159200.0,
         "checks": [
           {
@@ -95,25 +95,25 @@
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "55.7"
+            "value": "55.8"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
             "name": "Put <= Lower BB Floor",
             "passed": true,
-            "value": "\u20b94800 vs \u20b94857.1"
+            "value": "\u20b94800 vs \u20b94857.0"
           },
           {
             "id": "CALL_RESIST_ANCHOR",
             "name": "Call >= Upper BB Ceil",
             "passed": true,
-            "value": "\u20b95500 vs \u20b95394.3"
+            "value": "\u20b95500 vs \u20b95394.7"
           },
           {
             "id": "MIN_SAFETY_BUFFER",
             "name": "Buffer Cushion (>= 3.0%)",
             "passed": true,
-            "value": "+9.5%"
+            "value": "+9.6%"
           },
           {
             "id": "DTE_SAFE_WINDOW",
@@ -125,7 +125,7 @@
             "id": "ROM_YIELD_HURDLE",
             "name": "RoM Yield Hurdle (>= 3.0%)",
             "passed": true,
-            "value": "5.10%"
+            "value": "5.08%"
           },
           {
             "id": "LOT_SIZE_VALID",
@@ -137,7 +137,7 @@
             "id": "TAIL_RISK_CAP",
             "name": "2x Premium Stop Defense Cap",
             "passed": true,
-            "value": "\u20b98,127.00"
+            "value": "\u20b98,094.00"
           },
           {
             "id": "LIQUID_NSE_FNO",
@@ -187,8 +187,8 @@
         ],
         "icon": "fa-solid fa-arrows-left-right",
         "adx": 18.3,
-        "rsi": 55.7,
-        "bb_width_pct": 10.12,
+        "rsi": 55.8,
+        "bb_width_pct": 10.13,
         "daily_vol_pct": 1.41
       },
       "regime_tag": "CHOP_CONSOLIDATION",
@@ -196,59 +196,59 @@
       "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
-        "initial_credit_inr": 8127.0,
-        "take_profit_target_premium": 27.09,
-        "take_profit_locked_inr": 4063.5,
-        "stop_loss_premium": 108.36,
-        "max_tail_loss_inr": 8127.0,
-        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b927.09 (locking +\u20b94,063.50). Frees margin early and avoids expiration-week gamma spike.",
+        "initial_credit_inr": 8094.0,
+        "take_profit_target_premium": 26.98,
+        "take_profit_locked_inr": 4047.0,
+        "stop_loss_premium": 107.92,
+        "max_tail_loss_inr": 8094.0,
+        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b926.98 (locking +\u20b94,047.00). Frees margin early and avoids expiration-week gamma spike.",
         "alerts": [
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 4857.14,
+            "trigger_price": 4856.97,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b94857.14). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b94856.97). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 5394.31,
+            "trigger_price": 5394.68,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b95394.31). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b95394.68). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
             "label": "50% Profit Target Milestone",
-            "trigger_price": 27.09,
+            "trigger_price": 26.98,
             "type": "PREMIUM_DECAY",
-            "description": "Option premium decays to \u20b927.09. Execute BUY TO CLOSE to lock +\u20b94,063.50."
+            "description": "Option premium decays to \u20b926.98. Execute BUY TO CLOSE to lock +\u20b94,047.00."
           }
         ]
       },
-      "take_profit_target_premium": 27.09,
-      "take_profit_locked_inr": 4063.5,
+      "take_profit_target_premium": 26.98,
+      "take_profit_locked_inr": 4047.0,
       "defense_alerts": [
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 4857.14,
+          "trigger_price": 4856.97,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b94857.14). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b94856.97). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 5394.31,
+          "trigger_price": 5394.68,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b95394.31). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b95394.68). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
           "label": "50% Profit Target Milestone",
-          "trigger_price": 27.09,
+          "trigger_price": 26.98,
           "type": "PREMIUM_DECAY",
-          "description": "Option premium decays to \u20b927.09. Execute BUY TO CLOSE to lock +\u20b94,063.50."
+          "description": "Option premium decays to \u20b926.98. Execute BUY TO CLOSE to lock +\u20b94,047.00."
         }
       ]
     },
@@ -256,49 +256,49 @@
       "symbol": "FEDERALBNK",
       "name": "FEDERALBNK",
       "sector": "Finance",
-      "close": 331.6,
-      "change_pct": -0.64,
+      "close": 331.85,
+      "change_pct": -0.57,
       "lot_size": 5000,
       "adx": 21.9,
       "adx_status": "Rangebound \ud83d\udfe2",
-      "rsi": 44.6,
+      "rsi": 44.8,
       "atr": 8.74,
-      "ema_50": 337.06,
-      "ema_200": 311.18,
-      "bb_lower": 320.73,
-      "bb_upper": 353.18,
-      "bb_width_pct": 9.79,
+      "ema_50": 337.07,
+      "ema_200": 311.19,
+      "bb_lower": 320.76,
+      "bb_upper": 353.17,
+      "bb_width_pct": 9.77,
       "daily_volatility_pct": 1.11,
       "expected_move_pct": 5.21,
       "strategy_type": "PUT_SELL",
       "strategy_label": "OTM Put Sell (Floor Defense)",
       "strategy_badge": "PUT_SELL",
       "primary_action": "SELL 310 PE",
-      "primary_pop": 82.4,
-      "primary_buffer_pct": 6.5,
+      "primary_pop": 82.9,
+      "primary_buffer_pct": 6.6,
       "theta_safety_score": 60.0,
       "put_strike": 310,
-      "put_buffer_pct": 6.5,
-      "put_pop_pct": 82.4,
-      "est_put_premium": 3.59,
+      "put_buffer_pct": 6.6,
+      "put_pop_pct": 82.9,
+      "est_put_premium": 3.57,
       "call_strike": 360,
-      "call_buffer_pct": 8.6,
+      "call_buffer_pct": 8.5,
       "call_pop_pct": 91.0,
       "est_call_premium": 3.25,
-      "est_total_premium": 3.59,
-      "est_inflow_inr": 17950.0,
-      "margin_required_inr": 331600.0,
-      "rom_pct": 5.41,
-      "support_desc": "BB Lower \u20b9320.7",
+      "est_total_premium": 3.57,
+      "est_inflow_inr": 17850.0,
+      "margin_required_inr": 331800.0,
+      "rom_pct": 5.38,
+      "support_desc": "BB Lower \u20b9320.8",
       "resist_desc": "BB Upper \u20b9353.2",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Support Defense (ADX: 21.9, RSI: 44.6). Anchored above BB Lower \u20b9320.7. 310 PE sits safely below the volatility floor with a 6.5% safety buffer.",
+      "rationale": "Support Defense (ADX: 21.9, RSI: 44.8). Anchored above BB Lower \u20b9320.8. 310 PE sits safely below the volatility floor with a 6.6% safety buffer.",
       "timemachine": {
-        "channel_hold_prob_pct": 94.9,
-        "put_breach_risk_pct": 5.1,
-        "call_breach_risk_pct": 1.6,
-        "terminal_pop_pct": 89.6,
+        "channel_hold_prob_pct": 95.2,
+        "put_breach_risk_pct": 4.8,
+        "call_breach_risk_pct": 1.7,
+        "terminal_pop_pct": 90.0,
         "expected_r": 0.9,
         "confidence_rating": "EXCELLENT",
         "rating_badge": "\ud83d\udfe2 Excellent Hold",
@@ -306,7 +306,7 @@
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 94.9,
+      "mc_hold_pct": 95.2,
       "mc_rating": "EXCELLENT",
       "mc_badge": "\ud83d\udfe2 Excellent Hold",
       "mc_expected_r": 0.9,
@@ -315,8 +315,8 @@
         "passed_count": 14,
         "total_checks": 14,
         "verdict": "APPROVED FOR THETA HARVEST",
-        "tail_risk_cap_inr": 17950.0,
-        "margin_required_inr": 331600.0,
+        "tail_risk_cap_inr": 17850.0,
+        "margin_required_inr": 331800.0,
         "checks": [
           {
             "id": "ADX_NON_TRENDING",
@@ -334,13 +334,13 @@
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "44.6"
+            "value": "44.8"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
             "name": "Put <= Lower BB Floor",
             "passed": true,
-            "value": "\u20b9310 vs \u20b9320.7"
+            "value": "\u20b9310 vs \u20b9320.8"
           },
           {
             "id": "CALL_RESIST_ANCHOR",
@@ -352,7 +352,7 @@
             "id": "MIN_SAFETY_BUFFER",
             "name": "Buffer Cushion (>= 3.0%)",
             "passed": true,
-            "value": "+6.5%"
+            "value": "+6.6%"
           },
           {
             "id": "DTE_SAFE_WINDOW",
@@ -364,7 +364,7 @@
             "id": "ROM_YIELD_HURDLE",
             "name": "RoM Yield Hurdle (>= 3.0%)",
             "passed": true,
-            "value": "5.41%"
+            "value": "5.38%"
           },
           {
             "id": "LOT_SIZE_VALID",
@@ -376,7 +376,7 @@
             "id": "TAIL_RISK_CAP",
             "name": "2x Premium Stop Defense Cap",
             "passed": true,
-            "value": "\u20b917,950.00"
+            "value": "\u20b917,850.00"
           },
           {
             "id": "LIQUID_NSE_FNO",
@@ -426,8 +426,8 @@
         ],
         "icon": "fa-solid fa-arrows-left-right",
         "adx": 21.9,
-        "rsi": 44.6,
-        "bb_width_pct": 9.79,
+        "rsi": 44.8,
+        "bb_width_pct": 9.77,
         "daily_vol_pct": 1.11
       },
       "regime_tag": "CHOP_CONSOLIDATION",
@@ -435,59 +435,59 @@
       "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
-        "initial_credit_inr": 17950.0,
-        "take_profit_target_premium": 1.79,
-        "take_profit_locked_inr": 8950.0,
-        "stop_loss_premium": 7.18,
-        "max_tail_loss_inr": 17950.0,
-        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b91.79 (locking +\u20b98,950.00). Frees margin early and avoids expiration-week gamma spike.",
+        "initial_credit_inr": 17850.0,
+        "take_profit_target_premium": 1.78,
+        "take_profit_locked_inr": 8900.0,
+        "stop_loss_premium": 7.14,
+        "max_tail_loss_inr": 17850.0,
+        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b91.78 (locking +\u20b98,900.00). Frees margin early and avoids expiration-week gamma spike.",
         "alerts": [
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 320.73,
+            "trigger_price": 320.76,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b9320.73). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b9320.76). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 353.18,
+            "trigger_price": 353.17,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b9353.18). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b9353.17). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
             "label": "50% Profit Target Milestone",
-            "trigger_price": 1.79,
+            "trigger_price": 1.78,
             "type": "PREMIUM_DECAY",
-            "description": "Option premium decays to \u20b91.79. Execute BUY TO CLOSE to lock +\u20b98,950.00."
+            "description": "Option premium decays to \u20b91.78. Execute BUY TO CLOSE to lock +\u20b98,900.00."
           }
         ]
       },
-      "take_profit_target_premium": 1.79,
-      "take_profit_locked_inr": 8950.0,
+      "take_profit_target_premium": 1.78,
+      "take_profit_locked_inr": 8900.0,
       "defense_alerts": [
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 320.73,
+          "trigger_price": 320.76,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b9320.73). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b9320.76). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 353.18,
+          "trigger_price": 353.17,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b9353.18). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b9353.17). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
           "label": "50% Profit Target Milestone",
-          "trigger_price": 1.79,
+          "trigger_price": 1.78,
           "type": "PREMIUM_DECAY",
-          "description": "Option premium decays to \u20b91.79. Execute BUY TO CLOSE to lock +\u20b98,950.00."
+          "description": "Option premium decays to \u20b91.78. Execute BUY TO CLOSE to lock +\u20b98,900.00."
         }
       ]
     },
@@ -495,17 +495,17 @@
       "symbol": "BPCL",
       "name": "BPCL",
       "sector": "Energy Minerals",
-      "close": 300.25,
-      "change_pct": 1.13,
+      "close": 300.2,
+      "change_pct": 1.11,
       "lot_size": 1800,
       "adx": 22.9,
       "adx_status": "Rangebound \ud83d\udfe2",
-      "rsi": 55.0,
+      "rsi": 54.9,
       "atr": 7.69,
-      "ema_50": 299.13,
+      "ema_50": 299.12,
       "ema_200": 312.24,
-      "bb_lower": 280.95,
-      "bb_upper": 299.82,
+      "bb_lower": 280.96,
+      "bb_upper": 299.8,
       "bb_width_pct": 6.28,
       "daily_volatility_pct": 1.95,
       "expected_move_pct": 9.15,
@@ -521,21 +521,21 @@
       "put_pop_pct": 78.7,
       "est_put_premium": 3.4,
       "call_strike": 310,
-      "call_buffer_pct": 3.2,
+      "call_buffer_pct": 3.3,
       "call_pop_pct": 76.0,
       "est_call_premium": 3.53,
       "est_total_premium": 3.4,
       "est_inflow_inr": 6120.0,
       "margin_required_inr": 108100.0,
       "rom_pct": 5.66,
-      "support_desc": "BB Lower \u20b9280.9 & 50E \u20b9299.1",
+      "support_desc": "BB Lower \u20b9281.0 & 50E \u20b9299.1",
       "resist_desc": "BB Upper \u20b9299.8",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Support Defense (ADX: 22.9, RSI: 55.0). Anchored above BB Lower \u20b9280.9 & 50E \u20b9299.1. 270 PE sits safely below the volatility floor with a 10.1% safety buffer.",
+      "rationale": "Support Defense (ADX: 22.9, RSI: 54.9). Anchored above BB Lower \u20b9281.0 & 50E \u20b9299.1. 270 PE sits safely below the volatility floor with a 10.1% safety buffer.",
       "timemachine": {
-        "channel_hold_prob_pct": 92.2,
-        "put_breach_risk_pct": 7.8,
+        "channel_hold_prob_pct": 92.1,
+        "put_breach_risk_pct": 7.9,
         "call_breach_risk_pct": 49.1,
         "terminal_pop_pct": 86.2,
         "expected_r": 0.84,
@@ -545,7 +545,7 @@
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 92.2,
+      "mc_hold_pct": 92.1,
       "mc_rating": "EXCELLENT",
       "mc_badge": "\ud83d\udfe2 Excellent Hold",
       "mc_expected_r": 0.84,
@@ -573,13 +573,13 @@
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "55.0"
+            "value": "54.9"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
             "name": "Put <= Lower BB Floor",
             "passed": true,
-            "value": "\u20b9270 vs \u20b9280.9"
+            "value": "\u20b9270 vs \u20b9281.0"
           },
           {
             "id": "CALL_RESIST_ANCHOR",
@@ -665,7 +665,7 @@
         ],
         "icon": "fa-solid fa-arrows-left-right",
         "adx": 22.9,
-        "rsi": 55.0,
+        "rsi": 54.9,
         "bb_width_pct": 6.28,
         "daily_vol_pct": 1.95
       },
@@ -684,16 +684,16 @@
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 280.95,
+            "trigger_price": 280.96,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b9280.95). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b9280.96). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 299.82,
+            "trigger_price": 299.8,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b9299.82). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b9299.80). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
@@ -710,16 +710,16 @@
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 280.95,
+          "trigger_price": 280.96,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b9280.95). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b9280.96). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 299.82,
+          "trigger_price": 299.8,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b9299.82). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b9299.80). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
@@ -734,49 +734,49 @@
       "symbol": "AUROPHARMA",
       "name": "AUROPHARMA",
       "sector": "Health Technology",
-      "close": 1701.6,
-      "change_pct": 0.42,
+      "close": 1702.7,
+      "change_pct": 0.48,
       "lot_size": 550,
       "adx": 18.7,
       "adx_status": "Rangebound \ud83d\udfe2",
-      "rsi": 57.9,
+      "rsi": 58.0,
       "atr": 39.73,
-      "ema_50": 1651.1,
-      "ema_200": 1501.45,
-      "bb_lower": 1573.35,
-      "bb_upper": 1735.2,
-      "bb_width_pct": 9.51,
+      "ema_50": 1651.14,
+      "ema_200": 1501.46,
+      "bb_lower": 1573.27,
+      "bb_upper": 1735.39,
+      "bb_width_pct": 9.52,
       "daily_volatility_pct": 1.05,
       "expected_move_pct": 4.92,
       "strategy_type": "STRANGLE",
       "strategy_label": "Short Strangle (Sell CE + PE)",
       "strategy_badge": "STRANGLE",
       "primary_action": "SELL 1550 PE & SELL 1800 CE",
-      "primary_pop": 85.8,
-      "primary_buffer_pct": 5.8,
+      "primary_pop": 85.5,
+      "primary_buffer_pct": 5.7,
       "theta_safety_score": 60.0,
       "put_strike": 1550,
-      "put_buffer_pct": 8.9,
+      "put_buffer_pct": 9.0,
       "put_pop_pct": 91.0,
-      "est_put_premium": 16.69,
+      "est_put_premium": 16.7,
       "call_strike": 1800,
-      "call_buffer_pct": 5.8,
-      "call_pop_pct": 80.7,
-      "est_call_premium": 18.82,
-      "est_total_premium": 35.51,
-      "est_inflow_inr": 19530.5,
-      "margin_required_inr": 187200.0,
-      "rom_pct": 10.43,
+      "call_buffer_pct": 5.7,
+      "call_pop_pct": 80.1,
+      "est_call_premium": 18.97,
+      "est_total_premium": 35.67,
+      "est_inflow_inr": 19618.5,
+      "margin_required_inr": 187300.0,
+      "rom_pct": 10.47,
       "support_desc": "BB Floor \u20b91573.3",
-      "resist_desc": "BB Ceil \u20b91735.2",
+      "resist_desc": "BB Ceil \u20b91735.4",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Channel Locked (ADX: 18.7, BBW: 9.5%). Price is oscillating tightly between BB Floor \u20b91573.3 and BB Ceil \u20b91735.2. Selling both 1550 PE & 1800 CE collects dual theta.",
+      "rationale": "Channel Locked (ADX: 18.7, BBW: 9.5%). Price is oscillating tightly between BB Floor \u20b91573.3 and BB Ceil \u20b91735.4. Selling both 1550 PE & 1800 CE collects dual theta.",
       "timemachine": {
-        "channel_hold_prob_pct": 91.7,
+        "channel_hold_prob_pct": 91.4,
         "put_breach_risk_pct": 0.4,
-        "call_breach_risk_pct": 7.8,
-        "terminal_pop_pct": 84.7,
+        "call_breach_risk_pct": 8.2,
+        "terminal_pop_pct": 84.6,
         "expected_r": 0.83,
         "confidence_rating": "EXCELLENT",
         "rating_badge": "\ud83d\udfe2 Excellent Hold",
@@ -784,7 +784,7 @@
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 91.7,
+      "mc_hold_pct": 91.4,
       "mc_rating": "EXCELLENT",
       "mc_badge": "\ud83d\udfe2 Excellent Hold",
       "mc_expected_r": 0.83,
@@ -793,8 +793,8 @@
         "passed_count": 14,
         "total_checks": 14,
         "verdict": "APPROVED FOR THETA HARVEST",
-        "tail_risk_cap_inr": 19530.5,
-        "margin_required_inr": 187200.0,
+        "tail_risk_cap_inr": 19618.5,
+        "margin_required_inr": 187300.0,
         "checks": [
           {
             "id": "ADX_NON_TRENDING",
@@ -812,7 +812,7 @@
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "57.9"
+            "value": "58.0"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
@@ -824,13 +824,13 @@
             "id": "CALL_RESIST_ANCHOR",
             "name": "Call >= Upper BB Ceil",
             "passed": true,
-            "value": "\u20b91800 vs \u20b91735.2"
+            "value": "\u20b91800 vs \u20b91735.4"
           },
           {
             "id": "MIN_SAFETY_BUFFER",
             "name": "Buffer Cushion (>= 3.0%)",
             "passed": true,
-            "value": "+5.8%"
+            "value": "+5.7%"
           },
           {
             "id": "DTE_SAFE_WINDOW",
@@ -842,7 +842,7 @@
             "id": "ROM_YIELD_HURDLE",
             "name": "RoM Yield Hurdle (>= 3.0%)",
             "passed": true,
-            "value": "10.43%"
+            "value": "10.47%"
           },
           {
             "id": "LOT_SIZE_VALID",
@@ -854,7 +854,7 @@
             "id": "TAIL_RISK_CAP",
             "name": "2x Premium Stop Defense Cap",
             "passed": true,
-            "value": "\u20b919,530.50"
+            "value": "\u20b919,618.50"
           },
           {
             "id": "LIQUID_NSE_FNO",
@@ -904,8 +904,8 @@
         ],
         "icon": "fa-solid fa-arrows-left-right",
         "adx": 18.7,
-        "rsi": 57.9,
-        "bb_width_pct": 9.51,
+        "rsi": 58.0,
+        "bb_width_pct": 9.52,
         "daily_vol_pct": 1.05
       },
       "regime_tag": "CHOP_CONSOLIDATION",
@@ -913,59 +913,59 @@
       "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
-        "initial_credit_inr": 19530.5,
-        "take_profit_target_premium": 17.75,
-        "take_profit_locked_inr": 9762.5,
-        "stop_loss_premium": 71.02,
-        "max_tail_loss_inr": 19530.5,
-        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b917.75 (locking +\u20b99,762.50). Frees margin early and avoids expiration-week gamma spike.",
+        "initial_credit_inr": 19618.5,
+        "take_profit_target_premium": 17.84,
+        "take_profit_locked_inr": 9812.0,
+        "stop_loss_premium": 71.34,
+        "max_tail_loss_inr": 19618.5,
+        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b917.84 (locking +\u20b99,812.00). Frees margin early and avoids expiration-week gamma spike.",
         "alerts": [
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 1573.35,
+            "trigger_price": 1573.27,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b91573.35). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b91573.27). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 1735.2,
+            "trigger_price": 1735.39,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b91735.20). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b91735.39). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
             "label": "50% Profit Target Milestone",
-            "trigger_price": 17.75,
+            "trigger_price": 17.84,
             "type": "PREMIUM_DECAY",
-            "description": "Option premium decays to \u20b917.75. Execute BUY TO CLOSE to lock +\u20b99,762.50."
+            "description": "Option premium decays to \u20b917.84. Execute BUY TO CLOSE to lock +\u20b99,812.00."
           }
         ]
       },
-      "take_profit_target_premium": 17.75,
-      "take_profit_locked_inr": 9762.5,
+      "take_profit_target_premium": 17.84,
+      "take_profit_locked_inr": 9812.0,
       "defense_alerts": [
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 1573.35,
+          "trigger_price": 1573.27,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b91573.35). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b91573.27). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 1735.2,
+          "trigger_price": 1735.39,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b91735.20). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b91735.39). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
           "label": "50% Profit Target Milestone",
-          "trigger_price": 17.75,
+          "trigger_price": 17.84,
           "type": "PREMIUM_DECAY",
-          "description": "Option premium decays to \u20b917.75. Execute BUY TO CLOSE to lock +\u20b99,762.50."
+          "description": "Option premium decays to \u20b917.84. Execute BUY TO CLOSE to lock +\u20b99,812.00."
         }
       ]
     },
@@ -973,18 +973,18 @@
       "symbol": "ALKEM",
       "name": "ALKEM",
       "sector": "Health Technology",
-      "close": 5200,
-      "change_pct": -0.69,
+      "close": 5204,
+      "change_pct": -0.61,
       "lot_size": 125,
       "adx": 17.8,
       "adx_status": "Flat / Consolidation \ud83d\udca4",
-      "rsi": 53.2,
+      "rsi": 53.5,
       "atr": 120.29,
-      "ema_50": 5220.94,
-      "ema_200": 5369.53,
-      "bb_lower": 4918.48,
-      "bb_upper": 5346.17,
-      "bb_width_pct": 8.22,
+      "ema_50": 5221.1,
+      "ema_200": 5369.57,
+      "bb_lower": 4918.42,
+      "bb_upper": 5346.63,
+      "bb_width_pct": 8.23,
       "daily_volatility_pct": 1.04,
       "expected_move_pct": 4.88,
       "strategy_type": "STRANGLE",
@@ -995,45 +995,45 @@
       "primary_buffer_pct": 3.8,
       "theta_safety_score": 60.0,
       "put_strike": 4800,
-      "put_buffer_pct": 7.7,
+      "put_buffer_pct": 7.8,
       "put_pop_pct": 91.0,
-      "est_put_premium": 51.0,
+      "est_put_premium": 51.04,
       "call_strike": 5400,
       "call_buffer_pct": 3.8,
       "call_pop_pct": 76.0,
-      "est_call_premium": 61.07,
-      "est_total_premium": 112.07,
-      "est_inflow_inr": 14008.75,
-      "margin_required_inr": 130000.0,
+      "est_call_premium": 61.11,
+      "est_total_premium": 112.15,
+      "est_inflow_inr": 14018.75,
+      "margin_required_inr": 130100.0,
       "rom_pct": 10.78,
-      "support_desc": "BB Floor \u20b94918.5",
-      "resist_desc": "BB Ceil \u20b95346.2",
+      "support_desc": "BB Floor \u20b94918.4",
+      "resist_desc": "BB Ceil \u20b95346.6",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Channel Locked (ADX: 17.8, BBW: 8.2%). Price is oscillating tightly between BB Floor \u20b94918.5 and BB Ceil \u20b95346.2. Selling both 4800 PE & 5400 CE collects dual theta.",
+      "rationale": "Channel Locked (ADX: 17.8, BBW: 8.2%). Price is oscillating tightly between BB Floor \u20b94918.4 and BB Ceil \u20b95346.6. Selling both 4800 PE & 5400 CE collects dual theta.",
       "timemachine": {
-        "channel_hold_prob_pct": 77.7,
+        "channel_hold_prob_pct": 77.1,
         "put_breach_risk_pct": 1.3,
-        "call_breach_risk_pct": 21.0,
-        "terminal_pop_pct": 73.6,
-        "expected_r": 0.55,
+        "call_breach_risk_pct": 21.6,
+        "terminal_pop_pct": 73.4,
+        "expected_r": 0.54,
         "confidence_rating": "SOLID",
         "rating_badge": "\ud83d\udfe1 Solid Hold",
         "simulated_paths": 5000,
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 77.7,
+      "mc_hold_pct": 77.1,
       "mc_rating": "SOLID",
       "mc_badge": "\ud83d\udfe1 Solid Hold",
-      "mc_expected_r": 0.55,
+      "mc_expected_r": 0.54,
       "risk_audit": {
         "passed": true,
         "passed_count": 14,
         "total_checks": 14,
         "verdict": "APPROVED FOR THETA HARVEST",
-        "tail_risk_cap_inr": 14008.75,
-        "margin_required_inr": 130000.0,
+        "tail_risk_cap_inr": 14018.75,
+        "margin_required_inr": 130100.0,
         "checks": [
           {
             "id": "ADX_NON_TRENDING",
@@ -1051,19 +1051,19 @@
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "53.2"
+            "value": "53.5"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
             "name": "Put <= Lower BB Floor",
             "passed": true,
-            "value": "\u20b94800 vs \u20b94918.5"
+            "value": "\u20b94800 vs \u20b94918.4"
           },
           {
             "id": "CALL_RESIST_ANCHOR",
             "name": "Call >= Upper BB Ceil",
             "passed": true,
-            "value": "\u20b95400 vs \u20b95346.2"
+            "value": "\u20b95400 vs \u20b95346.6"
           },
           {
             "id": "MIN_SAFETY_BUFFER",
@@ -1093,7 +1093,7 @@
             "id": "TAIL_RISK_CAP",
             "name": "2x Premium Stop Defense Cap",
             "passed": true,
-            "value": "\u20b914,008.75"
+            "value": "\u20b914,018.75"
           },
           {
             "id": "LIQUID_NSE_FNO",
@@ -1143,8 +1143,8 @@
         ],
         "icon": "fa-solid fa-arrows-left-right",
         "adx": 17.8,
-        "rsi": 53.2,
-        "bb_width_pct": 8.22,
+        "rsi": 53.5,
+        "bb_width_pct": 8.23,
         "daily_vol_pct": 1.04
       },
       "regime_tag": "CHOP_CONSOLIDATION",
@@ -1152,59 +1152,59 @@
       "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
-        "initial_credit_inr": 14008.75,
-        "take_profit_target_premium": 56.03,
-        "take_profit_locked_inr": 7003.75,
-        "stop_loss_premium": 224.14,
-        "max_tail_loss_inr": 14008.75,
-        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b956.03 (locking +\u20b97,003.75). Frees margin early and avoids expiration-week gamma spike.",
+        "initial_credit_inr": 14018.75,
+        "take_profit_target_premium": 56.08,
+        "take_profit_locked_inr": 7010.0,
+        "stop_loss_premium": 224.3,
+        "max_tail_loss_inr": 14018.75,
+        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b956.08 (locking +\u20b97,010.00). Frees margin early and avoids expiration-week gamma spike.",
         "alerts": [
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 4918.48,
+            "trigger_price": 4918.42,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b94918.48). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b94918.42). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 5346.17,
+            "trigger_price": 5346.63,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b95346.17). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b95346.63). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
             "label": "50% Profit Target Milestone",
-            "trigger_price": 56.03,
+            "trigger_price": 56.08,
             "type": "PREMIUM_DECAY",
-            "description": "Option premium decays to \u20b956.03. Execute BUY TO CLOSE to lock +\u20b97,003.75."
+            "description": "Option premium decays to \u20b956.08. Execute BUY TO CLOSE to lock +\u20b97,010.00."
           }
         ]
       },
-      "take_profit_target_premium": 56.03,
-      "take_profit_locked_inr": 7003.75,
+      "take_profit_target_premium": 56.08,
+      "take_profit_locked_inr": 7010.0,
       "defense_alerts": [
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 4918.48,
+          "trigger_price": 4918.42,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b94918.48). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b94918.42). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 5346.17,
+          "trigger_price": 5346.63,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b95346.17). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b95346.63). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
           "label": "50% Profit Target Milestone",
-          "trigger_price": 56.03,
+          "trigger_price": 56.08,
           "type": "PREMIUM_DECAY",
-          "description": "Option premium decays to \u20b956.03. Execute BUY TO CLOSE to lock +\u20b97,003.75."
+          "description": "Option premium decays to \u20b956.08. Execute BUY TO CLOSE to lock +\u20b97,010.00."
         }
       ]
     },
@@ -1212,17 +1212,17 @@
       "symbol": "JUBLFOOD",
       "name": "JUBLFOOD",
       "sector": "Consumer Services",
-      "close": 423.45,
-      "change_pct": 0.34,
+      "close": 423.55,
+      "change_pct": 0.37,
       "lot_size": 1250,
       "adx": 22.2,
       "adx_status": "Rangebound \ud83d\udfe2",
-      "rsi": 43.8,
+      "rsi": 43.9,
       "atr": 12.22,
       "ema_50": 443.72,
       "ema_200": 477.98,
       "bb_lower": 398.81,
-      "bb_upper": 444.87,
+      "bb_upper": 444.88,
       "bb_width_pct": 10.88,
       "daily_volatility_pct": 2.59,
       "expected_move_pct": 12.15,
@@ -1238,7 +1238,7 @@
       "put_pop_pct": 76.0,
       "est_put_premium": 4.97,
       "call_strike": 450,
-      "call_buffer_pct": 6.3,
+      "call_buffer_pct": 6.2,
       "call_pop_pct": 76.0,
       "est_call_premium": 4.97,
       "est_total_premium": 4.97,
@@ -1249,11 +1249,11 @@
       "resist_desc": "BB Upper \u20b9444.9",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Support Defense (ADX: 22.2, RSI: 43.8). Anchored above BB Lower \u20b9398.8. 390 PE sits safely below the volatility floor with a 7.9% safety buffer.",
+      "rationale": "Support Defense (ADX: 22.2, RSI: 43.9). Anchored above BB Lower \u20b9398.8. 390 PE sits safely below the volatility floor with a 7.9% safety buffer.",
       "timemachine": {
-        "channel_hold_prob_pct": 71.9,
-        "put_breach_risk_pct": 28.1,
-        "call_breach_risk_pct": 37.1,
+        "channel_hold_prob_pct": 72.0,
+        "put_breach_risk_pct": 28.0,
+        "call_breach_risk_pct": 37.2,
         "terminal_pop_pct": 72.1,
         "expected_r": 0.44,
         "confidence_rating": "CAUTION",
@@ -1262,7 +1262,7 @@
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 71.9,
+      "mc_hold_pct": 72.0,
       "mc_rating": "CAUTION",
       "mc_badge": "\ud83d\udfe0 Caution",
       "mc_expected_r": 0.44,
@@ -1290,7 +1290,7 @@
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "43.8"
+            "value": "43.9"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
@@ -1369,7 +1369,7 @@
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
         "border_color": "rgba(251, 113, 133, 0.35)",
-        "mandate": "Downtrend in effect (Close < 50E, ADX: 22.2, RSI: 43.8). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 22.2, RSI: 43.9). Capital preservation priority; falling knife defense. Do not take long breakouts.",
         "allowed_strategies": [
           "DEFENSIVE_HEDGING",
           "BEAR_CALL_SPREAD",
@@ -1382,7 +1382,7 @@
         ],
         "icon": "fa-solid fa-arrow-trend-down",
         "adx": 22.2,
-        "rsi": 43.8,
+        "rsi": 43.9,
         "bb_width_pct": 10.88,
         "daily_vol_pct": 2.59
       },
@@ -1408,9 +1408,9 @@
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 444.87,
+            "trigger_price": 444.88,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b9444.87). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b9444.88). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
@@ -1434,9 +1434,9 @@
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 444.87,
+          "trigger_price": 444.88,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b9444.87). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b9444.88). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
@@ -1451,18 +1451,18 @@
       "symbol": "HDFCLIFE",
       "name": "HDFCLIFE",
       "sector": "Finance",
-      "close": 531.75,
-      "change_pct": 1.19,
+      "close": 531.95,
+      "change_pct": 1.23,
       "lot_size": 1100,
       "adx": 20.4,
       "adx_status": "Rangebound \ud83d\udfe2",
-      "rsi": 49.3,
+      "rsi": 49.5,
       "atr": 13.71,
-      "ema_50": 538.17,
+      "ema_50": 538.18,
       "ema_200": 592.17,
-      "bb_lower": 505.42,
+      "bb_lower": 505.44,
       "bb_upper": 566.52,
-      "bb_width_pct": 11.49,
+      "bb_width_pct": 11.48,
       "daily_volatility_pct": 2.5,
       "expected_move_pct": 11.73,
       "strategy_type": "CALL_SELL",
@@ -1475,42 +1475,42 @@
       "put_strike": 500,
       "put_buffer_pct": 6.0,
       "put_pop_pct": 76.0,
-      "est_put_premium": 6.24,
+      "est_put_premium": 6.25,
       "call_strike": 570,
       "call_buffer_pct": 7.2,
       "call_pop_pct": 76.0,
-      "est_call_premium": 6.24,
-      "est_total_premium": 6.24,
-      "est_inflow_inr": 6864.0,
+      "est_call_premium": 6.25,
+      "est_total_premium": 6.25,
+      "est_inflow_inr": 6875.0,
       "margin_required_inr": 117000.0,
-      "rom_pct": 5.87,
+      "rom_pct": 5.88,
       "support_desc": "BB Lower \u20b9505.4",
       "resist_desc": "BB Upper \u20b9566.5 & 50E \u20b9538.2",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Resistance Defense (ADX: 20.4, RSI: 49.3). Capped beneath BB Upper \u20b9566.5 & 50E \u20b9538.2. 570 CE is sheltered above the volatility ceiling with a 7.2% buffer.",
+      "rationale": "Resistance Defense (ADX: 20.4, RSI: 49.5). Capped beneath BB Upper \u20b9566.5 & 50E \u20b9538.2. 570 CE is sheltered above the volatility ceiling with a 7.2% buffer.",
       "timemachine": {
-        "channel_hold_prob_pct": 68.8,
-        "put_breach_risk_pct": 37.0,
-        "call_breach_risk_pct": 31.2,
-        "terminal_pop_pct": 74.3,
-        "expected_r": 0.38,
+        "channel_hold_prob_pct": 68.6,
+        "put_breach_risk_pct": 36.8,
+        "call_breach_risk_pct": 31.4,
+        "terminal_pop_pct": 74.2,
+        "expected_r": 0.37,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
         "simulated_paths": 5000,
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 68.8,
+      "mc_hold_pct": 68.6,
       "mc_rating": "CAUTION",
       "mc_badge": "\ud83d\udfe0 Caution",
-      "mc_expected_r": 0.38,
+      "mc_expected_r": 0.37,
       "risk_audit": {
         "passed": true,
         "passed_count": 14,
         "total_checks": 14,
         "verdict": "APPROVED FOR THETA HARVEST",
-        "tail_risk_cap_inr": 6864.0,
+        "tail_risk_cap_inr": 6875.0,
         "margin_required_inr": 117000.0,
         "checks": [
           {
@@ -1529,7 +1529,7 @@
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "49.3"
+            "value": "49.5"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
@@ -1559,7 +1559,7 @@
             "id": "ROM_YIELD_HURDLE",
             "name": "RoM Yield Hurdle (>= 3.0%)",
             "passed": true,
-            "value": "5.87%"
+            "value": "5.88%"
           },
           {
             "id": "LOT_SIZE_VALID",
@@ -1571,7 +1571,7 @@
             "id": "TAIL_RISK_CAP",
             "name": "2x Premium Stop Defense Cap",
             "passed": true,
-            "value": "\u20b96,864.00"
+            "value": "\u20b96,875.00"
           },
           {
             "id": "LIQUID_NSE_FNO",
@@ -1608,7 +1608,7 @@
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
         "border_color": "rgba(251, 113, 133, 0.35)",
-        "mandate": "Downtrend in effect (Close < 50E, ADX: 20.4, RSI: 49.3). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 20.4, RSI: 49.5). Capital preservation priority; falling knife defense. Do not take long breakouts.",
         "allowed_strategies": [
           "DEFENSIVE_HEDGING",
           "BEAR_CALL_SPREAD",
@@ -1621,8 +1621,8 @@
         ],
         "icon": "fa-solid fa-arrow-trend-down",
         "adx": 20.4,
-        "rsi": 49.3,
-        "bb_width_pct": 11.49,
+        "rsi": 49.5,
+        "bb_width_pct": 11.48,
         "daily_vol_pct": 2.5
       },
       "regime_tag": "BREAKDOWN",
@@ -1630,19 +1630,19 @@
       "regime_short": "Breakdown",
       "regime_color": "#fb7185",
       "trade_plan": {
-        "initial_credit_inr": 6864.0,
+        "initial_credit_inr": 6875.0,
         "take_profit_target_premium": 3.12,
         "take_profit_locked_inr": 3432.0,
-        "stop_loss_premium": 12.48,
-        "max_tail_loss_inr": 6864.0,
+        "stop_loss_premium": 12.5,
+        "max_tail_loss_inr": 6875.0,
         "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b93.12 (locking +\u20b93,432.00). Frees margin early and avoids expiration-week gamma spike.",
         "alerts": [
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 505.42,
+            "trigger_price": 505.44,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b9505.42). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b9505.44). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
@@ -1666,9 +1666,9 @@
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 505.42,
+          "trigger_price": 505.44,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b9505.42). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b9505.44). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
@@ -1690,7 +1690,7 @@
       "symbol": "TATACOMM",
       "name": "TATACOMM",
       "sector": "Communications",
-      "close": 1759.1,
+      "close": 1759,
       "change_pct": -0.01,
       "lot_size": 500,
       "adx": 19.3,
@@ -1699,8 +1699,8 @@
       "atr": 58.51,
       "ema_50": 1715.32,
       "ema_200": 1724.72,
-      "bb_lower": 1623.69,
-      "bb_upper": 1773.86,
+      "bb_lower": 1623.7,
+      "bb_upper": 1773.84,
       "bb_width_pct": 8.54,
       "daily_volatility_pct": 1.61,
       "expected_move_pct": 7.55,
@@ -1724,14 +1724,14 @@
       "margin_required_inr": 175900.0,
       "rom_pct": 11.38,
       "support_desc": "BB Floor \u20b91623.7",
-      "resist_desc": "BB Ceil \u20b91773.9",
+      "resist_desc": "BB Ceil \u20b91773.8",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Channel Locked (ADX: 19.3, BBW: 8.5%). Price is oscillating tightly between BB Floor \u20b91623.7 and BB Ceil \u20b91773.9. Selling both 1600 PE & 1850 CE collects dual theta.",
+      "rationale": "Channel Locked (ADX: 19.3, BBW: 8.5%). Price is oscillating tightly between BB Floor \u20b91623.7 and BB Ceil \u20b91773.8. Selling both 1600 PE & 1850 CE collects dual theta.",
       "timemachine": {
         "channel_hold_prob_pct": 68.1,
-        "put_breach_risk_pct": 5.5,
-        "call_breach_risk_pct": 26.4,
+        "put_breach_risk_pct": 5.6,
+        "call_breach_risk_pct": 26.3,
         "terminal_pop_pct": 64.7,
         "expected_r": 0.36,
         "confidence_rating": "CAUTION",
@@ -1780,7 +1780,7 @@
             "id": "CALL_RESIST_ANCHOR",
             "name": "Call >= Upper BB Ceil",
             "passed": true,
-            "value": "\u20b91850 vs \u20b91773.9"
+            "value": "\u20b91850 vs \u20b91773.8"
           },
           {
             "id": "MIN_SAFETY_BUFFER",
@@ -1879,16 +1879,16 @@
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 1623.69,
+            "trigger_price": 1623.7,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b91623.69). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b91623.70). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 1773.86,
+            "trigger_price": 1773.84,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b91773.86). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b91773.84). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
@@ -1905,16 +1905,16 @@
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 1623.69,
+          "trigger_price": 1623.7,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b91623.69). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b91623.70). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 1773.86,
+          "trigger_price": 1773.84,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b91773.86). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b91773.84). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
@@ -1929,18 +1929,18 @@
       "symbol": "TATASTEEL",
       "name": "TATASTEEL",
       "sector": "Non-Energy Minerals",
-      "close": 175.74,
-      "change_pct": -0.43,
+      "close": 175.86,
+      "change_pct": -0.36,
       "lot_size": 5500,
       "adx": 21.5,
       "adx_status": "Rangebound \ud83d\udfe2",
-      "rsi": 50.4,
+      "rsi": 50.6,
       "atr": 4.46,
       "ema_50": 178.93,
       "ema_200": 185.46,
       "bb_lower": 167.11,
-      "bb_upper": 178.77,
-      "bb_width_pct": 6.63,
+      "bb_upper": 178.79,
+      "bb_width_pct": 6.64,
       "daily_volatility_pct": 1.92,
       "expected_move_pct": 9.01,
       "strategy_type": "CALL_SELL",
@@ -1948,48 +1948,48 @@
       "strategy_badge": "CALL_SELL",
       "primary_action": "SELL 185 CE",
       "primary_pop": 76.0,
-      "primary_buffer_pct": 5.3,
+      "primary_buffer_pct": 5.2,
       "theta_safety_score": 60.0,
       "put_strike": 165,
-      "put_buffer_pct": 6.1,
+      "put_buffer_pct": 6.2,
       "put_pop_pct": 76.0,
-      "est_put_premium": 2.06,
+      "est_put_premium": 2.07,
       "call_strike": 185,
-      "call_buffer_pct": 5.3,
+      "call_buffer_pct": 5.2,
       "call_pop_pct": 76.0,
-      "est_call_premium": 2.06,
-      "est_total_premium": 2.06,
-      "est_inflow_inr": 11330.0,
-      "margin_required_inr": 193300.0,
-      "rom_pct": 5.86,
+      "est_call_premium": 2.07,
+      "est_total_premium": 2.07,
+      "est_inflow_inr": 11385.0,
+      "margin_required_inr": 193400.0,
+      "rom_pct": 5.89,
       "support_desc": "BB Lower \u20b9167.1",
       "resist_desc": "BB Upper \u20b9178.8 & 50E \u20b9178.9",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Resistance Defense (ADX: 21.5, RSI: 50.4). Capped beneath BB Upper \u20b9178.8 & 50E \u20b9178.9. 185 CE is sheltered above the volatility ceiling with a 5.3% buffer.",
+      "rationale": "Resistance Defense (ADX: 21.5, RSI: 50.6). Capped beneath BB Upper \u20b9178.8 & 50E \u20b9178.9. 185 CE is sheltered above the volatility ceiling with a 5.2% buffer.",
       "timemachine": {
-        "channel_hold_prob_pct": 67.1,
-        "put_breach_risk_pct": 26.4,
-        "call_breach_risk_pct": 32.9,
-        "terminal_pop_pct": 73.4,
-        "expected_r": 0.34,
+        "channel_hold_prob_pct": 66.7,
+        "put_breach_risk_pct": 25.9,
+        "call_breach_risk_pct": 33.3,
+        "terminal_pop_pct": 73.1,
+        "expected_r": 0.33,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
         "simulated_paths": 5000,
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 67.1,
+      "mc_hold_pct": 66.7,
       "mc_rating": "CAUTION",
       "mc_badge": "\ud83d\udfe0 Caution",
-      "mc_expected_r": 0.34,
+      "mc_expected_r": 0.33,
       "risk_audit": {
         "passed": true,
         "passed_count": 14,
         "total_checks": 14,
         "verdict": "APPROVED FOR THETA HARVEST",
-        "tail_risk_cap_inr": 11330.0,
-        "margin_required_inr": 193300.0,
+        "tail_risk_cap_inr": 11385.0,
+        "margin_required_inr": 193400.0,
         "checks": [
           {
             "id": "ADX_NON_TRENDING",
@@ -2007,7 +2007,7 @@
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "50.4"
+            "value": "50.6"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
@@ -2025,7 +2025,7 @@
             "id": "MIN_SAFETY_BUFFER",
             "name": "Buffer Cushion (>= 3.0%)",
             "passed": true,
-            "value": "+5.3%"
+            "value": "+5.2%"
           },
           {
             "id": "DTE_SAFE_WINDOW",
@@ -2037,7 +2037,7 @@
             "id": "ROM_YIELD_HURDLE",
             "name": "RoM Yield Hurdle (>= 3.0%)",
             "passed": true,
-            "value": "5.86%"
+            "value": "5.89%"
           },
           {
             "id": "LOT_SIZE_VALID",
@@ -2049,7 +2049,7 @@
             "id": "TAIL_RISK_CAP",
             "name": "2x Premium Stop Defense Cap",
             "passed": true,
-            "value": "\u20b911,330.00"
+            "value": "\u20b911,385.00"
           },
           {
             "id": "LIQUID_NSE_FNO",
@@ -2086,7 +2086,7 @@
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
         "border_color": "rgba(251, 113, 133, 0.35)",
-        "mandate": "Downtrend in effect (Close < 50E, ADX: 21.5, RSI: 50.4). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 21.5, RSI: 50.6). Capital preservation priority; falling knife defense. Do not take long breakouts.",
         "allowed_strategies": [
           "DEFENSIVE_HEDGING",
           "BEAR_CALL_SPREAD",
@@ -2099,8 +2099,8 @@
         ],
         "icon": "fa-solid fa-arrow-trend-down",
         "adx": 21.5,
-        "rsi": 50.4,
-        "bb_width_pct": 6.63,
+        "rsi": 50.6,
+        "bb_width_pct": 6.64,
         "daily_vol_pct": 1.92
       },
       "regime_tag": "BREAKDOWN",
@@ -2108,11 +2108,11 @@
       "regime_short": "Breakdown",
       "regime_color": "#fb7185",
       "trade_plan": {
-        "initial_credit_inr": 11330.0,
+        "initial_credit_inr": 11385.0,
         "take_profit_target_premium": 1.03,
         "take_profit_locked_inr": 5665.0,
-        "stop_loss_premium": 4.12,
-        "max_tail_loss_inr": 11330.0,
+        "stop_loss_premium": 4.14,
+        "max_tail_loss_inr": 11385.0,
         "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b91.03 (locking +\u20b95,665.00). Frees margin early and avoids expiration-week gamma spike.",
         "alerts": [
           {
@@ -2125,9 +2125,9 @@
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 178.77,
+            "trigger_price": 178.79,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b9178.77). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b9178.79). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
@@ -2151,9 +2151,9 @@
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 178.77,
+          "trigger_price": 178.79,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b9178.77). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b9178.79). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
@@ -2168,18 +2168,18 @@
       "symbol": "ONGC",
       "name": "ONGC",
       "sector": "Energy Minerals",
-      "close": 233.36,
-      "change_pct": 0.51,
+      "close": 233.42,
+      "change_pct": 0.54,
       "lot_size": 3850,
       "adx": 19.2,
       "adx_status": "Rangebound \ud83d\udfe2",
-      "rsi": 57.9,
+      "rsi": 58.0,
       "atr": 4.45,
       "ema_50": 231.06,
       "ema_200": 245.46,
-      "bb_lower": 217.54,
-      "bb_upper": 234.02,
-      "bb_width_pct": 7.06,
+      "bb_lower": 217.53,
+      "bb_upper": 234.03,
+      "bb_width_pct": 7.07,
       "daily_volatility_pct": 1.73,
       "expected_move_pct": 8.11,
       "strategy_type": "STRANGLE",
@@ -2207,10 +2207,10 @@
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 19.2, BBW: 7.1%). Price is oscillating tightly between BB Floor \u20b9217.5 and BB Ceil \u20b9234.0. Selling both 215 PE & 245 CE collects dual theta.",
       "timemachine": {
-        "channel_hold_prob_pct": 57.1,
-        "put_breach_risk_pct": 11.9,
-        "call_breach_risk_pct": 31.0,
-        "terminal_pop_pct": 57.3,
+        "channel_hold_prob_pct": 57.0,
+        "put_breach_risk_pct": 11.8,
+        "call_breach_risk_pct": 31.2,
+        "terminal_pop_pct": 57.4,
         "expected_r": 0.14,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -2218,7 +2218,7 @@
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 57.1,
+      "mc_hold_pct": 57.0,
       "mc_rating": "CAUTION",
       "mc_badge": "\ud83d\udfe0 Caution",
       "mc_expected_r": 0.14,
@@ -2246,7 +2246,7 @@
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "57.9"
+            "value": "58.0"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
@@ -2338,8 +2338,8 @@
         ],
         "icon": "fa-solid fa-arrows-left-right",
         "adx": 19.2,
-        "rsi": 57.9,
-        "bb_width_pct": 7.06,
+        "rsi": 58.0,
+        "bb_width_pct": 7.07,
         "daily_vol_pct": 1.73
       },
       "regime_tag": "CHOP_CONSOLIDATION",
@@ -2357,16 +2357,16 @@
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 217.54,
+            "trigger_price": 217.53,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b9217.54). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b9217.53). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 234.02,
+            "trigger_price": 234.03,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b9234.02). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b9234.03). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
@@ -2383,16 +2383,16 @@
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 217.54,
+          "trigger_price": 217.53,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b9217.54). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b9217.53). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 234.02,
+          "trigger_price": 234.03,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b9234.02). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b9234.03). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
@@ -2407,18 +2407,18 @@
       "symbol": "AXISBANK",
       "name": "AXISBANK",
       "sector": "Finance",
-      "close": 1230.2,
-      "change_pct": -0.2,
+      "close": 1231,
+      "change_pct": -0.14,
       "lot_size": 625,
       "adx": 16.7,
       "adx_status": "Flat / Consolidation \ud83d\udca4",
-      "rsi": 49.3,
+      "rsi": 49.5,
       "atr": 24.87,
-      "ema_50": 1239.86,
+      "ema_50": 1239.89,
       "ema_200": 1255.35,
-      "bb_lower": 1186.93,
-      "bb_upper": 1287.64,
-      "bb_width_pct": 8.19,
+      "bb_lower": 1186.99,
+      "bb_upper": 1287.66,
+      "bb_width_pct": 8.18,
       "daily_volatility_pct": 1.33,
       "expected_move_pct": 6.24,
       "strategy_type": "STRANGLE",
@@ -2431,25 +2431,25 @@
       "put_strike": 1180,
       "put_buffer_pct": 4.1,
       "put_pop_pct": 76.0,
-      "est_put_premium": 14.45,
+      "est_put_premium": 14.46,
       "call_strike": 1300,
-      "call_buffer_pct": 5.7,
+      "call_buffer_pct": 5.6,
       "call_pop_pct": 76.0,
-      "est_call_premium": 14.45,
-      "est_total_premium": 28.9,
-      "est_inflow_inr": 18062.5,
-      "margin_required_inr": 153800.0,
+      "est_call_premium": 14.46,
+      "est_total_premium": 28.92,
+      "est_inflow_inr": 18075.0,
+      "margin_required_inr": 153900.0,
       "rom_pct": 11.74,
-      "support_desc": "BB Floor \u20b91186.9",
-      "resist_desc": "BB Ceil \u20b91287.6",
+      "support_desc": "BB Floor \u20b91187.0",
+      "resist_desc": "BB Ceil \u20b91287.7",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Channel Locked (ADX: 16.7, BBW: 8.2%). Price is oscillating tightly between BB Floor \u20b91186.9 and BB Ceil \u20b91287.6. Selling both 1180 PE & 1300 CE collects dual theta.",
+      "rationale": "Channel Locked (ADX: 16.7, BBW: 8.2%). Price is oscillating tightly between BB Floor \u20b91187.0 and BB Ceil \u20b91287.7. Selling both 1180 PE & 1300 CE collects dual theta.",
       "timemachine": {
-        "channel_hold_prob_pct": 56.3,
-        "put_breach_risk_pct": 28.0,
-        "call_breach_risk_pct": 15.8,
-        "terminal_pop_pct": 54.9,
+        "channel_hold_prob_pct": 56.5,
+        "put_breach_risk_pct": 27.3,
+        "call_breach_risk_pct": 16.3,
+        "terminal_pop_pct": 55.1,
         "expected_r": 0.13,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -2457,7 +2457,7 @@
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 56.3,
+      "mc_hold_pct": 56.5,
       "mc_rating": "CAUTION",
       "mc_badge": "\ud83d\udfe0 Caution",
       "mc_expected_r": 0.13,
@@ -2466,8 +2466,8 @@
         "passed_count": 14,
         "total_checks": 14,
         "verdict": "APPROVED FOR THETA HARVEST",
-        "tail_risk_cap_inr": 18062.5,
-        "margin_required_inr": 153800.0,
+        "tail_risk_cap_inr": 18075.0,
+        "margin_required_inr": 153900.0,
         "checks": [
           {
             "id": "ADX_NON_TRENDING",
@@ -2485,19 +2485,19 @@
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "49.3"
+            "value": "49.5"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
             "name": "Put <= Lower BB Floor",
             "passed": true,
-            "value": "\u20b91180 vs \u20b91186.9"
+            "value": "\u20b91180 vs \u20b91187.0"
           },
           {
             "id": "CALL_RESIST_ANCHOR",
             "name": "Call >= Upper BB Ceil",
             "passed": true,
-            "value": "\u20b91300 vs \u20b91287.6"
+            "value": "\u20b91300 vs \u20b91287.7"
           },
           {
             "id": "MIN_SAFETY_BUFFER",
@@ -2527,7 +2527,7 @@
             "id": "TAIL_RISK_CAP",
             "name": "2x Premium Stop Defense Cap",
             "passed": true,
-            "value": "\u20b918,062.50"
+            "value": "\u20b918,075.00"
           },
           {
             "id": "LIQUID_NSE_FNO",
@@ -2577,8 +2577,8 @@
         ],
         "icon": "fa-solid fa-arrows-left-right",
         "adx": 16.7,
-        "rsi": 49.3,
-        "bb_width_pct": 8.19,
+        "rsi": 49.5,
+        "bb_width_pct": 8.18,
         "daily_vol_pct": 1.33
       },
       "regime_tag": "CHOP_CONSOLIDATION",
@@ -2586,59 +2586,59 @@
       "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
-        "initial_credit_inr": 18062.5,
-        "take_profit_target_premium": 14.45,
-        "take_profit_locked_inr": 9031.25,
-        "stop_loss_premium": 57.8,
-        "max_tail_loss_inr": 18062.5,
-        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b914.45 (locking +\u20b99,031.25). Frees margin early and avoids expiration-week gamma spike.",
+        "initial_credit_inr": 18075.0,
+        "take_profit_target_premium": 14.46,
+        "take_profit_locked_inr": 9037.5,
+        "stop_loss_premium": 57.84,
+        "max_tail_loss_inr": 18075.0,
+        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b914.46 (locking +\u20b99,037.50). Frees margin early and avoids expiration-week gamma spike.",
         "alerts": [
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 1186.93,
+            "trigger_price": 1186.99,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b91186.93). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b91186.99). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 1287.64,
+            "trigger_price": 1287.66,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b91287.64). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b91287.66). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
             "label": "50% Profit Target Milestone",
-            "trigger_price": 14.45,
+            "trigger_price": 14.46,
             "type": "PREMIUM_DECAY",
-            "description": "Option premium decays to \u20b914.45. Execute BUY TO CLOSE to lock +\u20b99,031.25."
+            "description": "Option premium decays to \u20b914.46. Execute BUY TO CLOSE to lock +\u20b99,037.50."
           }
         ]
       },
-      "take_profit_target_premium": 14.45,
-      "take_profit_locked_inr": 9031.25,
+      "take_profit_target_premium": 14.46,
+      "take_profit_locked_inr": 9037.5,
       "defense_alerts": [
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 1186.93,
+          "trigger_price": 1186.99,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b91186.93). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b91186.99). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 1287.64,
+          "trigger_price": 1287.66,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b91287.64). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b91287.66). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
           "label": "50% Profit Target Milestone",
-          "trigger_price": 14.45,
+          "trigger_price": 14.46,
           "type": "PREMIUM_DECAY",
-          "description": "Option premium decays to \u20b914.45. Execute BUY TO CLOSE to lock +\u20b99,031.25."
+          "description": "Option premium decays to \u20b914.46. Execute BUY TO CLOSE to lock +\u20b99,037.50."
         }
       ]
     },
@@ -2646,18 +2646,18 @@
       "symbol": "ASTRAL",
       "name": "ASTRAL",
       "sector": "Producer Manufacturing",
-      "close": 1384.9,
-      "change_pct": -0.24,
+      "close": 1385.9,
+      "change_pct": -0.17,
       "lot_size": 425,
       "adx": 18.4,
       "adx_status": "Rangebound \ud83d\udfe2",
-      "rsi": 48.0,
+      "rsi": 48.3,
       "atr": 34.76,
-      "ema_50": 1412.12,
-      "ema_200": 1466.99,
-      "bb_lower": 1329.31,
-      "bb_upper": 1462.81,
-      "bb_width_pct": 9.64,
+      "ema_50": 1412.16,
+      "ema_200": 1467.0,
+      "bb_lower": 1329.39,
+      "bb_upper": 1462.83,
+      "bb_width_pct": 9.63,
       "daily_volatility_pct": 1.61,
       "expected_move_pct": 7.55,
       "strategy_type": "STRANGLE",
@@ -2665,30 +2665,30 @@
       "strategy_badge": "STRANGLE",
       "primary_action": "SELL 1320 PE & SELL 1480 CE",
       "primary_pop": 76.0,
-      "primary_buffer_pct": 4.7,
+      "primary_buffer_pct": 4.8,
       "theta_safety_score": 60.0,
       "put_strike": 1320,
-      "put_buffer_pct": 4.7,
+      "put_buffer_pct": 4.8,
       "put_pop_pct": 76.0,
-      "est_put_premium": 16.26,
+      "est_put_premium": 16.28,
       "call_strike": 1480,
-      "call_buffer_pct": 6.9,
+      "call_buffer_pct": 6.8,
       "call_pop_pct": 76.0,
-      "est_call_premium": 16.26,
-      "est_total_premium": 32.52,
-      "est_inflow_inr": 13821.0,
-      "margin_required_inr": 117700.0,
-      "rom_pct": 11.74,
-      "support_desc": "BB Floor \u20b91329.3",
+      "est_call_premium": 16.28,
+      "est_total_premium": 32.56,
+      "est_inflow_inr": 13838.0,
+      "margin_required_inr": 117800.0,
+      "rom_pct": 11.75,
+      "support_desc": "BB Floor \u20b91329.4",
       "resist_desc": "BB Ceil \u20b91462.8",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Channel Locked (ADX: 18.4, BBW: 9.6%). Price is oscillating tightly between BB Floor \u20b91329.3 and BB Ceil \u20b91462.8. Selling both 1320 PE & 1480 CE collects dual theta.",
+      "rationale": "Channel Locked (ADX: 18.4, BBW: 9.6%). Price is oscillating tightly between BB Floor \u20b91329.4 and BB Ceil \u20b91462.8. Selling both 1320 PE & 1480 CE collects dual theta.",
       "timemachine": {
-        "channel_hold_prob_pct": 54.3,
-        "put_breach_risk_pct": 29.9,
-        "call_breach_risk_pct": 15.9,
-        "terminal_pop_pct": 53.6,
+        "channel_hold_prob_pct": 54.5,
+        "put_breach_risk_pct": 29.3,
+        "call_breach_risk_pct": 16.3,
+        "terminal_pop_pct": 53.7,
         "expected_r": 0.09,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
@@ -2696,7 +2696,7 @@
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 54.3,
+      "mc_hold_pct": 54.5,
       "mc_rating": "CAUTION",
       "mc_badge": "\ud83d\udfe0 Caution",
       "mc_expected_r": 0.09,
@@ -2705,8 +2705,8 @@
         "passed_count": 14,
         "total_checks": 14,
         "verdict": "APPROVED FOR THETA HARVEST",
-        "tail_risk_cap_inr": 13821.0,
-        "margin_required_inr": 117700.0,
+        "tail_risk_cap_inr": 13838.0,
+        "margin_required_inr": 117800.0,
         "checks": [
           {
             "id": "ADX_NON_TRENDING",
@@ -2724,13 +2724,13 @@
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "48.0"
+            "value": "48.3"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
             "name": "Put <= Lower BB Floor",
             "passed": true,
-            "value": "\u20b91320 vs \u20b91329.3"
+            "value": "\u20b91320 vs \u20b91329.4"
           },
           {
             "id": "CALL_RESIST_ANCHOR",
@@ -2742,7 +2742,7 @@
             "id": "MIN_SAFETY_BUFFER",
             "name": "Buffer Cushion (>= 3.0%)",
             "passed": true,
-            "value": "+4.7%"
+            "value": "+4.8%"
           },
           {
             "id": "DTE_SAFE_WINDOW",
@@ -2754,7 +2754,7 @@
             "id": "ROM_YIELD_HURDLE",
             "name": "RoM Yield Hurdle (>= 3.0%)",
             "passed": true,
-            "value": "11.74%"
+            "value": "11.75%"
           },
           {
             "id": "LOT_SIZE_VALID",
@@ -2766,7 +2766,7 @@
             "id": "TAIL_RISK_CAP",
             "name": "2x Premium Stop Defense Cap",
             "passed": true,
-            "value": "\u20b913,821.00"
+            "value": "\u20b913,838.00"
           },
           {
             "id": "LIQUID_NSE_FNO",
@@ -2816,8 +2816,8 @@
         ],
         "icon": "fa-solid fa-arrows-left-right",
         "adx": 18.4,
-        "rsi": 48.0,
-        "bb_width_pct": 9.64,
+        "rsi": 48.3,
+        "bb_width_pct": 9.63,
         "daily_vol_pct": 1.61
       },
       "regime_tag": "CHOP_CONSOLIDATION",
@@ -2825,59 +2825,59 @@
       "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
-        "initial_credit_inr": 13821.0,
-        "take_profit_target_premium": 16.26,
-        "take_profit_locked_inr": 6910.5,
-        "stop_loss_premium": 65.04,
-        "max_tail_loss_inr": 13821.0,
-        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b916.26 (locking +\u20b96,910.50). Frees margin early and avoids expiration-week gamma spike.",
+        "initial_credit_inr": 13838.0,
+        "take_profit_target_premium": 16.28,
+        "take_profit_locked_inr": 6919.0,
+        "stop_loss_premium": 65.12,
+        "max_tail_loss_inr": 13838.0,
+        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b916.28 (locking +\u20b96,919.00). Frees margin early and avoids expiration-week gamma spike.",
         "alerts": [
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 1329.31,
+            "trigger_price": 1329.39,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b91329.31). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b91329.39). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 1462.81,
+            "trigger_price": 1462.83,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b91462.81). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b91462.83). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
             "label": "50% Profit Target Milestone",
-            "trigger_price": 16.26,
+            "trigger_price": 16.28,
             "type": "PREMIUM_DECAY",
-            "description": "Option premium decays to \u20b916.26. Execute BUY TO CLOSE to lock +\u20b96,910.50."
+            "description": "Option premium decays to \u20b916.28. Execute BUY TO CLOSE to lock +\u20b96,919.00."
           }
         ]
       },
-      "take_profit_target_premium": 16.26,
-      "take_profit_locked_inr": 6910.5,
+      "take_profit_target_premium": 16.28,
+      "take_profit_locked_inr": 6919.0,
       "defense_alerts": [
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 1329.31,
+          "trigger_price": 1329.39,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b91329.31). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b91329.39). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 1462.81,
+          "trigger_price": 1462.83,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b91462.81). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b91462.83). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
           "label": "50% Profit Target Milestone",
-          "trigger_price": 16.26,
+          "trigger_price": 16.28,
           "type": "PREMIUM_DECAY",
-          "description": "Option premium decays to \u20b916.26. Execute BUY TO CLOSE to lock +\u20b96,910.50."
+          "description": "Option premium decays to \u20b916.28. Execute BUY TO CLOSE to lock +\u20b96,919.00."
         }
       ]
     },
@@ -2885,18 +2885,18 @@
       "symbol": "COALINDIA",
       "name": "COALINDIA",
       "sector": "Energy Minerals",
-      "close": 399.85,
-      "change_pct": -2.0,
+      "close": 399.95,
+      "change_pct": -1.97,
       "lot_size": 2100,
       "adx": 22.0,
       "adx_status": "Rangebound \ud83d\udfe2",
-      "rsi": 44.8,
+      "rsi": 44.9,
       "atr": 10.09,
       "ema_50": 411.7,
       "ema_200": 421.42,
-      "bb_lower": 388.97,
+      "bb_lower": 388.98,
       "bb_upper": 422.34,
-      "bb_width_pct": 8.35,
+      "bb_width_pct": 8.34,
       "daily_volatility_pct": 3.02,
       "expected_move_pct": 14.17,
       "strategy_type": "PUT_SELL",
@@ -2916,36 +2916,36 @@
       "est_call_premium": 4.7,
       "est_total_premium": 4.7,
       "est_inflow_inr": 9870.0,
-      "margin_required_inr": 167900.0,
+      "margin_required_inr": 168000.0,
       "rom_pct": 5.88,
       "support_desc": "BB Lower \u20b9389.0",
       "resist_desc": "BB Upper \u20b9422.3",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Support Defense (ADX: 22.0, RSI: 44.8). Anchored above BB Lower \u20b9389.0. 380 PE sits safely below the volatility floor with a 5.0% safety buffer.",
+      "rationale": "Support Defense (ADX: 22.0, RSI: 44.9). Anchored above BB Lower \u20b9389.0. 380 PE sits safely below the volatility floor with a 5.0% safety buffer.",
       "timemachine": {
-        "channel_hold_prob_pct": 49.2,
-        "put_breach_risk_pct": 50.8,
-        "call_breach_risk_pct": 36.1,
+        "channel_hold_prob_pct": 49.3,
+        "put_breach_risk_pct": 50.7,
+        "call_breach_risk_pct": 36.3,
         "terminal_pop_pct": 60.7,
-        "expected_r": -0.02,
+        "expected_r": -0.01,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
         "simulated_paths": 5000,
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 49.2,
+      "mc_hold_pct": 49.3,
       "mc_rating": "CAUTION",
       "mc_badge": "\ud83d\udfe0 Caution",
-      "mc_expected_r": -0.02,
+      "mc_expected_r": -0.01,
       "risk_audit": {
         "passed": true,
         "passed_count": 14,
         "total_checks": 14,
         "verdict": "APPROVED FOR THETA HARVEST",
         "tail_risk_cap_inr": 9870.0,
-        "margin_required_inr": 167900.0,
+        "margin_required_inr": 168000.0,
         "checks": [
           {
             "id": "ADX_NON_TRENDING",
@@ -2963,7 +2963,7 @@
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "44.8"
+            "value": "44.9"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
@@ -3054,8 +3054,8 @@
         ],
         "icon": "fa-solid fa-bolt",
         "adx": 22.0,
-        "rsi": 44.8,
-        "bb_width_pct": 8.35,
+        "rsi": 44.9,
+        "bb_width_pct": 8.34,
         "daily_vol_pct": 3.02
       },
       "regime_tag": "VOLATILE_EXPANSION",
@@ -3073,9 +3073,9 @@
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 388.97,
+            "trigger_price": 388.98,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b9388.97). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b9388.98). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
@@ -3099,9 +3099,9 @@
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 388.97,
+          "trigger_price": 388.98,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b9388.97). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b9388.98). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
@@ -3123,18 +3123,18 @@
       "symbol": "IPCALAB",
       "name": "IPCALAB",
       "sector": "Health Technology",
-      "close": 1972.6,
-      "change_pct": 1.15,
+      "close": 1970.7,
+      "change_pct": 1.06,
       "lot_size": 650,
       "adx": 13.5,
       "adx_status": "Flat / Consolidation \ud83d\udca4",
-      "rsi": 56.7,
+      "rsi": 56.5,
       "atr": 61.8,
-      "ema_50": 1912.47,
-      "ema_200": 1728.7,
-      "bb_lower": 1844.14,
-      "bb_upper": 1999.4,
-      "bb_width_pct": 7.87,
+      "ema_50": 1912.39,
+      "ema_200": 1728.68,
+      "bb_lower": 1844.29,
+      "bb_upper": 1999.06,
+      "bb_width_pct": 7.85,
       "daily_volatility_pct": 2.04,
       "expected_move_pct": 9.57,
       "strategy_type": "STRANGLE",
@@ -3142,48 +3142,48 @@
       "strategy_badge": "STRANGLE",
       "primary_action": "SELL 1800 PE & SELL 2050 CE",
       "primary_pop": 76.0,
-      "primary_buffer_pct": 3.9,
+      "primary_buffer_pct": 4.0,
       "theta_safety_score": 60.0,
       "put_strike": 1800,
       "put_buffer_pct": 8.7,
       "put_pop_pct": 76.0,
-      "est_put_premium": 23.17,
+      "est_put_premium": 23.14,
       "call_strike": 2050,
-      "call_buffer_pct": 3.9,
+      "call_buffer_pct": 4.0,
       "call_pop_pct": 76.0,
-      "est_call_premium": 23.17,
-      "est_total_premium": 46.34,
-      "est_inflow_inr": 30121.0,
-      "margin_required_inr": 256400.0,
-      "rom_pct": 11.75,
-      "support_desc": "BB Floor \u20b91844.1",
-      "resist_desc": "BB Ceil \u20b91999.4",
+      "est_call_premium": 23.14,
+      "est_total_premium": 46.28,
+      "est_inflow_inr": 30082.0,
+      "margin_required_inr": 256200.0,
+      "rom_pct": 11.74,
+      "support_desc": "BB Floor \u20b91844.3",
+      "resist_desc": "BB Ceil \u20b91999.1",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Channel Locked (ADX: 13.5, BBW: 7.9%). Price is oscillating tightly between BB Floor \u20b91844.1 and BB Ceil \u20b91999.4. Selling both 1800 PE & 2050 CE collects dual theta.",
+      "rationale": "Channel Locked (ADX: 13.5, BBW: 7.8%). Price is oscillating tightly between BB Floor \u20b91844.3 and BB Ceil \u20b91999.1. Selling both 1800 PE & 2050 CE collects dual theta.",
       "timemachine": {
-        "channel_hold_prob_pct": 41.6,
-        "put_breach_risk_pct": 14.3,
-        "call_breach_risk_pct": 44.5,
+        "channel_hold_prob_pct": 41.9,
+        "put_breach_risk_pct": 14.7,
+        "call_breach_risk_pct": 43.8,
         "terminal_pop_pct": 49.2,
-        "expected_r": -0.17,
+        "expected_r": -0.16,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
         "simulated_paths": 5000,
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 41.6,
+      "mc_hold_pct": 41.9,
       "mc_rating": "CAUTION",
       "mc_badge": "\ud83d\udfe0 Caution",
-      "mc_expected_r": -0.17,
+      "mc_expected_r": -0.16,
       "risk_audit": {
         "passed": true,
         "passed_count": 14,
         "total_checks": 14,
         "verdict": "APPROVED FOR THETA HARVEST",
-        "tail_risk_cap_inr": 30121.0,
-        "margin_required_inr": 256400.0,
+        "tail_risk_cap_inr": 30082.0,
+        "margin_required_inr": 256200.0,
         "checks": [
           {
             "id": "ADX_NON_TRENDING",
@@ -3195,31 +3195,31 @@
             "id": "BB_COMPRESSION",
             "name": "BB Squeeze (<= 13.0%)",
             "passed": true,
-            "value": "7.9%"
+            "value": "7.8%"
           },
           {
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "56.7"
+            "value": "56.5"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
             "name": "Put <= Lower BB Floor",
             "passed": true,
-            "value": "\u20b91800 vs \u20b91844.1"
+            "value": "\u20b91800 vs \u20b91844.3"
           },
           {
             "id": "CALL_RESIST_ANCHOR",
             "name": "Call >= Upper BB Ceil",
             "passed": true,
-            "value": "\u20b92050 vs \u20b91999.4"
+            "value": "\u20b92050 vs \u20b91999.1"
           },
           {
             "id": "MIN_SAFETY_BUFFER",
             "name": "Buffer Cushion (>= 3.0%)",
             "passed": true,
-            "value": "+3.9%"
+            "value": "+4.0%"
           },
           {
             "id": "DTE_SAFE_WINDOW",
@@ -3231,7 +3231,7 @@
             "id": "ROM_YIELD_HURDLE",
             "name": "RoM Yield Hurdle (>= 3.0%)",
             "passed": true,
-            "value": "11.75%"
+            "value": "11.74%"
           },
           {
             "id": "LOT_SIZE_VALID",
@@ -3243,7 +3243,7 @@
             "id": "TAIL_RISK_CAP",
             "name": "2x Premium Stop Defense Cap",
             "passed": true,
-            "value": "\u20b930,121.00"
+            "value": "\u20b930,082.00"
           },
           {
             "id": "LIQUID_NSE_FNO",
@@ -3280,7 +3280,7 @@
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending chop (ADX: 13.5, BBW: 7.9%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
+        "mandate": "Non-trending chop (ADX: 13.5, BBW: 7.8%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -3293,8 +3293,8 @@
         ],
         "icon": "fa-solid fa-arrows-left-right",
         "adx": 13.5,
-        "rsi": 56.7,
-        "bb_width_pct": 7.87,
+        "rsi": 56.5,
+        "bb_width_pct": 7.85,
         "daily_vol_pct": 2.04
       },
       "regime_tag": "CHOP_CONSOLIDATION",
@@ -3302,59 +3302,59 @@
       "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
-        "initial_credit_inr": 30121.0,
-        "take_profit_target_premium": 23.17,
-        "take_profit_locked_inr": 15060.5,
-        "stop_loss_premium": 92.68,
-        "max_tail_loss_inr": 30121.0,
-        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b923.17 (locking +\u20b915,060.50). Frees margin early and avoids expiration-week gamma spike.",
+        "initial_credit_inr": 30082.0,
+        "take_profit_target_premium": 23.14,
+        "take_profit_locked_inr": 15041.0,
+        "stop_loss_premium": 92.56,
+        "max_tail_loss_inr": 30082.0,
+        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b923.14 (locking +\u20b915,041.00). Frees margin early and avoids expiration-week gamma spike.",
         "alerts": [
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 1844.14,
+            "trigger_price": 1844.29,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b91844.14). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b91844.29). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 1999.4,
+            "trigger_price": 1999.06,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b91999.40). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b91999.06). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
             "label": "50% Profit Target Milestone",
-            "trigger_price": 23.17,
+            "trigger_price": 23.14,
             "type": "PREMIUM_DECAY",
-            "description": "Option premium decays to \u20b923.17. Execute BUY TO CLOSE to lock +\u20b915,060.50."
+            "description": "Option premium decays to \u20b923.14. Execute BUY TO CLOSE to lock +\u20b915,041.00."
           }
         ]
       },
-      "take_profit_target_premium": 23.17,
-      "take_profit_locked_inr": 15060.5,
+      "take_profit_target_premium": 23.14,
+      "take_profit_locked_inr": 15041.0,
       "defense_alerts": [
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 1844.14,
+          "trigger_price": 1844.29,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b91844.14). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b91844.29). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 1999.4,
+          "trigger_price": 1999.06,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b91999.40). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b91999.06). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
           "label": "50% Profit Target Milestone",
-          "trigger_price": 23.17,
+          "trigger_price": 23.14,
           "type": "PREMIUM_DECAY",
-          "description": "Option premium decays to \u20b923.17. Execute BUY TO CLOSE to lock +\u20b915,060.50."
+          "description": "Option premium decays to \u20b923.14. Execute BUY TO CLOSE to lock +\u20b915,041.00."
         }
       ]
     },
@@ -3362,18 +3362,18 @@
       "symbol": "HDFCBANK",
       "name": "HDFCBANK",
       "sector": "Finance",
-      "close": 733.6,
-      "change_pct": 1.12,
+      "close": 734.5,
+      "change_pct": 1.24,
       "lot_size": 550,
       "adx": 17.4,
       "adx_status": "Flat / Consolidation \ud83d\udca4",
-      "rsi": 61.0,
+      "rsi": 61.4,
       "atr": 15.48,
-      "ema_50": 715.49,
-      "ema_200": 782.0,
-      "bb_lower": 673.17,
-      "bb_upper": 734.98,
-      "bb_width_pct": 8.43,
+      "ema_50": 715.55,
+      "ema_200": 782.02,
+      "bb_lower": 672.96,
+      "bb_upper": 735.34,
+      "bb_width_pct": 8.49,
       "daily_volatility_pct": 3.07,
       "expected_move_pct": 14.4,
       "strategy_type": "STRANGLE",
@@ -3381,48 +3381,48 @@
       "strategy_badge": "STRANGLE",
       "primary_action": "SELL 660 PE & SELL 760 CE",
       "primary_pop": 76.0,
-      "primary_buffer_pct": 3.6,
+      "primary_buffer_pct": 3.5,
       "theta_safety_score": 60.0,
       "put_strike": 660,
-      "put_buffer_pct": 10.0,
+      "put_buffer_pct": 10.1,
       "put_pop_pct": 76.0,
-      "est_put_premium": 8.61,
+      "est_put_premium": 8.63,
       "call_strike": 760,
-      "call_buffer_pct": 3.6,
+      "call_buffer_pct": 3.5,
       "call_pop_pct": 76.0,
-      "est_call_premium": 8.61,
-      "est_total_premium": 17.22,
-      "est_inflow_inr": 9471.0,
-      "margin_required_inr": 80700.0,
-      "rom_pct": 11.74,
-      "support_desc": "BB Floor \u20b9673.2",
-      "resist_desc": "BB Ceil \u20b9735.0",
+      "est_call_premium": 8.63,
+      "est_total_premium": 17.26,
+      "est_inflow_inr": 9493.0,
+      "margin_required_inr": 80800.0,
+      "rom_pct": 11.75,
+      "support_desc": "BB Floor \u20b9673.0",
+      "resist_desc": "BB Ceil \u20b9735.3",
       "days_to_expiry": 22,
       "expiry_date": "26 Nov 2026",
-      "rationale": "Channel Locked (ADX: 17.4, BBW: 8.4%). Price is oscillating tightly between BB Floor \u20b9673.2 and BB Ceil \u20b9735.0. Selling both 660 PE & 760 CE collects dual theta.",
+      "rationale": "Channel Locked (ADX: 17.4, BBW: 8.5%). Price is oscillating tightly between BB Floor \u20b9673.0 and BB Ceil \u20b9735.3. Selling both 660 PE & 760 CE collects dual theta.",
       "timemachine": {
-        "channel_hold_prob_pct": 19.0,
-        "put_breach_risk_pct": 25.1,
-        "call_breach_risk_pct": 59.3,
-        "terminal_pop_pct": 36.7,
-        "expected_r": -0.62,
+        "channel_hold_prob_pct": 18.5,
+        "put_breach_risk_pct": 24.6,
+        "call_breach_risk_pct": 60.3,
+        "terminal_pop_pct": 36.6,
+        "expected_r": -0.63,
         "confidence_rating": "CAUTION",
         "rating_badge": "\ud83d\udfe0 Caution",
         "simulated_paths": 5000,
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 19.0,
+      "mc_hold_pct": 18.5,
       "mc_rating": "CAUTION",
       "mc_badge": "\ud83d\udfe0 Caution",
-      "mc_expected_r": -0.62,
+      "mc_expected_r": -0.63,
       "risk_audit": {
         "passed": true,
         "passed_count": 14,
         "total_checks": 14,
         "verdict": "APPROVED FOR THETA HARVEST",
-        "tail_risk_cap_inr": 9471.0,
-        "margin_required_inr": 80700.0,
+        "tail_risk_cap_inr": 9493.0,
+        "margin_required_inr": 80800.0,
         "checks": [
           {
             "id": "ADX_NON_TRENDING",
@@ -3434,31 +3434,31 @@
             "id": "BB_COMPRESSION",
             "name": "BB Squeeze (<= 13.0%)",
             "passed": true,
-            "value": "8.4%"
+            "value": "8.5%"
           },
           {
             "id": "RSI_NEUTRAL",
             "name": "RSI Neutrality (38-62)",
             "passed": true,
-            "value": "61.0"
+            "value": "61.4"
           },
           {
             "id": "PUT_SUPPORT_ANCHOR",
             "name": "Put <= Lower BB Floor",
             "passed": true,
-            "value": "\u20b9660 vs \u20b9673.2"
+            "value": "\u20b9660 vs \u20b9673.0"
           },
           {
             "id": "CALL_RESIST_ANCHOR",
             "name": "Call >= Upper BB Ceil",
             "passed": true,
-            "value": "\u20b9760 vs \u20b9735.0"
+            "value": "\u20b9760 vs \u20b9735.3"
           },
           {
             "id": "MIN_SAFETY_BUFFER",
             "name": "Buffer Cushion (>= 3.0%)",
             "passed": true,
-            "value": "+3.6%"
+            "value": "+3.5%"
           },
           {
             "id": "DTE_SAFE_WINDOW",
@@ -3470,7 +3470,7 @@
             "id": "ROM_YIELD_HURDLE",
             "name": "RoM Yield Hurdle (>= 3.0%)",
             "passed": true,
-            "value": "11.74%"
+            "value": "11.75%"
           },
           {
             "id": "LOT_SIZE_VALID",
@@ -3482,7 +3482,7 @@
             "id": "TAIL_RISK_CAP",
             "name": "2x Premium Stop Defense Cap",
             "passed": true,
-            "value": "\u20b99,471.00"
+            "value": "\u20b99,493.00"
           },
           {
             "id": "LIQUID_NSE_FNO",
@@ -3519,7 +3519,7 @@
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
         "border_color": "rgba(192, 132, 252, 0.35)",
-        "mandate": "Non-trending chop (ADX: 17.4, BBW: 8.4%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
+        "mandate": "Non-trending chop (ADX: 17.4, BBW: 8.5%). Breakouts are prone to fakeouts. Ideal for Theta Harvesting & range bounds.",
         "allowed_strategies": [
           "OPTION_SELLING",
           "RANGE_BOUND_SUPPORT_BUY",
@@ -3532,8 +3532,8 @@
         ],
         "icon": "fa-solid fa-arrows-left-right",
         "adx": 17.4,
-        "rsi": 61.0,
-        "bb_width_pct": 8.43,
+        "rsi": 61.4,
+        "bb_width_pct": 8.49,
         "daily_vol_pct": 3.07
       },
       "regime_tag": "CHOP_CONSOLIDATION",
@@ -3541,59 +3541,59 @@
       "regime_short": "Chop / Range",
       "regime_color": "#c084fc",
       "trade_plan": {
-        "initial_credit_inr": 9471.0,
-        "take_profit_target_premium": 8.61,
-        "take_profit_locked_inr": 4735.5,
-        "stop_loss_premium": 34.44,
-        "max_tail_loss_inr": 9471.0,
-        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b98.61 (locking +\u20b94,735.50). Frees margin early and avoids expiration-week gamma spike.",
+        "initial_credit_inr": 9493.0,
+        "take_profit_target_premium": 8.63,
+        "take_profit_locked_inr": 4746.5,
+        "stop_loss_premium": 34.52,
+        "max_tail_loss_inr": 9493.0,
+        "closing_rule": "Institutional 50% Profit Rule: Buy back to close when premium drops to \u20b98.63 (locking +\u20b94,746.50). Frees margin early and avoids expiration-week gamma spike.",
         "alerts": [
           {
             "id": "ALERT_SUPPORT_DEFENSE",
             "label": "Support Defense Level",
-            "trigger_price": 673.17,
+            "trigger_price": 672.96,
             "type": "PRICE_CROSS_DOWN",
-            "description": "Underlying tests Lower BB (\u20b9673.17). Signals immediate defense or roll."
+            "description": "Underlying tests Lower BB (\u20b9672.96). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 734.98,
+            "trigger_price": 735.34,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b9734.98). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b9735.34). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
             "label": "50% Profit Target Milestone",
-            "trigger_price": 8.61,
+            "trigger_price": 8.63,
             "type": "PREMIUM_DECAY",
-            "description": "Option premium decays to \u20b98.61. Execute BUY TO CLOSE to lock +\u20b94,735.50."
+            "description": "Option premium decays to \u20b98.63. Execute BUY TO CLOSE to lock +\u20b94,746.50."
           }
         ]
       },
-      "take_profit_target_premium": 8.61,
-      "take_profit_locked_inr": 4735.5,
+      "take_profit_target_premium": 8.63,
+      "take_profit_locked_inr": 4746.5,
       "defense_alerts": [
         {
           "id": "ALERT_SUPPORT_DEFENSE",
           "label": "Support Defense Level",
-          "trigger_price": 673.17,
+          "trigger_price": 672.96,
           "type": "PRICE_CROSS_DOWN",
-          "description": "Underlying tests Lower BB (\u20b9673.17). Signals immediate defense or roll."
+          "description": "Underlying tests Lower BB (\u20b9672.96). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 734.98,
+          "trigger_price": 735.34,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b9734.98). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b9735.34). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
           "label": "50% Profit Target Milestone",
-          "trigger_price": 8.61,
+          "trigger_price": 8.63,
           "type": "PREMIUM_DECAY",
-          "description": "Option premium decays to \u20b98.61. Execute BUY TO CLOSE to lock +\u20b94,735.50."
+          "description": "Option premium decays to \u20b98.63. Execute BUY TO CLOSE to lock +\u20b94,746.50."
         }
       ]
     },
@@ -3601,17 +3601,17 @@
       "symbol": "BAJFINANCE",
       "name": "BAJFINANCE",
       "sector": "Finance",
-      "close": 988.95,
-      "change_pct": 1.95,
+      "close": 989,
+      "change_pct": 1.96,
       "lot_size": 125,
       "adx": 18.5,
       "adx_status": "Rangebound \ud83d\udfe2",
       "rsi": 56.7,
       "atr": 26.34,
-      "ema_50": 983.65,
+      "ema_50": 983.66,
       "ema_200": 982.37,
       "bb_lower": 907.28,
-      "bb_upper": 995.0,
+      "bb_upper": 995.01,
       "bb_width_pct": 8.87,
       "daily_volatility_pct": 3.19,
       "expected_move_pct": 14.96,
@@ -3640,7 +3640,7 @@
       "expiry_date": "26 Nov 2026",
       "rationale": "Channel Locked (ADX: 18.5, BBW: 8.9%). Price is oscillating tightly between BB Floor \u20b9907.3 and BB Ceil \u20b9995.0. Selling both 900 PE & 1020 CE collects dual theta.",
       "timemachine": {
-        "channel_hold_prob_pct": 11.9,
+        "channel_hold_prob_pct": 11.8,
         "put_breach_risk_pct": 30.9,
         "call_breach_risk_pct": 63.2,
         "terminal_pop_pct": 31.7,
@@ -3651,7 +3651,7 @@
         "target_holding_days": 11,
         "methodology": "5,000-Path Monte Carlo Confinement Simulation"
       },
-      "mc_hold_pct": 11.9,
+      "mc_hold_pct": 11.8,
       "mc_rating": "CAUTION",
       "mc_badge": "\ud83d\udfe0 Caution",
       "mc_expected_r": -0.76,
@@ -3797,9 +3797,9 @@
           {
             "id": "ALERT_RESIST_DEFENSE",
             "label": "Resistance Defense Level",
-            "trigger_price": 995.0,
+            "trigger_price": 995.01,
             "type": "PRICE_CROSS_UP",
-            "description": "Underlying tests Upper BB (\u20b9995.00). Signals immediate defense or roll."
+            "description": "Underlying tests Upper BB (\u20b9995.01). Signals immediate defense or roll."
           },
           {
             "id": "ALERT_PROFIT_MILESTONE",
@@ -3823,9 +3823,9 @@
         {
           "id": "ALERT_RESIST_DEFENSE",
           "label": "Resistance Defense Level",
-          "trigger_price": 995.0,
+          "trigger_price": 995.01,
           "type": "PRICE_CROSS_UP",
-          "description": "Underlying tests Upper BB (\u20b9995.00). Signals immediate defense or roll."
+          "description": "Underlying tests Upper BB (\u20b9995.01). Signals immediate defense or roll."
         },
         {
           "id": "ALERT_PROFIT_MILESTONE",
