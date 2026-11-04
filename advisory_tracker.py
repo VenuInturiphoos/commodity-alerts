@@ -2275,7 +2275,7 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 outcome_val = "CORRECT" if pnl_inr > 0 else ("WRONG" if pnl_inr < 0 else "PROTECTED")
                 badge_text = f"EOD Square-off ⏰ ({now_time_str})"
             elif hit_stagnation:
-                outcome_val = "PROTECTED" if abs(pnl_inr) <= 500 else ("CORRECT" if pnl_inr > 0 else "WRONG")
+                outcome_val = "CORRECT" if pnl_inr > 0 else ("PROTECTED" if pnl_inr == 0 else "WRONG")
                 badge_text = f"Stagnation Exit ⏱️ ({now_time_str})"
             elif pt.get('trailing_sl_active'):
                 outcome_val = "PROTECTED"
