@@ -176,15 +176,59 @@ class TradingAgentsOrchestrator:
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Run TradingAgents Multi-Agent Deliberation")
-    parser.add_argument("--ticker", type=str, default="RELIANCE.NS", help="Ticker symbol (e.g. RELIANCE.NS, CRUDEOIL, TSLA)")
+    parser.add_argument("--ticker", type=str, default="CRUDEOIL", help="Ticker symbol (e.g. CRUDEOIL, RELIANCE.NS, GOLD, TSLA)")
     parser.add_argument("--date", type=str, default=None, help="Trade date (YYYY-MM-DD)")
+    parser.add_argument("--run", action="store_true", help="Execute multi-agent deliberation graph")
     parser.add_argument("--debug", action="store_true", help="Enable verbose debug output")
     args = parser.parse_args()
 
-    print(f"=== TradingAgents Multi-Agent Framework ===")
-    print(f"Target: {args.ticker} | Available: {TradingAgentsOrchestrator.is_available()}")
+    print(f"\n==================================================")
+    print(f"   🤖 TRADINGAGENTS MULTI-AGENT FRAMEWORK")
+    print(f"==================================================")
+    print(f"Target Symbol    : {args.ticker}")
+    print(f"Framework Status : {'AVAILABLE ✅' if TradingAgentsOrchestrator.is_available() else 'UNAVAILABLE ❌'}")
+    
     provider, deep_m, quick_m = TradingAgentsOrchestrator.detect_active_llm_provider()
-    print(f"Active Provider: {provider} (Deep: {deep_m}, Quick: {quick_m})")
+    has_api_key = any(os.environ.get(k) for k in ["GOOGLE_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GROQ_API_KEY"])
+
+    print(f"Active Provider  : {provider} (Deep: {deep_m} | Quick: {quick_m})")
+    print(f"API Key Status   : {'FOUND ✅' if has_api_key else 'NOT DETECTED ⚠️'}")
 
     resolved, asset = TradingAgentsOrchestrator.resolve_ticker_for_analysis(args.ticker)
-    print(f"Resolved Identity: {resolved} [{asset}]")
+    print(f"Resolved Feed    : {resolved} [{asset.upper()}]")
+    print(f"==================================================\n")
+
+    if not has_api_key:
+        print("💡 NOTE: An LLM API key is required to execute multi-agent deliberation.")
+        print("   You can set any one of the following in your terminal or in a .env file:")
+        print("   - export GOOGLE_API_KEY=\"your-gemini-key\"      (Recommended for Gemini 2.5)")
+        print("   - export OPENAI_API_KEY=\"sk-...\"               (For GPT-4o)")
+        print("   - export ANTHROPIC_API_KEY=\"sk-ant-...\"        (For Claude 3.7)")
+        print("   - export GROQ_API_KEY=\"gsk_...\"                (For Llama 3.3)")
+        print("\n   Example command once exported:")
+        print(f"   ./venv/bin/python tradingagents_bridge.py --ticker {args.ticker} --run\n")
+    else:
+        # If API key is present or user passed --run, run deliberation
+        print(f"🚀 Starting multi-agent deliberation for {args.ticker}...")
+        res = TradingAgentsOrchestrator.run_multi_agent_deliberation(
+            ticker=args.ticker,
+            trade_date=args.date,
+            debug=args.debug
+        )
+        if res.get("success"):
+            print(f"\n🎯 MULTI-AGENT CONSENSUS & DECISION:")
+            print(f"--------------------------------------------------")
+            print(res.get("decision", "No decision text returned."))
+            print(f"--------------------------------------------------")
+            if res.get("bullish_thesis"):
+                print(f"\n🐂 BULLISH RESEARCHER THESIS:")
+                print(res["bullish_thesis"])
+            if res.get("bearish_thesis"):
+                print(f"\n🐻 BEARISH RESEARCHER THESIS:")
+                print(res["bearish_thesis"])
+            if res.get("risk_assessment"):
+                print(f"\n🛡️ RISK MANAGEMENT OFFICER:")
+                print(res["risk_assessment"])
+        else:
+            print(f"❌ Deliberation failed: {res.get('error')}")
+
