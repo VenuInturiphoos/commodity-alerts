@@ -79,14 +79,14 @@ for sfc_sym, sfc_cfg in STOCK_FUTURES_CONFIG.items():
 # =========================================================================
 MAX_LOSS_PER_TRADE_INR = 3000.0   # Strictly 1.0% of capital (calibrated for ₹1.2L-₹1.5L commodity purchases)
 MAX_DAILY_LOSS_INR = 6000.0       # Strictly 2.0% daily circuit breaker for Futures (allows 2-3 trade buffer)
-MAX_INTRADAY_STOCK_MARGIN_INR = 10000.0 # Dedicated max ₹10,000 margin allocated per day for Intraday Stock Trading
+MAX_INTRADAY_STOCK_MARGIN_INR = 30000.0 # Dedicated ₹30,000 margin allocated per day for Intraday Stock Trading (split across 3 stocks = ₹10,000 margin / ₹50,000 buying power each)
 INTRADAY_STOCK_MIS_LEVERAGE = 5.0 # 5x leverage for MIS intraday equity (20% margin requirement)
-MAX_INTRADAY_STOCK_POSITION_INR = MAX_INTRADAY_STOCK_MARGIN_INR * INTRADAY_STOCK_MIS_LEVERAGE # ₹50,000 buying power
+MAX_INTRADAY_STOCK_POSITION_INR = MAX_INTRADAY_STOCK_MARGIN_INR * INTRADAY_STOCK_MIS_LEVERAGE # ₹1,50,000 buying power across 3 stocks
 MAX_EQUITY_POSITION_INR = MAX_INTRADAY_STOCK_POSITION_INR # Backward compatibility alias
 MAX_INTRADAY_STOCK_RISK_INR = 3000.0 # Full portfolio risk ceiling - no arbitrary micro-cap restriction per user instruction
 MAX_INTRADAY_STOCK_DAILY_LOSS_INR = 6000.0 # Full daily portfolio risk circuit breaker
 MAX_CONCURRENT_COMMODITIES = 2    # Allows 2 concurrent active commodity trades
-MAX_CONCURRENT_EQUITIES = 3       # Diversify into up to 3 distinct intraday stocks within ₹10,000 margin
+MAX_CONCURRENT_EQUITIES = 3       # Diversify into 3 distinct intraday stocks (₹10,000 margin each within ₹30,000 margin)
 MAX_CONCURRENT_TOTAL = 5          # Max 5 concurrent active trades across portfolio (2 commodities + 3 intraday equities)
 MAX_TRADES_PER_SYMBOL_DAY = 3     # Allows up to 3 trades per symbol per day (expanded from 2)
 COOLDOWN_MINUTES_BETWEEN_TRADES = 60 # 60-min spacing between trades on the same symbol (streamlined from 120m)
@@ -2984,8 +2984,8 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             print(f"Intraday margin pool fully utilized (₹{used_intraday_margin:,.2f} / ₹{MAX_INTRADAY_STOCK_MARGIN_INR:,.2f}). Standing aside.")
                             continue
 
-                        # Diversified Position Sizing across distinct stocks within ₹10,000 margin:
-                        # Rather than allocating 100% margin to a single stock, diversify equally (~₹3,333 margin / ₹16,666 buying power each)
+                        # Diversified Position Sizing across 3 distinct stocks within ₹30,000 margin:
+                        # Split across 3 stocks = ₹10,000 margin per stock (₹50,000 buying power each @ 5x MIS leverage)
                         target_margin_per_stock = round(MAX_INTRADAY_STOCK_MARGIN_INR / MAX_CONCURRENT_EQUITIES, 2)
                         allocated_margin = min(target_margin_per_stock, avail_intraday_margin)
                         
@@ -3107,7 +3107,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
                             f"• <b>Stop-Loss</b>: <b>₹{eq_sl:,.2f}</b> (Risk at stop: ₹{round(risk_per_share * eq_shares, 2):,.2f})\n"
                             f"• <b>Target (2.0R)</b>: <b>₹{eq_tgt:,.2f}</b>\n"
-                            f"• <b>Position Value</b>: ₹{cur_p * eq_shares:,.2f} (MIS Margin Blocked: ₹{round(cur_p * eq_shares * 0.20, 2):,.2f} / Max ₹10k)\n"
+                            f"• <b>Position Value</b>: ₹{cur_p * eq_shares:,.2f} (MIS Margin Blocked: ₹{round(cur_p * eq_shares * 0.20, 2):,.2f} / ₹30k pool | Slot: ₹10k)\n"
                             f"• <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit (Zero overnight risk)\n\n"
                             f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
                         )
