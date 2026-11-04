@@ -5770,7 +5770,7 @@ function applyAdvisoryMonthFilter(monthValue) {
     const activeStockTrades = trades.filter(t => t.paper_trade && t.paper_trade.status === 'ACTIVE' && (t.asset_type === 'INTRADAY_STOCK' || t.paper_trade.product_type === 'MIS_INTRADAY'));
     const activeStockVal = activeStockTrades.reduce((sum, t) => sum + ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0)), 0);
     const activeMarginVal = activeStockTrades.reduce((sum, t) => sum + (t.paper_trade.margin_required_inr || ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0) * 0.20)), 0);
-    const intradayAvailMargin = Math.max(0, 10000 - activeMarginVal);
+    const intradayAvailMargin = Math.max(0, 30000 - activeMarginVal);
 
     if (cashEl) {
         if (isIntradayActive) {
@@ -5786,7 +5786,7 @@ function applyAdvisoryMonthFilter(monthValue) {
     }
     if (marginSubEl) {
         if (isIntradayActive) {
-            marginSubEl.textContent = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Max ₹10k (Value: ₹${activeStockVal.toFixed(0)}) | Flat 03:25 PM`;
+            marginSubEl.textContent = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Max ₹30k (3 Stocks × ₹10k) | Flat 03:25 PM`;
         } else {
             const usedMargin = summary.used_margin_inr || 0;
             marginSubEl.textContent = `Used Margin: ₹${Number(usedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | Dedicated Pool: ₹3,00,000`;
