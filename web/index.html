@@ -6839,6 +6839,10 @@ function renderAdvisoryTradesTable() {
                 mobileExitLabel = `Exit (${exitTimeStr})`;
             }
 
+            const assetBadge = isEqTrade 
+                ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-bolt"></i> MIS INTRADAY (5x)</span>`
+                : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
+
             return `
                 <div class="mobile-trading-card">
                     <div class="mobile-card-top">
