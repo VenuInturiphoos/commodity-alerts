@@ -1,133 +1,24 @@
 {
-  "last_updated": "04 Nov 2026, 10:49 AM IST",
+  "last_updated": "04 Nov 2026, 09:01 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 61,
-    "executed_count": 8,
+    "total_signals": 60,
+    "executed_count": 7,
     "correct_count": 2,
     "wrong_count": 4,
     "protected_count": 53,
     "win_rate_pct": 33.3,
     "total_pnl_inr": -8175.25,
-    "avg_trade_pnl_inr": -1021.91,
-    "active_trades_count": 1,
+    "avg_trade_pnl_inr": -1167.89,
+    "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 291824.75,
-    "used_margin_inr": 2728.0,
-    "available_cash_inr": 289096.75,
+    "used_margin_inr": 0,
+    "available_cash_inr": 291824.75,
     "net_worth_inr": 291824.75
   },
   "trades": [
-    {
-      "id": "ADV-04Nov2026-1049-PETRONET",
-      "date": "04 Nov 2026",
-      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
-      "time_trigger": "10:49 AM IST",
-      "time_6pm": "10:49 AM IST",
-      "time_validation": "10:49 AM IST",
-      "time_615": "10:49 AM IST",
-      "time_exit": "03:25 PM IST",
-      "symbol": "PETRONET.NS",
-      "name": "Petronet Lng Limited",
-      "lot_size": 44,
-      "asset_type": "INTRADAY_STOCK",
-      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
-      "regime": {
-        "regime": "BULL_TREND",
-        "badge": "\ud83d\ude80 Bull Trend",
-        "short_tag": "Bull Trend",
-        "color": "#34d399",
-        "bg_color": "rgba(52, 211, 153, 0.12)",
-        "border_color": "rgba(52, 211, 153, 0.35)",
-        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 65.5). Favorable for Golden Cross accumulation & swing longs.",
-        "allowed_strategies": [
-          "GOLDEN_CROSS_BUY",
-          "PULLBACK_LONG",
-          "BULL_PUT_SPREAD"
-        ],
-        "blocked_strategies": [
-          "NAKED_CALL_SELLING",
-          "SHORTING"
-        ],
-        "icon": "fa-solid fa-arrow-trend-up",
-        "adx": 20.0,
-        "rsi": 65.5,
-        "bb_width_pct": 7.45,
-        "daily_vol_pct": 1.5
-      },
-      "time_machine": {
-        "replays": 1000,
-        "passed": true,
-        "verdict": "PARAMETRIC_STATISTICAL_PASS",
-        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
-        "p_target_pct": 45.3,
-        "p_stop_pct": 41.0,
-        "p_neither_pct": 13.7,
-        "resolved_win_rate_pct": 52.5,
-        "expected_r": 0.496,
-        "target_r": 2.0,
-        "sample_bars": 0,
-        "summary": "Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
-      },
-      "risk_check": {
-        "passed": true,
-        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
-        "reward_risk_ratio": 2.0,
-        "loss_at_stop_inr": 245.52,
-        "potential_gain_inr": 491.04
-      },
-      "orb_check": {
-        "passed": true,
-        "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close \u20b9310.00 breaking above range high \u20b9310.00."
-      },
-      "event_check": {
-        "passed": true,
-        "status": "CLEAR",
-        "event_name": null,
-        "reason": "No high-impact event risk active."
-      },
-      "suggestion_6pm": {
-        "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ \u20b9310.00",
-        "rationale": "Breaking towards 20D/52W high (Chg: +2.31%) with strong RSI momentum (65.5) and verified ORB bar close. Sized with structural 2.0R target. Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R",
-        "reference_price": 310.0,
-        "stop_loss": 304.42,
-        "target": 321.16
-      },
-      "check_615": {
-        "checked": true,
-        "status": "TECHNICAL_TRIGGER_ENTERED",
-        "price_615": 310.0,
-        "action_taken": "Entered BUY 44 shares @ \u20b9310.00",
-        "detail": "20-Day / High-Beta Volatility Breakout: Breaking towards 20D/52W high (Chg: +2.31%) with strong RSI momentum (65.5) and verified ORB bar close. Sized with structural 2.0R target. | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
-      },
-      "paper_trade": {
-        "user": "venu.photos1@gmail.com",
-        "action": "BUY",
-        "quantity": 44,
-        "entry_price": 310.0,
-        "entry_time": "10:49 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
-        "target": 321.16,
-        "stop_loss": 304.42,
-        "margin_required_inr": 2728.0,
-        "product_type": "MIS_INTRADAY"
-      },
-      "eod_outcome": {
-        "session_close": null,
-        "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b9310.00 (Target: \u20b9321.16, SL: \u20b9304.42) | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
-      }
-    },
     {
       "id": "ADV-04Nov2026-0901-GOLD",
       "date": "04 Nov 2026",

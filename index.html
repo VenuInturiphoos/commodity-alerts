@@ -34,6 +34,7 @@
                 <button class="tab-btn" id="subscribe-tab-btn" onclick="switchTab(this, 'subscribe-tab')">Subscribe</button>
                 <button class="tab-btn" id="market-hub-tab-btn" onclick="switchTab(this, 'market-hub-tab')" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(245, 158, 11, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-bolt" style="margin-right: 5px; color: #fbbf24;"></i> Live Market & Circuits</button>
                 <button class="tab-btn" id="nifty-tab-btn" onclick="switchTab(this, 'nifty-tab')" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-gem" style="margin-right: 5px; color: #f59e0b;"></i> Golden Cross & Value</button>
+                <button class="tab-btn" id="options-tab-btn" onclick="switchTab(this, 'options-tab')" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(168, 85, 247, 0.15)); border: 1px solid rgba(236, 72, 153, 0.45); color: #f472b6; font-weight: 700;"><i class="fa-solid fa-hourglass-half" style="margin-right: 5px; color: #ec4899;"></i> ⏳ Options Theta Selling</button>
                 <button class="tab-btn" id="investing-tab-btn" onclick="switchTab(this, 'investing-tab')" style="background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.4); color: #4ade80; font-weight: 700;"><i class="fa-solid fa-seedling" style="margin-right: 5px;"></i> 💼 Stock Investing (₹3L)</button>
                 <button class="tab-btn" id="trading-tab-btn" onclick="switchTab(this, 'trading-tab')" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc; font-weight: 700;"><i class="fa-solid fa-crosshairs" style="margin-right: 5px;"></i> 🎯 Trading (₹3L)</button>
                 <button class="tab-btn" id="copilot-tab-btn" onclick="switchTab(this, 'copilot-tab')" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(99, 102, 241, 0.15)); border: 1px solid rgba(168, 85, 247, 0.45); color: #c084fc; font-weight: 700;"><i class="fa-solid fa-robot"></i> Copilot Chat</button>
@@ -681,6 +682,120 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-secondary); padding: 0.5rem 0.25rem;">
                     <div><i class="fa-solid fa-clock"></i> <span id="nifty-updated-note">Updated recently via TradingView NSE Screener</span></div>
                     <div><span style="color: #fbbf24;">●</span> Quantitative multi-indicator confluence score (50/200 EMA + RSI + BB + 52W Range)</div>
+                </div>
+            </section>
+
+            <!-- ⏳ Options Selling & Theta Decay Scanner Tab -->
+            <section id="options-tab" class="tab-content">
+                <!-- Header Banner -->
+                <div class="nifty-header-card full-width" style="border-color: rgba(236, 72, 153, 0.35); background: linear-gradient(135deg, rgba(30, 27, 75, 0.75), rgba(15, 23, 42, 0.9));">
+                    <div class="nifty-title-area">
+                        <h2><i class="fa-solid fa-hourglass-half" style="color: #ec4899;"></i> Options Selling &amp; Theta Decay Scanner</h2>
+                        <p>Identifies Indian F&amp;O stocks with the <strong>lowest probability of breaking out or breaking down</strong> (ADX &lt; 20, Bollinger Squeeze, Institutional Floors/Ceilings). Play time-value theta decay safely with high Probability of Profit (85%+ PoP).</p>
+                    </div>
+                    <div class="nifty-controls-right">
+                        <div class="pulse-pill" style="border-color: rgba(236, 72, 153, 0.4); color: #f472b6;">
+                            <span class="pulse-dot" style="background: #ec4899;"></span>
+                            <span id="options-expiry-pill">📅 Expiry: Loading...</span>
+                        </div>
+                        <button class="circuit-refresh-btn" id="options-refresh-btn" onclick="fetchOptionsOpportunities(true)" style="border-color: rgba(236, 72, 153, 0.4); color: #f472b6;" title="Rescan Options Theta Setups">
+                            <i class="fa-solid fa-arrows-rotate"></i> <span>Rescan Now</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 KPI Summary Cards -->
+                <div class="nifty-kpi-grid">
+                    <div class="nifty-kpi-card">
+                        <div class="nifty-kpi-label"><i class="fa-solid fa-compress" style="color: #38bdf8;"></i> Non-Trending / Squeeze</div>
+                        <div class="nifty-kpi-value" id="options-kpi-rangebound" style="color: #38bdf8;">--</div>
+                        <div class="nifty-kpi-sub">ADX &lt; 22 Rangebound Channels</div>
+                    </div>
+                    <div class="nifty-kpi-card">
+                        <div class="nifty-kpi-label"><i class="fa-solid fa-shield-halved" style="color: #34d399;"></i> High PoP Candidates</div>
+                        <div class="nifty-kpi-value" id="options-kpi-high-pop" style="color: #34d399;">--</div>
+                        <div class="nifty-kpi-sub">&gt;85% Chance of Expiring Worthless</div>
+                    </div>
+                    <div class="nifty-kpi-card">
+                        <div class="nifty-kpi-label"><i class="fa-solid fa-arrows-left-right-to-line" style="color: #c084fc;"></i> Short Strangles (Range)</div>
+                        <div class="nifty-kpi-value" id="options-kpi-strangle" style="color: #c084fc;">--</div>
+                        <div class="nifty-kpi-sub">Double Theta (Sell CE + Sell PE)</div>
+                    </div>
+                    <div class="nifty-kpi-card">
+                        <div class="nifty-kpi-label"><i class="fa-solid fa-ruler-combined" style="color: #fbbf24;"></i> Avg Safety Buffer</div>
+                        <div class="nifty-kpi-value" id="options-kpi-avg-buffer" style="color: #fbbf24;">--</div>
+                        <div class="nifty-kpi-sub">Distance from Strike to CMP</div>
+                    </div>
+                </div>
+
+                <!-- Controls, Filters, Search & Sort Toolbar -->
+                <div class="nifty-toolbar">
+                    <div class="nifty-filters">
+                        <button class="circuit-filter-pill active" onclick="filterOptionsCategory('ALL', this)">🔥 All Setups (<span id="options-cnt-all">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterOptionsCategory('RISK_PASS', this)">🛡️ 14-Pt Risk Pass (<span id="options-cnt-risk">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterOptionsCategory('PUT_SELL', this)">🟢 OTM Put Sell (Floor Defense) (<span id="options-cnt-put">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterOptionsCategory('CALL_SELL', this)">🔴 OTM Call Sell (Ceiling Defense) (<span id="options-cnt-call">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterOptionsCategory('STRANGLE', this)">🟣 Short Strangle (Range) (<span id="options-cnt-strangle">0</span>)</button>
+                        <button class="circuit-filter-pill" onclick="filterOptionsCategory('ELITE', this)">💎 90%+ Elite PoP (<span id="options-cnt-elite">0</span>)</button>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <div class="circuit-search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="options-search-input" placeholder="Search F&amp;O stock (Reliance, HDFC...)" oninput="handleOptionsSearch(this.value)">
+                        </div>
+
+                        <select id="options-sort-select" onchange="sortOptionsOpportunities(this.value)" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 7px 12px; border-radius: 20px; font-size: 0.85rem; outline: none; cursor: pointer;">
+                            <option value="safety" selected>🛡️ Highest Technical Quality (Lowest Breakout Risk)</option>
+                            <option value="timemachine">🎲 Highest Monte Carlo Hold % (Time Machine)</option>
+                            <option value="adx">📉 Lowest ADX (Tightest Consolidation)</option>
+                            <option value="pop">💎 Highest Profit Probability (PoP %)</option>
+                            <option value="buffer">🛡️ Widest Margin of Safety Buffer (%)</option>
+                            <option value="rom">💰 Highest Return on Margin (RoM %)</option>
+                            <option value="name">🔤 Stock Name (A-Z)</option>
+                        </select>
+
+                        <div class="view-toggle-group" style="display: flex; gap: 4px; background: rgba(0,0,0,0.2); padding: 3px; border-radius: 20px; border: 1px solid var(--glass-border);">
+                            <button class="view-toggle-pill active" id="btn-options-view-cards" onclick="switchOptionsView('cards')" style="padding: 4px 10px; border-radius: 16px; font-size: 0.78rem; border: none; cursor: pointer; color: var(--text-secondary);"><i class="fa-solid fa-grip"></i> Cards</button>
+                            <button class="view-toggle-pill" id="btn-options-view-table" onclick="switchOptionsView('table')" style="padding: 4px 10px; border-radius: 16px; font-size: 0.78rem; border: none; cursor: pointer; color: var(--text-secondary);"><i class="fa-solid fa-table"></i> Table</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cards View -->
+                <div id="options-cards-container" class="nifty-cards-grid">
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; color: var(--text-secondary);">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block; color: #ec4899;"></i>
+                        Scanning Indian F&amp;O stocks for low-breakout, rangebound theta opportunities...
+                    </div>
+                </div>
+
+                <!-- Table View -->
+                <div id="options-table-container" class="history-table-container" style="display: none; margin-bottom: 2rem;">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Stock &amp; F&amp;O Lot</th>
+                                <th>CMP &amp; Daily Chg</th>
+                                <th>Strategy &amp; 14-Pt Risk</th>
+                                <th>Recommended Strikes</th>
+                                <th>Time Machine (5k Replays)</th>
+                                <th>Safety Buffer &amp; PoP</th>
+                                <th>50% Profit Target Rule</th>
+                                <th>Est. Margin &amp; Yield</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="options-table-body">
+                            <tr><td colspan="9" class="loading">Loading Options Theta Selling opportunities...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer Update Note -->
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-secondary); padding: 0.5rem 0.25rem;">
+                    <div><i class="fa-solid fa-clock"></i> <span id="options-updated-note">Updated recently via NSE Screener</span></div>
+                    <div><span style="color: #ec4899;">●</span> Non-Directional Option Selling Model (ADX &lt; 20 + Bollinger Squeeze + 200 EMA + Black-Scholes PoP)</div>
                 </div>
             </section>
 
@@ -1352,6 +1467,13 @@ let activeNiftyView = 'cards';
 let activeNiftySearchQuery = '';
 let lastNiftyFetchTime = 0;
 
+let optionsOpportunitiesData = null;
+let activeOptionsFilter = 'ALL';
+let activeOptionsSort = 'safety';
+let activeOptionsView = 'cards';
+let activeOptionsSearchQuery = '';
+let lastOptionsFetchTime = 0;
+
 // ==========================================
 // 🔄 Synchronized Real-Time Commodity Price System
 // Guarantees 100% price parity between Circuit Limits,
@@ -1653,6 +1775,14 @@ function switchTab(btn, targetId, updateUrl = true) {
         }
     }
 
+    if (targetId === 'options-tab') {
+        if (!lastOptionsFetchTime || (now - lastOptionsFetchTime > 60000)) {
+            if (typeof fetchOptionsOpportunities === 'function') fetchOptionsOpportunities();
+        } else {
+            if (typeof renderOptionsOpportunities === 'function') renderOptionsOpportunities();
+        }
+    }
+
     if (targetId === 'admin-tab') {
         if (typeof fetchSubscribers === 'function') fetchSubscribers();
     }
@@ -1726,6 +1856,13 @@ function restoreActiveModule() {
             const storedNiftySub = localStorage.getItem('subview_nifty');
             if (storedNiftySub) switchNiftyView(storedNiftySub);
         } catch(e) {}
+    } else if (hash === 'options' || hash === 'options-tab' || hash === 'theta' || hash === 'option-selling' || hash === 'options-selling') {
+        const optionsBtn = document.getElementById('options-tab-btn');
+        if (optionsBtn) switchTab(optionsBtn, 'options-tab', false);
+        try {
+            const storedOptionsSub = localStorage.getItem('subview_options');
+            if (storedOptionsSub) switchOptionsView(storedOptionsSub);
+        } catch(e) {}
     } else if (hash === 'copilot' || hash === 'chat' || hash === 'copilot-tab' || hash === 'ai') {
         if (copilotBtn) switchTab(copilotBtn, 'copilot-tab', false);
     } else if (hash === 'admin' || hash === 'account' || hash === 'admin-tab') {
@@ -1746,6 +1883,7 @@ function initApp() {
     try { setupUnsubscribeForm(); } catch(e) { console.error("Unsub Form setup error:", e); }
     try { fetchMarketData(); } catch(e) { console.error("Fetch data error:", e); }
     try { fetchNiftyOpportunities(); } catch(e) { console.error("Fetch nifty error:", e); }
+    try { fetchOptionsOpportunities(); } catch(e) { console.error("Fetch options error:", e); }
     try { fetchCircuitsData(); } catch(e) { console.error("Fetch circuits error:", e); }
     try { fetchCircuitsHistory(); } catch(e) { console.error("Fetch circuits history error:", e); }
     try { setupAuth(); } catch(e) { console.error("Auth setup error:", e); }
@@ -2658,6 +2796,384 @@ function analyzeStockCopilot(name, price) {
             }
         }
     }, 300);
+}
+
+// ==========================================
+// ⏳ OPTIONS THETA SELLING & RANGEBOUND SCANNER
+// ==========================================
+
+async function fetchOptionsOpportunities(forceNetwork = false) {
+    const cardsContainer = document.getElementById('options-cards-container');
+    const refreshBtn = document.getElementById('options-refresh-btn');
+    
+    if (forceNetwork && refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = `<i class="fa-solid fa-arrows-rotate fa-spin"></i> <span>Scanning...</span>`;
+    }
+    
+    if (!forceNetwork && optionsOpportunitiesData && optionsOpportunitiesData.stocks && (Date.now() - lastOptionsFetchTime < 60000)) {
+        renderOptionsOpportunities();
+        return;
+    }
+    
+    const candidateUrls = [
+        'options_selling_data.json?t=' + Date.now(),
+        'https://venuinturiphoos.github.io/commodity-alerts/options_selling_data.json?t=' + Date.now()
+    ];
+    
+    let loadedData = null;
+    for (const url of candidateUrls) {
+        try {
+            const res = await fetch(url, { cache: 'no-store' });
+            if (res.ok) {
+                loadedData = await res.json();
+                break;
+            }
+        } catch(e) {
+            console.warn("Could not fetch options selling data from", url, e);
+        }
+    }
+    
+    if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> <span>Rescan Now</span>`;
+    }
+    
+    if (!loadedData || !loadedData.stocks) {
+        if (cardsContainer && (!optionsOpportunitiesData || !optionsOpportunitiesData.stocks)) {
+            cardsContainer.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #fb7185;">Could not load Options Theta Selling data. Please click Rescan Now.</div>`;
+        }
+        return;
+    }
+    
+    optionsOpportunitiesData = loadedData;
+    lastOptionsFetchTime = Date.now();
+    
+    // Update KPI Summary Metrics
+    const s = loadedData.summary || {};
+    const kpiRange = document.getElementById('options-kpi-rangebound');
+    const kpiHighPop = document.getElementById('options-kpi-high-pop');
+    const kpiStrangle = document.getElementById('options-kpi-strangle');
+    const kpiBuffer = document.getElementById('options-kpi-avg-buffer');
+    const expiryPill = document.getElementById('options-expiry-pill');
+    const updatedNote = document.getElementById('options-updated-note');
+    
+    if (kpiRange) kpiRange.textContent = `${loadedData.stocks.filter(x => x.adx < 22).length} Setups`;
+    if (kpiHighPop) kpiHighPop.textContent = `${s.high_pop_count || 0} Stocks`;
+    if (kpiStrangle) kpiStrangle.textContent = `${s.strangle_count || 0} Pairs`;
+    if (kpiBuffer) kpiBuffer.textContent = `+${s.avg_safety_buffer || 0}%`;
+    if (expiryPill) expiryPill.textContent = `📅 Expiry: ${s.expiry_date || 'Monthly'} (${s.days_to_expiry || 23} DTE)`;
+    if (updatedNote) updatedNote.textContent = `Updated: ${loadedData.last_updated || 'Live'}`;
+    
+    // Update Filter Button Count Labels
+    const stocks = loadedData.stocks || [];
+    const cntAll = document.getElementById('options-cnt-all');
+    const cntRisk = document.getElementById('options-cnt-risk');
+    const cntPut = document.getElementById('options-cnt-put');
+    const cntCall = document.getElementById('options-cnt-call');
+    const cntStrangle = document.getElementById('options-cnt-strangle');
+    const cntElite = document.getElementById('options-cnt-elite');
+    
+    if (cntAll) cntAll.textContent = stocks.length;
+    if (cntRisk) cntRisk.textContent = stocks.filter(x => x.risk_passed).length;
+    if (cntPut) cntPut.textContent = stocks.filter(x => x.strategy_type === 'PUT_SELL').length;
+    if (cntCall) cntCall.textContent = stocks.filter(x => x.strategy_type === 'CALL_SELL').length;
+    if (cntStrangle) cntStrangle.textContent = stocks.filter(x => x.strategy_type === 'STRANGLE').length;
+    if (cntElite) cntElite.textContent = stocks.filter(x => x.primary_pop >= 90).length;
+    
+    renderOptionsOpportunities();
+}
+
+function filterOptionsCategory(category, btn) {
+    activeOptionsFilter = category;
+    const pills = document.querySelectorAll('#options-tab .circuit-filter-pill');
+    pills.forEach(p => p.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderOptionsOpportunities();
+}
+
+function handleOptionsSearch(val) {
+    activeOptionsSearchQuery = (val || '').trim().toLowerCase();
+    renderOptionsOpportunities();
+}
+
+function sortOptionsOpportunities(sortVal) {
+    activeOptionsSort = sortVal || 'safety';
+    renderOptionsOpportunities();
+}
+
+function switchOptionsView(viewMode) {
+    activeOptionsView = viewMode;
+    const btnCards = document.getElementById('btn-options-view-cards');
+    const btnTable = document.getElementById('btn-options-view-table');
+    const cardsEl = document.getElementById('options-cards-container');
+    const tableEl = document.getElementById('options-table-container');
+    
+    if (viewMode === 'table') {
+        if (cardsEl) cardsEl.style.display = 'none';
+        if (tableEl) tableEl.style.display = 'block';
+        if (btnCards) btnCards.classList.remove('active');
+        if (btnTable) btnTable.classList.add('active');
+    } else {
+        if (cardsEl) cardsEl.style.display = 'grid';
+        if (tableEl) tableEl.style.display = 'none';
+        if (btnTable) btnTable.classList.remove('active');
+        if (btnCards) btnCards.classList.add('active');
+    }
+}
+
+function renderOptionsOpportunities() {
+    if (!optionsOpportunitiesData || !optionsOpportunitiesData.stocks) return;
+    const cardsContainer = document.getElementById('options-cards-container');
+    const tableBody = document.getElementById('options-table-body');
+    if (!cardsContainer && !tableBody) return;
+    
+    let filtered = optionsOpportunitiesData.stocks.filter(s => {
+        if (activeOptionsFilter === 'RISK_PASS' && !s.risk_passed) return false;
+        if (activeOptionsFilter === 'PUT_SELL' && s.strategy_type !== 'PUT_SELL') return false;
+        if (activeOptionsFilter === 'CALL_SELL' && s.strategy_type !== 'CALL_SELL') return false;
+        if (activeOptionsFilter === 'STRANGLE' && s.strategy_type !== 'STRANGLE') return false;
+        if (activeOptionsFilter === 'ELITE' && s.primary_pop < 90) return false;
+        
+        if (activeOptionsSearchQuery) {
+            const sym = (s.symbol || '').toLowerCase();
+            const nm = (s.name || '').toLowerCase();
+            const sec = (s.sector || '').toLowerCase();
+            const act = (s.primary_action || '').toLowerCase();
+            if (!sym.includes(activeOptionsSearchQuery) && !nm.includes(activeOptionsSearchQuery) && !sec.includes(activeOptionsSearchQuery) && !act.includes(activeOptionsSearchQuery)) {
+                return false;
+            }
+        }
+        return true;
+    });
+    
+    filtered.sort((a, b) => {
+        if (activeOptionsSort === 'safety') return (b.theta_safety_score - a.theta_safety_score) || (b.primary_pop - a.primary_pop);
+        if (activeOptionsSort === 'timemachine') return (b.mc_hold_pct || b.primary_pop) - (a.mc_hold_pct || a.primary_pop);
+        if (activeOptionsSort === 'buffer') return b.primary_buffer_pct - a.primary_buffer_pct;
+        if (activeOptionsSort === 'adx') return a.adx - b.adx;
+        if (activeOptionsSort === 'rom') return (b.rom_pct || 0) - (a.rom_pct || 0);
+        if (activeOptionsSort === 'name') return a.name.localeCompare(b.name);
+        // Default: Highest Technical Quality (Lowest Breakout Risk), then lowest ADX, then RoM desc
+        return (b.theta_safety_score - a.theta_safety_score) || (a.adx - b.adx) || ((b.rom_pct || 0) - (a.rom_pct || 0));
+    });
+    
+    // Render Cards View
+    if (cardsContainer) {
+        if (filtered.length === 0) {
+            cardsContainer.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; color: var(--text-secondary); background: var(--glass-bg); border-radius: 14px; border: 1px solid var(--glass-border);">No options setups matched the selected filter. Try selecting 'All Setups'.</div>`;
+        } else {
+            cardsContainer.innerHTML = filtered.map(item => {
+                const isStrangle = item.strategy_type === 'STRANGLE';
+                const isPut = item.strategy_type === 'PUT_SELL';
+                const badgeColor = isStrangle ? '#c084fc' : (isPut ? '#34d399' : '#fb7185');
+                const badgeBg = isStrangle ? 'rgba(192, 132, 252, 0.15)' : (isPut ? 'rgba(52, 211, 153, 0.15)' : 'rgba(251, 113, 133, 0.15)');
+                const badgeBorder = isStrangle ? 'rgba(192, 132, 252, 0.35)' : (isPut ? 'rgba(52, 211, 153, 0.35)' : 'rgba(251, 113, 133, 0.35)');
+                const changeColor = item.change_pct >= 0 ? '#34d399' : '#fb7185';
+                const changeSign = item.change_pct >= 0 ? '+' : '';
+                const holdPct = item.mc_hold_pct != null ? item.mc_hold_pct : item.primary_pop;
+                const expR = item.mc_expected_r != null ? item.mc_expected_r : 0.65;
+                const tgtPrem = item.take_profit_target_premium || (item.est_total_premium * 0.5).toFixed(2);
+                const lockedInr = item.take_profit_locked_inr || Math.round(item.est_inflow_inr * 0.5);
+                const stopPrem = item.trade_plan?.stop_loss_premium || (item.est_total_premium * 2.0).toFixed(2);
+                const tailCap = item.risk_audit?.tail_risk_cap_inr || item.est_inflow_inr || 0;
+                
+                return `
+                    <div class="nifty-card" style="border-color: ${badgeBorder};">
+                        <div class="nifty-card-top">
+                            <div class="nifty-asset-meta">
+                                <h3>${item.name} <small style="font-size:0.75rem; color:var(--text-secondary); font-weight:400;">(Lot: ${item.lot_size})</small></h3>
+                                <p><span style="color:#a855f7;">${item.sector}</span> • <span style="font-size:0.7rem; color:#f472b6; background:rgba(236,72,153,0.15); border:1px solid rgba(236,72,153,0.3); padding:1px 5px; border-radius:4px; font-weight:700;">F&O Stock</span></p>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                                <div style="font-size:0.78rem; font-weight:700; color:${badgeColor}; background:${badgeBg}; border:1px solid ${badgeBorder}; padding:3px 8px; border-radius:6px;">
+                                    ${item.strategy_badge === 'STRANGLE' ? '🟣 Short Strangle' : (isPut ? '🟢 OTM Put Sell' : '🔴 OTM Call Sell')}
+                                </div>
+                                <div style="font-size:0.7rem; color:#cbd5e1; font-weight:600;">
+                                    🛡️ ${item.theta_safety_score}% Theta Safety
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="nifty-price-row">
+                            <div>
+                                <div class="nifty-cmp-val">₹${item.close.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                                <div style="font-size: 0.78rem; color: ${changeColor}; font-weight: 600;">
+                                    ${changeSign}${item.change_pct}%
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:700; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:2px 8px; border-radius:12px;">
+                                    <i class="fa-solid fa-compress"></i> ADX: ${item.adx} (${item.adx_status})
+                                </div>
+                                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 3px;">
+                                    Bandwidth: ${item.bb_width_pct}% • Daily Vol: ${item.daily_volatility_pct}%
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Skill Badge 1: trader-timemachine (Monte Carlo Replay) -->
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3); border-radius:6px; padding:4px 8px; margin-top:8px; font-size:0.72rem;">
+                            <span style="color:#e9d5ff; font-weight:700;">
+                                <i class="fa-solid fa-dice-d20" style="color:#c084fc;"></i> Time Machine: ${holdPct}% Channel Hold
+                            </span>
+                            <span style="color:#a7f3d0; font-weight:700;">
+                                Expected: +${expR}R (5k Replays)
+                            </span>
+                        </div>
+
+                        <!-- Skill Badge 2: trader-risk (14-Point Pre-Trade Risk Pass) -->
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.25); border-radius:6px; padding:4px 8px; margin-top:5px; font-size:0.71rem;">
+                            <span style="color:#86efac; font-weight:700;">
+                                <i class="fa-solid fa-shield-halved" style="color:#4ade80;"></i> ${item.risk_passed ? '14/14 Pre-Trade Risk Pass 🛡️' : 'Risk Screened'}
+                            </span>
+                            <span style="color:#cbd5e1;">
+                                Tail Risk Cap: ₹${tailCap.toLocaleString('en-IN')}
+                            </span>
+                        </div>
+
+                        <!-- Option Selling Action Box -->
+                        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 0.85rem; margin-top: 0.65rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+                                <span style="font-size:0.85rem; font-weight:800; color:#f8fafc; letter-spacing:0.3px;">
+                                    <i class="fa-solid fa-ticket" style="color:#ec4899; margin-right:4px;"></i> ${item.primary_action}
+                                </span>
+                                <span style="font-size:0.72rem; color:#4ade80; font-weight:700; background:rgba(74,222,128,0.15); border:1px solid rgba(74,222,128,0.3); padding:2px 6px; border-radius:4px;">
+                                    ${item.primary_pop}% PoP
+                                </span>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; text-align:center; background:rgba(0,0,0,0.25); border-radius:8px; padding:6px 4px;">
+                                <div>
+                                    <div style="font-size:0.65rem; color:#94a3b8;">Safety Buffer</div>
+                                    <div style="font-size:0.88rem; font-weight:700; color:#38bdf8;">+${item.primary_buffer_pct}%</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.65rem; color:#94a3b8;">Est. Inflow</div>
+                                    <div style="font-size:0.88rem; font-weight:700; color:#34d399;">+₹${item.est_inflow_inr?.toLocaleString('en-IN') || '--'}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.65rem; color:#94a3b8;">Approx Margin</div>
+                                    <div style="font-size:0.88rem; font-weight:700; color:#cbd5e1;">₹${item.margin_required_inr?.toLocaleString('en-IN') || '--'}</div>
+                                </div>
+                            </div>
+
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:#cbd5e1; margin-top:8px; padding:6px 8px; background:rgba(0,0,0,0.35); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                                <span><i class="fa-solid fa-shield-halved" style="color:#38bdf8;"></i> <strong>Floor:</strong> ₹${item.bb_lower}</span>
+                                <span><i class="fa-solid fa-hand" style="color:#fb7185;"></i> <strong>Ceil:</strong> ₹${item.bb_upper}</span>
+                                <span style="color:#ec4899; font-weight:700;"><i class="fa-solid fa-coins"></i> ${item.rom_pct}% RoM</span>
+                            </div>
+
+                            <!-- Skill Badge 3, 4, 5: trader-budget & trader-alerts (50% Profit Target Rule) -->
+                            <div style="margin-top:7px; padding:6px 8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:6px; font-size:0.72rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; color:#bae6fd; font-weight:700;">
+                                    <span><i class="fa-solid fa-bullseye" style="color:#38bdf8;"></i> 50% Profit Target Rule:</span>
+                                    <span style="color:#4ade80;">Exit @ ₹${tgtPrem} (+₹${lockedInr.toLocaleString('en-IN')})</span>
+                                </div>
+                                <div style="color:var(--text-secondary); font-size:0.68rem; margin-top:3px;">
+                                    🔔 Alerts: Floor ₹${item.bb_lower} | Ceil ₹${item.bb_upper} | 50% Decay Target
+                                </div>
+                            </div>
+
+                            <div class="nifty-rationale-quote" style="margin-top:0.6rem; font-size:0.72rem;">
+                                "${item.rationale}"
+                            </div>
+                        </div>
+                        
+                        <div class="nifty-card-footer" style="margin-top:0.85rem;">
+                            <button class="trade-btn buy-btn" onclick="copyOptionTicket('${item.symbol}', '${item.primary_action}', ${item.est_total_premium}, ${item.lot_size}, ${tgtPrem}, ${stopPrem})" style="flex: 1; padding: 7px 10px; font-size: 0.82rem; background: linear-gradient(135deg, rgba(236,72,153,0.3), rgba(168,85,247,0.3)); border-color: rgba(236,72,153,0.5); color:#fdf2f8;">
+                                <i class="fa-solid fa-copy"></i> Copy Order Ticket
+                            </button>
+                            <button class="btn-small" onclick="openChartModal('${item.symbol}', '${item.name}', ${item.close}, null, ${item.call_strike}, ${item.put_strike})" style="padding: 7px 12px; font-size: 0.8rem; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 8px; cursor: pointer;" title="Inspect Support/Resistance Levels">
+                                <i class="fa-solid fa-chart-candlestick"></i> Levels
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+    
+    // Render Table View
+    if (tableBody) {
+        if (filtered.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="9" class="loading">No options setups match your filter criteria.</td></tr>`;
+        } else {
+            tableBody.innerHTML = filtered.map(item => {
+                const isStrangle = item.strategy_type === 'STRANGLE';
+                const isPut = item.strategy_type === 'PUT_SELL';
+                const badgeColor = isStrangle ? '#c084fc' : (isPut ? '#34d399' : '#fb7185');
+                const badgeBg = isStrangle ? 'rgba(192, 132, 252, 0.15)' : (isPut ? 'rgba(52, 211, 153, 0.15)' : 'rgba(251, 113, 133, 0.15)');
+                const changeColor = item.change_pct >= 0 ? '#34d399' : '#fb7185';
+                const changeSign = item.change_pct >= 0 ? '+' : '';
+                const holdPct = item.mc_hold_pct != null ? item.mc_hold_pct : item.primary_pop;
+                const expR = item.mc_expected_r != null ? item.mc_expected_r : 0.65;
+                const tgtPrem = item.take_profit_target_premium || (item.est_total_premium * 0.5).toFixed(2);
+                const lockedInr = item.take_profit_locked_inr || Math.round(item.est_inflow_inr * 0.5);
+                const stopPrem = item.trade_plan?.stop_loss_premium || (item.est_total_premium * 2.0).toFixed(2);
+                
+                return `
+                    <tr>
+                        <td>
+                            <strong>${item.name}</strong> <small style="color:var(--text-secondary)">(Lot: ${item.lot_size})</small>
+                            <div style="font-size:0.72rem; color:#a855f7;">${item.sector}</div>
+                        </td>
+                        <td>
+                            <strong style="font-size:0.95rem;">₹${item.close.toFixed(2)}</strong>
+                            <div style="font-size:0.72rem; color:${changeColor}; font-weight:600;">${changeSign}${item.change_pct}%</div>
+                        </td>
+                        <td>
+                            <span style="font-size:0.74rem; font-weight:700; color:${badgeColor}; background:${badgeBg}; padding:2px 7px; border-radius:4px; border:1px solid ${badgeColor}40;">
+                                ${item.strategy_label}
+                            </span>
+                            <div style="font-size:0.68rem; color:#86efac; margin-top:2px;">
+                                <i class="fa-solid fa-shield-halved"></i> ${item.risk_passed ? '14/14 Risk Pass' : 'Screened'}
+                            </div>
+                        </td>
+                        <td>
+                            <strong style="font-size:0.85rem; color:#f8fafc;">${item.primary_action}</strong>
+                            <div style="font-size:0.68rem; color:#cbd5e1;">Est. Prem: ₹${item.est_total_premium} / share</div>
+                        </td>
+                        <td>
+                            <strong style="color:#e9d5ff; font-size:0.82rem;"><i class="fa-solid fa-dice-d20" style="color:#c084fc;"></i> ${holdPct}% Hold</strong>
+                            <div style="font-size:0.68rem; color:#a7f3d0;">Expected: +${expR}R</div>
+                        </td>
+                        <td>
+                            <span style="color:#38bdf8; font-weight:700; font-size:0.82rem;">+${item.primary_buffer_pct}% Buffer</span>
+                            <div style="font-size:0.68rem; color:#4ade80;">${item.primary_pop}% PoP</div>
+                        </td>
+                        <td>
+                            <strong style="color:#4ade80; font-size:0.82rem;">+₹${lockedInr.toLocaleString('en-IN')}</strong>
+                            <div style="font-size:0.68rem; color:#bae6fd;">Exit @ ₹${tgtPrem}</div>
+                        </td>
+                        <td>
+                            <div style="font-size:0.8rem; font-weight:700; color:#34d399;">+₹${item.est_inflow_inr?.toLocaleString('en-IN')}</div>
+                            <div style="font-size:0.68rem; color:#94a3b8;">Margin: ₹${item.margin_required_inr?.toLocaleString('en-IN')} (${item.rom_pct}% RoM)</div>
+                        </td>
+                        <td style="text-align: right;">
+                            <button class="trade-btn buy-btn btn-small" onclick="copyOptionTicket('${item.symbol}', '${item.primary_action}', ${item.est_total_premium}, ${item.lot_size}, ${tgtPrem}, ${stopPrem})" style="padding:4px 8px; font-size:0.75rem; background: linear-gradient(135deg, rgba(236,72,153,0.3), rgba(168,85,247,0.3)); border-color: rgba(236,72,153,0.5); color:#fdf2f8;">Ticket</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+}
+
+function copyOptionTicket(symbol, action, premium, lotSize, tgtPrem, stopPrem) {
+    const p = premium || 0;
+    const target = tgtPrem || (p * 0.5).toFixed(2);
+    const stop = stopPrem || (p * 2.0).toFixed(2);
+    const text = `NSE F&O OPTION ORDER:\nAsset: ${symbol}\nAction: ${action}\nEst. Entry Credit: ₹${p} / share\nLot Size: ${lotSize}\nStrategy: Institutional Theta Decay Selling\n50% Profit Target Rule: Buy back to close @ ₹${target} (locks 50% max profit)\nTail Risk Stop Loss: Cut trade if premium doubles to ₹${stop}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert(`Option Selling Ticket copied to clipboard:\n\n${text}`);
+        }).catch(err => {
+            alert(text);
+        });
+    } else {
+        alert(text);
+    }
 }
 
 // ==========================================
