@@ -2257,13 +2257,13 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 exit_p = cur_p
                 reason = "Intraday EOD Square-off (03:20 PM) ⏰"
 
-        if hit_target or hit_sl or hit_eod or hit_stagnation:
+        if hit_target or hit_sl or hit_stagnation or hit_eod:
             pnl_pts = (exit_p - entry_p) if action == 'BUY' else (entry_p - exit_p)
             pnl_inr = round(pnl_pts * lot_size, 2)
             
             pt['exit_price'] = exit_p
             pt['exit_time'] = now_time_str
-            pt['exit_trigger'] = "TARGET_HIT" if hit_target else ("EOD_SQUAREOFF" if hit_eod else ("STAGNATION_EXIT" if hit_stagnation else ("TRAILING_BREAKEVEN_HIT" if pt.get('trailing_sl_active') else "STOP_LOSS_HIT")))
+            pt['exit_trigger'] = "TARGET_HIT" if hit_target else ("STOP_LOSS_HIT" if (hit_sl and not pt.get('trailing_sl_active')) else ("TRAILING_BREAKEVEN_HIT" if hit_sl else ("STAGNATION_EXIT" if hit_stagnation else "EOD_SQUAREOFF")))
             pt['pnl_points'] = round(pnl_pts, 2)
             pt['pnl_inr'] = pnl_inr
             pt['status'] = "CLOSED"
@@ -2271,18 +2271,19 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             if hit_target:
                 outcome_val = "CORRECT"
                 badge_text = f"Target Achieved 🎯 ({now_time_str})"
-            elif hit_eod:
-                outcome_val = "CORRECT" if pnl_inr > 0 else ("WRONG" if pnl_inr < 0 else "PROTECTED")
-                badge_text = f"EOD Square-off ⏰ ({now_time_str})"
+            elif hit_sl:
+                if pt.get('trailing_sl_active'):
+                    outcome_val = "PROTECTED"
+                    badge_text = f"Breakeven Exit 🛡️ ({now_time_str})"
+                else:
+                    outcome_val = "WRONG"
+                    badge_text = f"Stop Loss Hit 🛑 ({now_time_str})"
             elif hit_stagnation:
                 outcome_val = "CORRECT" if pnl_inr > 0 else ("PROTECTED" if pnl_inr == 0 else "WRONG")
                 badge_text = f"Stagnation Exit ⏱️ ({now_time_str})"
-            elif pt.get('trailing_sl_active'):
-                outcome_val = "PROTECTED"
-                badge_text = f"Breakeven Exit 🛡️ ({now_time_str})"
-            else:
-                outcome_val = "WRONG"
-                badge_text = f"Stop Loss Hit 🛑 ({now_time_str})"
+            elif hit_eod:
+                outcome_val = "CORRECT" if pnl_inr > 0 else ("WRONG" if pnl_inr < 0 else "PROTECTED")
+                badge_text = f"EOD Square-off ⏰ ({now_time_str})"
             
             trade['time_exit'] = now_time_str
             trade['eod_outcome']['session_close'] = exit_p

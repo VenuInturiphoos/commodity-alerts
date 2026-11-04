@@ -772,8 +772,30 @@ class PriceChecker:
                 today_int = int(datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%Y%m%d'))
                 
                 quotes = {}
-                for sym, conf in self.commodities.items():
-                    root = sym
+                
+                # Combine standard commodities with Mini/Micro contracts
+                MINI_COMMODITY_CONFIG = {
+                    'CRUDEOILM': {'name': 'Crude Oil Mini', 'tv_root': 'CRUDEOILM', 'default_ticker': 'MCX:CRUDEOILM1!', 'parent': 'CRUDEOIL'},
+                    'NATURALGASM': {'name': 'Natural Gas Mini', 'tv_root': 'NATGASMINI', 'default_ticker': 'MCX:NATGASMINI1!', 'parent': 'NATURALGAS'},
+                    'SILVERMIC': {'name': 'Silver Micro', 'tv_root': 'SILVERMIC', 'default_ticker': 'MCX:SILVERMIC1!', 'parent': 'SILVER'},
+                    'SILVERM': {'name': 'Silver Mini', 'tv_root': 'SILVERM', 'default_ticker': 'MCX:SILVERM1!', 'parent': 'SILVER'},
+                    'GOLDM': {'name': 'Gold Mini', 'tv_root': 'GOLDM', 'default_ticker': 'MCX:GOLDM1!', 'parent': 'GOLD'},
+                    'ZINCMINI': {'name': 'Zinc Mini', 'tv_root': 'ZINCMINI', 'default_ticker': 'MCX:ZINCMINI1!', 'parent': 'ZINC'},
+                    'ALUMINI': {'name': 'Alumini Mini', 'tv_root': 'ALUMINI', 'default_ticker': 'MCX:ALUMINI1!', 'parent': 'ALUMINIUM'}
+                }
+                
+                all_targets = dict(self.commodities)
+                for msym, mcfg in MINI_COMMODITY_CONFIG.items():
+                    if msym not in all_targets:
+                        all_targets[msym] = {
+                            'name': mcfg['name'],
+                            'tv_ticker': mcfg['default_ticker'],
+                            'tv_root': mcfg['tv_root'],
+                            'parent': mcfg.get('parent')
+                        }
+
+                for sym, conf in all_targets.items():
+                    root = conf.get('tv_root') or sym
                     default_tick = conf.get('tv_ticker') or f"MCX:{root}1!"
                     
                     # 1. Collect all standard unexpired monthly contracts for this commodity
@@ -860,6 +882,30 @@ class PriceChecker:
                             'ema_20': float(chosen_data['EMA20']) if chosen_data.get('EMA20') is not None else None,
                             'ema_50': float(chosen_data['EMA50']) if chosen_data.get('EMA50') is not None else None
                         }
+
+                # Cross-validate Parent vs High-Volume Mini contracts (e.g. CRUDEOIL vs CRUDEOILM)
+                # If parent contract has stale/frozen price that diverges by >2.5% from the liquid Mini contract, sync to Mini!
+                for msym, mcfg in MINI_COMMODITY_CONFIG.items():
+                    psym = mcfg.get('parent')
+                    if psym in quotes and msym in quotes:
+                        p_q = quotes[psym]
+                        m_q = quotes[msym]
+                        p_c = p_q.get('close')
+                        m_c = m_q.get('close')
+                        m_v = m_q.get('volume', 0)
+                        p_v = p_q.get('volume', 0)
+                        if p_c and m_c and abs(p_c - m_c) / m_c > 0.025:
+                            if m_v >= p_v * 0.5 or m_v > 5000:
+                                print(f"⚠️ DIVERGENCE DETECTED on {p_q.get('ticker')} (₹{p_c}) vs liquid Mini {m_q.get('ticker')} (₹{m_c}, Vol: {m_v}). Auto-syncing parent to active Mini price.")
+                                quotes[psym]['close'] = m_c
+                                quotes[psym]['change'] = m_q.get('change')
+                                quotes[psym]['change_abs'] = m_q.get('change_abs')
+                                quotes[psym]['prev_close'] = m_q.get('prev_close')
+                                quotes[psym]['open'] = m_q.get('open')
+                                quotes[psym]['high'] = max(p_q.get('high', m_c), m_q.get('high', m_c))
+                                quotes[psym]['low'] = min(p_q.get('low', m_c), m_q.get('low', m_c))
+                                quotes[psym]['synced_from_mini'] = msym
+
                 return quotes
                 
             # Fallback direct ticker query if scan returned empty
@@ -1560,7 +1606,32 @@ class PriceChecker:
             'ALUMINI': 'ALUMINIUM'
         }
         
-        for symbol, data in self.commodities.items():
+        MINI_COMMODITIES = {
+            'CRUDEOILM': {'name': 'Crude Oil Mini', 'parent': 'CRUDEOIL', 'unit': '1 bbl'},
+            'NATURALGASM': {'name': 'Natural Gas Mini', 'parent': 'NATURALGAS', 'unit': '1 mmBtu'},
+            'SILVERMIC': {'name': 'Silver Micro', 'parent': 'SILVER', 'unit': '1 kg'},
+            'SILVERM': {'name': 'Silver Mini', 'parent': 'SILVER', 'unit': '1 kg'},
+            'GOLDM': {'name': 'Gold Mini', 'parent': 'GOLD', 'unit': '10 g'},
+            'ZINCMINI': {'name': 'Zinc Mini', 'parent': 'ZINC', 'unit': '1 kg'},
+            'ALUMINI': {'name': 'Alumini Mini', 'parent': 'ALUMINIUM', 'unit': '1 kg'}
+        }
+        
+        all_commodity_items = dict(self.commodities)
+        for msym, mcfg in MINI_COMMODITIES.items():
+            if msym not in all_commodity_items:
+                parent_cfg = self.commodities.get(mcfg['parent'], {})
+                all_commodity_items[msym] = {
+                    'name': mcfg['name'],
+                    'dpl_initial': parent_cfg.get('dpl_initial', 0.04),
+                    'dpl_max': parent_cfg.get('dpl_max', 0.06),
+                    'category': parent_cfg.get('category', 'Commodities'),
+                    'unit': mcfg.get('unit') or parent_cfg.get('unit', ''),
+                    'tv_ticker': f"MCX:{msym}1!",
+                    'yf_symbol': parent_cfg.get('yf_symbol'),
+                    'mcx_multiplier': parent_cfg.get('mcx_multiplier', 1.0)
+                }
+
+        for symbol, data in all_commodity_items.items():
             name = data.get('name', symbol)
             dpl_initial = data.get('dpl_initial', 0.04)
             dpl_max = data.get('dpl_max', 0.06)
