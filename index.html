@@ -1090,56 +1090,7 @@
 
                     <!-- Order History -->
                     <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
-                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
-                            <div>
-                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                    <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fa-solid fa-clock-rotate-left" style="color: #c084fc;"></i> Order History
-                                    </h3>
-                                    <span id="order-history-count-badge" class="badge" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; font-size: 0.8rem; padding: 2px 10px; border-radius: 12px; font-weight: 700;">0 Orders</span>
-                                </div>
-                                <p style="margin: 0.35rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">
-                                    All executed buy and sell orders with day-wise and month-wise historical filters.
-                                </p>
-                            </div>
-
-                            <!-- Filter Toolbar -->
-                            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem;">
-                                <!-- Mode Pills: All, Day-wise, Month-wise -->
-                                <div class="circuit-filters" style="margin: 0; gap: 0.35rem;">
-                                    <button type="button" id="order-filter-pill-all" class="circuit-filter-pill active" onclick="setOrderHistoryFilterMode('ALL')">All Orders</button>
-                                    <button type="button" id="order-filter-pill-day" class="circuit-filter-pill" onclick="setOrderHistoryFilterMode('DAY')">📅 Day-wise</button>
-                                    <button type="button" id="order-filter-pill-month" class="circuit-filter-pill" onclick="setOrderHistoryFilterMode('MONTH')">🗓️ Month-wise</button>
-                                </div>
-
-                                <!-- Day-wise Controls (hidden by default) -->
-                                <div id="order-day-filter-controls" style="display: none; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.03); padding: 3px 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                                    <select id="order-day-select" class="circuit-filter-pill" style="cursor: pointer; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(168, 85, 247, 0.4); color: #fff; padding: 5px 10px; border-radius: 14px;" onchange="handleOrderDaySelectChange(this.value)">
-                                    </select>
-                                    <input type="date" id="order-day-input" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 0.82rem; cursor: pointer;" onchange="handleOrderDayInputChange(this.value)">
-                                </div>
-
-                                <!-- Month-wise Controls (hidden by default) -->
-                                <div id="order-month-filter-controls" style="display: none; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.03); padding: 3px 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                                    <select id="order-month-select" class="circuit-filter-pill" style="cursor: pointer; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(168, 85, 247, 0.4); color: #fff; padding: 5px 10px; border-radius: 14px;" onchange="handleOrderMonthSelectChange(this.value)">
-                                    </select>
-                                    <input type="month" id="order-month-input" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 0.82rem; cursor: pointer;" onchange="handleOrderMonthInputChange(this.value)">
-                                </div>
-
-                                <!-- Quick Search Input -->
-                                <div style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 10px; gap: 6px;">
-                                    <i class="fa-solid fa-magnifying-glass" style="font-size: 0.75rem; color: var(--text-secondary);"></i>
-                                    <input type="text" id="order-history-search" placeholder="Search orders..." onkeyup="handleOrderHistorySearch(this.value)" style="background: transparent; border: none; outline: none; color: white; font-size: 0.82rem; width: 130px;">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Active Filter Summary Pill Bar -->
-                        <div id="order-filter-summary-bar" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 8px 14px; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;">
-                            <span id="order-filter-desc" style="color: var(--text-secondary);">Showing all orders</span>
-                            <span id="order-filter-value-sum" style="color: #38bdf8; font-weight: 600;">Total Traded: ₹0.00</span>
-                        </div>
-
+                        <h3>Order History</h3>
                         <table class="market-table">
                             <thead>
                                 <tr>
@@ -1445,19 +1396,6 @@ function getSynchronizedCommodityPrice(symbol, defaultPrice = 0) {
             return Number(mItem.current_price);
         }
     }
-
-    // 3. Fallback: Nifty 50 / F&O Equity Scanner live quotes (for Indian Stocks)
-    if (typeof niftyOpportunitiesData !== 'undefined' && Array.isArray(niftyOpportunitiesData?.stocks)) {
-        const eqClean = cleanSym.replace('.NS', '');
-        const sItem = niftyOpportunitiesData.stocks.find(s => {
-            const ss = (s.symbol || '').replace('.NS', '').toUpperCase();
-            const sn = (s.name || '').toUpperCase();
-            return ss === eqClean || sn === eqClean || (s.symbol || '').toUpperCase() === String(symbol).toUpperCase();
-        });
-        if (sItem && sItem.close !== undefined && sItem.close !== null && !isNaN(Number(sItem.close)) && Number(sItem.close) > 0) {
-            return Number(sItem.close);
-        }
-    }
     
     return Number(defaultPrice) || 0;
 }
@@ -1717,7 +1655,6 @@ function switchTab(btn, targetId, updateUrl = true) {
 
     if (targetId === 'admin-tab') {
         if (typeof fetchSubscribers === 'function') fetchSubscribers();
-        if (typeof loadAndRenderOrderHistory === 'function') loadAndRenderOrderHistory();
     }
 }
 window.switchTab = switchTab;
@@ -2742,18 +2679,6 @@ async function loadStockInvestmentsTracker() {
         if (!res || !res.ok) return;
         stockInvestmentsData = await res.json();
         
-        // Ensure today_pick is synchronized with matching holding in investments array immediately upon load
-        if (stockInvestmentsData && stockInvestmentsData.today_pick && Array.isArray(stockInvestmentsData.investments)) {
-            const tp = stockInvestmentsData.today_pick;
-            const match = stockInvestmentsData.investments.find(i => 
-                (i.id && tp.id && i.id === tp.id) ||
-                (i.symbol && tp.symbol && i.symbol.toUpperCase() === tp.symbol.toUpperCase() && i.status === 'ACTIVE')
-            );
-            if (match) {
-                Object.assign(tp, match);
-            }
-        }
-
         // Render hero card in Golden Crossover tab & Stock Investing subtab
         if (stockInvestmentsData.today_pick) {
             renderNiftyDailyPickHeroCard(stockInvestmentsData.today_pick);
@@ -2791,9 +2716,6 @@ async function loadStockInvestmentsTracker() {
         if (typeof renderPortfolio === 'function') {
             renderPortfolio();
         }
-        if (typeof renderOrderHistory === 'function') {
-            renderOrderHistory();
-        }
     } catch (e) {
         console.error("Error loading stock investments tracker:", e);
     }
@@ -2810,57 +2732,32 @@ function renderNiftyDailyPickHeroCard(pick) {
         if (investContainer) investContainer.innerHTML = '';
         return;
     }
-
-    // Always bind to matching active holding from stockInvestmentsData.investments if present to guarantee 100% price/P&L sync
-    let matchingHolding = null;
-    if (typeof stockInvestmentsData !== 'undefined' && Array.isArray(stockInvestmentsData?.investments)) {
-        matchingHolding = stockInvestmentsData.investments.find(i => 
-            (i.id && pick.id && i.id === pick.id) || 
-            (i.symbol && pick.symbol && i.symbol.toUpperCase() === pick.symbol.toUpperCase() && i.status === 'ACTIVE')
-        );
-    }
-    const effectivePick = matchingHolding ? Object.assign({}, pick, matchingHolding) : pick;
     
     // Dynamic real-time synchronized MTM calculation matching portfolio table exactly
     const livePrice = (typeof getSynchronizedCommodityPrice === 'function') 
-        ? getSynchronizedCommodityPrice(effectivePick.symbol, effectivePick.current_price || effectivePick.entry_price)
-        : (effectivePick.current_price || effectivePick.entry_price);
-    const sharesCount = Number(effectivePick.shares || 1);
-    const costBasis = Number(effectivePick.invested_value || (sharesCount * Number(effectivePick.entry_price || 0)));
+        ? getSynchronizedCommodityPrice(pick.symbol, pick.current_price || pick.entry_price)
+        : (pick.current_price || pick.entry_price);
+    const sharesCount = Number(pick.shares || 1);
+    const costBasis = Number(pick.invested_value || (sharesCount * Number(pick.entry_price || 0)));
     const currentValue = sharesCount * livePrice;
 
-    let pnl = 0;
-    let pnlPct = 0;
-    if (effectivePick.status === 'ACTIVE' || !effectivePick.status) {
+    let pnl = Number(pick.pnl_inr || 0);
+    let pnlPct = Number(pick.pnl_pct || 0);
+    if (pick.status === 'ACTIVE' || !pick.status) {
         pnl = currentValue - costBasis;
         pnlPct = costBasis > 0 ? (pnl / costBasis) * 100 : 0;
-    } else {
-        pnl = Number(effectivePick.pnl_inr || 0);
-        pnlPct = Number(effectivePick.pnl_pct || 0);
-    }
-
-    // Keep in-memory references synchronized
-    effectivePick.current_price = livePrice;
-    effectivePick.current_value = currentValue;
-    effectivePick.pnl_inr = pnl;
-    effectivePick.pnl_pct = pnlPct;
-    if (matchingHolding) {
-        matchingHolding.current_price = livePrice;
-        matchingHolding.current_value = currentValue;
-        matchingHolding.pnl_inr = pnl;
-        matchingHolding.pnl_pct = pnlPct;
     }
 
     const pnlColor = pnl >= 0 ? '#4ade80' : '#fb7185';
     const pnlSign = pnl > 0 ? '+' : (pnl < 0 ? '-' : '');
     const pnlText = `${pnlSign}₹${Math.abs(pnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     const pnlPctText = `${pnlPct > 0 ? '+' : ''}${pnlPct.toFixed(2)}% Return`;
-    const statusBg = effectivePick.status === 'TARGET_HIT' ? 'rgba(74, 222, 128, 0.2)' : (effectivePick.status === 'STOP_LOSS_HIT' ? 'rgba(251, 113, 133, 0.2)' : 'rgba(245, 158, 11, 0.2)');
-    const statusBorder = effectivePick.status === 'TARGET_HIT' ? 'rgba(74, 222, 128, 0.4)' : (effectivePick.status === 'STOP_LOSS_HIT' ? 'rgba(251, 113, 133, 0.4)' : 'rgba(245, 158, 11, 0.4)');
-    const statusColor = effectivePick.status === 'TARGET_HIT' ? '#4ade80' : (effectivePick.status === 'STOP_LOSS_HIT' ? '#fb7185' : '#fbbf24');
-    const statusLabel = effectivePick.status === 'TARGET_HIT' ? '🎯 TARGET HIT' : (effectivePick.status === 'STOP_LOSS_HIT' ? '🛡️ STOP LOSS HIT' : '🟢 ACTIVE / HOLDING');
+    const statusBg = pick.status === 'TARGET_HIT' ? 'rgba(74, 222, 128, 0.2)' : (pick.status === 'STOP_LOSS_HIT' ? 'rgba(251, 113, 133, 0.2)' : 'rgba(245, 158, 11, 0.2)');
+    const statusBorder = pick.status === 'TARGET_HIT' ? 'rgba(74, 222, 128, 0.4)' : (pick.status === 'STOP_LOSS_HIT' ? 'rgba(251, 113, 133, 0.4)' : 'rgba(245, 158, 11, 0.4)');
+    const statusColor = pick.status === 'TARGET_HIT' ? '#4ade80' : (pick.status === 'STOP_LOSS_HIT' ? '#fb7185' : '#fbbf24');
+    const statusLabel = pick.status === 'TARGET_HIT' ? '🎯 TARGET HIT' : (pick.status === 'STOP_LOSS_HIT' ? '🛡️ STOP LOSS HIT' : '🟢 ACTIVE / HOLDING');
 
-    const varianceVal = Number(effectivePick.variance_from_30k || 0);
+    const varianceVal = Number(pick.variance_from_30k || 0);
     const varianceText = varianceVal >= 0 ? `+₹${varianceVal.toFixed(2)}` : `-₹${Math.abs(varianceVal).toFixed(2)}`;
 
     const cardHtml = `
@@ -2871,19 +2768,19 @@ function renderNiftyDailyPickHeroCard(pick) {
                         <i class="fa-solid fa-crown"></i> Today's Daily Golden Cross Investment (~₹30,000 Sizing)
                     </div>
                     <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
-                        <h2 style="margin: 0; font-size: 1.45rem; color: #f8fafc; font-weight: 800;">${effectivePick.full_name || effectivePick.name}</h2>
-                        <span style="color: #94a3b8; font-size: 0.9rem; font-weight: 600;">(${effectivePick.symbol})</span>
+                        <h2 style="margin: 0; font-size: 1.45rem; color: #f8fafc; font-weight: 800;">${pick.full_name || pick.name}</h2>
+                        <span style="color: #94a3b8; font-size: 0.9rem; font-weight: 600;">(${pick.symbol})</span>
                         <span style="font-size: 0.75rem; color: ${statusColor}; background: ${statusBg}; border: 1px solid ${statusBorder}; padding: 2px 8px; border-radius: 4px; font-weight: 700;">${statusLabel}</span>
                     </div>
                     <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">
-                        <i class="fa-regular fa-calendar-check" style="color: #818cf8; margin-right: 4px;"></i> Executed at Start of Day (${effectivePick.date}) · <span style="color:${effectivePick.cap_category === 'Mid Cap' ? '#38bdf8' : '#fbbf24'}; font-weight:700;">${effectivePick.cap_category || 'Large Cap'}</span> · ${effectivePick.sector || 'Indian Equities'} · 50 EMA (₹${effectivePick.ema_50}) &gt; 200 EMA (₹${effectivePick.ema_200})
+                        <i class="fa-regular fa-calendar-check" style="color: #818cf8; margin-right: 4px;"></i> Executed at Start of Day (${pick.date}) · <span style="color:${pick.cap_category === 'Mid Cap' ? '#38bdf8' : '#fbbf24'}; font-weight:700;">${pick.cap_category || 'Large Cap'}</span> · ${pick.sector || 'Indian Equities'} · 50 EMA (₹${pick.ema_50}) &gt; 200 EMA (₹${pick.ema_200})
                     </div>
                 </div>
                 <div style="text-align: right;">
                     <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Automated Capital Allocated</div>
-                    <div style="font-size: 1.5rem; font-weight: 800; color: #4ade80; margin: 2px 0;">₹${Number(effectivePick.invested_value).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #4ade80; margin: 2px 0;">₹${Number(pick.invested_value).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                     <div style="font-size: 0.78rem; color: #cbd5e1;">
-                        <strong style="color: #f8fafc;">${effectivePick.shares} Shares</strong> @ ₹${Number(effectivePick.entry_price).toFixed(2)} 
+                        <strong style="color: #f8fafc;">${pick.shares} Shares</strong> @ ₹${Number(pick.entry_price).toFixed(2)} 
                         <span style="color: #a5b4fc; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); padding: 1px 6px; border-radius: 4px; margin-left: 4px;">Target: ₹30k (${varianceText})</span>
                     </div>
                 </div>
@@ -2893,42 +2790,42 @@ function renderNiftyDailyPickHeroCard(pick) {
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-top: 1rem; margin-bottom: 1rem;">
                 <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
                     <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Win Probability</div>
-                    <div style="font-size: 1.15rem; font-weight: 800; color: #fbbf24; margin-top: 2px;">${effectivePick.win_probability}% 🔥</div>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: #fbbf24; margin-top: 2px;">${pick.win_probability}% 🔥</div>
                     <div style="font-size: 0.68rem; color: #a5b4fc;">Elite Confluence</div>
                 </div>
                 <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
                     <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">52W Peak Discount</div>
-                    <div style="font-size: 1.15rem; font-weight: 800; color: #38bdf8; margin-top: 2px;">-${effectivePick.discount_pct}%</div>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: #38bdf8; margin-top: 2px;">-${pick.discount_pct}%</div>
                     <div style="font-size: 0.68rem; color: #94a3b8;">Value Dip</div>
                 </div>
                 <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
                     <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">RSI Indicator</div>
-                    <div style="font-size: 1.15rem; font-weight: 800; color: #f97316; margin-top: 2px;">${effectivePick.rsi}</div>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: #f97316; margin-top: 2px;">${pick.rsi}</div>
                     <div style="font-size: 0.68rem; color: #fb923c;">Oversold Floor</div>
                 </div>
                 <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
                     <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Target 1 / Target 2</div>
-                    <div style="font-size: 1.05rem; font-weight: 800; color: #4ade80; margin-top: 2px;">₹${effectivePick.target_1}</div>
-                    <div style="font-size: 0.68rem; color: #86efac;">T2: ₹${effectivePick.target_2} (+${effectivePick.potential_upside_t2 || 17}%)</div>
+                    <div style="font-size: 1.05rem; font-weight: 800; color: #4ade80; margin-top: 2px;">₹${pick.target_1}</div>
+                    <div style="font-size: 0.68rem; color: #86efac;">T2: ₹${pick.target_2} (+${pick.potential_upside_t2 || 17}%)</div>
                 </div>
                 <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
                     <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Protective Stop-Loss</div>
-                    <div style="font-size: 1.05rem; font-weight: 800; color: #fb7185; margin-top: 2px;">₹${effectivePick.stop_loss}</div>
-                    <div style="font-size: 0.68rem; color: #fda4af;">-${effectivePick.risk_pct || 4.5}% risk floor</div>
+                    <div style="font-size: 1.05rem; font-weight: 800; color: #fb7185; margin-top: 2px;">₹${pick.stop_loss}</div>
+                    <div style="font-size: 0.68rem; color: #fda4af;">-${pick.risk_pct || 4.5}% risk floor</div>
                 </div>
                 <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.7rem 0.85rem;">
                     <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Live MTM Return</div>
                     <div style="font-size: 1.15rem; font-weight: 800; color: ${pnlColor}; margin-top: 2px;">${pnlText}</div>
-                    <div style="font-size: 0.68rem; color: ${pnlColor}; font-weight: 600;">${pnlPctText} <span style="color:#94a3b8; font-weight:400; font-size:0.65rem;">(CMP: ₹${livePrice.toFixed(2)})</span></div>
+                    <div style="font-size: 0.68rem; color: ${pnlColor}; font-weight: 600;">${pnlPctText}</div>
                 </div>
-                ${effectivePick.time_machine ? `
-                <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 8px; padding: 0.7rem 0.85rem;" title="Monte Carlo Time Machine (3,000 real 5m volatility replays): Target is +${effectivePick.potential_upside_t1 || 17}% away, requiring a multi-day swing holding period. Intraday Stop Hit Rate: ${effectivePick.time_machine.p_stop_pct}%.">
+                ${pick.time_machine ? `
+                <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 8px; padding: 0.7rem 0.85rem;" title="Monte Carlo Time Machine (3,000 real 5m volatility replays): Target is +${pick.potential_upside_t1 || 17}% away, requiring a multi-day swing holding period. Intraday Stop Hit Rate: ${pick.time_machine.p_stop_pct}%.">
                     <div style="font-size: 0.72rem; color: #a78bfa; font-weight: 600;">🎲 Monte Carlo Replay</div>
                     <div style="font-size: 1.15rem; font-weight: 800; color: #c4b5fd; margin-top: 2px;">
-                        ${effectivePick.time_machine.p_neither_pct >= 90 ? 'Swing Horizon' : effectivePick.time_machine.p_target_pct + '% Win'}
+                        ${pick.time_machine.p_neither_pct >= 90 ? 'Swing Horizon' : pick.time_machine.p_target_pct + '% Win'}
                     </div>
                     <div style="font-size: 0.68rem; color: #ddd6fe;">
-                        ${effectivePick.time_machine.p_neither_pct >= 90 ? '3k Runs · 0% SL Hit (Open)' : '3k Runs · ' + (effectivePick.time_machine.expected_r >= 0 ? '+' : '') + effectivePick.time_machine.expected_r + 'R'}
+                        ${pick.time_machine.p_neither_pct >= 90 ? '3k Runs · 0% SL Hit (Open)' : '3k Runs · ' + (pick.time_machine.expected_r >= 0 ? '+' : '') + pick.time_machine.expected_r + 'R'}
                     </div>
                 </div>` : ''}
             </div>
@@ -4021,39 +3918,17 @@ async function fetchPaperTradingData(user) {
     }
 
     // 2. Fetch Transactions to calculate portfolio
-    let txData = null;
-    let txError = null;
-    try {
-        const res = await supabaseClient
-            .from('transactions')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('timestamp', { ascending: true });
-        txData = res.data;
-        txError = res.error;
-    } catch (e) {
-        console.warn("Transactions query with timestamp sort:", e);
-    }
-
-    if (txError) {
-        try {
-            const res2 = await supabaseClient
-                .from('transactions')
-                .select('*')
-                .eq('user_id', user.id);
-            if (res2 && res2.data) {
-                txData = res2.data;
-                txError = null;
-            }
-        } catch(e) {}
-    }
+    const { data: txData, error: txError } = await supabaseClient
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('timestamp', { ascending: true });
         
     if (txError) {
         console.error("Error fetching transactions:", txError);
-    }
-    
-    userPortfolio = {};
-    if (txData && Array.isArray(txData)) {
+    } else if (txData) {
+        userPortfolio = {};
+        
         txData.forEach(tx => {
             if (!userPortfolio[tx.symbol]) {
                 userPortfolio[tx.symbol] = { shares: 0, avgPrice: 0 };
@@ -4099,10 +3974,8 @@ async function fetchPaperTradingData(user) {
                 }
             }
         });
-    }
         
-    // 3. Fetch Pending Orders
-    try {
+        // 3. Fetch Pending Orders
         const { data: poData, error: poError } = await supabaseClient
             .from('pending_orders')
             .select('*')
@@ -4114,15 +3987,12 @@ async function fetchPaperTradingData(user) {
         } else if (poData) {
             pendingOrders = poData;
         }
-    } catch (e) {
-        console.warn("Error fetching pending orders:", e);
+        
+        renderOrderHistory(txData);
+        renderPendingOrders(pendingOrders);
+        renderPortfolio();
+        renderTradeMarket();
     }
-    
-    userSupabaseTransactions = txData || [];
-    renderOrderHistory(userSupabaseTransactions);
-    renderPendingOrders(pendingOrders);
-    renderPortfolio();
-    renderTradeMarket();
     
     // Show the subscriber section
     document.getElementById('admin-subscribers-section').style.display = 'block';
@@ -4285,21 +4155,6 @@ function renderPortfolio() {
             const isProfit = pl >= 0;
             const color = isProfit ? '#4ade80' : '#fb7185';
             const sign = isProfit ? '+' : '';
-
-            // Ensure in-memory holding and today_pick remain in exact lockstep
-            inv.current_price = currentPrice;
-            inv.current_value = currentValue;
-            inv.pnl_inr = pl;
-            inv.pnl_pct = plPercent;
-
-            if (stockInvestmentsData && stockInvestmentsData.today_pick && 
-                ((stockInvestmentsData.today_pick.id && inv.id && stockInvestmentsData.today_pick.id === inv.id) ||
-                 (stockInvestmentsData.today_pick.symbol && inv.symbol && stockInvestmentsData.today_pick.symbol.toUpperCase() === inv.symbol.toUpperCase()))) {
-                stockInvestmentsData.today_pick.current_price = currentPrice;
-                stockInvestmentsData.today_pick.current_value = currentValue;
-                stockInvestmentsData.today_pick.pnl_inr = pl;
-                stockInvestmentsData.today_pick.pnl_pct = plPercent;
-            }
 
             totalInvested += costBasis;
             currentPortfolioValue += currentValue;
@@ -4727,490 +4582,6 @@ function renderPendingOrders(orders) {
     if (tbodyOld) tbodyOld.innerHTML = buildTableRows(activeOrders);
     if (cardsOld) cardsOld.innerHTML = buildCards(activeOrders);
 }
-
-// ==========================================
-// ORDER HISTORY MANAGEMENT & FILTERS
-// ==========================================
-let userSupabaseTransactions = [];
-let allExtractedOrders = [];
-let orderHistoryFilterMode = 'ALL'; // 'ALL' | 'DAY' | 'MONTH'
-let selectedOrderDay = '';          // YYYY-MM-DD
-let selectedOrderMonth = '';        // YYYY-MM
-let orderHistorySearchQuery = '';
-
-function getAllTakenOrders(supabaseTxs = []) {
-    const unifiedOrders = [];
-    const seenOrderKeys = new Set();
-
-    function addOrder(order) {
-        if (!order || !order.type || !order.price || !order.qty) return;
-        const key = `${order.symbol}_${order.type}_${order.qty}_${order.price}_${order.dayKey}`;
-        if (seenOrderKeys.has(key)) return;
-        seenOrderKeys.add(key);
-        unifiedOrders.push(order);
-    }
-
-    function parseDateInfo(dStr, tStr) {
-        let dt = null;
-        if (dStr) {
-            const cleanTime = (tStr || '').replace(' IST', '').trim();
-            const full = cleanTime ? `${dStr} ${cleanTime}` : dStr;
-            const parsed = new Date(full);
-            if (!isNaN(parsed.getTime())) {
-                dt = parsed;
-            } else {
-                const parts = dStr.trim().split(' ');
-                if (parts.length >= 3) {
-                    const day = parseInt(parts[0], 10);
-                    const months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
-                    const mon = months[parts[1].toLowerCase().slice(0, 3)] ?? 0;
-                    const yr = parseInt(parts[2], 10);
-                    dt = new Date(yr, mon, day);
-                }
-            }
-        }
-        if (!dt || isNaN(dt.getTime())) dt = new Date();
-
-        const yyyy = dt.getFullYear();
-        const mm = String(dt.getMonth() + 1).padStart(2, '0');
-        const dd = String(dt.getDate()).padStart(2, '0');
-        const dayKey = `${yyyy}-${mm}-${dd}`;
-        const monthKey = `${yyyy}-${mm}`;
-        
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const fullMonthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-        
-        const dayDisplay = `${dd} ${monthNames[dt.getMonth()]} ${yyyy}`;
-        const monthDisplay = `${fullMonthNames[dt.getMonth()]} ${yyyy}`;
-        
-        return { 
-            dt, 
-            dayKey, 
-            monthKey, 
-            dayDisplay, 
-            monthDisplay, 
-            timeDisplay: tStr || dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) 
-        };
-    }
-
-    // 1. User direct paper trades (Supabase transactions table)
-    if (Array.isArray(supabaseTxs)) {
-        for (const tx of supabaseTxs) {
-            const rawDate = tx.timestamp || tx.created_at || new Date().toISOString();
-            const dateInfo = parseDateInfo(rawDate);
-            const marketItem = (typeof marketData !== 'undefined' && Array.isArray(marketData))
-                ? marketData.find(m => m.symbol === tx.symbol)
-                : null;
-            const name = marketItem ? marketItem.name : tx.symbol;
-            const qty = Number(tx.quantity) || 1;
-            const price = Number(tx.price) || 0;
-
-            addOrder({
-                id: `sb-${tx.id || Math.random()}`,
-                rawDate: rawDate,
-                dateObj: dateInfo.dt,
-                dayKey: dateInfo.dayKey,
-                monthKey: dateInfo.monthKey,
-                dayDisplay: dateInfo.dayDisplay,
-                monthDisplay: dateInfo.monthDisplay,
-                timeDisplay: dateInfo.timeDisplay,
-                symbol: tx.symbol,
-                name: name,
-                type: (tx.transaction_type || 'BUY').toUpperCase(),
-                qty: qty,
-                price: price,
-                totalValue: qty * price,
-                source: 'Paper Trading'
-            });
-        }
-    }
-
-    // 2. Advisory Trades (Both live tracker and historical archive)
-    const advLive = (typeof activeTrackerCache !== 'undefined' && activeTrackerCache?.trades)
-        ? activeTrackerCache.trades
-        : ((typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) ? advisoryTrackerData.trades : []);
-    const advArch = (typeof archiveTrackerCache !== 'undefined' && archiveTrackerCache?.trades)
-        ? archiveTrackerCache.trades
-        : [];
-    const allAdvTrades = [...advLive, ...advArch];
-
-    for (const t of allAdvTrades) {
-        const pt = t.paper_trade;
-        if (pt && (pt.action === 'BUY' || pt.action === 'SELL')) {
-            const entryDateInfo = parseDateInfo(t.date, pt.entry_time);
-            const qty = Number(pt.quantity) || Number(t.lot_size) || 1;
-            const entryPrice = Number(pt.entry_price) || Number(t.suggestion_6pm?.reference_price) || 0;
-            if (entryPrice > 0) {
-                addOrder({
-                    id: `adv-${t.id}-entry`,
-                    rawDate: `${t.date} ${pt.entry_time || ''}`,
-                    dateObj: entryDateInfo.dt,
-                    dayKey: entryDateInfo.dayKey,
-                    monthKey: entryDateInfo.monthKey,
-                    dayDisplay: entryDateInfo.dayDisplay,
-                    monthDisplay: entryDateInfo.monthDisplay,
-                    timeDisplay: pt.entry_time || entryDateInfo.timeDisplay,
-                    symbol: t.symbol,
-                    name: t.name || t.symbol,
-                    type: pt.action.toUpperCase(),
-                    qty: qty,
-                    price: entryPrice,
-                    totalValue: qty * entryPrice,
-                    source: 'Commodity Advisory'
-                });
-            }
-
-            const exitPrice = Number(pt.exit_price) || 0;
-            if ((pt.status === 'CLOSED' || exitPrice > 0) && exitPrice > 0) {
-                const exitDateInfo = parseDateInfo(t.date, pt.exit_time);
-                const exitAction = pt.action === 'BUY' ? 'SELL' : 'BUY';
-                addOrder({
-                    id: `adv-${t.id}-exit`,
-                    rawDate: `${t.date} ${pt.exit_time || ''}`,
-                    dateObj: exitDateInfo.dt,
-                    dayKey: exitDateInfo.dayKey,
-                    monthKey: exitDateInfo.monthKey,
-                    dayDisplay: exitDateInfo.dayDisplay,
-                    monthDisplay: exitDateInfo.monthDisplay,
-                    timeDisplay: pt.exit_time || exitDateInfo.timeDisplay,
-                    symbol: t.symbol,
-                    name: t.name || t.symbol,
-                    type: exitAction,
-                    qty: qty,
-                    price: exitPrice,
-                    totalValue: qty * exitPrice,
-                    source: 'Commodity Advisory (Exit)'
-                });
-            }
-        }
-    }
-
-    // 3. Stock Investments (Stock Investing module)
-    const stkInvestments = (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.investments)
-        ? stockInvestmentsData.investments
-        : [];
-    for (const inv of stkInvestments) {
-        const entryDateInfo = parseDateInfo(inv.date, inv.time);
-        const shares = Number(inv.shares) || 1;
-        const entryPrice = Number(inv.entry_price) || 0;
-        if (entryPrice > 0) {
-            addOrder({
-                id: `stk-${inv.id}-entry`,
-                rawDate: inv.time || inv.date,
-                dateObj: entryDateInfo.dt,
-                dayKey: entryDateInfo.dayKey,
-                monthKey: entryDateInfo.monthKey,
-                dayDisplay: entryDateInfo.dayDisplay,
-                monthDisplay: entryDateInfo.monthDisplay,
-                timeDisplay: inv.time ? inv.time.split(',')[1]?.trim() || entryDateInfo.timeDisplay : entryDateInfo.timeDisplay,
-                symbol: inv.symbol,
-                name: inv.full_name || inv.name || inv.symbol,
-                type: 'BUY',
-                qty: shares,
-                price: entryPrice,
-                totalValue: Number(inv.invested_value) || (shares * entryPrice),
-                source: 'Stock Investing'
-            });
-        }
-
-        const exitPrice = Number(inv.exit_price) || 0;
-        if (inv.status === 'CLOSED' && exitPrice > 0) {
-            const exitDateInfo = parseDateInfo(inv.date, inv.exit_time);
-            addOrder({
-                id: `stk-${inv.id}-exit`,
-                rawDate: inv.exit_time || inv.date,
-                dateObj: exitDateInfo.dt,
-                dayKey: exitDateInfo.dayKey,
-                monthKey: exitDateInfo.monthKey,
-                dayDisplay: exitDateInfo.dayDisplay,
-                monthDisplay: exitDateInfo.monthDisplay,
-                timeDisplay: inv.exit_time || exitDateInfo.timeDisplay,
-                symbol: inv.symbol,
-                name: inv.full_name || inv.name || inv.symbol,
-                type: 'SELL',
-                qty: shares,
-                price: exitPrice,
-                totalValue: shares * exitPrice,
-                source: 'Stock Investing (Exit)'
-            });
-        }
-    }
-
-    unifiedOrders.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
-    return unifiedOrders;
-}
-
-function renderOrderHistory(txData) {
-    if (Array.isArray(txData)) {
-        userSupabaseTransactions = txData;
-    }
-    allExtractedOrders = getAllTakenOrders(userSupabaseTransactions);
-    populateOrderFilterOptions();
-    applyOrderHistoryFilter();
-}
-window.renderOrderHistory = renderOrderHistory;
-
-async function loadAndRenderOrderHistory() {
-    const promises = [];
-    if ((!userSupabaseTransactions || userSupabaseTransactions.length === 0) && typeof fetchPaperTradingData === 'function') {
-        promises.push(fetchPaperTradingData());
-    }
-    if (!activeTrackerCache && typeof loadAdvisoryTracker === 'function') {
-        promises.push(loadAdvisoryTracker());
-    }
-    if (!stockInvestmentsData && typeof loadStockInvestmentsTracker === 'function') {
-        promises.push(loadStockInvestmentsTracker());
-    }
-    if (promises.length > 0) {
-        try { await Promise.allSettled(promises); } catch(e) {}
-    }
-    renderOrderHistory(userSupabaseTransactions);
-}
-window.loadAndRenderOrderHistory = loadAndRenderOrderHistory;
-
-function populateOrderFilterOptions() {
-    const dayMap = new Map();
-    const monthMap = new Map();
-
-    for (const o of allExtractedOrders) {
-        if (!dayMap.has(o.dayKey)) {
-            dayMap.set(o.dayKey, { display: o.dayDisplay, count: 0 });
-        }
-        dayMap.get(o.dayKey).count++;
-
-        if (!monthMap.has(o.monthKey)) {
-            monthMap.set(o.monthKey, { display: o.monthDisplay, count: 0 });
-        }
-        monthMap.get(o.monthKey).count++;
-    }
-
-    const sortedDays = Array.from(dayMap.keys()).sort().reverse();
-    const sortedMonths = Array.from(monthMap.keys()).sort().reverse();
-
-    // Populate Day dropdown
-    const daySelect = document.getElementById('order-day-select');
-    if (daySelect) {
-        if (sortedDays.length > 0) {
-            daySelect.innerHTML = sortedDays.map(dk => {
-                const info = dayMap.get(dk);
-                return `<option value="${dk}">${info.display} (${info.count} ${info.count === 1 ? 'order' : 'orders'})</option>`;
-            }).join('');
-            if (!selectedOrderDay || !dayMap.has(selectedOrderDay)) {
-                selectedOrderDay = sortedDays[0];
-            }
-            daySelect.value = selectedOrderDay;
-        } else {
-            daySelect.innerHTML = `<option value="">No days available</option>`;
-        }
-    }
-
-    const dayInput = document.getElementById('order-day-input');
-    if (dayInput && selectedOrderDay) {
-        dayInput.value = selectedOrderDay;
-    }
-
-    // Populate Month dropdown
-    const monthSelect = document.getElementById('order-month-select');
-    if (monthSelect) {
-        if (sortedMonths.length > 0) {
-            monthSelect.innerHTML = sortedMonths.map(mk => {
-                const info = monthMap.get(mk);
-                return `<option value="${mk}">${info.display} (${info.count} ${info.count === 1 ? 'order' : 'orders'})</option>`;
-            }).join('');
-            if (!selectedOrderMonth || !monthMap.has(selectedOrderMonth)) {
-                selectedOrderMonth = sortedMonths[0];
-            }
-            monthSelect.value = selectedOrderMonth;
-        } else {
-            monthSelect.innerHTML = `<option value="">No months available</option>`;
-        }
-    }
-
-    const monthInput = document.getElementById('order-month-input');
-    if (monthInput && selectedOrderMonth) {
-        monthInput.value = selectedOrderMonth;
-    }
-
-    const countBadge = document.getElementById('order-history-count-badge');
-    if (countBadge) {
-        countBadge.textContent = `${allExtractedOrders.length} Orders`;
-    }
-}
-
-function setOrderHistoryFilterMode(mode) {
-    orderHistoryFilterMode = mode;
-
-    const pillAll = document.getElementById('order-filter-pill-all');
-    const pillDay = document.getElementById('order-filter-pill-day');
-    const pillMonth = document.getElementById('order-filter-pill-month');
-
-    const dayControls = document.getElementById('order-day-filter-controls');
-    const monthControls = document.getElementById('order-month-filter-controls');
-
-    if (pillAll) pillAll.classList.toggle('active', mode === 'ALL');
-    if (pillDay) pillDay.classList.toggle('active', mode === 'DAY');
-    if (pillMonth) pillMonth.classList.toggle('active', mode === 'MONTH');
-
-    if (dayControls) dayControls.style.display = (mode === 'DAY') ? 'flex' : 'none';
-    if (monthControls) monthControls.style.display = (mode === 'MONTH') ? 'flex' : 'none';
-
-    applyOrderHistoryFilter();
-}
-window.setOrderHistoryFilterMode = setOrderHistoryFilterMode;
-
-function handleOrderDaySelectChange(val) {
-    selectedOrderDay = val;
-    const dayInput = document.getElementById('order-day-input');
-    if (dayInput) dayInput.value = val;
-    applyOrderHistoryFilter();
-}
-window.handleOrderDaySelectChange = handleOrderDaySelectChange;
-
-function handleOrderDayInputChange(val) {
-    if (!val) return;
-    selectedOrderDay = val;
-    const daySelect = document.getElementById('order-day-select');
-    if (daySelect) {
-        const optionExists = Array.from(daySelect.options).some(o => o.value === val);
-        if (optionExists) {
-            daySelect.value = val;
-        } else {
-            const opt = document.createElement('option');
-            opt.value = val;
-            opt.textContent = `${val} (Selected)`;
-            daySelect.appendChild(opt);
-            daySelect.value = val;
-        }
-    }
-    applyOrderHistoryFilter();
-}
-window.handleOrderDayInputChange = handleOrderDayInputChange;
-
-function handleOrderMonthSelectChange(val) {
-    selectedOrderMonth = val;
-    const monthInput = document.getElementById('order-month-input');
-    if (monthInput) monthInput.value = val;
-    applyOrderHistoryFilter();
-}
-window.handleOrderMonthSelectChange = handleOrderMonthSelectChange;
-
-function handleOrderMonthInputChange(val) {
-    if (!val) return;
-    selectedOrderMonth = val;
-    const monthSelect = document.getElementById('order-month-select');
-    if (monthSelect) {
-        const optionExists = Array.from(monthSelect.options).some(o => o.value === val);
-        if (optionExists) {
-            monthSelect.value = val;
-        } else {
-            const opt = document.createElement('option');
-            opt.value = val;
-            opt.textContent = `${val} (Selected)`;
-            monthSelect.appendChild(opt);
-            monthSelect.value = val;
-        }
-    }
-    applyOrderHistoryFilter();
-}
-window.handleOrderMonthInputChange = handleOrderMonthInputChange;
-
-function handleOrderHistorySearch(val) {
-    orderHistorySearchQuery = (val || '').trim().toLowerCase();
-    applyOrderHistoryFilter();
-}
-window.handleOrderHistorySearch = handleOrderHistorySearch;
-
-function applyOrderHistoryFilter() {
-    const tbody = document.getElementById('order-history-body');
-    const descEl = document.getElementById('order-filter-desc');
-    const sumEl = document.getElementById('order-filter-value-sum');
-    if (!tbody) return;
-
-    let filtered = [...allExtractedOrders];
-
-    // Filter by mode
-    if (orderHistoryFilterMode === 'DAY') {
-        if (selectedOrderDay) {
-            filtered = filtered.filter(o => o.dayKey === selectedOrderDay);
-        }
-    } else if (orderHistoryFilterMode === 'MONTH') {
-        if (selectedOrderMonth) {
-            filtered = filtered.filter(o => o.monthKey === selectedOrderMonth);
-        }
-    }
-
-    // Filter by search query
-    if (orderHistorySearchQuery) {
-        filtered = filtered.filter(o => {
-            return (o.symbol && o.symbol.toLowerCase().includes(orderHistorySearchQuery)) ||
-                   (o.name && o.name.toLowerCase().includes(orderHistorySearchQuery)) ||
-                   (o.type && o.type.toLowerCase().includes(orderHistorySearchQuery)) ||
-                   (o.dayDisplay && o.dayDisplay.toLowerCase().includes(orderHistorySearchQuery)) ||
-                   (o.source && o.source.toLowerCase().includes(orderHistorySearchQuery));
-        });
-    }
-
-    const totalTraded = filtered.reduce((acc, o) => acc + (o.totalValue || 0), 0);
-    if (sumEl) {
-        sumEl.textContent = `Total Traded: ₹${totalTraded.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-    if (descEl) {
-        if (orderHistoryFilterMode === 'DAY') {
-            const daySelect = document.getElementById('order-day-select');
-            const dayText = daySelect?.options[daySelect.selectedIndex]?.text?.split(' (')[0] || selectedOrderDay;
-            descEl.innerHTML = `Showing <strong>${filtered.length}</strong> orders taken on <strong>${dayText}</strong>`;
-        } else if (orderHistoryFilterMode === 'MONTH') {
-            const monthSelect = document.getElementById('order-month-select');
-            const monthText = monthSelect?.options[monthSelect.selectedIndex]?.text?.split(' (')[0] || selectedOrderMonth;
-            descEl.innerHTML = `Showing <strong>${filtered.length}</strong> orders taken in <strong>${monthText}</strong>`;
-        } else {
-            descEl.innerHTML = `Showing all <strong>${filtered.length}</strong> executed orders`;
-        }
-    }
-
-    if (filtered.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
-                    <i class="fa-solid fa-receipt" style="font-size: 2.2rem; margin-bottom: 0.75rem; opacity: 0.35; display: block; color: #a855f7;"></i>
-                    <div style="font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 0.25rem;">No orders found</div>
-                    <div style="font-size: 0.82rem;">No orders matched the selected ${orderHistoryFilterMode === 'DAY' ? 'day' : (orderHistoryFilterMode === 'MONTH' ? 'month' : 'criteria')}. Try selecting a different date.</div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    tbody.innerHTML = filtered.map(o => {
-        const isBuy = o.type === 'BUY';
-        const typeBadge = isBuy
-            ? `<span style="background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.78rem;">BUY</span>`
-            : `<span style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fb7185; padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.78rem;">SELL</span>`;
-        
-        const sourceBadge = o.source ? `<span style="font-size: 0.7rem; color: #94a3b8; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; margin-left: 6px;">${o.source}</span>` : '';
-
-        return `
-            <tr>
-                <td style="white-space: nowrap;">
-                    <div style="font-weight: 600; color: #fff;">${o.dayDisplay}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-secondary);">${o.timeDisplay}</div>
-                </td>
-                <td>
-                    <div style="font-weight: 600; color: #fff; display: flex; align-items: center;">
-                        <span>${o.name}</span>
-                        ${sourceBadge}
-                    </div>
-                    <div style="font-size: 0.75rem; color: #94a3b8; font-family: monospace;">${o.symbol}</div>
-                </td>
-                <td>${typeBadge}</td>
-                <td style="font-weight: 600;">${o.qty.toLocaleString('en-IN')}</td>
-                <td>₹${o.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td style="font-weight: 700; color: #fff;">₹${o.totalValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-            </tr>
-        `;
-    }).join('');
-}
-window.applyOrderHistoryFilter = applyOrderHistoryFilter;
 
 const COMMODITY_SYMBOLS = ['CRUDEOIL', 'NATURALGAS', 'GOLD', 'SILVER', 'COPPER', 'ZINC', 'ALUMINIUM', 'CRUDEOILM', 'NATURALGASM', 'SILVERMIC', 'GOLDM', 'GOLDTEN', 'COPPERM', 'ZINCMINI', 'ALUMINI'];
 
@@ -6278,9 +5649,6 @@ async function loadAdvisoryTracker() {
         // Apply month filter
         applyAdvisoryMonthFilter(currentAdvMonth);
 
-        // Update unified order history
-        if (typeof renderOrderHistory === 'function') renderOrderHistory();
-
     } catch (e) {
         console.error("Error loading advisory tracker:", e);
         const tbody = document.getElementById('advisory-tracker-body');
@@ -7124,7 +6492,6 @@ function startApp() {
     try { if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker(); } catch(e) { console.error("Load Advisory Error:", e); }
     try { if (typeof fetchNiftyOpportunities === 'function') fetchNiftyOpportunities(); } catch(e) { console.error("Load Nifty Error:", e); }
     try { if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker(); } catch(e) { console.error("Load Stock Investments Error:", e); }
-    try { if (typeof loadAndRenderOrderHistory === 'function') loadAndRenderOrderHistory(); } catch(e) { console.error("Load Order History Error:", e); }
 }
 
 if (document.readyState === 'loading') {
