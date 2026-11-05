@@ -2,7 +2,7 @@ import os
 import json
 import pytz
 from datetime import datetime
-from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer, MarketRegimeDetector, TradingAgentsOrchestrator
+from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer, MarketRegimeDetector, TradingAgentsOrchestrator, InstitutionalDirectionEngine
 
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'advisory_trades_tracker.json')
 NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'nifty_crossover_oversold.json')
@@ -391,33 +391,43 @@ def record_live_9am_advisory(commodities_list):
         # Action Logic:
         # 1. Significant Gap Up (>= +0.75%)
         if gap_pct >= 0.75:
-            # If Wide CPR -> Fade back to Previous Day Close (Gap Fill)
-            if cpr_width_pct >= 0.30:
-                if rsi is not None and rsi < 40:
-                    action = "STAND_ASIDE"
-                    entry_text = "STAND ASIDE / RSI OVERSOLD"
-                    rationale = f"Gap fade short blocked by RSI filter ({rsi:.1f} < 40). Momentum is already suppressed; risk of short squeeze."
-                    sl = None
-                    tgt = None
-                    c15_status = "RSI_FILTER_STAND_ASIDE"
-                    c15_detail = f"RSI {rsi:.1f} warned against shorting."
-                else:
-                    action = "SELL"
-                    entry_text = "SELL / GAP FADE (SHORT)"
-                    rationale = f"Significant opening gap up (+{gap_pct:.2f}%). Wide CPR ({cpr_width_pct:.2f}%) indicates high probability gap fill towards Prev Day Close (₹{p_close:,.2f})." + (f" (ATR Stop: ₹{atr_buf:,.2f})" if atr_buf else "")
-                    sl = round(max(cur_p, r1) + atr_buf, 2) if atr_buf else round(max(cur_p, r1) * 1.004, 2)
-                    tgt = p_close
-                    c15_status = "GAP_FADE_ENTERED"
-                    c15_detail = f"Fading opening gap up towards PDC ₹{p_close:,.2f}."
-            else:
-                # Narrow CPR -> Momentum continuation
+            inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
+                sym, cur_p, day_o, day_h, day_l, p_close,
+                ema20=item.get('ema_20'), ema50=item.get('ema_50'), ema200=item.get('ema_200'),
+                rsi=rsi, adx=adx, atr=atr
+            )
+            if not inst_dir.get('passed'):
+                action = "STAND_ASIDE"
+                entry_text = "STAND ASIDE / DIRECTION ENGINE"
+                rationale = f"Direction Engine Block: {inst_dir.get('reason')}"
+                sl = None
+                tgt = None
+                c15_status = "DIRECTION_ENGINE_STAND_ASIDE"
+                c15_detail = inst_dir.get('reason')
+            elif inst_dir.get('allowed_action') == "BUY":
                 action = "BUY"
                 entry_text = "BUY / GAP MOMENTUM"
-                rationale = f"Narrow CPR ({cpr_width_pct:.2f}%) expansion gap up (+{gap_pct:.2f}%). Riding opening momentum." + (f" (ATR Stop: ₹{atr_buf:,.2f})" if atr_buf else "")
+                rationale = f"Aligned with HTF Bull Trend & above Session VWAP (₹{inst_dir.get('vwap'):,.1f}). Riding opening momentum (+{gap_pct:.2f}%)." + (f" (ATR Stop: ₹{atr_buf:,.2f})" if atr_buf else "")
                 sl = round(min(cur_p, pivot) - atr_buf, 2) if atr_buf else round(min(cur_p, pivot) * 0.996, 2)
                 tgt = r2
                 c15_status = "GAP_MOMENTUM_ENTERED"
                 c15_detail = f"Riding opening breakout momentum towards R2 ₹{r2:,.2f}."
+            elif inst_dir.get('allowed_action') == "SELL":
+                action = "SELL"
+                entry_text = "SELL / GAP FADE (BEARISH REGIME)"
+                rationale = f"Gap up into HTF Bear Trend & below Session VWAP (₹{inst_dir.get('vwap'):,.1f}). Fading towards Prev Day Close (₹{p_close:,.2f})." + (f" (ATR Stop: ₹{atr_buf:,.2f})" if atr_buf else "")
+                sl = round(max(cur_p, r1) + atr_buf, 2) if atr_buf else round(max(cur_p, r1) * 1.004, 2)
+                tgt = p_close
+                c15_status = "GAP_FADE_ENTERED"
+                c15_detail = f"Fading opening gap up towards PDC ₹{p_close:,.2f}."
+            else:
+                action = "STAND_ASIDE"
+                entry_text = "STAND ASIDE / DIRECTION ENGINE"
+                rationale = inst_dir.get('reason')
+                sl = None
+                tgt = None
+                c15_status = "DIRECTION_ENGINE_STAND_ASIDE"
+                c15_detail = inst_dir.get('reason')
             
             sim_metrics = None
             risk_metrics = None
@@ -429,8 +439,19 @@ def record_live_9am_advisory(commodities_list):
                 c15_status = "EVENT_GUARD_STAND_ASIDE"
                 c15_detail = event_metrics.get('reason')
             elif action in ['BUY', 'SELL'] and sl and tgt:
+                # Institutional Risk Bracket & Hard Stand-Aside (No Choked Stops & Min 1.5R)
+                bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
+                    sym, action, cur_p, sl, tgt, lot_size, max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.5
+                )
+                if not bracket_eval.get('passed'):
+                    action = "STAND_ASIDE"
+                    entry_text = "STAND ASIDE / HARD RISK STOP"
+                    rationale = bracket_eval.get('reason')
+                    c15_status = "HARD_RISK_STAND_ASIDE"
+                    c15_detail = bracket_eval.get('reason')
+
                 # ORB Bar-Close & Wick Trap Guard
-                if "MOMENTUM" in entry_text:
+                if action in ['BUY', 'SELL'] and "MOMENTUM" in entry_text:
                     orb_check = ORBTimer.check_orb_confirmation(sym, action, cur_p, day_h, day_l, open_price=day_o, volume_ratio=vol_ratio, last_bar_close=cur_p)
                     if not orb_check.get('passed'):
                         action = "STAND_ASIDE"
@@ -524,33 +545,43 @@ def record_live_9am_advisory(commodities_list):
 
         # 2. Significant Gap Down (<= -0.75%)
         elif gap_pct <= -0.75:
-            # If Wide CPR -> Fade back to Previous Day Close (Gap Fill Bounce)
-            if cpr_width_pct >= 0.30:
-                if rsi is not None and rsi > 60:
-                    action = "STAND_ASIDE"
-                    entry_text = "STAND ASIDE / RSI MOMENTUM"
-                    rationale = f"Gap fade bounce blocked by RSI filter ({rsi:.1f} > 60). Downward momentum is active; avoiding knife-catching."
-                    sl = None
-                    tgt = None
-                    c15_status = "RSI_FILTER_STAND_ASIDE"
-                    c15_detail = f"RSI {rsi:.1f} warned against dip-buying."
-                else:
-                    action = "BUY"
-                    entry_text = "BUY / GAP FADE (BOUNCE)"
-                    rationale = f"Significant opening gap down ({gap_pct:.2f}%). Wide CPR ({cpr_width_pct:.2f}%) indicates high probability gap fill bounce towards Prev Day Close (₹{p_close:,.2f})." + (f" (ATR Stop: ₹{atr_buf:,.2f})" if atr_buf else "")
-                    sl = round(min(cur_p, s1) - atr_buf, 2) if atr_buf else round(min(cur_p, s1) * 0.996, 2)
-                    tgt = p_close
-                    c15_status = "GAP_FADE_ENTERED"
-                    c15_detail = f"Fading opening gap down towards PDC ₹{p_close:,.2f}."
-            else:
-                # Narrow CPR -> Momentum continuation down
+            inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
+                sym, cur_p, day_o, day_h, day_l, p_close,
+                ema20=item.get('ema_20'), ema50=item.get('ema_50'), ema200=item.get('ema_200'),
+                rsi=rsi, adx=adx, atr=atr
+            )
+            if not inst_dir.get('passed'):
+                action = "STAND_ASIDE"
+                entry_text = "STAND ASIDE / DIRECTION ENGINE"
+                rationale = f"Direction Engine Block: {inst_dir.get('reason')}"
+                sl = None
+                tgt = None
+                c15_status = "DIRECTION_ENGINE_STAND_ASIDE"
+                c15_detail = inst_dir.get('reason')
+            elif inst_dir.get('allowed_action') == "SELL":
                 action = "SELL"
                 entry_text = "SELL / GAP FLUSH"
-                rationale = f"Narrow CPR ({cpr_width_pct:.2f}%) breakdown gap down ({gap_pct:.2f}%). Riding opening short momentum." + (f" (ATR Stop: ₹{atr_buf:,.2f})" if atr_buf else "")
+                rationale = f"Aligned with HTF Bear Trend & below Session VWAP (₹{inst_dir.get('vwap'):,.1f}). Riding opening flush momentum ({gap_pct:.2f}%)." + (f" (ATR Stop: ₹{atr_buf:,.2f})" if atr_buf else "")
                 sl = round(max(cur_p, pivot) + atr_buf, 2) if atr_buf else round(max(cur_p, pivot) * 1.004, 2)
                 tgt = s2
                 c15_status = "GAP_MOMENTUM_ENTERED"
                 c15_detail = f"Riding opening flush momentum towards S2 ₹{s2:,.2f}."
+            elif inst_dir.get('allowed_action') == "BUY":
+                action = "BUY"
+                entry_text = "BUY / GAP DIP RECLAIM (BULLISH REGIME)"
+                rationale = f"Gap down into HTF Bull Trend support & above Session VWAP (₹{inst_dir.get('vwap'):,.1f}). Buying value pullback towards PDC ₹{p_close:,.2f}." + (f" (ATR Stop: ₹{atr_buf:,.2f})" if atr_buf else "")
+                sl = round(min(cur_p, s1) - atr_buf, 2) if atr_buf else round(min(cur_p, s1) * 0.996, 2)
+                tgt = p_close
+                c15_status = "GAP_FADE_ENTERED"
+                c15_detail = f"Buying value pullback towards PDC ₹{p_close:,.2f}."
+            else:
+                action = "STAND_ASIDE"
+                entry_text = "STAND ASIDE / DIRECTION ENGINE"
+                rationale = inst_dir.get('reason')
+                sl = None
+                tgt = None
+                c15_status = "DIRECTION_ENGINE_STAND_ASIDE"
+                c15_detail = inst_dir.get('reason')
 
             sim_metrics = None
             risk_metrics = None
@@ -562,8 +593,19 @@ def record_live_9am_advisory(commodities_list):
                 c15_status = "EVENT_GUARD_STAND_ASIDE"
                 c15_detail = event_metrics.get('reason')
             elif action in ['BUY', 'SELL'] and sl and tgt:
+                # Institutional Risk Bracket & Hard Stand-Aside (No Choked Stops & Min 1.5R)
+                bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
+                    sym, action, cur_p, sl, tgt, lot_size, max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.5
+                )
+                if not bracket_eval.get('passed'):
+                    action = "STAND_ASIDE"
+                    entry_text = "STAND ASIDE / HARD RISK STOP"
+                    rationale = bracket_eval.get('reason')
+                    c15_status = "HARD_RISK_STAND_ASIDE"
+                    c15_detail = bracket_eval.get('reason')
+
                 # ORB Bar-Close & Wick Trap Guard
-                if "MOMENTUM" in entry_text:
+                if action in ['BUY', 'SELL'] and "MOMENTUM" in entry_text:
                     orb_check = ORBTimer.check_orb_confirmation(sym, action, cur_p, day_h, day_l, open_price=day_o, volume_ratio=vol_ratio, last_bar_close=cur_p)
                     if not orb_check.get('passed'):
                         action = "STAND_ASIDE"
@@ -583,6 +625,19 @@ def record_live_9am_advisory(commodities_list):
                     else:
                         sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, sl, tgt, action=action.lower(), replays=3000)
                         if not sim_metrics.get('passed'):
+                            action = "STAND_ASIDE"
+                            entry_text = "STAND ASIDE / TIME MACHINE GUARD"
+                            rationale = f"Time Machine Simulation Block ({sim_metrics.get('summary')}): Replay leans toward stop loss."
+                            c15_status = "SIM_GUARD_STAND_ASIDE"
+                            c15_detail = sim_metrics.get('summary')
+                        elif TradingAgentsOrchestrator and TradingAgentsOrchestrator.is_available():
+                            ta_check = TradingAgentsOrchestrator.deliberate_intraday(sym, cur_p, action=action)
+                            if not ta_check.get('approved', True):
+                                action = "STAND_ASIDE"
+                                entry_text = "STAND ASIDE / AI MULTI-AGENT GUARD"
+                                rationale = f"TradingAgents AI Veto: {ta_check.get('reason')}"
+                                c15_status = "AI_GUARD_STAND_ASIDE"
+                                c15_detail = ta_check.get('reason')
                             action = "STAND_ASIDE"
                             entry_text = "STAND ASIDE / TIME MACHINE GUARD"
                             rationale = f"Time Machine Simulation Block ({sim_metrics.get('summary')}): Replay leans toward stop loss."
@@ -858,6 +913,26 @@ def record_live_130pm_advisory(commodities_list):
                     "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Sector Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside via Sector Correlation Guard." }
                 }
             else:
+                # Institutional Direction Engine Evaluation (HTF Trend + Session VWAP)
+                inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
+                    sym, cur_p, day_o, day_h, day_l, p_close,
+                    ema20=item.get('ema_20'), ema50=item.get('ema_50'), ema200=item.get('ema_200'),
+                    rsi=rsi, adx=adx, atr=atr
+                )
+                if not inst_dir.get('passed') or inst_dir.get('allowed_action') != 'BUY':
+                    entry = {
+                        "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                        "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                        "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                        "lot_size": lot_size, "event_context": f"Direction Engine Block ({inst_dir.get('reason')})",
+                        "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / DIRECTION ENGINE", "rationale": inst_dir.get('reason'), "reference_price": cur_p, "stop_loss": None, "target": None },
+                        "check_615": { "checked": True, "status": "DIRECTION_ENGINE_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": inst_dir.get('reason') },
+                        "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                        "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Direction Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {inst_dir.get('reason')}" }
+                    }
+                    new_entries.append(entry)
+                    continue
+
                 # Valid Trend-Aligned Breakout: Enter on Retest of Broken Asian High (Support)
                 support_entry = day_h
                 atr_sl_dist = round(1.2 * atr, 2) if (atr and atr > 0) else max(range_pts * 0.25, day_h * 0.003)
@@ -866,6 +941,24 @@ def record_live_130pm_advisory(commodities_list):
                 is_at_support = abs(cur_p - support_entry) / support_entry <= 0.002
                 entry_p = cur_p if is_at_support else support_entry
                 trade_status = "ACTIVE" if is_at_support else "PENDING_LIMIT"
+
+                # Institutional Risk Bracket & Hard Stand-Aside (No Choked Stops & Min 1.5R)
+                bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
+                    sym, "BUY", entry_p, tight_sl, tgt, lot_size, max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.5
+                )
+                if not bracket_eval.get('passed'):
+                    entry = {
+                        "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                        "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                        "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                        "lot_size": lot_size, "event_context": "Hard Risk Stop Guard (No Choked Stops)",
+                        "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / HARD RISK STOP", "rationale": bracket_eval.get('reason'), "reference_price": cur_p, "stop_loss": None, "target": None },
+                        "check_615": { "checked": True, "status": "HARD_RISK_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": bracket_eval.get('reason') },
+                        "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                        "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Risk Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {bracket_eval.get('reason')}" }
+                    }
+                    new_entries.append(entry)
+                    continue
                 
                 # 15-Minute ORB Bar-Close & Wick Trap Guard
                 orb_check = ORBTimer.check_orb_confirmation(sym, "BUY", cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p)
@@ -1174,14 +1267,40 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
 
         pre_ev = next((e for e in pre_6pm_events if e.get('symbol') == sym), None)
 
+        # Institutional Direction Engine Assessment
+        inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
+            sym, cur_p, item.get('open_price', cur_p), item.get('day_high', cur_p), item.get('day_low', cur_p),
+            p_close, ema20=item.get('ema_20'), ema50=item.get('ema_50'), ema200=item.get('ema_200'),
+            rsi=item.get('rsi_14'), adx=item.get('adx_14'), atr=item.get('atr_14')
+        )
+
         if pre_ev:
             direction = pre_ev.get('direction', 'LOWER')
-            action = "BUY" if direction == 'LOWER' else "SELL"
-            # Ensure BUY stop loss is strictly below min(entry, LC), and SELL stop is strictly above max(entry, UC)
-            if direction == 'LOWER':
-                sl = round(min(cur_p, lc_price) * 0.996, 2)
+            # Enforce Institutional Direction: Do not blindly buy falling lower circuits or short exploding upper circuits
+            if direction == 'LOWER' and inst_dir.get('allowed_action') != 'BUY':
+                action = "STAND_ASIDE"
+                entry_text = "STAND ASIDE / DIRECTION ENGINE"
+                rationale = f"Pre-6 PM Lower Circuit fade blocked: {inst_dir.get('reason')}. Knife-catching prohibited."
+                sl = None
+                c15_status = "DIRECTION_ENGINE_STAND_ASIDE"
+                c15_detail = inst_dir.get('reason')
+            elif direction == 'UPPER' and inst_dir.get('allowed_action') != 'SELL':
+                action = "STAND_ASIDE"
+                entry_text = "STAND ASIDE / DIRECTION ENGINE"
+                rationale = f"Pre-6 PM Upper Circuit fade blocked: {inst_dir.get('reason')}. Counter-trend short prohibited."
+                sl = None
+                c15_status = "DIRECTION_ENGINE_STAND_ASIDE"
+                c15_detail = inst_dir.get('reason')
             else:
-                sl = round(max(cur_p, uc_price) * 1.004, 2)
+                action = "BUY" if direction == 'LOWER' else "SELL"
+                if direction == 'LOWER':
+                    sl = round(min(cur_p, lc_price) * 0.996, 2)
+                else:
+                    sl = round(max(cur_p, uc_price) * 1.004, 2)
+                entry_text = f"WAIT FOR 6:15 PM CANDLE CLOSE before entering {action}"
+                rationale = "High institutional volatility at US open. Awaiting 6:15 PM bar-close to confirm limit barrier holds."
+                c15_status = "PENDING_615"
+                c15_detail = "Action will be triggered dynamically at 6:15 PM IST."
 
             # Mandatory 15-Minute Rule: Never take instant blind fades at 6:00 PM US open rush.
             # Require 6:15 PM candle close verification to confirm boundary holds.
@@ -1199,51 +1318,70 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                 "lot_size": lot_size,
                 "event_context": f"Pre-6 PM {direction.title()} Circuit Test (15-Min Confirmation Enforced)",
                 "suggestion_6pm": {
-                    "status": "WAIT_615",
-                    "action_text": f"WAIT FOR 6:15 PM CANDLE CLOSE before entering {action}",
-                    "rationale": "High institutional volatility at US open. Awaiting 6:15 PM bar-close to confirm limit barrier holds.",
+                    "status": "WAIT_615" if action in ['BUY', 'SELL'] else "STAND_ASIDE",
+                    "action_text": entry_text,
+                    "rationale": rationale,
                     "reference_price": cur_p,
                     "stop_loss": sl,
-                    "target": p_close
+                    "target": p_close if action in ['BUY', 'SELL'] else None
                 },
                 "check_615": {
-                    "checked": False,
-                    "status": "PENDING_615",
-                    "price_615": None,
-                    "action_taken": "Awaiting 6:15 PM candle close verification...",
-                    "detail": "Action will be triggered dynamically at 6:15 PM IST."
+                    "checked": action not in ['BUY', 'SELL'],
+                    "status": c15_status,
+                    "price_615": cur_p if action not in ['BUY', 'SELL'] else None,
+                    "action_taken": "Awaiting 6:15 PM candle close verification..." if action in ['BUY', 'SELL'] else "Stood Aside (0 Units)",
+                    "detail": c15_detail
                 },
                 "paper_trade": {
                     "user": USER_ACCOUNT,
                     "action": action,
-                    "quantity": lot_size,
+                    "quantity": lot_size if action in ['BUY', 'SELL'] else 0,
                     "entry_price": None,
                     "entry_time": None,
                     "exit_price": None,
                     "exit_time": None,
                     "pnl_points": 0.0,
                     "pnl_inr": 0.0,
-                    "status": "PENDING_615"
+                    "status": "PENDING_615" if action in ['BUY', 'SELL'] else "STAND_ASIDE"
                 },
                 "eod_outcome": {
                     "session_close": None,
                     "circuit_limit": lc_price if direction == 'LOWER' else uc_price,
-                    "outcome": "PENDING",
-                    "badge": "Awaiting 6:15 PM ⏳",
-                    "pnl_display": "Pending Confirmation",
-                    "summary": "15-minute confirmation check scheduled for 6:15 PM IST."
+                    "outcome": "PENDING" if action in ['BUY', 'SELL'] else "PROTECTED",
+                    "badge": "Awaiting 6:15 PM ⏳" if action in ['BUY', 'SELL'] else "Direction Protected 🛡️",
+                    "pnl_display": "Pending Confirmation" if action in ['BUY', 'SELL'] else "₹0.00",
+                    "summary": "15-minute confirmation check scheduled for 6:15 PM IST." if action in ['BUY', 'SELL'] else f"Stood aside: {rationale}"
                 }
             }
             new_entries.append(entry)
 
         elif 'LOCKED' in status or 'HIT' in status or 'NEAR' in status:
             direction = 'LOWER' if 'LOWER' in status else 'UPPER'
-            action = "BUY" if direction == 'LOWER' else "SELL"
-            # Ensure BUY stop loss is strictly below min(entry, LC), and SELL stop is strictly above max(entry, UC)
-            if direction == 'LOWER':
-                sl = round(min(cur_p, lc_price) * 0.996, 2)
+            # Enforce Institutional Direction
+            if direction == 'LOWER' and inst_dir.get('allowed_action') != 'BUY':
+                action = "STAND_ASIDE"
+                entry_text = "STAND ASIDE / DIRECTION ENGINE"
+                rationale = f"US Pit Open Lower Circuit fade blocked: {inst_dir.get('reason')}. Knife-catching prohibited."
+                sl = None
+                c15_status = "DIRECTION_ENGINE_STAND_ASIDE"
+                c15_detail = inst_dir.get('reason')
+            elif direction == 'UPPER' and inst_dir.get('allowed_action') != 'SELL':
+                action = "STAND_ASIDE"
+                entry_text = "STAND ASIDE / DIRECTION ENGINE"
+                rationale = f"US Pit Open Upper Circuit fade blocked: {inst_dir.get('reason')}. Counter-trend short prohibited."
+                sl = None
+                c15_status = "DIRECTION_ENGINE_STAND_ASIDE"
+                c15_detail = inst_dir.get('reason')
             else:
-                sl = round(max(cur_p, uc_price) * 1.004, 2)
+                action = "BUY" if direction == 'LOWER' else "SELL"
+                if direction == 'LOWER':
+                    sl = round(min(cur_p, lc_price) * 0.996, 2)
+                else:
+                    sl = round(max(cur_p, uc_price) * 1.004, 2)
+                entry_text = f"WAIT FOR 6:15 PM CANDLE CLOSE before entering {action}"
+                rationale = "High institutional volume at US open. Must confirm limit barrier holds."
+                c15_status = "PENDING_615"
+                c15_detail = "Action will be triggered dynamically at 6:15 PM IST."
             
             entry = {
                 "id": trade_id,
@@ -1259,31 +1397,31 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                 "lot_size": lot_size,
                 "event_context": f"US Pit Open {direction.title()} Circuit Test (15-Min Rule Enforced)",
                 "suggestion_6pm": {
-                    "status": "WAIT_615",
-                    "action_text": f"WAIT FOR 6:15 PM CANDLE CLOSE before entering {action}",
-                    "rationale": "High institutional volume at US open. Must confirm limit barrier holds.",
+                    "status": "WAIT_615" if action in ['BUY', 'SELL'] else "STAND_ASIDE",
+                    "action_text": entry_text,
+                    "rationale": rationale,
                     "reference_price": cur_p,
                     "stop_loss": sl,
-                    "target": p_close
+                    "target": p_close if action in ['BUY', 'SELL'] else None
                 },
                 "check_615": {
-                    "checked": False,
-                    "status": "PENDING_615",
-                    "price_615": None,
-                    "action_taken": "Awaiting 6:15 PM candle close verification...",
-                    "detail": "Action will be triggered dynamically at 6:15 PM IST."
+                    "checked": action not in ['BUY', 'SELL'],
+                    "status": c15_status,
+                    "price_615": cur_p if action not in ['BUY', 'SELL'] else None,
+                    "action_taken": "Awaiting 6:15 PM candle close verification..." if action in ['BUY', 'SELL'] else "Stood Aside (0 Units)",
+                    "detail": c15_detail
                 },
                 "paper_trade": {
                     "user": USER_ACCOUNT,
                     "action": action,
-                    "quantity": lot_size,
+                    "quantity": lot_size if action in ['BUY', 'SELL'] else 0,
                     "entry_price": None,
                     "entry_time": None,
                     "exit_price": None,
                     "exit_time": None,
                     "pnl_points": 0.0,
                     "pnl_inr": 0.0,
-                    "status": "PENDING_615"
+                    "status": "PENDING_615" if action in ['BUY', 'SELL'] else "STAND_ASIDE"
                 },
                 "eod_outcome": {
                     "session_close": None,
@@ -1389,18 +1527,24 @@ def record_live_8pm_advisory(commodities_list, day_name):
 
                 # Fade overreaction if near circuit or spike > 1.5% with trend verification
                 if 'NEAR' in crude['status'] or 'HIT' in crude['status'] or abs(chg) >= 1.5:
+                    inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
+                        'CRUDEOIL', cur_p, crude.get('open_price', cur_p), day_h, day_l, p_close,
+                        ema20=crude.get('ema_20'), ema50=crude.get('ema_50'), ema200=crude.get('ema_200'),
+                        rsi=crude.get('rsi_14'), adx=crude.get('adx_14')
+                    )
+
                     action = "BUY" if chg < 0 else "SELL"
                     
-                    # 🛡️ COUNTER-TREND KNIFE-CATCHING GUARD:
-                    # Never blind-buy a collapsing commodity during inventory dump.
+                    # 🛡️ COUNTER-TREND KNIFE-CATCHING & DIRECTION GUARD:
+                    # Never blind-buy a collapsing commodity during inventory dump or counter-trend.
                     is_knife_catching = False
                     knife_reason = ""
-                    if action == "BUY" and (cur_p <= day_l * 1.002 or chg <= -2.5):
+                    if action == "BUY" and (cur_p <= day_l * 1.002 or chg <= -2.5 or inst_dir.get('allowed_action') != 'BUY'):
                         is_knife_catching = True
-                        knife_reason = f"Dumping into Day Low / Circuit ({chg:+.2f}%). Counter-trend knife catching prohibited."
-                    elif action == "SELL" and (cur_p >= day_h * 0.998 or chg >= 2.5):
+                        knife_reason = f"EIA dump rejected: {inst_dir.get('reason')}. Buying into downtrend or below VWAP prohibited."
+                    elif action == "SELL" and (cur_p >= day_h * 0.998 or chg >= 2.5 or inst_dir.get('allowed_action') != 'SELL'):
                         is_knife_catching = True
-                        knife_reason = f"Surging into Day High / Circuit ({chg:+.2f}%). Counter-trend fading extreme runaway momentum prohibited."
+                        knife_reason = f"EIA surge rejected: {inst_dir.get('reason')}. Counter-trend shorting into uptrend prohibited."
 
                     # Dynamic stop strictly capped by ₹3,000 risk cap (for 50 bbl lot, max 60 pts)
                     max_stop_pts = round(MAX_LOSS_PER_TRADE_INR / lot_size, 2)
@@ -1413,6 +1557,16 @@ def record_live_8pm_advisory(commodities_list, day_name):
                     tgt = round(cur_p + tgt_pts if action == "BUY" else cur_p - tgt_pts, 2)
 
                     c_sym, c_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(c_sym, c_name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
+
+                    # Hard Stand-Aside on Risk Bracket (No Choked Stops & Min 1.5R)
+                    bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
+                        c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size,
+                        max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.5
+                    )
+                    if not bracket_eval.get('passed'):
+                        is_knife_catching = True
+                        knife_reason = bracket_eval.get('reason')
+
                     all_existing = new_entries + trades
                     risk_metrics = PreTradeRiskEngine.check_risk(c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, min_reward_risk=1.5)
 
@@ -1547,17 +1701,23 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 c_sym, c_name, lot_size = get_defense_contract_and_lot('NATURALGAS', 'Natural Gas Mini')
 
                 if 'NEAR' in natgas['status'] or 'HIT' in natgas['status'] or abs(chg) >= 2.0:
+                    inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
+                        'NATURALGAS', cur_p, natgas.get('open_price', cur_p), day_h, day_l, p_close,
+                        ema20=natgas.get('ema_20'), ema50=natgas.get('ema_50'), ema200=natgas.get('ema_200'),
+                        rsi=natgas.get('rsi_14'), adx=natgas.get('adx_14')
+                    )
+
                     action = "BUY" if chg < 0 else "SELL"
 
-                    # 🛡️ COUNTER-TREND KNIFE-CATCHING GUARD:
+                    # 🛡️ COUNTER-TREND KNIFE-CATCHING & DIRECTION GUARD:
                     is_knife_catching = False
                     knife_reason = ""
-                    if action == "BUY" and (cur_p <= day_l * 1.002 or chg <= -3.0):
+                    if action == "BUY" and (cur_p <= day_l * 1.002 or chg <= -3.0 or inst_dir.get('allowed_action') != 'BUY'):
                         is_knife_catching = True
-                        knife_reason = f"Dumping into Day Low / Circuit ({chg:+.2f}%). Counter-trend knife catching prohibited."
-                    elif action == "SELL" and (cur_p >= day_h * 0.998 or chg >= 3.0):
+                        knife_reason = f"EIA storage drop rejected: {inst_dir.get('reason')}. Buying into downtrend or below VWAP prohibited."
+                    elif action == "SELL" and (cur_p >= day_h * 0.998 or chg >= 3.0 or inst_dir.get('allowed_action') != 'SELL'):
                         is_knife_catching = True
-                        knife_reason = f"Surging into Day High / Circuit ({chg:+.2f}%). Counter-trend fading extreme runaway momentum prohibited."
+                        knife_reason = f"EIA storage surge rejected: {inst_dir.get('reason')}. Counter-trend shorting into uptrend prohibited."
 
                     # Dynamic stop strictly capped by ₹3,000 risk cap (for 250 lot, max 12 pts)
                     max_stop_pts = round(MAX_LOSS_PER_TRADE_INR / lot_size, 2)
@@ -1570,6 +1730,16 @@ def record_live_8pm_advisory(commodities_list, day_name):
                     tgt = round(cur_p + tgt_pts if action == "BUY" else cur_p - tgt_pts, 2)
 
                     c_sym, c_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(c_sym, c_name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
+
+                    # Hard Stand-Aside on Risk Bracket (No Choked Stops & Min 1.5R)
+                    bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
+                        c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size,
+                        max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.5
+                    )
+                    if not bracket_eval.get('passed'):
+                        is_knife_catching = True
+                        knife_reason = bracket_eval.get('reason')
+
                     all_existing = new_entries + trades
                     risk_metrics = PreTradeRiskEngine.check_risk(c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, min_reward_risk=1.5)
 
@@ -1977,18 +2147,31 @@ def check_and_execute_615_confirmation(checker, alerter):
         is_reversal = False
         reversal_reject_reason = ""
 
+        # Institutional Direction Engine Assessment
+        inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
+            sym, cur_p, c_item.get('open_price', cur_p), day_h, day_l,
+            prev_close, ema20=c_item.get('ema_20'), ema50=c_item.get('ema_50'), ema200=c_item.get('ema_200'),
+            rsi=c_item.get('rsi_14'), adx=c_item.get('adx_14'), atr=c_item.get('atr_14')
+        )
+
         if direction == 'LOWER':
             # Reversal requires holding above LC AND showing a real bounce off day low (+0.5% off low)
-            if cur_p > lc_p and cur_p >= day_l * 1.004 and chg_pct > -3.5:
+            if cur_p > lc_p and cur_p >= day_l * 1.004 and chg_pct > -3.5 and inst_dir.get('allowed_action') == 'BUY':
                 is_reversal = True
             else:
-                reversal_reject_reason = f"Hugging Day Low / LC (Chg: {chg_pct:+.2f}%). Heavy downward momentum; knife-catching blocked."
+                if not inst_dir.get('passed') or inst_dir.get('allowed_action') != 'BUY':
+                    reversal_reject_reason = f"Direction Engine Block: Cannot BUY {sym} while below VWAP (₹{inst_dir.get('vwap'):,.1f}) or in HTF Bear Trend ({inst_dir.get('regime')})."
+                else:
+                    reversal_reject_reason = f"Hugging Day Low / LC (Chg: {chg_pct:+.2f}%). Heavy downward momentum; knife-catching blocked."
         else:
             # Reversal requires holding below UC AND showing a real pullback off day high (-0.5% off high)
-            if cur_p < uc_p and cur_p <= day_h * 0.996 and chg_pct < 3.5:
+            if cur_p < uc_p and cur_p <= day_h * 0.996 and chg_pct < 3.5 and inst_dir.get('allowed_action') == 'SELL':
                 is_reversal = True
             else:
-                reversal_reject_reason = f"Hugging Day High / UC (Chg: {chg_pct:+.2f}%). Heavy upward momentum; shorting runaway train blocked."
+                if not inst_dir.get('passed') or inst_dir.get('allowed_action') != 'SELL':
+                    reversal_reject_reason = f"Direction Engine Block: Cannot SHORT {sym} while above VWAP (₹{inst_dir.get('vwap'):,.1f}) or in HTF Bull Trend ({inst_dir.get('regime')})."
+                else:
+                    reversal_reject_reason = f"Hugging Day High / UC (Chg: {chg_pct:+.2f}%). Heavy upward momentum; shorting runaway train blocked."
             
         trade['check_615']['checked'] = True
         trade['check_615']['price_615'] = cur_p
@@ -2029,6 +2212,35 @@ def check_and_execute_615_confirmation(checker, alerter):
             contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
                 sym, trade['name'], cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR
             )
+
+            # Institutional Risk Bracket & Hard Stand-Aside (No Choked Stops & Min 1.5R)
+            bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
+                contract_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size,
+                max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.5
+            )
+            if not bracket_eval.get('passed'):
+                reason = bracket_eval.get('reason')
+                trade['check_615']['status'] = "HARD_RISK_STAND_ASIDE"
+                trade['check_615']['action_taken'] = f"Hard Risk Stop: {reason}. Stood aside to preserve capital."
+                trade['check_615']['detail'] = reason
+                trade['paper_trade']['status'] = "STAND_ASIDE"
+                trade['paper_trade']['action'] = "STAND_ASIDE"
+                trade['paper_trade']['quantity'] = 0
+                trade['paper_trade']['entry_price'] = cur_p
+                trade['paper_trade']['exit_price'] = cur_p
+                trade['paper_trade']['pnl_inr'] = 0.0
+                trade['eod_outcome']['outcome'] = "PROTECTED"
+                trade['eod_outcome']['badge'] = "Hard Risk Guard 🛡️"
+                trade['eod_outcome']['pnl_display'] = "₹0.00 (Protected)"
+                trade['eod_outcome']['summary'] = f"Risk bracket invalid: {reason}"
+                msg = (
+                    f"🛡️ <b>[6:15 PM HARD RISK GUARD] {trade['name'].upper()}</b>\n"
+                    f"• Stop Loss: ₹{sl:,.2f} | Target: ₹{tgt:,.2f}\n"
+                    f"• Reason: <b>{reason}</b>\n"
+                    f"• Action: Stood aside to prevent choked stop loss."
+                )
+                alert_messages.append(msg)
+                continue
             
             # 2. Run PreTradeRiskEngine check
             risk_metrics = PreTradeRiskEngine.check_risk(contract_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, trades, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
@@ -3054,123 +3266,146 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             fut_lot = sfc['lot_size']
                             fut_margin_rate = sfc['margin_rate']
                             fut_margin_req = round(cur_p * fut_lot * fut_margin_rate, 2)
-                            
-                            # Calibrate stop so max risk per lot strictly fits within MAX_LOSS_PER_TRADE_INR (₹1,000)
-                            fut_risk_per_share = abs(cur_p - eq_sl)
-                            fut_total_risk = fut_risk_per_share * fut_lot
-                            fut_sl = eq_sl
-                            fut_tgt = eq_tgt
-                            if fut_total_risk > MAX_LOSS_PER_TRADE_INR:
-                                fut_risk_per_share = MAX_LOSS_PER_TRADE_INR / fut_lot
-                                fut_sl = round(cur_p - fut_risk_per_share if eq_action == 'BUY' else cur_p + fut_risk_per_share, 2)
-                                fut_tgt = round(cur_p + (2.0 * fut_risk_per_share) if eq_action == 'BUY' else cur_p - (2.0 * fut_risk_per_share), 2)
-                            
-                            # Institutional Market Regime Classifier & False Signal Filter for Stock Futures
-                            regime_info = s.get('regime') or MarketRegimeDetector.classify_regime(
-                                symbol=clean_sym, close=cur_p, ema50=ema50, ema200=float(s.get('ema_200') or cur_p),
-                                adx=float(s.get('adx') or 20.0), rsi=rsi, bb_lower=bb_lower, bb_upper=float(s.get('bb_upper') or cur_p * 1.05),
+
+                            # 1. Institutional Direction Engine Evaluation for Stock Futures
+                            # Bans long futures on Death Cross, below 200 EMA, below VWAP, or overextended chase
+                            inst_fut_check = InstitutionalDirectionEngine.evaluate_equity_futures_direction(
+                                symbol=clean_sym,
+                                current_price=cur_p,
+                                open_price=s.get('open_price', cur_p),
+                                high_price=day_h,
+                                low_price=day_l,
+                                prev_close=float(s.get('prev_close') or cur_p),
+                                ema20=ema20,
+                                ema50=ema50,
+                                ema200=float(s.get('ema_200') or cur_p),
+                                crossover_status=s.get('crossover_status', 'NONE'),
+                                rsi=rsi,
+                                adx=float(s.get('adx') or 20.0),
+                                bb_lower=bb_lower,
+                                bb_upper=float(s.get('bb_upper') or cur_p * 1.05),
                                 atr=atr
                             )
-                            regime_check = MarketRegimeDetector.validate_signal(regime_info, eq_action, eq_setup)
-                            if not regime_check.get('passed'):
-                                print(f"🛡️ Market Regime Filter Blocked Stock Future {fut_sym} {eq_action}: {regime_check.get('reason')}")
-                                continue
+                            if not inst_fut_check.get('passed'):
+                                print(f"🛡️ Institutional Direction Engine Blocked Stock Future {fut_sym}: {inst_fut_check.get('reason')}")
+                                can_enter_futures = False
+                            else:
+                                # 2. Hard Stand-Aside on Risk Bracket (NEVER choke/compress stops)
+                                bracket_check = InstitutionalDirectionEngine.validate_futures_risk_bracket(
+                                    fut_sym, eq_action, cur_p, eq_sl, eq_tgt, fut_lot,
+                                    max_loss_inr=MAX_LOSS_PER_TRADE_INR,
+                                    min_rrr=1.5
+                                )
+                                if not bracket_check.get('passed'):
+                                    print(f"🛡️ Hard Risk Stop Blocked Stock Future {fut_sym}: {bracket_check.get('reason')}")
+                                    can_enter_futures = False
+                                else:
+                                    fut_sl = eq_sl
+                                    fut_tgt = eq_tgt
+                                    fut_risk_per_share = abs(cur_p - fut_sl)
 
-                            # 14-Point Pre-Trade Risk Engine Check for Stock Futures
-                            all_existing = new_trades + trades
-                            risk_metrics = PreTradeRiskEngine.check_risk(
-                                fut_sym, eq_action, cur_p, fut_sl, fut_tgt, fut_lot, all_existing,
-                                max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR,
-                                max_daily_loss_inr=MAX_DAILY_LOSS_INR
-                            )
-                            if risk_metrics.get('passed'):
-                                # Monte Carlo Time Machine simulation (3,000 replays)
-                                sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, fut_sl, fut_tgt, action=eq_action.lower(), replays=3000)
-                                if sim_metrics.get('passed'):
-                                    trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{clean_sym}FUT"
-                                    if not any(t.get('id') == trade_id for t in (trades + new_trades)):
-                                        entry_obj = {
-                                            "id": trade_id,
-                                            "date": today_str,
-                                            "session_name": f"Real-Time Technical Trigger ({eq_setup})",
-                                            "time_trigger": now_time_str,
-                                            "time_6pm": now_time_str,
-                                            "time_validation": now_time_str,
-                                            "time_615": now_time_str,
-                                            "time_exit": "03:25 PM IST",
-                                            "symbol": fut_sym,
-                                            "name": sfc['name'],
-                                            "lot_size": fut_lot,
-                                            "asset_type": "FUTURES",
-                                            "event_context": f"NSE Stock Future ({sfc['sector']}): {eq_setup}",
-                                            "regime": regime_info,
-                                            "time_machine": sim_metrics,
-                                            "risk_check": risk_metrics,
-                                            "orb_check": orb_metrics,
-                                            "event_check": event_metrics,
-                                            "suggestion_6pm": {
-                                                "status": "REALTIME_TRIGGER",
-                                                "action_text": f"{eq_action} 1 Lot @ ₹{cur_p:,.2f}",
-                                                "rationale": f"{eq_rationale} {sim_metrics.get('summary', '')}",
-                                                "reference_price": cur_p,
-                                                "stop_loss": fut_sl,
-                                                "target": fut_tgt
-                                            },
-                                            "check_615": {
-                                                "checked": True,
-                                                "status": "TECHNICAL_TRIGGER_ENTERED",
-                                                "price_615": cur_p,
-                                                "action_taken": f"Entered {eq_action} 1 Lot ({fut_lot} units) @ ₹{cur_p:,.2f}",
-                                                "detail": f"{eq_setup}: {eq_rationale} | {sim_metrics.get('summary', '')}"
-                                            },
-                                            "paper_trade": {
-                                                "user": USER_ACCOUNT,
-                                                "action": eq_action,
-                                                "quantity": fut_lot,
-                                                "entry_price": cur_p,
-                                                "entry_time": now_time_str,
-                                                "exit_price": None,
-                                                "exit_time": None,
-                                                "pnl_points": 0.0,
-                                                "pnl_inr": 0.0,
-                                                "status": "ACTIVE",
-                                                "target": fut_tgt,
-                                                "stop_loss": fut_sl,
-                                                "margin_required_inr": fut_margin_req,
-                                                "product_type": "NRML_FUTURES"
-                                            },
-                                            "eod_outcome": {
-                                                "session_close": None,
-                                                "circuit_limit": None,
-                                                "outcome": "PENDING",
-                                                "badge": "Active Trigger ⚡",
-                                                "pnl_display": "Ticking Live...",
-                                                "summary": f"{eq_setup} active: {eq_action} @ ₹{cur_p:,.2f} (Target: ₹{fut_tgt:,.2f}, SL: ₹{fut_sl:,.2f}) | {sim_metrics.get('summary', '')}"
+                            if can_enter_futures:
+                                regime_info = inst_fut_check.get('regime_info') or s.get('regime') or MarketRegimeDetector.classify_regime(
+                                    symbol=clean_sym, close=cur_p, ema50=ema50, ema200=float(s.get('ema_200') or cur_p),
+                                    adx=float(s.get('adx') or 20.0), rsi=rsi, bb_lower=bb_lower, bb_upper=float(s.get('bb_upper') or cur_p * 1.05),
+                                    atr=atr
+                                )
+
+                                # 14-Point Pre-Trade Risk Engine Check for Stock Futures
+                                all_existing = new_trades + trades
+                                risk_metrics = PreTradeRiskEngine.check_risk(
+                                    fut_sym, eq_action, cur_p, fut_sl, fut_tgt, fut_lot, all_existing,
+                                    max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR,
+                                    max_daily_loss_inr=MAX_DAILY_LOSS_INR
+                                )
+                                if risk_metrics.get('passed'):
+                                    # Monte Carlo Time Machine simulation (3,000 replays)
+                                    sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, fut_sl, fut_tgt, action=eq_action.lower(), replays=3000)
+                                    if sim_metrics.get('passed'):
+                                        trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{clean_sym}FUT"
+                                        if not any(t.get('id') == trade_id for t in (trades + new_trades)):
+                                            entry_obj = {
+                                                "id": trade_id,
+                                                "date": today_str,
+                                                "session_name": f"Real-Time Technical Trigger ({eq_setup})",
+                                                "time_trigger": now_time_str,
+                                                "time_6pm": now_time_str,
+                                                "time_validation": now_time_str,
+                                                "time_615": now_time_str,
+                                                "time_exit": "03:25 PM IST",
+                                                "symbol": fut_sym,
+                                                "name": sfc['name'],
+                                                "lot_size": fut_lot,
+                                                "asset_type": "FUTURES",
+                                                "event_context": f"NSE Stock Future ({sfc['sector']}): {eq_setup}",
+                                                "regime": regime_info,
+                                                "time_machine": sim_metrics,
+                                                "risk_check": risk_metrics,
+                                                "orb_check": orb_metrics,
+                                                "event_check": event_metrics,
+                                                "suggestion_6pm": {
+                                                    "status": "REALTIME_TRIGGER",
+                                                    "action_text": f"{eq_action} 1 Lot @ ₹{cur_p:,.2f}",
+                                                    "rationale": f"{eq_rationale} {sim_metrics.get('summary', '')}",
+                                                    "reference_price": cur_p,
+                                                    "stop_loss": fut_sl,
+                                                    "target": fut_tgt
+                                                },
+                                                "check_615": {
+                                                    "checked": True,
+                                                    "status": "TECHNICAL_TRIGGER_ENTERED",
+                                                    "price_615": cur_p,
+                                                    "action_taken": f"Entered {eq_action} 1 Lot ({fut_lot} units) @ ₹{cur_p:,.2f}",
+                                                    "detail": f"{eq_setup}: {eq_rationale} | {sim_metrics.get('summary', '')}"
+                                                },
+                                                "paper_trade": {
+                                                    "user": USER_ACCOUNT,
+                                                    "action": eq_action,
+                                                    "quantity": fut_lot,
+                                                    "entry_price": cur_p,
+                                                    "entry_time": now_time_str,
+                                                    "exit_price": None,
+                                                    "exit_time": None,
+                                                    "pnl_points": 0.0,
+                                                    "pnl_inr": 0.0,
+                                                    "status": "ACTIVE",
+                                                    "target": fut_tgt,
+                                                    "stop_loss": fut_sl,
+                                                    "margin_required_inr": fut_margin_req,
+                                                    "product_type": "NRML_FUTURES"
+                                                },
+                                                "eod_outcome": {
+                                                    "session_close": None,
+                                                    "circuit_limit": None,
+                                                    "outcome": "PENDING",
+                                                    "badge": "Active Trigger ⚡",
+                                                    "pnl_display": "Ticking Live...",
+                                                    "summary": f"{eq_setup} active: {eq_action} @ ₹{cur_p:,.2f} (Target: ₹{fut_tgt:,.2f}, SL: ₹{fut_sl:,.2f}) | {sim_metrics.get('summary', '')}"
+                                                }
                                             }
-                                        }
-                                        new_trades.append(entry_obj)
-                                        active_sectors.add(sfc['sector'])
-                                        mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
-                                        subject = f"🎯 [NSE STOCK FUTURE TRIGGER] {sfc['name']} {eq_action} @ ₹{cur_p:,.2f} ({now_time_str})"
-                                        body = (
-                                            f"🎯 <b>REAL-TIME NSE STOCK FUTURE TRIGGER</b>\n"
-                                            f"📅 <i>{today_str}, {now_time_str}</i>\n"
-                                            f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
-                                            f"• <b>Contract</b>: <b>{sfc['name']} ({fut_sym})</b>\n"
-                                            f"• <b>Action</b>: <b>{eq_action} 1 Lot ({fut_lot} units) @ ₹{cur_p:,.2f}</b>\n"
-                                            f"• <b>Technical Setup</b>: {eq_setup}\n"
-                                            f"• <b>Technical Rationale</b>: {eq_rationale}\n"
-                                            f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
-                                            f"• <b>Stop-Loss</b>: <b>₹{fut_sl:,.2f}</b> (Max loss strictly ₹{round(fut_risk_per_share * fut_lot, 2):,.2f} <= ₹1,000)\n"
-                                            f"• <b>Target (2.0R)</b>: <b>₹{fut_tgt:,.2f}</b>\n"
-                                            f"• <b>Contract Value</b>: ₹{cur_p * fut_lot:,.2f} (Margin Required: ₹{fut_margin_req:,.2f})\n"
-                                            f"• <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit\n\n"
-                                            f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
-                                        )
-                                        alerts_to_send.append({'subject': subject, 'body': body})
-                                        print(f"🎯 NSE Stock Future Trigger Fired: {sfc['name']} {eq_action} @ ₹{cur_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
-                                        can_enter_futures = False
-                                        continue
+                                            new_trades.append(entry_obj)
+                                            active_sectors.add(sfc['sector'])
+                                            mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
+                                            subject = f"🎯 [NSE STOCK FUTURE TRIGGER] {sfc['name']} {eq_action} @ ₹{cur_p:,.2f} ({now_time_str})"
+                                            body = (
+                                                f"🎯 <b>REAL-TIME NSE STOCK FUTURE TRIGGER</b>\n"
+                                                f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                                                f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                                                f"• <b>Contract</b>: <b>{sfc['name']} ({fut_sym})</b>\n"
+                                                f"• <b>Action</b>: <b>{eq_action} 1 Lot ({fut_lot} units) @ ₹{cur_p:,.2f}</b>\n"
+                                                f"• <b>Technical Setup</b>: {eq_setup}\n"
+                                                f"• <b>Technical Rationale</b>: {eq_rationale}\n"
+                                                f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
+                                                f"• <b>Stop-Loss</b>: <b>₹{fut_sl:,.2f}</b> (Max loss strictly ₹{round(fut_risk_per_share * fut_lot, 2):,.2f} <= ₹{MAX_LOSS_PER_TRADE_INR:,.0f})\n"
+                                                f"• <b>Target (2.0R)</b>: <b>₹{fut_tgt:,.2f}</b>\n"
+                                                f"• <b>Contract Value</b>: ₹{cur_p * fut_lot:,.2f} (Margin Required: ₹{fut_margin_req:,.2f})\n"
+                                                f"• <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit\n\n"
+                                                f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
+                                            )
+                                            alerts_to_send.append({'subject': subject, 'body': body})
+                                            print(f"🎯 NSE Stock Future Trigger Fired: {sfc['name']} {eq_action} @ ₹{cur_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
+                                            can_enter_futures = False
+                                            continue
 
                     # PATH B: Enter as an Intraday Stock (MIS with 5x leverage from ₹10k pool)
                     if can_enter_equity:

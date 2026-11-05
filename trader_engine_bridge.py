@@ -1062,5 +1062,279 @@ class MarketRegimeDetector:
         return {"passed": True, "reason": f"Signal aligned with {regime} regime.", "regime": regime}
 
 
+class InstitutionalDirectionEngine:
+    """
+    Institutional Multi-Timeframe VWAP + Trend-Pullback Direction Engine.
+    Ensures zero blind counter-trend trades, strictly aligns all trades with
+    Higher Timeframe (HTF) market structure, and uses Intraday Session VWAP
+    as an absolute directional filter.
+    """
+
+    @classmethod
+    def calculate_session_vwap(cls, open_p, high_p, low_p, close_p):
+        """
+        Calculates session VWAP proxy using standard intraday typical price weighting.
+        """
+        o = float(open_p or close_p or 0.0)
+        h = float(high_p or close_p or 0.0)
+        l = float(low_p or close_p or 0.0)
+        c = float(close_p or 0.0)
+        if c <= 0:
+            return 0.0
+        # Institutional 5-point session VWAP approximation
+        return round((o + h + l + (2.0 * c)) / 5.0, 2)
+
+    @classmethod
+    def evaluate_commodity_direction(cls, symbol, current_price, open_price, high_price, low_price,
+                                     prev_close, ema20=None, ema50=None, ema200=None,
+                                     rsi=None, adx=None, bb_lower=None, bb_upper=None, atr=None):
+        """
+        Evaluates institutional direction for commodity contracts (Gold, Silver, Crude, Copper, etc.).
+        Returns:
+            dict with 'allowed_action' ('BUY', 'SELL', or 'STAND_ASIDE'),
+                      'passed': bool,
+                      'reason': str,
+                      'vwap': float,
+                      'htf_bias': 'BULLISH' | 'BEARISH' | 'NEUTRAL',
+                      'regime': str
+        """
+        cur_p = float(current_price or 0.0)
+        if cur_p <= 0:
+            return {"allowed_action": "STAND_ASIDE", "passed": False, "reason": "Invalid price", "vwap": 0.0}
+
+        vwap = cls.calculate_session_vwap(open_price, high_price, low_price, cur_p)
+        ema20 = float(ema20 or cur_p)
+        ema50 = float(ema50 or cur_p)
+        ema200 = float(ema200 or cur_p)
+        rsi = float(rsi or 50.0)
+        adx = float(adx or 20.0)
+        p_close = float(prev_close or cur_p)
+
+        # 1. Higher-Timeframe Trend Assessment (Daily EMAs)
+        is_htf_bull = (cur_p >= ema50) and (ema20 >= ema50 * 0.995)
+        is_htf_bear = (cur_p <= ema50) and (ema20 <= ema50 * 1.005)
+
+        if is_htf_bull and not is_htf_bear:
+            htf_bias = "BULLISH"
+        elif is_htf_bear and not is_htf_bull:
+            htf_bias = "BEARISH"
+        else:
+            htf_bias = "NEUTRAL"
+
+        # 2. Market Regime Assessment
+        regime_info = MarketRegimeDetector.classify_regime(
+            symbol=symbol, close=cur_p, ema50=ema50, ema200=ema200,
+            adx=adx, rsi=rsi, bb_lower=bb_lower, bb_upper=bb_upper, atr=atr
+        )
+        regime = regime_info.get("regime", "CHOP_CONSOLIDATION")
+
+        # 3. Line in the sand: Intraday VWAP
+        # Never BUY below VWAP; Never SHORT above VWAP
+        is_above_vwap = cur_p >= (vwap * 0.9985)
+        is_below_vwap = cur_p <= (vwap * 1.0015)
+
+        # 4. Resolve Allowed Action
+        # Bullish alignment: HTF Bullish + Above VWAP + Regime not BREAKDOWN
+        if htf_bias == "BULLISH" and regime != "BREAKDOWN" and is_above_vwap:
+            return {
+                "allowed_action": "BUY",
+                "passed": True,
+                "reason": f"Aligned with HTF Bull Trend (50E: ₹{ema50:,.1f}) & trading above Session VWAP (₹{vwap:,.1f}).",
+                "vwap": vwap,
+                "htf_bias": htf_bias,
+                "regime": regime,
+                "regime_info": regime_info
+            }
+
+        # Bearish alignment: HTF Bearish + Below VWAP + Regime not BULL_TREND
+        if htf_bias == "BEARISH" and regime != "BULL_TREND" and is_below_vwap:
+            return {
+                "allowed_action": "SELL",
+                "passed": True,
+                "reason": f"Aligned with HTF Bear Trend (50E: ₹{ema50:,.1f}) & trading below Session VWAP (₹{vwap:,.1f}).",
+                "vwap": vwap,
+                "htf_bias": htf_bias,
+                "regime": regime,
+                "regime_info": regime_info
+            }
+
+        # Conflicting signals or Chop
+        if not is_above_vwap and htf_bias == "BULLISH":
+            return {
+                "allowed_action": "STAND_ASIDE",
+                "passed": False,
+                "reason": f"Conflict: HTF is Bullish but price (₹{cur_p:,.1f}) is trading below Session VWAP (₹{vwap:,.1f}). Awaiting reclaim of VWAP.",
+                "vwap": vwap,
+                "htf_bias": htf_bias,
+                "regime": regime,
+                "regime_info": regime_info
+            }
+
+        if not is_below_vwap and htf_bias == "BEARISH":
+            return {
+                "allowed_action": "STAND_ASIDE",
+                "passed": False,
+                "reason": f"Conflict: HTF is Bearish but price (₹{cur_p:,.1f}) is trading above Session VWAP (₹{vwap:,.1f}). Counter-trend short blocked.",
+                "vwap": vwap,
+                "htf_bias": htf_bias,
+                "regime": regime,
+                "regime_info": regime_info
+            }
+
+        return {
+            "allowed_action": "STAND_ASIDE",
+            "passed": False,
+            "reason": f"Non-trending or neutral structure (Regime: {regime}, HTF: {htf_bias}, ADX: {adx:.1f}). Standing aside to preserve capital.",
+            "vwap": vwap,
+            "htf_bias": htf_bias,
+            "regime": regime,
+            "regime_info": regime_info
+        }
+
+    @classmethod
+    def evaluate_equity_futures_direction(cls, symbol, current_price, open_price, high_price, low_price,
+                                          prev_close, ema20, ema50, ema200, crossover_status, rsi,
+                                          adx=None, bb_lower=None, bb_upper=None, atr=None):
+        """
+        Evaluates institutional direction for NSE Stock Futures.
+        Bans long futures on Death Cross / below 200 EMA.
+        Bans chasing extreme intraday highs (> 2.0% gain at day high with RSI > 62).
+        """
+        cur_p = float(current_price or 0.0)
+        if cur_p <= 0:
+            return {"allowed_action": "STAND_ASIDE", "passed": False, "reason": "Invalid price"}
+
+        vwap = cls.calculate_session_vwap(open_price, high_price, low_price, cur_p)
+        ema20 = float(ema20 or cur_p)
+        ema50 = float(ema50 or cur_p)
+        ema200 = float(ema200 or cur_p)
+        rsi = float(rsi or 50.0)
+        adx = float(adx or 20.0)
+        p_close = float(prev_close or cur_p)
+        day_h = float(high_price or cur_p)
+        chg_pct = round(((cur_p - p_close) / p_close) * 100, 2) if p_close > 0 else 0.0
+
+        # RULE 1: Death Cross or Sub-200 EMA Absolute Ban for Long Futures
+        is_death_cross = (str(crossover_status).upper() == "DEATH") or (ema50 < ema200 * 0.995)
+        is_below_200 = cur_p < (ema200 * 0.99)
+        if is_death_cross or is_below_200:
+            return {
+                "allowed_action": "STAND_ASIDE",
+                "passed": False,
+                "reason": f"STOCK FUTURES BANNED: {symbol} in Death Cross/Bearish Regime (Close ₹{cur_p:,.1f} vs 200E ₹{ema200:,.1f}, 50E vs 200E: {crossover_status}). Long futures forbidden.",
+                "vwap": vwap,
+                "htf_bias": "BEARISH",
+                "regime": "BREAKDOWN"
+            }
+
+        # RULE 2: Session VWAP Line in the Sand
+        if cur_p < (vwap * 0.998):
+            return {
+                "allowed_action": "STAND_ASIDE",
+                "passed": False,
+                "reason": f"Price ₹{cur_p:,.1f} is trading below Session VWAP ₹{vwap:,.1f}. Institutional intraday sellers in control; long entry rejected.",
+                "vwap": vwap,
+                "htf_bias": "BULLISH",
+                "regime": "VWAP_DEFICIT"
+            }
+
+        # RULE 3: Overextended Breakout Chase Ban
+        # If trading within 0.3% of day high with >= 2.0% change and high RSI, do not chase market order
+        if cur_p >= (day_h * 0.997) and chg_pct >= 2.0 and rsi >= 62.0:
+            return {
+                "allowed_action": "STAND_ASIDE",
+                "passed": False,
+                "reason": f"Overextended Breakout Trap: {symbol} up +{chg_pct:.2f}% at day high (RSI: {rsi:.1f}). Chasing forbidden; requires pullback to 20 EMA / VWAP.",
+                "vwap": vwap,
+                "htf_bias": "BULLISH",
+                "regime": "OVEREXTENDED"
+            }
+
+        # RULE 4: Market Regime Check
+        regime_info = MarketRegimeDetector.classify_regime(
+            symbol=symbol, close=cur_p, ema50=ema50, ema200=ema200,
+            adx=adx, rsi=rsi, bb_lower=bb_lower, bb_upper=bb_upper, atr=atr
+        )
+        if regime_info.get("regime") in ["CHOP_CONSOLIDATION", "BREAKDOWN"]:
+            return {
+                "allowed_action": "STAND_ASIDE",
+                "passed": False,
+                "reason": f"Market Regime is {regime_info.get('regime')} (ADX: {adx:.1f}). Futures trading blocked to avoid chop/whipsaw.",
+                "vwap": vwap,
+                "htf_bias": "NEUTRAL",
+                "regime": regime_info.get("regime"),
+                "regime_info": regime_info
+            }
+
+        return {
+            "allowed_action": "BUY",
+            "passed": True,
+            "reason": f"Institutional Long Confirmed: Above 50/200 EMA Golden Cross (200E: ₹{ema200:,.1f}), above VWAP (₹{vwap:,.1f}), healthy pullback/momentum.",
+            "vwap": vwap,
+            "htf_bias": "BULLISH",
+            "regime": "BULL_TREND",
+            "regime_info": regime_info
+        }
+
+    @classmethod
+    def validate_futures_risk_bracket(cls, symbol, action, entry_price, technical_sl, technical_tgt, lot_size, max_loss_inr=3000.0, min_rrr=1.5):
+        """
+        Guarantees that a stop loss is NEVER artificially choked/compressed to fit a max risk cap.
+        If the natural structural stop requires > max_loss_inr, the trade must STAND ASIDE.
+        Also enforces minimum R:R >= 1.5.
+        """
+        cur_p = float(entry_price or 0.0)
+        sl = float(technical_sl or 0.0)
+        tgt = float(technical_tgt or 0.0)
+        lot = int(lot_size or 1)
+        max_loss = float(max_loss_inr or 3000.0)
+
+        if cur_p <= 0 or sl <= 0 or tgt <= 0 or lot <= 0:
+            return {"passed": False, "reason": "Invalid price, stop, target, or lot size."}
+
+        act = action.upper()
+        if act == "BUY":
+            if sl >= cur_p:
+                return {"passed": False, "reason": f"Invalid stop loss ₹{sl:,.2f} >= entry ₹{cur_p:,.2f}."}
+            if tgt <= cur_p:
+                return {"passed": False, "reason": f"Invalid target ₹{tgt:,.2f} <= entry ₹{cur_p:,.2f}."}
+            risk_pts = round(cur_p - sl, 2)
+            reward_pts = round(tgt - cur_p, 2)
+        else:
+            if sl <= cur_p:
+                return {"passed": False, "reason": f"Invalid stop loss ₹{sl:,.2f} <= entry ₹{cur_p:,.2f}."}
+            if tgt >= cur_p:
+                return {"passed": False, "reason": f"Invalid target ₹{tgt:,.2f} >= entry ₹{cur_p:,.2f}."}
+            risk_pts = round(sl - cur_p, 2)
+            reward_pts = round(cur_p - tgt, 2)
+
+        rrr = round(reward_pts / risk_pts, 2) if risk_pts > 0 else 0.0
+        if rrr < min_rrr:
+            return {
+                "passed": False,
+                "reason": f"Reward:Risk ratio {rrr:.2f} is below minimum requirement of {min_rrr:.1f}R (Risk: {risk_pts:.1f} pts, Reward: {reward_pts:.1f} pts)."
+            }
+
+        total_risk_inr = round(risk_pts * lot, 2)
+        if total_risk_inr > max_loss:
+            return {
+                "passed": False,
+                "reason": f"HARD RISK STOP: Structural stop requires ₹{total_risk_inr:,.1f} risk ({risk_pts:.1f} pts × {lot} lot), exceeding ₹{max_loss:,.0f} limit. Choking stop is strictly forbidden; Standing aside.",
+                "total_risk_inr": total_risk_inr,
+                "risk_pts": risk_pts,
+                "rrr": rrr
+            }
+
+        return {
+            "passed": True,
+            "reason": f"Valid institutional bracket: {rrr:.2f}R, Total Risk ₹{total_risk_inr:,.1f} within ₹{max_loss:,.0f} cap.",
+            "total_risk_inr": total_risk_inr,
+            "risk_pts": risk_pts,
+            "reward_pts": reward_pts,
+            "rrr": rrr
+        }
+
+
+
 
 
