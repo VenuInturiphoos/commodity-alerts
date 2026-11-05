@@ -1,13 +1,13 @@
 {
-  "last_updated": "05 Nov 2026, 06:14 PM IST",
+  "last_updated": "05 Nov 2026, 08:02 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 111,
+    "total_signals": 113,
     "executed_count": 15,
     "correct_count": 6,
     "wrong_count": 8,
-    "protected_count": 96,
+    "protected_count": 98,
     "win_rate_pct": 42.9,
     "total_pnl_inr": -29455.2,
     "avg_trade_pnl_inr": -1963.68,
@@ -19,6 +19,104 @@
     "net_worth_inr": 270544.8
   },
   "trades": [
+    {
+      "id": "ADV-05Nov2026-2000-GOLD",
+      "date": "05 Nov 2026",
+      "session_name": "Evening Pit Review (8:00 PM)",
+      "time_trigger": "08:00 PM IST",
+      "time_6pm": "08:00 PM IST",
+      "time_validation": "08:15 PM IST",
+      "time_615": "08:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 10,
+      "event_context": "Pre-Trade Risk Filter Guard",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RISK GUARD",
+        "rationale": "Risk check failed: Point risk exceeds \u20b93,000 risk cap",
+        "reference_price": 145140.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RISK_GUARD_STAND_ASIDE",
+        "price_615": 145140.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Point risk exceeds \u20b93,000 risk cap"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "08:00 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Filter \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Point risk exceeds \u20b93,000 risk cap"
+      }
+    },
+    {
+      "id": "ADV-05Nov2026-2000-GOLDM",
+      "date": "05 Nov 2026",
+      "session_name": "Evening Pit Review (8:00 PM)",
+      "time_trigger": "08:00 PM IST",
+      "time_6pm": "08:00 PM IST",
+      "time_validation": "08:15 PM IST",
+      "time_615": "08:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLDM",
+      "name": "Gold Mini",
+      "lot_size": 10,
+      "event_context": "Pre-Trade Risk Filter Guard",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RISK GUARD",
+        "rationale": "Risk check failed: Point risk exceeds \u20b93,000 risk cap",
+        "reference_price": 145083.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RISK_GUARD_STAND_ASIDE",
+        "price_615": 145083.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Point risk exceeds \u20b93,000 risk cap"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "08:00 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Filter \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Point risk exceeds \u20b93,000 risk cap"
+      }
+    },
     {
       "id": "ADV-05Nov2026-1800-GOLD",
       "date": "05 Nov 2026",
