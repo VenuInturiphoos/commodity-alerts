@@ -90,6 +90,8 @@ MAX_CONCURRENT_EQUITIES = 3       # Diversify into 3 distinct intraday stocks (�
 MAX_CONCURRENT_TOTAL = 5          # Max 5 concurrent active trades across portfolio (2 commodities + 3 intraday equities)
 MAX_TRADES_PER_SYMBOL_DAY = 3     # Allows up to 3 trades per symbol per day (expanded from 2)
 COOLDOWN_MINUTES_BETWEEN_TRADES = 60 # 60-min spacing between trades on the same symbol (streamlined from 120m)
+INTRADAY_STAGNATION_MINUTES = 120.0  # Extended to 120 minutes (2.0 hours) to give intraday trades ample room to reach profitability
+COMMODITY_STAGNATION_MINUTES = 90.0  # 90 minutes for commodities
 ENFORCE_MINI_ONLY_COMMODITIES = False # Reverted to ₹1.2L - ₹1.5L commodity position sizing per user requirement
 
 # Direct mapping to low-margin, micro/mini contracts for capital defense
@@ -2412,8 +2414,10 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
         exit_p = cur_p
         reason = ""
 
-        # ⏱️ 45-Minute Stagnation Stop:
-        # If active >= 45 minutes and momentum hasn't reached +30% to target, scratch at current price to preserve capital
+        # ⏱️ Extended Stagnation Guard (Adjusted for Intraday Profitability):
+        # 1. Minimum holding window extended to 120 minutes (2 Hours) for equities (90m for commodities).
+        # 2. Profitable trades (f_move > 0) are strictly EXEMPT from stagnation exits - let winners run to target!
+        # 3. Only exits if trade is stalled in the red (below entry price) after 120+ minutes.
         entry_time_str = pt.get('entry_time')
         trade_date_str = trade.get('date', today_str)
         if trade_status == 'ACTIVE' and entry_time_str:
@@ -2423,17 +2427,15 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 entry_dt = pytz.timezone('Asia/Kolkata').localize(entry_dt_naive)
                 mins_open = (now_dt - entry_dt).total_seconds() / 60.0
                 
-                if mins_open >= 45.0:
-                    pct_prog = 0.0
-                    if target and entry_p:
-                        t_dist = abs(target - entry_p)
-                        if t_dist > 0:
-                            f_move = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
-                            pct_prog = (f_move / t_dist) * 100.0
-                    if pct_prog < 30.0:
+                stagnation_cutoff = INTRADAY_STAGNATION_MINUTES if is_equity else COMMODITY_STAGNATION_MINUTES
+                
+                if mins_open >= stagnation_cutoff:
+                    f_move = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
+                    # If trade is in profit (green), NEVER trigger stagnation exit - allow it to run to target!
+                    if f_move <= 0:
                         hit_stagnation = True
                         exit_p = cur_p
-                        reason = f"45-Minute Stagnation Exit ⏱️ (Stalled for {int(mins_open)}m; scratch to protect capital)"
+                        reason = f"{int(stagnation_cutoff)}-Minute Stagnation Exit ⏱️ (Below entry for {int(mins_open)}m; capital protection)"
             except Exception:
                 pass
 
