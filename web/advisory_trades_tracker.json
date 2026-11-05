@@ -1,22 +1,22 @@
 {
-  "last_updated": "05 Nov 2026, 11:46 AM IST",
+  "last_updated": "05 Nov 2026, 12:11 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 93,
     "executed_count": 15,
-    "correct_count": 4,
+    "correct_count": 5,
     "wrong_count": 8,
     "protected_count": 78,
-    "win_rate_pct": 33.3,
-    "total_pnl_inr": -29579.8,
-    "avg_trade_pnl_inr": -1971.99,
-    "active_trades_count": 2,
+    "win_rate_pct": 38.5,
+    "total_pnl_inr": -29508.7,
+    "avg_trade_pnl_inr": -1967.25,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 270420.2,
-    "used_margin_inr": 19887.27,
-    "available_cash_inr": 250532.93,
-    "net_worth_inr": 270420.2
+    "current_cash_inr": 270491.3,
+    "used_margin_inr": 9928.53,
+    "available_cash_inr": 260562.77,
+    "net_worth_inr": 270491.3
   },
   "trades": [
     {
@@ -136,7 +136,7 @@
       "time_6pm": "11:21 AM IST",
       "time_validation": "11:21 AM IST",
       "time_615": "11:21 AM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "12:11 PM IST",
       "symbol": "PETRONET.NS",
       "name": "Petronet Lng Limited",
       "lot_size": 158,
@@ -218,23 +218,26 @@
         "quantity": 158,
         "entry_price": 315.15,
         "entry_time": "11:21 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 315.6,
+        "exit_time": "12:11 PM IST",
+        "pnl_points": 0.45,
+        "pnl_inr": 71.1,
+        "status": "CLOSED",
         "target": 326.51,
         "stop_loss": 309.47,
         "margin_required_inr": 9958.74,
-        "product_type": "MIS_INTRADAY"
+        "product_type": "MIS_INTRADAY",
+        "exit_trigger": "STAGNATION_EXIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 315.6,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b9315.15 (Target: \u20b9326.51, SL: \u20b9309.47) | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+        "outcome": "CORRECT",
+        "badge": "Stagnation Exit \u23f1\ufe0f (12:11 PM IST)",
+        "pnl_display": "+\u20b971.10",
+        "summary": "45-Minute Stagnation Exit \u23f1\ufe0f (Stalled for 50m; scratch to protect capital) at 12:11 PM IST. Entry: \u20b9315.15 -> Exit: \u20b9315.60 (+\u20b971.10).",
+        "exit_time": "12:11 PM IST",
+        "exit_trigger": "STAGNATION_EXIT"
       }
     },
     {
