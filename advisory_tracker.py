@@ -2924,6 +2924,17 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 print(f"Warning: Could not read Nifty F&O scanner data: {e}")
                 equity_stocks = []
 
+            # Sort candidate stocks by highest conviction to fill the 3 slots with distinct top-tier stocks
+            equity_stocks = sorted(
+                equity_stocks,
+                key=lambda x: (
+                    float(x.get('win_probability') or 0),
+                    float(x.get('capital_safety_score') or 0),
+                    float(x.get('discount_pct') or 0)
+                ),
+                reverse=True
+            )
+
             for s in equity_stocks:
                 cur_active_futures = len(active_commodity_trades) + sum(1 for t in new_trades if (t.get('asset_type') in ['FUTURES', 'COMMODITY'] or t.get('symbol') in LOT_SIZES or '-FUT' in str(t.get('symbol', ''))))
                 cur_active_equity = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'])
@@ -2951,28 +2962,16 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 if cur_p <= 0:
                     continue
 
-                # Check symbol cooldown today (max 3 trades per equity, 60-min cooldown)
+                # Strict Stock Diversification: Each intraday stock gets at most 1 trade per day
+                # so the 3 slots are guaranteed to be 3 distinct companies, preventing one stock from dominating all slots.
                 eq_today_trades = [
                     t for t in (trades + new_trades)
-                    if t.get('date') == today_str and (t.get('symbol') == sym or t.get('symbol') == clean_sym)
+                    if t.get('date') == today_str and (t.get('symbol') == sym or t.get('symbol') == clean_sym or f"{clean_sym}-FUT" in str(t.get('symbol', '')))
                     and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
                     and t.get('paper_trade', {}).get('quantity', 0) > 0
                 ]
-                if len(eq_today_trades) >= MAX_TRADES_PER_SYMBOL_DAY:
+                if len(eq_today_trades) >= 1:
                     continue
-
-                if eq_today_trades:
-                    last_t = eq_today_trades[0]
-                    last_entry_time = last_t.get('paper_trade', {}).get('entry_time') or last_t.get('time_trigger')
-                    if last_entry_time:
-                        try:
-                            clean_time = last_entry_time.replace(' IST', '').strip()
-                            t_struct = datetime.strptime(f"{today_str} {clean_time}", "%d %b %Y %I:%M %p").replace(tzinfo=pytz.timezone('Asia/Kolkata'))
-                            diff_mins = (now_dt - t_struct).total_seconds() / 60.0
-                            if diff_mins < COOLDOWN_MINUTES_BETWEEN_TRADES:
-                                continue
-                        except Exception:
-                            pass
 
                 # 1. Event Risk Guard (trader-news skill)
                 event_metrics = EventRiskGuard.check_event_risk(clean_sym, now_dt)
