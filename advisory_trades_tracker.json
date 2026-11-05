@@ -1,24 +1,133 @@
 {
-  "last_updated": "05 Nov 2026, 09:41 AM IST",
+  "last_updated": "05 Nov 2026, 10:26 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 89,
-    "executed_count": 11,
+    "total_signals": 90,
+    "executed_count": 12,
     "correct_count": 4,
-    "wrong_count": 5,
+    "wrong_count": 6,
     "protected_count": 78,
-    "win_rate_pct": 44.4,
-    "total_pnl_inr": -26276.7,
-    "avg_trade_pnl_inr": -2388.79,
+    "win_rate_pct": 40.0,
+    "total_pnl_inr": -26556.3,
+    "avg_trade_pnl_inr": -2213.02,
     "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 273723.3,
-    "used_margin_inr": 9699.12,
-    "available_cash_inr": 264024.18,
-    "net_worth_inr": 273723.3
+    "current_cash_inr": 273443.7,
+    "used_margin_inr": 9643.2,
+    "available_cash_inr": 263800.5,
+    "net_worth_inr": 273443.7
   },
   "trades": [
+    {
+      "id": "ADV-05Nov2026-1026-LT",
+      "date": "05 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "10:26 AM IST",
+      "time_6pm": "10:26 AM IST",
+      "time_validation": "10:26 AM IST",
+      "time_615": "10:26 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "LT.NS",
+      "name": "Larsen & Toubro Limited",
+      "lot_size": 12,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 70.4). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 70.4,
+        "bb_width_pct": 13.05,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 9.1,
+        "p_stop_pct": 6.4,
+        "p_neither_pct": 84.5,
+        "resolved_win_rate_pct": 58.7,
+        "expected_r": 0.118,
+        "target_r": 2.0,
+        "sample_bars": 668,
+        "summary": "3,000 Replays: 9.1% Target | 6.4% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 2.0,
+        "loss_at_stop_inr": 867.84,
+        "potential_gain_inr": 1735.68
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b94,018.00 breaking above range high \u20b94,018.00."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b94,018.00",
+        "rationale": "Breaking towards 20D/52W high (Chg: +1.87%) with strong RSI momentum (70.4) and verified ORB bar close. Sized with structural 2.0R target. 3,000 Replays: 9.1% Target | 6.4% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 4018.0,
+        "stop_loss": 3945.68,
+        "target": 4162.64
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 4018.0,
+        "action_taken": "Entered BUY 12 shares @ \u20b94,018.00",
+        "detail": "20-Day / High-Beta Volatility Breakout: Breaking towards 20D/52W high (Chg: +1.87%) with strong RSI momentum (70.4) and verified ORB bar close. Sized with structural 2.0R target. | 3,000 Replays: 9.1% Target | 6.4% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 12,
+        "entry_price": 4018.0,
+        "entry_time": "10:26 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 4162.64,
+        "stop_loss": 3945.68,
+        "margin_required_inr": 9643.2,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b94,018.00 (Target: \u20b94,162.64, SL: \u20b93,945.68) | 3,000 Replays: 9.1% Target | 6.4% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
     {
       "id": "ADV-05Nov2026-0941-LT",
       "date": "05 Nov 2026",
@@ -27,7 +136,7 @@
       "time_6pm": "09:41 AM IST",
       "time_validation": "09:41 AM IST",
       "time_615": "09:41 AM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "10:26 AM IST",
       "symbol": "LT.NS",
       "name": "Larsen & Toubro Limited",
       "lot_size": 12,
@@ -109,23 +218,26 @@
         "quantity": 12,
         "entry_price": 4041.3,
         "entry_time": "09:41 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 4018.0,
+        "exit_time": "10:26 AM IST",
+        "pnl_points": -23.3,
+        "pnl_inr": -279.6,
+        "status": "CLOSED",
         "target": 4186.78,
         "stop_loss": 3968.56,
         "margin_required_inr": 9699.12,
-        "product_type": "MIS_INTRADAY"
+        "product_type": "MIS_INTRADAY",
+        "exit_trigger": "STAGNATION_EXIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 4018.0,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b94,041.30 (Target: \u20b94,186.78, SL: \u20b93,968.56) | 3,000 Replays: 9.1% Target | 6.1% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+        "outcome": "WRONG",
+        "badge": "Stagnation Exit \u23f1\ufe0f (10:26 AM IST)",
+        "pnl_display": "\u20b9-279.60",
+        "summary": "45-Minute Stagnation Exit \u23f1\ufe0f (Stalled for 45m; scratch to protect capital) at 10:26 AM IST. Entry: \u20b94,041.30 -> Exit: \u20b94,018.00 (\u20b9-279.60).",
+        "exit_time": "10:26 AM IST",
+        "exit_trigger": "STAGNATION_EXIT"
       }
     },
     {
