@@ -1,22 +1,22 @@
 {
-  "last_updated": "05 Nov 2026, 12:11 PM IST",
+  "last_updated": "05 Nov 2026, 12:32 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 93,
     "executed_count": 15,
-    "correct_count": 5,
+    "correct_count": 6,
     "wrong_count": 8,
     "protected_count": 78,
-    "win_rate_pct": 38.5,
-    "total_pnl_inr": -29508.7,
-    "avg_trade_pnl_inr": -1967.25,
-    "active_trades_count": 1,
+    "win_rate_pct": 42.9,
+    "total_pnl_inr": -29455.2,
+    "avg_trade_pnl_inr": -1963.68,
+    "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 270491.3,
-    "used_margin_inr": 9928.53,
-    "available_cash_inr": 260562.77,
-    "net_worth_inr": 270491.3
+    "current_cash_inr": 270544.8,
+    "used_margin_inr": 0,
+    "available_cash_inr": 270544.8,
+    "net_worth_inr": 270544.8
   },
   "trades": [
     {
@@ -27,7 +27,7 @@
       "time_6pm": "11:46 AM IST",
       "time_validation": "11:46 AM IST",
       "time_615": "11:46 AM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "12:32 PM IST",
       "symbol": "KOTAKBANK.NS",
       "name": "Kotak Mahindra Bank Limited",
       "lot_size": 107,
@@ -109,23 +109,26 @@
         "quantity": 107,
         "entry_price": 463.95,
         "entry_time": "11:46 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 464.45,
+        "exit_time": "12:32 PM IST",
+        "pnl_points": 0.5,
+        "pnl_inr": 53.5,
+        "status": "CLOSED",
         "target": 480.65,
         "stop_loss": 455.6,
         "margin_required_inr": 9928.53,
-        "product_type": "MIS_INTRADAY"
+        "product_type": "MIS_INTRADAY",
+        "exit_trigger": "STAGNATION_EXIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 464.45,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b9463.95 (Target: \u20b9480.65, SL: \u20b9455.60) | 3,000 Replays: 4.8% Target | 3.9% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+        "outcome": "CORRECT",
+        "badge": "Stagnation Exit \u23f1\ufe0f (12:32 PM IST)",
+        "pnl_display": "+\u20b953.50",
+        "summary": "45-Minute Stagnation Exit \u23f1\ufe0f (Stalled for 46m; scratch to protect capital) at 12:32 PM IST. Entry: \u20b9463.95 -> Exit: \u20b9464.45 (+\u20b953.50).",
+        "exit_time": "12:32 PM IST",
+        "exit_trigger": "STAGNATION_EXIT"
       }
     },
     {
