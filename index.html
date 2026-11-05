@@ -2815,7 +2815,6 @@ async function loadStockInvestmentsTracker() {
         }
         if (!res || !res.ok) return;
         stockInvestmentsData = await res.json();
-        window.stockInvestmentsData = stockInvestmentsData;
         
         // Ensure today_pick is synchronized with matching holding in investments array immediately upon load
         if (stockInvestmentsData && stockInvestmentsData.today_pick && Array.isArray(stockInvestmentsData.investments)) {
@@ -2834,7 +2833,35 @@ async function loadStockInvestmentsTracker() {
             renderNiftyDailyPickHeroCard(stockInvestmentsData.today_pick);
         }
 
-        // Render holdings & top metrics dynamically into Paper Trading Stock Investing module
+        // Populate top KPI cards immediately from tracker summary
+        if (stockInvestmentsData.summary) {
+            const sum = stockInvestmentsData.summary;
+            const availEl = document.getElementById('virtual-available-margin');
+            const usedEl = document.getElementById('virtual-used-margin');
+            const portEl = document.getElementById('virtual-portfolio-value');
+            const plEl = document.getElementById('virtual-total-pl');
+            const netWorthEl = document.getElementById('virtual-net-worth');
+            
+            const usedMargin = Number(sum.active_capital_invested_inr || 0);
+            const portVal = Number(sum.current_portfolio_value_inr || 0);
+            const baseCash = Number(sum.starting_cash_inr || 300000);
+            const availCash = Number(sum.available_cash_inr != null ? sum.available_cash_inr : (baseCash - usedMargin));
+            const netWorth = Number(sum.net_worth_inr != null ? sum.net_worth_inr : (availCash + portVal));
+            const pl = Number(sum.total_pnl_inr || 0);
+
+            if (availEl) availEl.textContent = '₹' + availCash.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (usedEl) usedEl.textContent = '₹' + usedMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (portEl) portEl.textContent = '₹' + portVal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            if (netWorthEl) netWorthEl.textContent = '₹' + netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const subBreakdownEl = document.getElementById('virtual-breakdown-sub');
+            if (subBreakdownEl) subBreakdownEl.textContent = `(₹${availCash.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Cash + ₹${portVal.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Holdings)`;
+            if (plEl) {
+                plEl.textContent = (pl >= 0 ? '+₹' : '-₹') + Math.abs(pl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                plEl.style.color = pl >= 0 ? '#4ade80' : '#fb7185';
+            }
+        }
+
+        // Render holdings & top metrics into Paper Trading Stock Investing module
         if (typeof renderPortfolio === 'function') {
             renderPortfolio();
         }
@@ -4044,103 +4071,6 @@ let userPortfolio = {};
 let activeTradeAsset = null;
 let pendingOrders = [];
 
-function loadGuestPaperTradingData() {
-    if (currentUser) return;
-    try {
-        const storedBal = localStorage.getItem('guest_user_balance');
-        if (storedBal !== null && !isNaN(parseFloat(storedBal))) {
-            userBalance = parseFloat(storedBal);
-        } else {
-            userBalance = (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary?.available_cash_inr) 
-                ? Number(stockInvestmentsData.summary.available_cash_inr) 
-                : 300000;
-        }
-        const storedTxs = JSON.parse(localStorage.getItem('guest_stock_transactions') || '[]');
-        userSupabaseTransactions = storedTxs;
-        
-        userPortfolio = {};
-        const sortedTxs = [...storedTxs].reverse();
-        sortedTxs.forEach(tx => {
-            if (!userPortfolio[tx.symbol]) {
-                userPortfolio[tx.symbol] = { shares: 0, avgPrice: 0 };
-            }
-            const currentShares = userPortfolio[tx.symbol].shares;
-            const qty = Number(tx.quantity);
-            const price = Number(tx.price);
-            if (tx.transaction_type === 'BUY') {
-                const totalCost = (currentShares * userPortfolio[tx.symbol].avgPrice) + (qty * price);
-                userPortfolio[tx.symbol].shares += qty;
-                userPortfolio[tx.symbol].avgPrice = userPortfolio[tx.symbol].shares > 0 ? (totalCost / userPortfolio[tx.symbol].shares) : price;
-            } else if (tx.transaction_type === 'SELL') {
-                userPortfolio[tx.symbol].shares = Math.max(0, currentShares - qty);
-                if (userPortfolio[tx.symbol].shares === 0) userPortfolio[tx.symbol].avgPrice = 0;
-            }
-        });
-    } catch(e) {
-        console.warn("Error loading guest paper trading data:", e);
-    }
-}
-window.loadGuestPaperTradingData = loadGuestPaperTradingData;
-
-window.executeLocalTrade = async function(symbol, type, qty, price, orderType = 'MARKET') {
-    const totalValue = qty * price;
-    
-    // 1. Check available cash for BUY
-    if (type === 'BUY') {
-        const availEl = document.getElementById('virtual-available-margin');
-        const availText = availEl ? availEl.textContent.replace(/[^\d.-]/g, '') : '';
-        const displayedAvail = parseFloat(availText);
-        const currentBal = !isNaN(displayedAvail) ? displayedAvail : (userBalance > 0 ? userBalance : 300000);
-        
-        if (totalValue > currentBal) {
-            throw new Error(`Insufficient Available Cash. Required: ₹${totalValue.toLocaleString('en-IN', {maximumFractionDigits:2})}, Available: ₹${currentBal.toLocaleString('en-IN', {maximumFractionDigits:2})}`);
-        }
-    }
-    
-    // 2. Record transaction
-    const guestTxs = JSON.parse(localStorage.getItem('guest_stock_transactions') || '[]');
-    const now = new Date();
-    const newTx = {
-        id: 'local-' + Date.now(),
-        symbol: symbol,
-        transaction_type: type,
-        quantity: qty,
-        price: price,
-        timestamp: now.toISOString(),
-        created_at: now.toISOString()
-    };
-    guestTxs.unshift(newTx);
-    localStorage.setItem('guest_stock_transactions', JSON.stringify(guestTxs));
-    userSupabaseTransactions = guestTxs;
-    
-    // 3. Update userPortfolio
-    if (!userPortfolio[symbol]) {
-        userPortfolio[symbol] = { shares: 0, avgPrice: 0 };
-    }
-    const currentShares = userPortfolio[symbol].shares;
-    if (type === 'BUY') {
-        const totalCost = (currentShares * userPortfolio[symbol].avgPrice) + totalValue;
-        userPortfolio[symbol].shares += qty;
-        userPortfolio[symbol].avgPrice = totalCost / userPortfolio[symbol].shares;
-    } else if (type === 'SELL') {
-        const avgP = userPortfolio[symbol].avgPrice || price;
-        const realizedPl = (price - avgP) * qty;
-        const curRealized = parseFloat(localStorage.getItem('manual_stock_realized_pnl')) || 0;
-        localStorage.setItem('manual_stock_realized_pnl', curRealized + realizedPl);
-        
-        userPortfolio[symbol].shares = Math.max(0, currentShares - qty);
-        if (userPortfolio[symbol].shares === 0) userPortfolio[symbol].avgPrice = 0;
-    }
-    localStorage.setItem('guest_user_portfolio', JSON.stringify(userPortfolio));
-    
-    // 4. Update local userBalance
-    const baseBal = (typeof userBalance === 'number' && userBalance > 0) ? userBalance : 300000;
-    userBalance = type === 'BUY' ? Math.max(0, baseBal - totalValue) : (baseBal + totalValue);
-    localStorage.setItem('guest_user_balance', userBalance);
-    
-    return true;
-};
-
 async function fetchPaperTradingData(user) {
     if (!user) {
         user = currentUser;
@@ -4154,9 +4084,7 @@ async function fetchPaperTradingData(user) {
         } catch(e) {}
     }
     if (!user || !user.id) {
-        // Guest mode or not logged in: load guest data and render
-        loadGuestPaperTradingData();
-        renderPortfolio();
+        // Guest mode or not logged in: return gracefully without error
         return;
     }
     currentUser = user;
@@ -4316,7 +4244,6 @@ function renderPortfolio() {
                             ['CRUDEOIL', 'GOLD', 'SILVER', 'NATURALGAS', 'COPPER', 'ZINC', 'ALUMINIUM', 'CRUDEOILM', 'GOLDM', 'GOLDTEN', 'SILVERMIC', 'COPPERM', 'ZINCMINI', 'ALUMINI'].includes(symbol.replace('-FUT','').replace('.NS','').toUpperCase()) ||
                             symbol.includes('FUT');
         if (isCommodity) continue; // Stock investing module strictly tracks cash equities
-        if (typeof stockInvestmentsData !== 'undefined' && Array.isArray(stockInvestmentsData?.investments) && stockInvestmentsData.investments.some(i => i.symbol === symbol && i.status === 'ACTIVE')) continue;
         
         const currentPrice = getSynchronizedCommodityPrice(symbol, marketItem ? marketItem.current_price : 0);
         const avgPrice = data.avgPrice;
@@ -4436,22 +4363,15 @@ function renderPortfolio() {
     }
 
     // Include automated Daily Golden Cross SIP stock investments
-    const activeStkData = (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData) ? stockInvestmentsData : (typeof window !== 'undefined' ? window.stockInvestmentsData : null);
-    if (activeStkData && activeStkData.investments) {
-        for (const inv of activeStkData.investments) {
+    if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.investments) {
+        for (const inv of stockInvestmentsData.investments) {
             if (inv.status !== 'ACTIVE') continue;
-            // Check if user also has manual shares of this stock in userPortfolio
-            const manualPos = (userPortfolio && userPortfolio[inv.symbol]) ? userPortfolio[inv.symbol] : null;
-            const manualShares = (manualPos && manualPos.shares > 0) ? manualPos.shares : 0;
-            const manualCost = manualShares * (manualPos && manualPos.avgPrice > 0 ? manualPos.avgPrice : (inv.entry_price || 0));
-
-            const autoShares = Number(inv.shares || 1);
-            const totalShares = autoShares + manualShares;
+            // Avoid duplicate if user already has it in userPortfolio
+            if (userPortfolio && userPortfolio[inv.symbol] && userPortfolio[inv.symbol].shares !== 0) continue;
 
             const currentPrice = getSynchronizedCommodityPrice(inv.symbol, inv.current_price || inv.entry_price);
-            const costBasis = Number(inv.invested_value || 0) + manualCost;
-            const weightedAvgPrice = totalShares > 0 ? (costBasis / totalShares) : inv.entry_price;
-            const currentValue = totalShares * currentPrice;
+            const costBasis = Number(inv.invested_value || 0);
+            const currentValue = Number(inv.shares || 1) * currentPrice;
             const pl = currentValue - costBasis;
             const plPercent = costBasis > 0 ? (pl / costBasis) * 100 : 0;
             const isProfit = pl >= 0;
@@ -4486,7 +4406,6 @@ function renderPortfolio() {
 
             const varianceVal = Number(inv.variance_from_30k || 0);
             const varianceText = varianceVal >= 0 ? `+₹${varianceVal.toFixed(2)}` : `-₹${Math.abs(varianceVal).toFixed(2)}`;
-            const manualTag = manualShares > 0 ? `<span style="color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:700; margin-left:4px;">+${manualShares} Manual</span>` : '';
 
             const rowHtml = `
                 <tr style="background: rgba(245, 158, 11, 0.03);">
@@ -4494,13 +4413,12 @@ function renderPortfolio() {
                         <div style="display:flex; align-items:center; gap:6px;">
                             <strong>${inv.name}</strong> <small style="color:var(--text-secondary)">(${inv.symbol})</small>
                             <span style="color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:700;"><i class="fa-solid fa-crown"></i> Golden Cross SIP</span>
-                            ${manualTag}
                         </div>
                         <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Purchased at Start of Day: ${inv.date}</div>
                         ${targetSlBadge}
                     </td>
-                    <td><strong style="color:#f8fafc; font-size:0.92rem;">${totalShares} Shares</strong></td>
-                    <td>₹${Number(weightedAvgPrice).toFixed(2)}</td>
+                    <td><strong style="color:#f8fafc; font-size:0.92rem;">${inv.shares} Shares</strong></td>
+                    <td>₹${Number(inv.entry_price).toFixed(2)}</td>
                     <td style="font-weight:700; color:#f8fafc;">₹${currentPrice.toFixed(2)}</td>
                     <td style="font-weight: bold;">
                         ₹${costBasis.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}
@@ -4510,7 +4428,7 @@ function renderPortfolio() {
                     <td style="text-align: right;">
                         <div style="display:flex; gap:6px; justify-content:flex-end;">
                             <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${inv.symbol}', '${inv.name}', ${currentPrice})" style="background: linear-gradient(135deg, #10b981, #059669); padding:5px 10px; font-size:0.8rem; font-weight:700;">Buy More</button>
-                            <button class="trade-btn sell-btn btn-small" onclick="exitStockInvestment('${inv.id}', '${inv.symbol}', '${inv.name}', ${totalShares}, ${currentPrice})" style="padding:5px 10px; font-size:0.8rem; background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#fb7185;">Exit</button>
+                            <button class="trade-btn sell-btn btn-small" onclick="exitStockInvestment('${inv.id}', '${inv.symbol}', '${inv.name}', ${inv.shares}, ${currentPrice})" style="padding:5px 10px; font-size:0.8rem; background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#fb7185;">Exit</button>
                         </div>
                     </td>
                 </tr>
@@ -4524,11 +4442,11 @@ function renderPortfolio() {
                                 <span>${inv.name}</span>
                                 <span style="font-size:0.75rem; color:#94a3b8; font-weight:400;">(${inv.symbol})</span>
                             </div>
-                            <div class="mobile-card-meta"><span style="color:#fbbf24; font-weight:700;">🌟 Daily Golden Cross SIP</span> · ${totalShares} Shares (${inv.date})${manualShares > 0 ? ` (+${manualShares} Manual)` : ''}</div>
+                            <div class="mobile-card-meta"><span style="color:#fbbf24; font-weight:700;">🌟 Daily Golden Cross SIP</span> · ${inv.shares} Shares (${inv.date})</div>
                         </div>
                         <div style="display:flex; gap:6px;">
                             <button class="trade-btn buy-btn btn-small" onclick="openTradeModal('${inv.symbol}', '${inv.name}', ${currentPrice})" style="padding: 5px 10px; font-size: 0.8rem; background: linear-gradient(135deg, #10b981, #059669);">Buy More</button>
-                            <button class="trade-btn sell-btn btn-small" onclick="exitStockInvestment('${inv.id}', '${inv.symbol}', '${inv.name}', ${totalShares}, ${currentPrice})" style="padding: 5px 10px; font-size: 0.8rem; background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#fb7185;">Exit</button>
+                            <button class="trade-btn sell-btn btn-small" onclick="exitStockInvestment('${inv.id}', '${inv.symbol}', '${inv.name}', ${inv.shares}, ${currentPrice})" style="padding: 5px 10px; font-size: 0.8rem; background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#fb7185;">Exit</button>
                         </div>
                     </div>
 
@@ -4621,8 +4539,8 @@ function renderPortfolio() {
     // Calculate automated stock investments capital deployed and realized P&L
     let autoStockInvested = 0;
     let autoStockRealizedPnl = 0;
-    if (activeStkData && activeStkData.investments) {
-        for (const inv of activeStkData.investments) {
+    if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.investments) {
+        for (const inv of stockInvestmentsData.investments) {
             if (inv.status === 'ACTIVE') {
                 autoStockInvested += Number(inv.invested_value || 0);
             } else if (inv.status === 'TARGET_HIT' || inv.status === 'STOP_LOSS_HIT' || inv.status === 'CLOSED') {
@@ -4630,28 +4548,51 @@ function renderPortfolio() {
             }
         }
     }
-    const manualRealizedPnl = (!currentUser) ? (parseFloat(localStorage.getItem('manual_stock_realized_pnl')) || 0) : 0;
-    const totalRealizedPnl = autoStockRealizedPnl + manualRealizedPnl;
 
-    // Calculate baseline cash pool (Dedicated ₹3,00,000 Pool)
-    let baseCash = 300000;
-    const customBal = localStorage.getItem('custom_stock_cash_balance');
-    if (customBal !== null && !isNaN(parseFloat(customBal))) {
-        baseCash = parseFloat(customBal);
-    } else if (currentUser && userBalance > 0) {
-        baseCash = userBalance;
-    } else if (activeStkData && activeStkData.summary && activeStkData.summary.starting_cash_inr) {
-        baseCash = Number(activeStkData.summary.starting_cash_inr);
+    // Prioritize authoritative Stock Wealth Investing tracker summary (₹3,00,000 capital pool)
+    if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary) {
+        const sum = stockInvestmentsData.summary;
+        const usedMargin = Number(sum.active_capital_invested_inr || totalInvested);
+        const portVal = Number(sum.current_portfolio_value_inr || currentPortfolioValue);
+        const availCash = Number(sum.available_cash_inr != null ? sum.available_cash_inr : (300000 - usedMargin));
+        const netWorth = Number(sum.net_worth_inr != null ? sum.net_worth_inr : (availCash + portVal));
+        const totalStockPl = Number(sum.total_pnl_inr != null ? sum.total_pnl_inr : totalPl);
+
+        const netWorthEl = document.getElementById('virtual-net-worth');
+        if (netWorthEl) netWorthEl.textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        const subBreakdownEl = document.getElementById('virtual-breakdown-sub');
+        if (subBreakdownEl) subBreakdownEl.textContent = `(₹${availCash.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Cash + ₹${portVal.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Holdings)`;
+        const availEl = document.getElementById('virtual-available-margin');
+        if (availEl) availEl.textContent = `₹${availCash.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        const usedEl = document.getElementById('virtual-used-margin');
+        if (usedEl) usedEl.textContent = `₹${usedMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        const portValEl = document.getElementById('virtual-portfolio-value');
+        if (portValEl) portValEl.textContent = `₹${portVal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        
+        const plColor = totalStockPl >= 0 ? '#4ade80' : '#fb7185';
+        const plSign = totalStockPl >= 0 ? '+' : '';
+        const plEl = document.getElementById('virtual-total-pl');
+        if (plEl) {
+            plEl.textContent = `${plSign}₹${Math.abs(totalStockPl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            plEl.style.color = plColor;
+        }
+        return;
     }
+
+    // Baseline Cash Pool: If user has a custom balance, use userBalance; otherwise default ₹3,00,000 INR
+    let baseCash = (currentUser && userBalance > 0) 
+        ? userBalance 
+        : ((typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary?.starting_cash_inr) 
+            ? Number(stockInvestmentsData.summary.starting_cash_inr) 
+            : 300000);
     
-    // Total Active Capital Invested in Stocks (All active holdings: automated SIP + manual purchases)
+    // Total Active Capital Invested in Stocks (Cash Delivery)
     const totalStockInvested = totalInvested;
     
-    // Available Stock Cash: Starting cash + realized P&L minus total active capital deployed!
-    const availableMargin = Math.max(0, baseCash + totalRealizedPnl - totalStockInvested - pendingMarginLocked);
+    // Available Stock Cash: Cash balance strictly reduced by stock purchases!
+    const availableMargin = Math.max(0, baseCash + autoStockRealizedPnl - autoStockInvested - pendingMarginLocked);
     const usedMargin = totalStockInvested + pendingMarginLocked;
     const netWorth = availableMargin + currentPortfolioValue;
-    const totalCombinedPl = totalPl + totalRealizedPnl;
 
     const netWorthEl = document.getElementById('virtual-net-worth');
     if (netWorthEl) netWorthEl.textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -4664,11 +4605,11 @@ function renderPortfolio() {
     const portValEl = document.getElementById('virtual-portfolio-value');
     if (portValEl) portValEl.textContent = `₹${currentPortfolioValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     
-    const plColor = totalCombinedPl >= 0 ? '#4ade80' : '#fb7185';
-    const plSign = totalCombinedPl >= 0 ? '+' : '';
+    const plColor = totalPl >= 0 ? '#4ade80' : '#fb7185';
+    const plSign = totalPl >= 0 ? '+' : '';
     const plEl = document.getElementById('virtual-total-pl');
     if (plEl) {
-        plEl.textContent = `${plSign}₹${Math.abs(totalCombinedPl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        plEl.textContent = `${plSign}₹${Math.abs(totalPl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         plEl.style.color = plColor;
     }
 
@@ -4703,13 +4644,6 @@ window.exitStockInvestment = async function(invId, symbol, name, shares, current
         targetInv.pnl_pct = entryP > 0 ? Math.round((estPnl / (shares * entryP)) * 10000) / 100 : 0;
     }
 
-    // Also clear manual shares if any were merged
-    if (userPortfolio && userPortfolio[symbol]) {
-        userPortfolio[symbol].shares = 0;
-        userPortfolio[symbol].avgPrice = 0;
-        localStorage.setItem('guest_user_portfolio', JSON.stringify(userPortfolio));
-    }
-
     if (currentUser && typeof supabaseClient !== 'undefined') {
         try {
             await supabaseClient.from('transactions').insert([{
@@ -4722,25 +4656,9 @@ window.exitStockInvestment = async function(invId, symbol, name, shares, current
         } catch (e) {
             console.log("Logged sell transaction locally:", e.message);
         }
-    } else {
-        const guestTxs = JSON.parse(localStorage.getItem('guest_stock_transactions') || '[]');
-        const now = new Date();
-        guestTxs.unshift({
-            id: 'local-' + Date.now(),
-            symbol: symbol,
-            transaction_type: 'SELL',
-            quantity: shares,
-            price: currentPrice,
-            timestamp: now.toISOString(),
-            created_at: now.toISOString()
-        });
-        localStorage.setItem('guest_stock_transactions', JSON.stringify(guestTxs));
-        userSupabaseTransactions = guestTxs;
     }
 
     renderPortfolio();
-    if (typeof renderInvestHistory === 'function') renderInvestHistory();
-    if (typeof renderOrderHistory === 'function') renderOrderHistory(userSupabaseTransactions);
     alert(`Successfully sold ${shares} shares of ${name} at ₹${currentPrice.toFixed(2)}!\nCapital of ₹${(shares * currentPrice).toFixed(2)} returned to Available Cash.`);
 };
 
@@ -4915,50 +4833,6 @@ let selectedOrderDay = '';          // YYYY-MM-DD
 let selectedOrderMonth = '';        // YYYY-MM
 let orderHistorySearchQuery = '';
 
-function parseDateInfo(dStr, tStr) {
-    let dt = null;
-    if (dStr) {
-        const cleanTime = (tStr || '').replace(' IST', '').trim();
-        const full = cleanTime ? `${dStr} ${cleanTime}` : dStr;
-        const parsed = new Date(full);
-        if (!isNaN(parsed.getTime())) {
-            dt = parsed;
-        } else {
-            const parts = dStr.trim().split(' ');
-            if (parts.length >= 3) {
-                const day = parseInt(parts[0], 10);
-                const months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
-                const mon = months[parts[1].toLowerCase().slice(0, 3)] ?? 0;
-                const yr = parseInt(parts[2], 10);
-                dt = new Date(yr, mon, day);
-            }
-        }
-    }
-    if (!dt || isNaN(dt.getTime())) dt = new Date();
-
-    const yyyy = dt.getFullYear();
-    const mm = String(dt.getMonth() + 1).padStart(2, '0');
-    const dd = String(dt.getDate()).padStart(2, '0');
-    const dayKey = `${yyyy}-${mm}-${dd}`;
-    const monthKey = `${yyyy}-${mm}`;
-    
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const fullMonthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    
-    const dayDisplay = `${dd} ${monthNames[dt.getMonth()]} ${yyyy}`;
-    const monthDisplay = `${fullMonthNames[dt.getMonth()]} ${yyyy}`;
-    
-    return { 
-        dt, 
-        dayKey, 
-        monthKey, 
-        dayDisplay, 
-        monthDisplay, 
-        timeDisplay: tStr || dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) 
-    };
-}
-window.parseDateInfo = parseDateInfo;
-
 function getAllTakenOrders(supabaseTxs = []) {
     const unifiedOrders = [];
     const seenOrderKeys = new Set();
@@ -4969,6 +4843,49 @@ function getAllTakenOrders(supabaseTxs = []) {
         if (seenOrderKeys.has(key)) return;
         seenOrderKeys.add(key);
         unifiedOrders.push(order);
+    }
+
+    function parseDateInfo(dStr, tStr) {
+        let dt = null;
+        if (dStr) {
+            const cleanTime = (tStr || '').replace(' IST', '').trim();
+            const full = cleanTime ? `${dStr} ${cleanTime}` : dStr;
+            const parsed = new Date(full);
+            if (!isNaN(parsed.getTime())) {
+                dt = parsed;
+            } else {
+                const parts = dStr.trim().split(' ');
+                if (parts.length >= 3) {
+                    const day = parseInt(parts[0], 10);
+                    const months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+                    const mon = months[parts[1].toLowerCase().slice(0, 3)] ?? 0;
+                    const yr = parseInt(parts[2], 10);
+                    dt = new Date(yr, mon, day);
+                }
+            }
+        }
+        if (!dt || isNaN(dt.getTime())) dt = new Date();
+
+        const yyyy = dt.getFullYear();
+        const mm = String(dt.getMonth() + 1).padStart(2, '0');
+        const dd = String(dt.getDate()).padStart(2, '0');
+        const dayKey = `${yyyy}-${mm}-${dd}`;
+        const monthKey = `${yyyy}-${mm}`;
+        
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const fullMonthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        
+        const dayDisplay = `${dd} ${monthNames[dt.getMonth()]} ${yyyy}`;
+        const monthDisplay = `${fullMonthNames[dt.getMonth()]} ${yyyy}`;
+        
+        return { 
+            dt, 
+            dayKey, 
+            monthKey, 
+            dayDisplay, 
+            monthDisplay, 
+            timeDisplay: tStr || dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) 
+        };
     }
 
     // 1. User direct paper trades (Supabase transactions table)
@@ -6319,25 +6236,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('exit-status-msg').style.color = "var(--text-secondary)";
         
         try {
-            if (currentUser && typeof supabaseClient !== 'undefined') {
-                await window.executeTrade(activeExitAsset.symbol, actionType, activeExitAsset.currentShares, execPrice, type);
-            } else {
-                await window.executeLocalTrade(activeExitAsset.symbol, actionType, activeExitAsset.currentShares, execPrice, type);
-            }
+            await window.executeTrade(activeExitAsset.symbol, actionType, activeExitAsset.currentShares, execPrice, type);
             
             document.getElementById('exit-status-msg').textContent = type === 'MARKET' ? "Position closed!" : "Order placed!";
             document.getElementById('exit-status-msg').style.color = "#4ade80";
             
             setTimeout(() => {
                 document.getElementById('exit-modal').classList.add('hidden');
-                if (currentUser && typeof fetchPaperTradingData === 'function') {
-                    fetchPaperTradingData(currentUser);
-                } else {
-                    renderPortfolio();
-                    if (typeof renderInvestHistory === 'function') renderInvestHistory();
-                    if (typeof renderOrderHistory === 'function') renderOrderHistory(userSupabaseTransactions);
-                }
-            }, 800);
+                fetchPaperTradingData(currentUser);
+            }, 1000);
         } catch (err) {
             document.getElementById('exit-status-msg').textContent = `Error: ${err.message}`;
             document.getElementById('exit-status-msg').style.color = "#fb7185";
@@ -6384,36 +6291,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const handleTrade = async (type) => {
-        if (!activeTradeAsset) return;
+        if (!currentUser || !activeTradeAsset) return;
         const qty = parseInt(document.getElementById('trade-qty').value);
         if (isNaN(qty) || qty <= 0) return;
         
-        const statusMsg = document.getElementById('trade-status-msg');
-        const buyBtn = document.getElementById('trade-buy-btn');
-        const sellBtn = document.getElementById('trade-sell-btn');
-
         if (type === 'SELL' && !activeTradeAsset.isCommodity) {
             const holding = userPortfolio[activeTradeAsset.symbol]?.shares || 0;
-            const autoInv = (stockInvestmentsData && Array.isArray(stockInvestmentsData.investments))
-                ? stockInvestmentsData.investments.find(i => i.symbol === activeTradeAsset.symbol && i.status === 'ACTIVE')
-                : null;
-            const totalOwned = holding + (autoInv ? Number(autoInv.shares || 0) : 0);
-            if (totalOwned < qty) {
-                statusMsg.textContent = `You only own ${totalOwned} shares of this stock. Short selling is not allowed in Stock Cash Investing.`;
+            if (holding < qty) {
+                statusMsg.textContent = `You only own ${holding} shares of this stock. Short selling is not allowed in Stock Cash Investing.`;
                 statusMsg.style.color = '#fb7185';
+                buyBtn.disabled = false;
+                sellBtn.disabled = false;
                 return;
             }
         }
 
         if (qty % activeTradeAsset.lotSize !== 0) {
-            statusMsg.textContent = `Quantity must be a multiple of lot size (${activeTradeAsset.lotSize}).`;
-            statusMsg.style.color = 'var(--accent-red)';
+            document.getElementById('trade-status-msg').textContent = `Quantity must be a multiple of lot size (${activeTradeAsset.lotSize}).`;
+            document.getElementById('trade-status-msg').style.color = 'var(--accent-red)';
             return;
         }
 
         const orderType = document.getElementById('trade-order-type').value;
         const limitPrice = parseFloat(document.getElementById('trade-limit-price').value);
         const executionPrice = orderType === 'LIMIT' ? limitPrice : activeTradeAsset.price;
+        
+        const statusMsg = document.getElementById('trade-status-msg');
+        const buyBtn = document.getElementById('trade-buy-btn');
+        const sellBtn = document.getElementById('trade-sell-btn');
 
         if (orderType === 'LIMIT' && (isNaN(limitPrice) || limitPrice <= 0)) {
             statusMsg.textContent = "Please enter a valid limit price.";
@@ -6423,49 +6328,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const totalValue = qty * executionPrice;
         
-        // Available cash pre-trade check for BUY
-        if (type === 'BUY') {
-            const availEl = document.getElementById('virtual-available-margin');
-            const availText = availEl ? availEl.textContent.replace(/[^\d.-]/g, '') : '';
-            const displayedAvail = parseFloat(availText);
-            const currentBal = !isNaN(displayedAvail) ? displayedAvail : (userBalance > 0 ? userBalance : 300000);
-            if (totalValue > currentBal) {
-                statusMsg.textContent = `Insufficient Available Cash. Required: ₹${totalValue.toLocaleString('en-IN', {maximumFractionDigits:2})}, Available: ₹${currentBal.toLocaleString('en-IN', {maximumFractionDigits:2})}`;
-                statusMsg.style.color = '#fb7185';
-                return;
-            }
-        }
-
         buyBtn.disabled = true;
         sellBtn.disabled = true;
         statusMsg.textContent = "Processing order...";
         statusMsg.style.color = "var(--text-secondary)";
         
         try {
-            if (currentUser && typeof supabaseClient !== 'undefined') {
-                await window.executeTrade(activeTradeAsset.symbol, type, qty, executionPrice, orderType);
-            } else {
-                await window.executeLocalTrade(activeTradeAsset.symbol, type, qty, executionPrice, orderType);
-            }
+            await window.executeTrade(activeTradeAsset.symbol, type, qty, executionPrice, orderType);
             
             if (orderType === 'LIMIT') {
                 statusMsg.textContent = `Limit order placed to ${type === 'BUY' ? 'buy' : 'sell'} ${qty} shares!`;
             } else {
-                statusMsg.textContent = `Successfully ${type === 'BUY' ? 'invested in' : 'sold'} ${qty} shares!`;
+                statusMsg.textContent = `Successfully ${type === 'BUY' ? 'bought' : 'sold'} ${qty} shares!`;
             }
             statusMsg.style.color = "#4ade80";
             
             // Refresh data
             setTimeout(() => {
                 document.getElementById('trade-modal').classList.add('hidden');
-                if (currentUser && typeof fetchPaperTradingData === 'function') {
-                    fetchPaperTradingData(currentUser);
-                } else {
-                    renderPortfolio();
-                    if (typeof renderInvestHistory === 'function') renderInvestHistory();
-                    if (typeof renderOrderHistory === 'function') renderOrderHistory(userSupabaseTransactions);
-                }
-            }, 800);
+                fetchPaperTradingData(currentUser);
+            }, 1000);
             
         } catch (error) {
             statusMsg.textContent = `Error: ${error.message}`;
@@ -7740,7 +7622,6 @@ window.setMobileViewMode = function(mode) {
 // Initialize App after all modules, functions, and state are defined
 function startApp() {
     try { initApp(); } catch(e) { console.error("Init Error:", e); }
-    try { if (typeof loadGuestPaperTradingData === 'function') loadGuestPaperTradingData(); } catch(e) {}
     try { if (typeof switchTradingSubTab === 'function') switchTradingSubTab(currentTradingSubTab); } catch(e) {}
     try { if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker(); } catch(e) { console.error("Load Advisory Error:", e); }
     try { if (typeof fetchNiftyOpportunities === 'function') fetchNiftyOpportunities(); } catch(e) { console.error("Load Nifty Error:", e); }
