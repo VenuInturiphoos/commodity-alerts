@@ -894,56 +894,24 @@
                                 </div>
                             </div>
                             
-                            <!-- Rich 4-Card KPI Grid (Total Profit/Loss, Win Rate, Investments, Cash Pool) -->
-                            <div class="circuits-kpi-grid" style="margin-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 1.5rem;">
-                                <div class="circuit-kpi-card">
-                                    <div class="circuit-kpi-header">
-                                        <span>Investments Tracked</span>
-                                        <div class="circuit-kpi-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">
-                                            <i class="fa-solid fa-bullhorn"></i>
-                                        </div>
-                                    </div>
-                                    <div class="circuit-kpi-value" id="stock-kpi-investments-count">--</div>
-                                    <div class="circuit-kpi-sub" id="stock-kpi-investments-sub">Live Golden Cross SIP allocations</div>
+                            <div class="paper-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                                <div>
+                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Available Stock Cash</h4>
+                                    <p id="virtual-available-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600; color: #60a5fa;">₹...</p>
                                 </div>
-
-                                <div class="circuit-kpi-card">
-                                    <div class="circuit-kpi-header">
-                                        <span>Executed Win Rate</span>
-                                        <div class="circuit-kpi-icon" style="background: rgba(74, 222, 128, 0.15); color: #4ade80;">
-                                            <i class="fa-solid fa-chart-pie"></i>
-                                        </div>
-                                    </div>
-                                    <div class="circuit-kpi-value" id="stock-kpi-winrate" style="color: #4ade80;">--%</div>
-                                    <div class="circuit-kpi-sub" id="stock-kpi-winrate-sub">-- Won / -- Lost</div>
+                                <div>
+                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Active Capital Invested</h4>
+                                    <p id="virtual-used-margin" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600; color: #fbbf24;">₹...</p>
                                 </div>
-
-                                <div class="circuit-kpi-card">
-                                    <div class="circuit-kpi-header">
-                                        <span>Total Profit & Loss (P&L)</span>
-                                        <div class="circuit-kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
-                                            <i class="fa-solid fa-sack-dollar"></i>
-                                        </div>
-                                    </div>
-                                    <div class="circuit-kpi-value" id="virtual-total-pl" style="color: #4ade80;">₹--</div>
-                                    <div class="circuit-kpi-sub" id="stock-kpi-pnl-breakdown">Realized: ₹0.00 · Unrealized: ₹0.00</div>
+                                <div>
+                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Current Holdings Value</h4>
+                                    <p id="virtual-portfolio-value" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600; color: #4ade80;">₹...</p>
                                 </div>
-
-                                <div class="circuit-kpi-card">
-                                    <div class="circuit-kpi-header">
-                                        <span>Available Stock Cash</span>
-                                        <div class="circuit-kpi-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
-                                            <i class="fa-solid fa-wallet"></i>
-                                        </div>
-                                    </div>
-                                    <div class="circuit-kpi-value" id="virtual-available-margin" style="color: #60a5fa; font-size: 1.35rem;">₹--</div>
-                                    <div class="circuit-kpi-sub" id="stock-kpi-cash-sub">Active: ₹0.00 | Dedicated ₹3L Pool</div>
+                                <div>
+                                    <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Total Stock Return (P&L)</h4>
+                                    <p id="virtual-total-pl" style="margin: 0.25rem 0 0 0; font-size: 1.25rem; font-weight: 600;">₹...</p>
                                 </div>
                             </div>
-
-                            <!-- Hidden reference spans for backward-compatibility -->
-                            <span id="virtual-used-margin" style="display:none;"></span>
-                            <span id="virtual-portfolio-value" style="display:none;"></span>
                         </div>
 
                         <!-- Fallback hidden containers for legacy scripts -->
@@ -1006,8 +974,6 @@
                                         <tbody id="portfolio-stocks-body">
                                             <tr><td colspan="7" class="loading">Loading stock holdings...</td></tr>
                                         </tbody>
-                                        <tfoot id="portfolio-stocks-foot" style="background: rgba(255, 255, 255, 0.03); border-top: 2px solid rgba(74, 222, 128, 0.35); font-weight: 700;">
-                                        </tfoot>
                                     </table>
                                 </div>
                                 <div id="portfolio-stocks-cards" class="mobile-cards-feed">
@@ -4688,7 +4654,7 @@ function renderPortfolio() {
     const netWorthEl = document.getElementById('virtual-net-worth');
     if (netWorthEl) netWorthEl.textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     const subBreakdownEl = document.getElementById('virtual-breakdown-sub');
-    if (subBreakdownEl) subBreakdownEl.textContent = `(₹${availableMargin.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Cash + ₹${currentPortfolioValue.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Holdings · Net Profit: ${totalCombinedPl >= 0 ? '+' : '-'}₹${Math.abs(totalCombinedPl).toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})})`;
+    if (subBreakdownEl) subBreakdownEl.textContent = `(₹${availableMargin.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Cash + ₹${currentPortfolioValue.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Holdings)`;
     const availEl = document.getElementById('virtual-available-margin');
     if (availEl) availEl.textContent = `₹${availableMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     const usedEl = document.getElementById('virtual-used-margin');
@@ -4696,81 +4662,12 @@ function renderPortfolio() {
     const portValEl = document.getElementById('virtual-portfolio-value');
     if (portValEl) portValEl.textContent = `₹${currentPortfolioValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     
-    // Total Combined Profit & Loss (Realized Exits + Live Unrealized MTM Holdings)
     const plColor = totalCombinedPl >= 0 ? '#4ade80' : '#fb7185';
     const plSign = totalCombinedPl >= 0 ? '+' : '';
-    const plPct = totalStockInvested > 0 ? ((totalCombinedPl / totalStockInvested) * 100).toFixed(2) : '0.00';
     const plEl = document.getElementById('virtual-total-pl');
     if (plEl) {
         plEl.textContent = `${plSign}₹${Math.abs(totalCombinedPl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         plEl.style.color = plColor;
-    }
-
-    // Profit & Loss Breakdown Subtitle: Realized vs Unrealized MTM
-    const pnlBreakdownEl = document.getElementById('stock-kpi-pnl-breakdown');
-    if (pnlBreakdownEl) {
-        const rSign = totalRealizedPnl >= 0 ? '+' : '-';
-        const uSign = totalPl >= 0 ? '+' : '-';
-        const rColor = totalRealizedPnl >= 0 ? '#4ade80' : '#fb7185';
-        const uColor = totalPl >= 0 ? '#4ade80' : '#fb7185';
-        pnlBreakdownEl.innerHTML = `Realized: <strong style="color:${rColor};">${rSign}₹${Math.abs(totalRealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> · Unrealized: <strong style="color:${uColor};">${uSign}₹${Math.abs(totalPl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
-    }
-
-    // KPI Card 1: Investments Tracked (Total SIPs taken, active holdings, exits)
-    const totalInvestments = (activeStkData && activeStkData.investments) ? activeStkData.investments.length : stockRows.length;
-    const activeHoldingsCount = stockRows.length;
-    const tgtHits = (activeStkData && activeStkData.summary && activeStkData.summary.target_hit_count != null)
-        ? activeStkData.summary.target_hit_count
-        : (activeStkData && activeStkData.investments ? activeStkData.investments.filter(i => i.status === 'TARGET_HIT').length : 1);
-    const slHits = (activeStkData && activeStkData.summary && activeStkData.summary.stop_loss_hit_count != null)
-        ? activeStkData.summary.stop_loss_hit_count
-        : 0;
-    const closedCount = (activeStkData && activeStkData.summary && activeStkData.summary.closed_investments_count != null)
-        ? activeStkData.summary.closed_investments_count
-        : (tgtHits + slHits);
-
-    const invCountEl = document.getElementById('stock-kpi-investments-count');
-    if (invCountEl) invCountEl.textContent = `${totalInvestments} Taken`;
-    const invSubEl = document.getElementById('stock-kpi-investments-sub');
-    if (invSubEl) invSubEl.textContent = `${activeHoldingsCount} Active Holdings (${tgtHits} Target Hit)`;
-
-    // KPI Card 2: Investment Win Rate
-    const winRate = closedCount > 0 ? ((tgtHits / closedCount) * 100).toFixed(1) : '100.0';
-    const winRateEl = document.getElementById('stock-kpi-winrate');
-    if (winRateEl) {
-        winRateEl.textContent = `${winRate}%`;
-        winRateEl.style.color = Number(winRate) >= 50 ? '#4ade80' : '#fb7185';
-    }
-    const winRateSubEl = document.getElementById('stock-kpi-winrate-sub');
-    if (winRateSubEl) winRateSubEl.textContent = `${tgtHits} Won / ${slHits} Lost (Target vs SL)`;
-
-    // KPI Card 4: Available Stock Cash Subtitle
-    const cashSubEl = document.getElementById('stock-kpi-cash-sub');
-    if (cashSubEl) {
-        cashSubEl.textContent = `Invested: ₹${totalStockInvested.toLocaleString('en-IN', {maximumFractionDigits: 0})} / ₹${baseCash.toLocaleString('en-IN', {maximumFractionDigits: 0})} Pool`;
-    }
-
-    // Stock Holdings Table Footer Summary (Total Portfolio row)
-    const tfootStocks = document.getElementById('portfolio-stocks-foot');
-    if (tfootStocks) {
-        if (stockRows.length > 0) {
-            const totPlSign = totalPl >= 0 ? '+' : '-';
-            const totPlColor = totalPl >= 0 ? '#4ade80' : '#fb7185';
-            const totPlPct = totalStockInvested > 0 ? ((totalPl / totalStockInvested) * 100).toFixed(2) : '0.00';
-            tfootStocks.innerHTML = `
-                <tr>
-                    <td style="color:#4ade80;"><i class="fa-solid fa-calculator" style="margin-right:6px;"></i> Total Active Holdings (${stockRows.length})</td>
-                    <td style="color:#fff;">--</td>
-                    <td style="color:#94a3b8;">--</td>
-                    <td style="color:#4ade80; font-weight:700;">₹${currentPortfolioValue.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                    <td style="color:#fbbf24; font-weight:700;">₹${totalStockInvested.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                    <td style="color:${totPlColor}; font-weight:700;">${totPlSign}₹${Math.abs(totalPl).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})} <small>(${totPlSign}${totPlPct}%)</small></td>
-                    <td style="text-align:right; color:#94a3b8;">--</td>
-                </tr>
-            `;
-        } else {
-            tfootStocks.innerHTML = '';
-        }
     }
 
     // Keep Today's Hero Card Live MTM in exact real-time sync with portfolio holdings
