@@ -1,24 +1,133 @@
 {
-  "last_updated": "05 Nov 2026, 11:36 AM IST",
+  "last_updated": "05 Nov 2026, 11:46 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 92,
-    "executed_count": 14,
+    "total_signals": 93,
+    "executed_count": 15,
     "correct_count": 4,
     "wrong_count": 8,
     "protected_count": 78,
     "win_rate_pct": 33.3,
     "total_pnl_inr": -29579.8,
-    "avg_trade_pnl_inr": -2112.84,
-    "active_trades_count": 1,
+    "avg_trade_pnl_inr": -1971.99,
+    "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 270420.2,
-    "used_margin_inr": 9958.74,
-    "available_cash_inr": 260461.46,
+    "used_margin_inr": 19887.27,
+    "available_cash_inr": 250532.93,
     "net_worth_inr": 270420.2
   },
   "trades": [
+    {
+      "id": "ADV-05Nov2026-1146-KOTAKBANK",
+      "date": "05 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "11:46 AM IST",
+      "time_6pm": "11:46 AM IST",
+      "time_validation": "11:46 AM IST",
+      "time_615": "11:46 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "KOTAKBANK.NS",
+      "name": "Kotak Mahindra Bank Limited",
+      "lot_size": 107,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 66.3). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 66.3,
+        "bb_width_pct": 8.96,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 4.8,
+        "p_stop_pct": 3.9,
+        "p_neither_pct": 91.3,
+        "resolved_win_rate_pct": 55.0,
+        "expected_r": 0.057,
+        "target_r": 2.0,
+        "sample_bars": 688,
+        "summary": "3,000 Replays: 4.8% Target | 3.9% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 2.0,
+        "loss_at_stop_inr": 893.45,
+        "potential_gain_inr": 1786.9
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b9463.95 breaking above range high \u20b9463.95."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b9463.95",
+        "rationale": "Breaking towards 20D/52W high (Chg: +0.99%) with strong RSI momentum (66.3) and verified ORB bar close. Sized with structural 2.0R target. 3,000 Replays: 4.8% Target | 3.9% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 463.95,
+        "stop_loss": 455.6,
+        "target": 480.65
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 463.95,
+        "action_taken": "Entered BUY 107 shares @ \u20b9463.95",
+        "detail": "20-Day / High-Beta Volatility Breakout: Breaking towards 20D/52W high (Chg: +0.99%) with strong RSI momentum (66.3) and verified ORB bar close. Sized with structural 2.0R target. | 3,000 Replays: 4.8% Target | 3.9% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 107,
+        "entry_price": 463.95,
+        "entry_time": "11:46 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 480.65,
+        "stop_loss": 455.6,
+        "margin_required_inr": 9928.53,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b9463.95 (Target: \u20b9480.65, SL: \u20b9455.60) | 3,000 Replays: 4.8% Target | 3.9% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
     {
       "id": "ADV-05Nov2026-1121-PETRONET",
       "date": "05 Nov 2026",
