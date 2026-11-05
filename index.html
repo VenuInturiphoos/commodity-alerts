@@ -1007,79 +1007,6 @@
                                 </div>
                             </div>
 
-                            <!-- Stock Investment Order History (Day-wise / Month-wise Filterable) -->
-                            <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
-                                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
-                                    <div>
-                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; color: #4ade80;">
-                                                <i class="fa-solid fa-clock-rotate-left" style="color: #4ade80;"></i> Stock Investment Order History
-                                            </h3>
-                                            <span id="invest-history-count-badge" class="badge" style="background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.4); color: #4ade80; font-size: 0.8rem; padding: 2px 10px; border-radius: 12px; font-weight: 700;">0 Investments</span>
-                                        </div>
-                                        <p style="margin: 0.35rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">
-                                            All executed Daily Golden Cross SIP purchases and stock exits with day-wise and month-wise historical filters.
-                                        </p>
-                                    </div>
-
-                                    <!-- Filter Toolbar -->
-                                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem;">
-                                        <!-- Mode Pills: All, Day-wise, Month-wise -->
-                                        <div class="circuit-filters" style="margin: 0; gap: 0.35rem;">
-                                            <button type="button" id="invest-filter-pill-all" class="circuit-filter-pill active" onclick="setInvestHistoryFilterMode('ALL')">All Investments</button>
-                                            <button type="button" id="invest-filter-pill-day" class="circuit-filter-pill" onclick="setInvestHistoryFilterMode('DAY')">📅 Day-wise</button>
-                                            <button type="button" id="invest-filter-pill-month" class="circuit-filter-pill" onclick="setInvestHistoryFilterMode('MONTH')">🗓️ Month-wise</button>
-                                        </div>
-
-                                        <!-- Day-wise Controls (hidden by default) -->
-                                        <div id="invest-day-filter-controls" style="display: none; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.03); padding: 3px 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                                            <select id="invest-day-select" class="circuit-filter-pill" style="cursor: pointer; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(74, 222, 128, 0.4); color: #fff; padding: 5px 10px; border-radius: 14px;" onchange="handleInvestDaySelectChange(this.value)">
-                                            </select>
-                                            <input type="date" id="invest-day-input" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 0.82rem; cursor: pointer;" onchange="handleInvestDayInputChange(this.value)">
-                                        </div>
-
-                                        <!-- Month-wise Controls (hidden by default) -->
-                                        <div id="invest-month-filter-controls" style="display: none; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.03); padding: 3px 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                                            <select id="invest-month-select" class="circuit-filter-pill" style="cursor: pointer; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(74, 222, 128, 0.4); color: #fff; padding: 5px 10px; border-radius: 14px;" onchange="handleInvestMonthSelectChange(this.value)">
-                                            </select>
-                                            <input type="month" id="invest-month-input" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 0.82rem; cursor: pointer;" onchange="handleInvestMonthInputChange(this.value)">
-                                        </div>
-
-                                        <!-- Quick Search Input -->
-                                        <div style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 10px; gap: 6px;">
-                                            <i class="fa-solid fa-magnifying-glass" style="font-size: 0.75rem; color: var(--text-secondary);"></i>
-                                            <input type="text" id="invest-history-search" placeholder="Search investments..." onkeyup="handleInvestHistorySearch(this.value)" style="background: transparent; border: none; outline: none; color: white; font-size: 0.82rem; width: 140px;">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Active Filter Summary Pill Bar -->
-                                <div id="invest-filter-summary-bar" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 8px 14px; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;">
-                                    <span id="invest-filter-desc" style="color: var(--text-secondary);">Showing all investments</span>
-                                    <span id="invest-filter-value-sum" style="color: #4ade80; font-weight: 600;">Total Invested: ₹0.00</span>
-                                </div>
-
-                                <div class="desktop-table-view">
-                                    <table class="market-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Stock Asset</th>
-                                                <th>Action</th>
-                                                <th>Shares</th>
-                                                <th>Execution Price</th>
-                                                <th>Total Value</th>
-                                                <th style="text-align: right;">Status / P&L</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="invest-history-body">
-                                            <tr><td colspan="7" class="loading">Loading investment order history...</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div id="invest-history-cards" class="mobile-cards-feed"></div>
-                            </div>
-
                             <!-- Stock Investing Terminal -->
                             <div class="table-container glass-card full-width" style="margin-bottom: 2rem;">
                                 <h3 style="color: #60a5fa; font-size: 1.1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-chart-line" style="color:#60a5fa; margin-right:8px;"></i> Nifty 50 Blue-Chip Stock Terminal (Buy from 1 Share)</h3>
@@ -1774,7 +1701,6 @@ function switchTab(btn, targetId, updateUrl = true) {
         if (typeof renderTradeMarket === 'function') renderTradeMarket();
         if (typeof renderPortfolio === 'function') renderPortfolio();
         if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker();
-        if (typeof renderInvestHistory === 'function') renderInvestHistory();
     }
     
     if (targetId === 'trading-tab') {
@@ -2867,9 +2793,6 @@ async function loadStockInvestmentsTracker() {
         }
         if (typeof renderOrderHistory === 'function') {
             renderOrderHistory();
-        }
-        if (typeof renderInvestHistory === 'function') {
-            renderInvestHistory();
         }
     } catch (e) {
         console.error("Error loading stock investments tracker:", e);
@@ -4072,21 +3995,6 @@ let activeTradeAsset = null;
 let pendingOrders = [];
 
 async function fetchPaperTradingData(user) {
-    if (!user) {
-        user = currentUser;
-    }
-    if (!user) {
-        try {
-            if (typeof supabaseClient !== 'undefined' && supabaseClient.auth) {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (session && session.user) user = session.user;
-            }
-        } catch(e) {}
-    }
-    if (!user || !user.id) {
-        // Guest mode or not logged in: return gracefully without error
-        return;
-    }
     currentUser = user;
     
     // 1. Fetch Profile (Balance)
@@ -4617,9 +4525,6 @@ function renderPortfolio() {
     if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.today_pick) {
         renderNiftyDailyPickHeroCard(stockInvestmentsData.today_pick);
     }
-    if (typeof renderInvestHistory === 'function') {
-        renderInvestHistory();
-    }
 }
 window.renderTradePortfolio = renderPortfolio;
 window.renderPortfolio = renderPortfolio;
@@ -4935,9 +4840,6 @@ function getAllTakenOrders(supabaseTxs = []) {
             const entryDateInfo = parseDateInfo(t.date, pt.entry_time);
             const qty = Number(pt.quantity) || Number(t.lot_size) || 1;
             const entryPrice = Number(pt.entry_price) || Number(t.suggestion_6pm?.reference_price) || 0;
-            const srcLabel = t.asset_type === 'EQUITY_STOCK' 
-                ? 'Intraday Stock' 
-                : (t.asset_type === 'EQUITY_FUTURES' ? 'Intraday Futures' : 'Commodity Advisory');
             if (entryPrice > 0) {
                 addOrder({
                     id: `adv-${t.id}-entry`,
@@ -4954,7 +4856,7 @@ function getAllTakenOrders(supabaseTxs = []) {
                     qty: qty,
                     price: entryPrice,
                     totalValue: qty * entryPrice,
-                    source: srcLabel
+                    source: 'Commodity Advisory'
                 });
             }
 
@@ -4977,7 +4879,7 @@ function getAllTakenOrders(supabaseTxs = []) {
                     qty: qty,
                     price: exitPrice,
                     totalValue: qty * exitPrice,
-                    source: `${srcLabel} (Exit)`
+                    source: 'Commodity Advisory (Exit)'
                 });
             }
         }
@@ -5309,410 +5211,6 @@ function applyOrderHistoryFilter() {
     }).join('');
 }
 window.applyOrderHistoryFilter = applyOrderHistoryFilter;
-
-// ==========================================
-// 📜 STOCK INVESTMENT ORDER HISTORY ENGINE
-// ==========================================
-let allExtractedInvestments = [];
-let investHistoryFilterMode = 'ALL';
-let selectedInvestDay = '';
-let selectedInvestMonth = '';
-let investHistorySearchQuery = '';
-
-function getAllStockInvestmentOrders() {
-    const unified = [];
-    const seenIds = new Set();
-
-    function addInvestOrder(o) {
-        if (!o || !o.id || seenIds.has(o.id)) return;
-        seenIds.add(o.id);
-        unified.push(o);
-    }
-
-    // 1. Daily Golden Cross SIP stock investments
-    const stkInvestments = (typeof stockInvestmentsData !== 'undefined' && Array.isArray(stockInvestmentsData?.investments))
-        ? stockInvestmentsData.investments
-        : [];
-
-    for (const inv of stkInvestments) {
-        const entryDateInfo = parseDateInfo(inv.date, inv.time);
-        const shares = Number(inv.shares) || 1;
-        const entryPrice = Number(inv.entry_price) || 0;
-        const costBasis = Number(inv.invested_value) || (shares * entryPrice);
-        const livePrice = (typeof getSynchronizedCommodityPrice === 'function')
-            ? getSynchronizedCommodityPrice(inv.symbol, inv.current_price || entryPrice)
-            : (inv.current_price || entryPrice);
-        const liveVal = shares * livePrice;
-        const pnl = liveVal - costBasis;
-        const pnlPct = costBasis > 0 ? (pnl / costBasis) * 100 : 0;
-
-        if (entryPrice > 0) {
-            addInvestOrder({
-                id: `stk-${inv.id}-buy`,
-                rawDate: inv.time || inv.date,
-                dateObj: entryDateInfo.dt,
-                dayKey: entryDateInfo.dayKey,
-                monthKey: entryDateInfo.monthKey,
-                dayDisplay: entryDateInfo.dayDisplay,
-                monthDisplay: entryDateInfo.monthDisplay,
-                timeDisplay: inv.time ? (inv.time.includes(',') ? inv.time.split(',')[1].trim() : entryDateInfo.timeDisplay) : entryDateInfo.timeDisplay,
-                symbol: inv.symbol,
-                name: inv.full_name || inv.name || inv.symbol,
-                action: 'BUY',
-                shares: shares,
-                price: entryPrice,
-                totalValue: costBasis,
-                status: inv.status || 'ACTIVE',
-                pnlInr: pnl,
-                pnlPct: pnlPct,
-                target: inv.target_1,
-                stopLoss: inv.stop_loss,
-                source: 'Golden Cross SIP'
-            });
-        }
-
-        const exitPrice = Number(inv.exit_price) || 0;
-        if (inv.status === 'CLOSED' && exitPrice > 0) {
-            const exitDateInfo = parseDateInfo(inv.date, inv.exit_time);
-            const exitPnl = (exitPrice - entryPrice) * shares;
-            const exitPnlPct = costBasis > 0 ? (exitPnl / costBasis) * 100 : 0;
-            addInvestOrder({
-                id: `stk-${inv.id}-sell`,
-                rawDate: inv.exit_time || inv.date,
-                dateObj: exitDateInfo.dt,
-                dayKey: exitDateInfo.dayKey,
-                monthKey: exitDateInfo.monthKey,
-                dayDisplay: exitDateInfo.dayDisplay,
-                monthDisplay: exitDateInfo.monthDisplay,
-                timeDisplay: inv.exit_time ? (inv.exit_time.includes(',') ? inv.exit_time.split(',')[1].trim() : exitDateInfo.timeDisplay) : exitDateInfo.timeDisplay,
-                symbol: inv.symbol,
-                name: inv.full_name || inv.name || inv.symbol,
-                action: 'SELL',
-                shares: shares,
-                price: exitPrice,
-                totalValue: shares * exitPrice,
-                status: inv.exit_trigger || 'CLOSED',
-                pnlInr: exitPnl,
-                pnlPct: exitPnlPct,
-                source: 'SIP Exit'
-            });
-        }
-    }
-
-    // 2. Paper Trading manual equity executions
-    if (typeof userSupabaseTransactions !== 'undefined' && Array.isArray(userSupabaseTransactions)) {
-        for (const tx of userSupabaseTransactions) {
-            if (typeof isCommoditySymbol === 'function' && isCommoditySymbol(tx.symbol)) continue;
-            const rawDate = tx.created_at || tx.date || '';
-            const dateInfo = parseDateInfo(rawDate);
-            const qty = Number(tx.quantity) || 1;
-            const price = Number(tx.price) || 0;
-            const totalVal = qty * price;
-            const actionType = (tx.transaction_type || 'BUY').toUpperCase();
-
-            addInvestOrder({
-                id: `sb-eq-${tx.id || Math.random()}`,
-                rawDate: rawDate,
-                dateObj: dateInfo.dt,
-                dayKey: dateInfo.dayKey,
-                monthKey: dateInfo.monthKey,
-                dayDisplay: dateInfo.dayDisplay,
-                monthDisplay: dateInfo.monthDisplay,
-                timeDisplay: dateInfo.timeDisplay,
-                symbol: tx.symbol,
-                name: tx.name || tx.symbol,
-                action: actionType,
-                shares: qty,
-                price: price,
-                totalValue: totalVal,
-                status: 'EXECUTED',
-                pnlInr: null,
-                pnlPct: null,
-                source: 'Delivery Portfolio'
-            });
-        }
-    }
-
-    unified.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
-    return unified;
-}
-window.getAllStockInvestmentOrders = getAllStockInvestmentOrders;
-
-function renderInvestHistory() {
-    allExtractedInvestments = getAllStockInvestmentOrders();
-    populateInvestFilterOptions();
-    applyInvestHistoryFilter();
-}
-window.renderInvestHistory = renderInvestHistory;
-
-function populateInvestFilterOptions() {
-    const dayMap = new Map();
-    const monthMap = new Map();
-
-    for (const o of allExtractedInvestments) {
-        if (!dayMap.has(o.dayKey)) {
-            dayMap.set(o.dayKey, { display: o.dayDisplay, count: 0 });
-        }
-        dayMap.get(o.dayKey).count++;
-
-        if (!monthMap.has(o.monthKey)) {
-            monthMap.set(o.monthKey, { display: o.monthDisplay, count: 0 });
-        }
-        monthMap.get(o.monthKey).count++;
-    }
-
-    const sortedDays = Array.from(dayMap.keys()).sort().reverse();
-    const sortedMonths = Array.from(monthMap.keys()).sort().reverse();
-
-    const daySelect = document.getElementById('invest-day-select');
-    if (daySelect) {
-        if (sortedDays.length > 0) {
-            daySelect.innerHTML = sortedDays.map(dk => {
-                const info = dayMap.get(dk);
-                return `<option value="${dk}">${info.display} (${info.count} ${info.count === 1 ? 'order' : 'orders'})</option>`;
-            }).join('');
-            if (!selectedInvestDay || !dayMap.has(selectedInvestDay)) {
-                selectedInvestDay = sortedDays[0];
-            }
-            daySelect.value = selectedInvestDay;
-        } else {
-            daySelect.innerHTML = `<option value="">No days available</option>`;
-        }
-    }
-
-    const dayInput = document.getElementById('invest-day-input');
-    if (dayInput && selectedInvestDay) {
-        dayInput.value = selectedInvestDay;
-    }
-
-    const monthSelect = document.getElementById('invest-month-select');
-    if (monthSelect) {
-        if (sortedMonths.length > 0) {
-            monthSelect.innerHTML = sortedMonths.map(mk => {
-                const info = monthMap.get(mk);
-                return `<option value="${mk}">${info.display} (${info.count} ${info.count === 1 ? 'order' : 'orders'})</option>`;
-            }).join('');
-            if (!selectedInvestMonth || !monthMap.has(selectedInvestMonth)) {
-                selectedInvestMonth = sortedMonths[0];
-            }
-            monthSelect.value = selectedInvestMonth;
-        } else {
-            monthSelect.innerHTML = `<option value="">No months available</option>`;
-        }
-    }
-
-    const monthInput = document.getElementById('invest-month-input');
-    if (monthInput && selectedInvestMonth) {
-        monthInput.value = selectedInvestMonth;
-    }
-
-    const countBadge = document.getElementById('invest-history-count-badge');
-    if (countBadge) {
-        countBadge.textContent = `${allExtractedInvestments.length} Investments`;
-    }
-}
-window.populateInvestFilterOptions = populateInvestFilterOptions;
-
-function setInvestHistoryFilterMode(mode) {
-    investHistoryFilterMode = mode;
-
-    const pillAll = document.getElementById('invest-filter-pill-all');
-    const pillDay = document.getElementById('invest-filter-pill-day');
-    const pillMonth = document.getElementById('invest-filter-pill-month');
-
-    const dayControls = document.getElementById('invest-day-filter-controls');
-    const monthControls = document.getElementById('invest-month-filter-controls');
-
-    if (pillAll) pillAll.classList.toggle('active', mode === 'ALL');
-    if (pillDay) pillDay.classList.toggle('active', mode === 'DAY');
-    if (pillMonth) pillMonth.classList.toggle('active', mode === 'MONTH');
-
-    if (dayControls) dayControls.style.display = (mode === 'DAY') ? 'flex' : 'none';
-    if (monthControls) monthControls.style.display = (mode === 'MONTH') ? 'flex' : 'none';
-
-    applyInvestHistoryFilter();
-}
-window.setInvestHistoryFilterMode = setInvestHistoryFilterMode;
-
-function handleInvestDaySelectChange(val) {
-    selectedInvestDay = val;
-    const dayInput = document.getElementById('invest-day-input');
-    if (dayInput) dayInput.value = val;
-    applyInvestHistoryFilter();
-}
-window.handleInvestDaySelectChange = handleInvestDaySelectChange;
-
-function handleInvestDayInputChange(val) {
-    if (!val) return;
-    selectedInvestDay = val;
-    const daySelect = document.getElementById('invest-day-select');
-    if (daySelect) daySelect.value = val;
-    applyInvestHistoryFilter();
-}
-window.handleInvestDayInputChange = handleInvestDayInputChange;
-
-function handleInvestMonthSelectChange(val) {
-    selectedInvestMonth = val;
-    const monthInput = document.getElementById('invest-month-input');
-    if (monthInput) monthInput.value = val;
-    applyInvestHistoryFilter();
-}
-window.handleInvestMonthSelectChange = handleInvestMonthSelectChange;
-
-function handleInvestMonthInputChange(val) {
-    if (!val) return;
-    selectedInvestMonth = val;
-    const monthSelect = document.getElementById('invest-month-select');
-    if (monthSelect) monthSelect.value = val;
-    applyInvestHistoryFilter();
-}
-window.handleInvestMonthInputChange = handleInvestMonthInputChange;
-
-function handleInvestHistorySearch(val) {
-    investHistorySearchQuery = (val || '').toLowerCase().trim();
-    applyInvestHistoryFilter();
-}
-window.handleInvestHistorySearch = handleInvestHistorySearch;
-
-function applyInvestHistoryFilter() {
-    const tbody = document.getElementById('invest-history-body');
-    const cardsEl = document.getElementById('invest-history-cards');
-    const descEl = document.getElementById('invest-filter-desc');
-    const sumEl = document.getElementById('invest-filter-value-sum');
-
-    if (!tbody) return;
-
-    let filtered = [...allExtractedInvestments];
-
-    if (investHistoryFilterMode === 'DAY' && selectedInvestDay) {
-        filtered = filtered.filter(o => o.dayKey === selectedInvestDay);
-    } else if (investHistoryFilterMode === 'MONTH' && selectedInvestMonth) {
-        filtered = filtered.filter(o => o.monthKey === selectedInvestMonth);
-    }
-
-    if (investHistorySearchQuery) {
-        filtered = filtered.filter(o => {
-            return (o.symbol && o.symbol.toLowerCase().includes(investHistorySearchQuery)) ||
-                   (o.name && o.name.toLowerCase().includes(investHistorySearchQuery)) ||
-                   (o.action && o.action.toLowerCase().includes(investHistorySearchQuery)) ||
-                   (o.dayDisplay && o.dayDisplay.toLowerCase().includes(investHistorySearchQuery)) ||
-                   (o.source && o.source.toLowerCase().includes(investHistorySearchQuery));
-        });
-    }
-
-    const totalInvested = filtered.reduce((acc, o) => acc + (o.totalValue || 0), 0);
-    if (sumEl) {
-        sumEl.textContent = `Total Capital: ₹${totalInvested.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-    if (descEl) {
-        if (investHistoryFilterMode === 'DAY') {
-            const daySelect = document.getElementById('invest-day-select');
-            const dayText = daySelect?.options[daySelect.selectedIndex]?.text?.split(' (')[0] || selectedInvestDay;
-            descEl.innerHTML = `Showing <strong>${filtered.length}</strong> investments executed on <strong>${dayText}</strong>`;
-        } else if (investHistoryFilterMode === 'MONTH') {
-            const monthSelect = document.getElementById('invest-month-select');
-            const monthText = monthSelect?.options[monthSelect.selectedIndex]?.text?.split(' (')[0] || selectedInvestMonth;
-            descEl.innerHTML = `Showing <strong>${filtered.length}</strong> investments executed in <strong>${monthText}</strong>`;
-        } else {
-            descEl.innerHTML = `Showing all <strong>${filtered.length}</strong> executed investments`;
-        }
-    }
-
-    if (filtered.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
-                    <i class="fa-solid fa-receipt" style="font-size: 2.2rem; margin-bottom: 0.75rem; opacity: 0.35; display: block; color: #4ade80;"></i>
-                    <div style="font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 0.25rem;">No investments found</div>
-                    <div style="font-size: 0.82rem;">No investments matched the selected ${investHistoryFilterMode === 'DAY' ? 'day' : (investHistoryFilterMode === 'MONTH' ? 'month' : 'criteria')}. Try selecting a different date.</div>
-                </td>
-            </tr>
-        `;
-        if (cardsEl) cardsEl.innerHTML = `<div style="text-align:center; padding:1.5rem; color:var(--text-secondary);">No investments found.</div>`;
-        return;
-    }
-
-    tbody.innerHTML = filtered.map(o => {
-        const isBuy = o.action.includes('BUY');
-        const actionBadge = isBuy
-            ? `<span style="background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.78rem;">BUY</span>`
-            : `<span style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fb7185; padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.78rem;">SELL</span>`;
-        
-        const sourceBadge = o.source ? `<span style="font-size: 0.7rem; color: #94a3b8; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; margin-left: 6px;">${o.source}</span>` : '';
-
-        let pnlDisplay = '';
-        if (o.pnlInr != null) {
-            const pnlColor = o.pnlInr >= 0 ? '#4ade80' : '#fb7185';
-            const pnlSign = o.pnlInr >= 0 ? '+' : '';
-            pnlDisplay = `
-                <div style="font-weight:700; color:${pnlColor}; font-size:0.88rem;">${pnlSign}₹${o.pnlInr.toFixed(2)}</div>
-                <div style="font-size:0.72rem; color:${pnlColor};">(${pnlSign}${o.pnlPct.toFixed(2)}%)</div>
-            `;
-        } else {
-            pnlDisplay = `<span style="font-size:0.75rem; color:#94a3b8; font-weight:600;">${o.status || 'ACTIVE'}</span>`;
-        }
-
-        return `
-            <tr>
-                <td style="white-space: nowrap;">
-                    <div style="font-weight: 600; color: #fff;">${o.dayDisplay}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-secondary);">${o.timeDisplay}</div>
-                </td>
-                <td>
-                    <div style="font-weight: 600; color: #fff; display: flex; align-items: center;">
-                        <span>${o.name}</span>
-                        ${sourceBadge}
-                    </div>
-                    <div style="font-size: 0.75rem; color: #94a3b8; font-family: monospace;">${o.symbol}</div>
-                </td>
-                <td>${actionBadge}</td>
-                <td style="font-weight: 600;">${o.shares} Shares</td>
-                <td>₹${o.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td style="font-weight: 700; color: #fff;">₹${o.totalValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td style="text-align: right;">${pnlDisplay}</td>
-            </tr>
-        `;
-    }).join('');
-
-    if (cardsEl) {
-        cardsEl.innerHTML = filtered.map(o => {
-            const isBuy = o.action.includes('BUY');
-            const color = (o.pnlInr != null && o.pnlInr >= 0) ? '#4ade80' : '#fb7185';
-            const sign = (o.pnlInr != null && o.pnlInr >= 0) ? '+' : '';
-            return `
-                <div class="mobile-trading-card" style="border-left: 3px solid ${isBuy ? '#4ade80' : '#fb7185'};">
-                    <div class="mobile-card-top">
-                        <div class="mobile-card-title-group">
-                            <div class="mobile-card-asset-name">
-                                <span>${o.name}</span>
-                                <span style="font-size:0.75rem; color:#94a3b8; font-weight:400;">(${o.symbol})</span>
-                            </div>
-                            <div class="mobile-card-meta">${isBuy ? '🟢 BUY' : '🔴 SELL'} · ${o.shares} Shares (${o.dayDisplay})</div>
-                        </div>
-                        <div>
-                            <span style="font-size:0.75rem; color:#94a3b8;">${o.source || ''}</span>
-                        </div>
-                    </div>
-                    <div class="mobile-card-grid-3">
-                        <div class="mobile-cell-item">
-                            <span class="mobile-cell-label">Price</span>
-                            <span class="mobile-cell-val">₹${o.price.toFixed(2)}</span>
-                        </div>
-                        <div class="mobile-cell-item">
-                            <span class="mobile-cell-label">Total Value</span>
-                            <span class="mobile-cell-val">₹${o.totalValue.toLocaleString('en-IN', {maximumFractionDigits:0})}</span>
-                        </div>
-                        <div class="mobile-cell-item">
-                            <span class="mobile-cell-label">P&L / Return</span>
-                            <span class="mobile-cell-val" style="color:${color}; font-weight:700;">${o.pnlInr != null ? `${sign}₹${o.pnlInr.toFixed(2)}` : o.status}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-}
-window.applyInvestHistoryFilter = applyInvestHistoryFilter;
 
 const COMMODITY_SYMBOLS = ['CRUDEOIL', 'NATURALGAS', 'GOLD', 'SILVER', 'COPPER', 'ZINC', 'ALUMINIUM', 'CRUDEOILM', 'NATURALGASM', 'SILVERMIC', 'GOLDM', 'GOLDTEN', 'COPPERM', 'ZINCMINI', 'ALUMINI'];
 
@@ -7626,7 +7124,6 @@ function startApp() {
     try { if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker(); } catch(e) { console.error("Load Advisory Error:", e); }
     try { if (typeof fetchNiftyOpportunities === 'function') fetchNiftyOpportunities(); } catch(e) { console.error("Load Nifty Error:", e); }
     try { if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker(); } catch(e) { console.error("Load Stock Investments Error:", e); }
-    try { if (typeof renderInvestHistory === 'function') renderInvestHistory(); } catch(e) { console.error("Load Invest History Error:", e); }
     try { if (typeof loadAndRenderOrderHistory === 'function') loadAndRenderOrderHistory(); } catch(e) { console.error("Load Order History Error:", e); }
 }
 
