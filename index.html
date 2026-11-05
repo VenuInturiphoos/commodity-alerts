@@ -4634,14 +4634,12 @@ function renderPortfolio() {
     const totalRealizedPnl = autoStockRealizedPnl + manualRealizedPnl;
 
     // Calculate baseline cash pool (Dedicated ₹3,00,000 Pool)
-    let baseCash = 300000;
+    let baseCash = (activeStkData && activeStkData.summary && activeStkData.summary.starting_cash_inr)
+        ? Number(activeStkData.summary.starting_cash_inr)
+        : 300000;
     const customBal = localStorage.getItem('custom_stock_cash_balance');
-    if (customBal !== null && !isNaN(parseFloat(customBal))) {
+    if (customBal !== null && !isNaN(parseFloat(customBal)) && parseFloat(customBal) > 0) {
         baseCash = parseFloat(customBal);
-    } else if (currentUser && userBalance > 0) {
-        baseCash = userBalance;
-    } else if (activeStkData && activeStkData.summary && activeStkData.summary.starting_cash_inr) {
-        baseCash = Number(activeStkData.summary.starting_cash_inr);
     }
     
     // Total Active Capital Invested in Stocks (All active holdings: automated SIP + manual purchases)
@@ -6087,64 +6085,53 @@ function openTradeModal(symbol, name, price) {
 }
 
 window.editVirtualBalance = async function() {
-    const currentBal = (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary?.available_cash_inr) 
-        ? Number(stockInvestmentsData.summary.available_cash_inr) 
-        : userBalance;
-    const newBalStr = prompt(`Enter new virtual cash balance (Current: ₹${currentBal.toFixed(2)}):`, currentBal);
+    const activeStkData = (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData) ? stockInvestmentsData : window.stockInvestmentsData;
+    const currentPool = (activeStkData && activeStkData.summary && activeStkData.summary.starting_cash_inr) 
+        ? Number(activeStkData.summary.starting_cash_inr) 
+        : 300000;
+    const newBalStr = prompt(`Enter starting capital pool for Stock Wealth Investing (Current: ₹${currentPool.toLocaleString('en-IN')}):`, currentPool);
     if (!newBalStr) return;
     const newBal = parseFloat(newBalStr);
     if (isNaN(newBal) || newBal < 0) return alert("Invalid amount.");
 
-    if (!currentUser) {
-        userBalance = newBal;
-        if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary) {
-            stockInvestmentsData.summary.available_cash_inr = newBal;
-        }
-        renderPortfolio();
-        alert("Virtual cash balance updated!");
-        return;
+    localStorage.setItem('custom_stock_cash_balance', newBal);
+    if (activeStkData && activeStkData.summary) {
+        activeStkData.summary.starting_cash_inr = newBal;
     }
-
-    try {
-        const { error } = await supabaseClient.from('profiles')
-            .update({ balance: newBal })
-            .eq('id', currentUser.id);
-        if (error) throw error;
-        alert("Cash balance updated successfully!");
-        fetchPaperTradingData(currentUser);
-    } catch (err) {
-        alert("Error updating balance: " + err.message);
+    if (currentUser) {
+        try {
+            await supabaseClient.from('profiles').update({ balance: newBal }).eq('id', currentUser.id);
+        } catch(e) {}
     }
+    renderPortfolio();
+    alert(`Stock Investing capital pool successfully updated to ₹${newBal.toLocaleString('en-IN')}!`);
 }
 
 window.resetPaperTradingAccount = async function() {
-    if (!confirm("Are you sure you want to completely reset your account? This will restore your available cash to ₹300,000.")) return;
+    if (!confirm("Are you sure you want to completely reset your Stock Investing account? This will restore your pool to ₹300,000.")) return;
 
-    if (!currentUser) {
-        userBalance = 300000;
-        if (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData?.summary) {
-            stockInvestmentsData.summary.available_cash_inr = 300000;
-        }
-        renderPortfolio();
-        alert("Account reset to ₹300,000!");
-        return;
+    localStorage.removeItem('custom_stock_cash_balance');
+    localStorage.removeItem('manual_stock_realized_pnl');
+    localStorage.removeItem('guest_stock_transactions');
+    localStorage.removeItem('guest_user_portfolio');
+    localStorage.removeItem('guest_user_balance');
+
+    if (currentUser) {
+        try {
+            // 1. Delete all transactions for this user
+            await supabaseClient.from('transactions').delete().eq('user_id', currentUser.id);
+            // 2. Reset balance to 300k
+            await supabaseClient.from('profiles').update({ balance: 300000 }).eq('id', currentUser.id);
+        } catch(e) {}
     }
-
-    try {
-        // 1. Delete all transactions for this user
-        const { error: txError } = await supabaseClient.from('transactions').delete().eq('user_id', currentUser.id);
-        if (txError) throw txError;
-
-        // 2. Reset balance to 300k
-        const { error: profileError } = await supabaseClient.from('profiles').update({ balance: 300000 }).eq('id', currentUser.id);
-        if (profileError) throw profileError;
-
-        alert("Account reset successfully!");
-        fetchPaperTradingData(currentUser);
-    } catch (err) {
-        alert("Error resetting account: " + err.message);
+    userPortfolio = {};
+    const activeStkData = (typeof stockInvestmentsData !== 'undefined' && stockInvestmentsData) ? stockInvestmentsData : window.stockInvestmentsData;
+    if (activeStkData && activeStkData.summary) {
+        activeStkData.summary.starting_cash_inr = 300000;
     }
-}
+    renderPortfolio();
+    alert("Stock Investing account successfully reset to ₹300,000!");
+};
 
 function calculateBalanceDelta(symbol, type, qty, price, currentPosition) {
     const marginRate = getAssetMarginRate(symbol);
