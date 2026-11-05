@@ -1,13 +1,13 @@
 {
-  "last_updated": "05 Nov 2026, 08:59 AM IST",
+  "last_updated": "05 Nov 2026, 09:02 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 79,
+    "total_signals": 88,
     "executed_count": 10,
     "correct_count": 4,
     "wrong_count": 5,
-    "protected_count": 69,
+    "protected_count": 78,
     "win_rate_pct": 44.4,
     "total_pnl_inr": -26276.7,
     "avg_trade_pnl_inr": -2627.67,
@@ -19,6 +19,479 @@
     "net_worth_inr": 273723.3
   },
   "trades": [
+    {
+      "id": "ADV-05Nov2026-0901-GOLD",
+      "date": "05 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 10,
+      "event_context": "MCX Open Gap (++1.53%) | CPR: 1.04%",
+      "time_machine": null,
+      "risk_check": {
+        "passed": false,
+        "reason": "INSUFFICIENT_RRR: Reward-to-risk ratio 0.77R is below the 1.5R minimum standard.",
+        "reward_risk_ratio": 0.77
+      },
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / RISK GUARD",
+        "rationale": "Risk Engine Block: INSUFFICIENT_RRR: Reward-to-risk ratio 0.77R is below the 1.5R minimum standard.",
+        "reference_price": 145425.0,
+        "stop_loss": 148252.7,
+        "target": 143234.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RISK_GUARD_STAND_ASIDE",
+        "price_615": 145425.0,
+        "action_taken": "Stood Aside",
+        "detail": "INSUFFICIENT_RRR: Reward-to-risk ratio 0.77R is below the 1.5R minimum standard."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Risk Engine Block: INSUFFICIENT_RRR: Reward-to-risk ratio 0.77R is below the 1.5R minimum standard."
+      }
+    },
+    {
+      "id": "ADV-05Nov2026-0901-SILVER",
+      "date": "05 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 5,
+      "event_context": "MCX Open Gap (++1.57%) | CPR: 0.94%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / RSI OVERSOLD",
+        "rationale": "Gap fade short blocked by RSI filter (36.9 < 40). Momentum is already suppressed; risk of short squeeze.",
+        "reference_price": 190688.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RSI_FILTER_STAND_ASIDE",
+        "price_615": 190688.0,
+        "action_taken": "Stood Aside",
+        "detail": "RSI 36.9 warned against shorting."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Gap fade short blocked by RSI filter (36.9 < 40). Momentum is already suppressed; risk of short squeeze."
+      }
+    },
+    {
+      "id": "ADV-05Nov2026-0901-CRUDEOIL",
+      "date": "05 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 50,
+      "event_context": "MCX Open Gap (-1.79%) | CPR: 1.21%",
+      "time_machine": null,
+      "risk_check": {
+        "passed": false,
+        "reason": "INSUFFICIENT_RRR: Reward-to-risk ratio 0.31R is below the 1.5R minimum standard.",
+        "reward_risk_ratio": 0.31
+      },
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / RISK GUARD",
+        "rationale": "Risk Engine Block: INSUFFICIENT_RRR: Reward-to-risk ratio 0.31R is below the 1.5R minimum standard.",
+        "reference_price": 8214.0,
+        "stop_loss": 7735.76,
+        "target": 8364.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RISK_GUARD_STAND_ASIDE",
+        "price_615": 8214.0,
+        "action_taken": "Stood Aside",
+        "detail": "INSUFFICIENT_RRR: Reward-to-risk ratio 0.31R is below the 1.5R minimum standard."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Risk Engine Block: INSUFFICIENT_RRR: Reward-to-risk ratio 0.31R is below the 1.5R minimum standard."
+      }
+    },
+    {
+      "id": "ADV-05Nov2026-0901-NATURALGAS",
+      "date": "05 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "MCX Open Gap (-1.20%) | CPR: 0.93%",
+      "time_machine": null,
+      "risk_check": {
+        "passed": false,
+        "reason": "INSUFFICIENT_RRR: Reward-to-risk ratio 0.27R is below the 1.5R minimum standard.",
+        "reward_risk_ratio": 0.27
+      },
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / RISK GUARD",
+        "rationale": "Risk Engine Block: INSUFFICIENT_RRR: Reward-to-risk ratio 0.27R is below the 1.5R minimum standard.",
+        "reference_price": 278.9,
+        "stop_loss": 266.5,
+        "target": 282.3
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RISK_GUARD_STAND_ASIDE",
+        "price_615": 278.9,
+        "action_taken": "Stood Aside",
+        "detail": "INSUFFICIENT_RRR: Reward-to-risk ratio 0.27R is below the 1.5R minimum standard."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Risk Engine Block: INSUFFICIENT_RRR: Reward-to-risk ratio 0.27R is below the 1.5R minimum standard."
+      }
+    },
+    {
+      "id": "ADV-05Nov2026-0901-COPPER",
+      "date": "05 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPER",
+      "name": "Copper",
+      "lot_size": 1250,
+      "event_context": "Normal Open (+0.38%) | CPR: 0.20%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (+0.38%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 1373.3,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 1373.3,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-05Nov2026-0901-ZINC",
+      "date": "05 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ZINC",
+      "name": "Zinc",
+      "lot_size": 2500,
+      "event_context": "Normal Open (+0.70%) | CPR: 0.56%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (+0.70%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 417.9,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 417.9,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-05Nov2026-0901-ALUMINIUM",
+      "date": "05 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ALUMINIUM",
+      "name": "Aluminium",
+      "lot_size": 1000,
+      "event_context": "MCX Open Gap (++0.81%) | CPR: 0.42%",
+      "time_machine": null,
+      "risk_check": {
+        "passed": false,
+        "reason": "INSUFFICIENT_RRR: Reward-to-risk ratio 0.46R is below the 1.5R minimum standard.",
+        "reward_risk_ratio": 0.46
+      },
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / RISK GUARD",
+        "rationale": "Risk Engine Block: INSUFFICIENT_RRR: Reward-to-risk ratio 0.46R is below the 1.5R minimum standard.",
+        "reference_price": 330.9,
+        "stop_loss": 336.61,
+        "target": 328.25
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RISK_GUARD_STAND_ASIDE",
+        "price_615": 330.9,
+        "action_taken": "Stood Aside",
+        "detail": "INSUFFICIENT_RRR: Reward-to-risk ratio 0.46R is below the 1.5R minimum standard."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Risk Engine Block: INSUFFICIENT_RRR: Reward-to-risk ratio 0.46R is below the 1.5R minimum standard."
+      }
+    },
+    {
+      "id": "ADV-05Nov2026-0901-ZINCMINI",
+      "date": "05 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 2500,
+      "event_context": "Normal Open (+0.66%) | CPR: 0.30%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (+0.66%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 417.85,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 417.85,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-05Nov2026-0901-ALUMINI",
+      "date": "05 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 1000,
+      "event_context": "MCX Open Gap (++0.82%) | CPR: 0.38%",
+      "time_machine": null,
+      "risk_check": {
+        "passed": false,
+        "reason": "INSUFFICIENT_RRR: Reward-to-risk ratio 0.45R is below the 1.5R minimum standard.",
+        "reward_risk_ratio": 0.45
+      },
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / RISK GUARD",
+        "rationale": "Risk Engine Block: INSUFFICIENT_RRR: Reward-to-risk ratio 0.45R is below the 1.5R minimum standard.",
+        "reference_price": 332.05,
+        "stop_loss": 338.01,
+        "target": 329.35
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RISK_GUARD_STAND_ASIDE",
+        "price_615": 332.05,
+        "action_taken": "Stood Aside",
+        "detail": "INSUFFICIENT_RRR: Reward-to-risk ratio 0.45R is below the 1.5R minimum standard."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Risk Engine Block: INSUFFICIENT_RRR: Reward-to-risk ratio 0.45R is below the 1.5R minimum standard."
+      }
+    },
     {
       "id": "ADV-04Nov2026-2000-CRUDEOIL",
       "date": "04 Nov 2026",
