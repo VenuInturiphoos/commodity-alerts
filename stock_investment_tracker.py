@@ -495,9 +495,10 @@ def update_live_stock_investments():
     # Keep today's pick synchronized with latest updates
     if tracker_data.get('today_pick'):
         today_id = tracker_data['today_pick'].get('id')
-        match = next((i for i in investments if i.get('id') == today_id), None)
+        today_sym = tracker_data['today_pick'].get('symbol')
+        match = next((i for i in investments if (today_id and i.get('id') == today_id) or (today_sym and i.get('symbol') == today_sym)), None)
         if match:
-            tracker_data['today_pick'] = match
+            tracker_data['today_pick'] = dict(match)
 
     if updated:
         save_stock_investments(tracker_data)

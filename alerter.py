@@ -109,6 +109,97 @@ class EmailAlerter:
             raise last_err
         raise RuntimeError("Could not establish SMTP connection.")
 
+    @classmethod
+    def is_trade_execution_alert(cls, subject: str, body: str = '') -> bool:
+        """
+        Determines whether an alert represents an executed trade entry (taken)
+        or an executed trade exit (target hit, stop-loss, square-off, closed).
+
+        Per user instruction:
+        Email alerts are ONLY provided for trades that are taken and exited trades.
+        All other alerts (circuit warnings, daily advisories, market pulse,
+        playbooks, commentary, event risk updates) are suppressed from email.
+        """
+        sub_upper = (subject or '').upper()
+        bdy_upper = (body or '').upper()
+
+        # 1. Explicit Exclusions (Never send these non-trade alerts via email)
+        explicit_blocks = [
+            "CIRCUIT WARNING",
+            "CIRCUIT HIT",
+            "NEAR UPPER CIRCUIT",
+            "NEAR LOWER CIRCUIT",
+            "REACHED UPPER CIRCUIT",
+            "REACHED LOWER CIRCUIT",
+            "HIGH RISK - NEWS DAY",
+            "6 PM IST ADVISORY",
+            "1:30 PM IST ADVISORY",
+            "8:00 PM IST ADVISORY",
+            "9:01 AM IST ADVISORY",
+            "MORNING MARKET PULSE",
+            "LONDON / EUROPEAN OPEN",
+            "ACTION PLAYBOOK",
+            "STAND ASIDE PLAYBOOK",
+            "TRAP AVOIDED",
+            "CONFIRMED_STAND_ASIDE",
+            "STAGE 1: BREAKEVEN LOCK",
+            "STAGE 2: PROFIT LOCKED",
+            "EVENT RISK PROTECTION",
+        ]
+        for block in explicit_blocks:
+            if block in sub_upper:
+                return False
+
+        # 2. Trades Taken (Entry / Order Executions)
+        trade_taken_signatures = [
+            "[DAILY STOCK SIP]",
+            "[NIFTY INTRADAY MIS TRIGGER]",
+            "[NSE STOCK FUTURE TRIGGER]",
+            "[NSE FUTURE TRIGGER]",
+            "[REAL-TIME TECHNICAL TRIGGER]",
+            "[LIMIT ORDER FILLED]",
+            "[6:15 PM TRADE CONFIRMED]",
+            "REAL-TIME INTRADAY STOCK TRIGGER",
+            "DAILY STOCK INVESTMENT (CASH DELIVERY)",
+            "ORDER EXECUTED",
+            "TRADE TAKEN",
+            "POSITION OPENED",
+        ]
+        for sig in trade_taken_signatures:
+            if sig in sub_upper or sig in bdy_upper:
+                return True
+
+        if "BOUGHT" in sub_upper and ("SHARES" in sub_upper or "SIP" in sub_upper):
+            return True
+
+        # 3. Trades Exited (Target Hit, Stop Loss, Breakeven, Square-off, EOD Settlement)
+        trade_exited_signatures = [
+            "[TARGET HIT]",
+            "TARGET 1 EXECUTED",
+            "TARGET 2 EXECUTED",
+            "TARGET ACHIEVED",
+            "[STOP LOSS HIT]",
+            "STOP LOSS HIT",
+            "STOP-LOSS TRIGGERED",
+            "PROTECTIVE STOP LOSS EXECUTED",
+            "PAPER TRADE EXIT",
+            "PAPER TRADE AUTO-EXIT",
+            "BREAKEVEN EXIT",
+            "STAGNATION EXIT",
+            "03:20 PM SQUARE-OFF",
+            "INTRADAY SQUARE-OFF",
+            "EOD SQUARE-OFF",
+            "SQUARE-OFF SETTLED",
+            "SQUARE-OFF COMPLETED",
+            "[11:30 PM SETTLEMENT]",
+            "POSITION CLOSED",
+        ]
+        for sig in trade_exited_signatures:
+            if sig in sub_upper or sig in bdy_upper:
+                return True
+
+        return False
+
     def send_alerts(self, alerts):
         if not alerts:
             return False, []
@@ -130,63 +221,78 @@ class EmailAlerter:
         recipient_emails = self.get_recipients()
 
         email_sent_indices = set()
+        email_filtered_indices = set()
         if sender_email != "your_email@gmail.com" and sender_password and recipient_emails:
-            server = None
-            try:
-                server = self._create_smtp_session(sender_email, sender_password)
-                for idx, alert in enumerate(alerts):
-                    subject = alert['subject']
-                    body = alert['body']
-                    body_html = body.replace('\n', '<br>')
+            # Policy Enforcement: Only provide email alerts for trades taken and exited trades
+            email_alerts_to_send = []
+            for idx, alert in enumerate(alerts):
+                subject = alert.get('subject', '')
+                body = alert.get('body', '')
+                if self.is_trade_execution_alert(subject, body):
+                    email_alerts_to_send.append((idx, alert))
+                else:
+                    print(f"📧 [EMAIL FILTER] Suppressing non-trade alert per user rule: {subject}")
+                    email_filtered_indices.add(idx)
 
-                    alert_dispatched_successfully = False
-                    for recipient in recipient_emails:
-                        msg = MIMEMultipart('alternative')
-                        msg['From'] = sender_email
-                        msg['To'] = recipient
-                        msg['Subject'] = subject
+            if email_alerts_to_send:
+                server = None
+                try:
+                    server = self._create_smtp_session(sender_email, sender_password)
+                    for idx, alert in email_alerts_to_send:
+                        subject = alert['subject']
+                        body = alert['body']
+                        body_html = body.replace('\n', '<br>')
 
-                        plain_body = f"{body}\n\n---\nTo unsubscribe from these market alerts, click here:\nhttps://VenuInturiphoos.github.io/commodity-alerts/unsubscribe.html?email={recipient}"
-                        html_body = f"""
-                        <html>
-                          <body>
-                            <p>{body_html}</p>
-                            <hr style="margin-top: 20px; border: 0; border-top: 1px solid #eee;">
-                            <p style="font-size: 12px; color: #888;">
-                              To unsubscribe from these market alerts, <a href="https://VenuInturiphoos.github.io/commodity-alerts/unsubscribe.html?email={recipient}">click here</a>.
-                            </p>
-                          </body>
-                        </html>
-                        """
+                        alert_dispatched_successfully = False
+                        for recipient in recipient_emails:
+                            msg = MIMEMultipart('alternative')
+                            msg['From'] = sender_email
+                            msg['To'] = recipient
+                            msg['Subject'] = subject
 
-                        msg.attach(MIMEText(plain_body, 'plain'))
-                        msg.attach(MIMEText(html_body, 'html'))
+                            plain_body = f"{body}\n\n---\nTo unsubscribe from these market alerts, click here:\nhttps://VenuInturiphoos.github.io/commodity-alerts/unsubscribe.html?email={recipient}"
+                            html_body = f"""
+                            <html>
+                              <body>
+                                <p>{body_html}</p>
+                                <hr style="margin-top: 20px; border: 0; border-top: 1px solid #eee;">
+                                <p style="font-size: 12px; color: #888;">
+                                  To unsubscribe from these market alerts, <a href="https://VenuInturiphoos.github.io/commodity-alerts/unsubscribe.html?email={recipient}">click here</a>.
+                                </p>
+                              </body>
+                            </html>
+                            """
 
+                            msg.attach(MIMEText(plain_body, 'plain'))
+                            msg.attach(MIMEText(html_body, 'html'))
+
+                            try:
+                                server.send_message(msg)
+                                print(f"Successfully sent trade execution email to {recipient}: {subject}")
+                                alert_dispatched_successfully = True
+                            except Exception as e:
+                                print(f"Failed to send email to {recipient}: {e}")
+
+                        if alert_dispatched_successfully:
+                            email_sent_indices.add(idx)
+
+                except Exception as e:
+                    print(f"SMTP Dispatch Error: {e}")
+                finally:
+                    if server:
                         try:
-                            server.send_message(msg)
-                            print(f"Successfully sent alert to {recipient}: {subject}")
-                            alert_dispatched_successfully = True
-                        except Exception as e:
-                            print(f"Failed to send email to {recipient}: {e}")
-
-                    if alert_dispatched_successfully:
-                        email_sent_indices.add(idx)
-
-            except Exception as e:
-                print(f"SMTP Dispatch Error: {e}")
-            finally:
-                if server:
-                    try:
-                        server.quit()
-                    except Exception:
-                        pass
+                            server.quit()
+                        except Exception:
+                            pass
+            else:
+                print("📧 [EMAIL FILTER] No trades taken or exited in this batch. 0 emails sent.")
         else:
             if not sender_password or sender_email == "your_email@gmail.com":
                 print("Email credentials (SENDER_PASSWORD) not configured. Email dispatch skipped.")
             elif not recipient_emails:
                 print("No email recipients found. Email dispatch skipped.")
 
-        dispatched_indices = telegram_sent_indices | email_sent_indices
+        dispatched_indices = telegram_sent_indices | email_sent_indices | email_filtered_indices
         sent_alerts = [alerts[i] for i in sorted(dispatched_indices)]
         
         return (len(sent_alerts) > 0), sent_alerts
