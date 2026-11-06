@@ -1,24 +1,121 @@
 {
-  "last_updated": "06 Nov 2026, 09:24 AM IST",
+  "last_updated": "06 Nov 2026, 10:32 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 115,
-    "executed_count": 17,
+    "total_signals": 116,
+    "executed_count": 18,
     "correct_count": 6,
     "wrong_count": 9,
     "protected_count": 98,
     "win_rate_pct": 40.0,
     "total_pnl_inr": -31862.7,
-    "avg_trade_pnl_inr": -1874.28,
-    "active_trades_count": 1,
+    "avg_trade_pnl_inr": -1770.15,
+    "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 268137.3,
-    "used_margin_inr": 9720.0,
-    "available_cash_inr": 258417.3,
+    "used_margin_inr": 62248.0,
+    "available_cash_inr": 205889.3,
     "net_worth_inr": 268137.3
   },
   "trades": [
+    {
+      "id": "ADV-06Nov2026-1032-ALUMINIUM",
+      "date": "06 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (EMA 20/50 Bearish Trend Confluence)",
+      "time_trigger": "10:32 AM IST",
+      "time_6pm": "10:32 AM IST",
+      "time_validation": "10:32 AM IST",
+      "time_615": "10:32 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 1000,
+      "event_context": "Indicator Confluence: EMA 20/50 Bearish Trend Confluence",
+      "regime": {
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 25.7, RSI: 45.4). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "SHORT_FUTURES"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 25.7,
+        "rsi": 45.4,
+        "bb_width_pct": 8.04,
+        "daily_vol_pct": 1.44
+      },
+      "time_machine": {
+        "replays": 1000,
+        "passed": true,
+        "verdict": "PARAMETRIC_STATISTICAL_PASS",
+        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
+        "p_target_pct": 47.7,
+        "p_stop_pct": 39.2,
+        "p_neither_pct": 13.1,
+        "resolved_win_rate_pct": 54.9,
+        "expected_r": 0.467,
+        "target_r": 1.8,
+        "sample_bars": 0,
+        "summary": "Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 1.8,
+        "loss_at_stop_inr": 2340.0,
+        "potential_gain_inr": 4210.0
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b9328.30",
+        "rationale": "20 EMA (\u20b9329.70) < 50 EMA (\u20b9334.52) with ADX 25.7 >= 20 and healthy RSI 45.4. Downward trend continuation in effect. Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R",
+        "reference_price": 328.3,
+        "stop_loss": 330.64,
+        "target": 324.09
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 328.3,
+        "action_taken": "Entered SELL 1000 units @ \u20b9328.30",
+        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (\u20b9329.70) < 50 EMA (\u20b9334.52) with ADX 25.7 >= 20 and healthy RSI 45.4. Downward trend continuation in effect. | Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1000,
+        "entry_price": 328.3,
+        "entry_time": "10:32 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 324.09,
+        "stop_loss": 330.64,
+        "margin_required_inr": 52528.0
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "EMA 20/50 Bearish Trend Confluence active: SELL @ \u20b9328.30 (Target: \u20b9324.09, SL: \u20b9330.64) | Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R"
+      }
+    },
     {
       "id": "ADV-06Nov2026-0916-BAJFINANCEFUT",
       "date": "06 Nov 2026",
