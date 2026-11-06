@@ -1,22 +1,22 @@
 {
-  "last_updated": "06 Nov 2026, 10:32 AM IST",
+  "last_updated": "06 Nov 2026, 11:16 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 116,
     "executed_count": 18,
     "correct_count": 6,
-    "wrong_count": 9,
+    "wrong_count": 10,
     "protected_count": 98,
-    "win_rate_pct": 40.0,
-    "total_pnl_inr": -31862.7,
-    "avg_trade_pnl_inr": -1770.15,
-    "active_trades_count": 2,
+    "win_rate_pct": 37.5,
+    "total_pnl_inr": -32055.9,
+    "avg_trade_pnl_inr": -1780.88,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 268137.3,
-    "used_margin_inr": 62248.0,
-    "available_cash_inr": 205889.3,
-    "net_worth_inr": 268137.3
+    "current_cash_inr": 267944.1,
+    "used_margin_inr": 52528.0,
+    "available_cash_inr": 215416.1,
+    "net_worth_inr": 267944.1
   },
   "trades": [
     {
@@ -236,7 +236,7 @@
       "time_6pm": "09:16 AM IST",
       "time_validation": "09:16 AM IST",
       "time_615": "09:16 AM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "11:16 AM IST",
       "symbol": "LT.NS",
       "name": "Larsen & Toubro Limited",
       "lot_size": 12,
@@ -318,23 +318,26 @@
         "quantity": 12,
         "entry_price": 4050.0,
         "entry_time": "09:16 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 4033.9,
+        "exit_time": "11:16 AM IST",
+        "pnl_points": -16.1,
+        "pnl_inr": -193.2,
+        "status": "CLOSED",
         "target": 4195.8,
         "stop_loss": 3977.1,
         "margin_required_inr": 9720.0,
-        "product_type": "MIS_INTRADAY"
+        "product_type": "MIS_INTRADAY",
+        "exit_trigger": "STAGNATION_EXIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 4033.9,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b94,050.00 (Target: \u20b94,195.80, SL: \u20b93,977.10) | 3,000 Replays: 9.7% Target | 7.5% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+        "outcome": "WRONG",
+        "badge": "Stagnation Exit \u23f1\ufe0f (11:16 AM IST)",
+        "pnl_display": "\u20b9-193.20",
+        "summary": "120-Minute Stagnation Exit \u23f1\ufe0f (Below entry for 120m; capital protection) at 11:16 AM IST. Entry: \u20b94,050.00 -> Exit: \u20b94,033.90 (\u20b9-193.20).",
+        "exit_time": "11:16 AM IST",
+        "exit_trigger": "STAGNATION_EXIT"
       }
     },
     {
