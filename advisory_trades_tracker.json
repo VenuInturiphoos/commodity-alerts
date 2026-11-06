@@ -1,24 +1,121 @@
 {
-  "last_updated": "06 Nov 2026, 11:16 AM IST",
+  "last_updated": "06 Nov 2026, 12:03 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 116,
-    "executed_count": 18,
+    "total_signals": 117,
+    "executed_count": 19,
     "correct_count": 6,
-    "wrong_count": 10,
+    "wrong_count": 11,
     "protected_count": 98,
-    "win_rate_pct": 37.5,
-    "total_pnl_inr": -32055.9,
-    "avg_trade_pnl_inr": -1780.88,
+    "win_rate_pct": 35.3,
+    "total_pnl_inr": -33105.9,
+    "avg_trade_pnl_inr": -1742.42,
     "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 267944.1,
-    "used_margin_inr": 52528.0,
-    "available_cash_inr": 215416.1,
-    "net_worth_inr": 267944.1
+    "current_cash_inr": 266894.1,
+    "used_margin_inr": 52568.0,
+    "available_cash_inr": 214326.1,
+    "net_worth_inr": 266894.1
   },
   "trades": [
+    {
+      "id": "ADV-06Nov2026-1203-ALUMINIUM",
+      "date": "06 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (EMA 20/50 Bearish Trend Confluence)",
+      "time_trigger": "12:03 PM IST",
+      "time_6pm": "12:03 PM IST",
+      "time_validation": "12:03 PM IST",
+      "time_615": "12:03 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 1000,
+      "event_context": "Indicator Confluence: EMA 20/50 Bearish Trend Confluence",
+      "regime": {
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 25.7, RSI: 45.8). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "SHORT_FUTURES"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 25.7,
+        "rsi": 45.8,
+        "bb_width_pct": 8.03,
+        "daily_vol_pct": 1.43
+      },
+      "time_machine": {
+        "replays": 1000,
+        "passed": true,
+        "verdict": "PARAMETRIC_STATISTICAL_PASS",
+        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
+        "p_target_pct": 47.7,
+        "p_stop_pct": 39.2,
+        "p_neither_pct": 13.1,
+        "resolved_win_rate_pct": 54.9,
+        "expected_r": 0.467,
+        "target_r": 1.8,
+        "sample_bars": 0,
+        "summary": "Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 1.8,
+        "loss_at_stop_inr": 2110.0,
+        "potential_gain_inr": 3800.0
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b9328.55",
+        "rationale": "20 EMA (\u20b9329.72) < 50 EMA (\u20b9334.53) with ADX 25.7 >= 20 and healthy RSI 45.8. Downward trend continuation in effect. Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R",
+        "reference_price": 328.55,
+        "stop_loss": 330.66,
+        "target": 324.75
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 328.55,
+        "action_taken": "Entered SELL 1000 units @ \u20b9328.55",
+        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (\u20b9329.72) < 50 EMA (\u20b9334.53) with ADX 25.7 >= 20 and healthy RSI 45.8. Downward trend continuation in effect. | Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1000,
+        "entry_price": 328.55,
+        "entry_time": "12:03 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 324.75,
+        "stop_loss": 330.66,
+        "margin_required_inr": 52568.0
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "EMA 20/50 Bearish Trend Confluence active: SELL @ \u20b9328.55 (Target: \u20b9324.75, SL: \u20b9330.66) | Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R"
+      }
+    },
     {
       "id": "ADV-06Nov2026-1032-ALUMINIUM",
       "date": "06 Nov 2026",
@@ -27,7 +124,7 @@
       "time_6pm": "10:32 AM IST",
       "time_validation": "10:32 AM IST",
       "time_615": "10:32 AM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "12:03 PM IST",
       "symbol": "ALUMINI",
       "name": "Aluminium Mini",
       "lot_size": 1000,
@@ -98,22 +195,25 @@
         "quantity": 1000,
         "entry_price": 328.3,
         "entry_time": "10:32 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 329.35,
+        "exit_time": "12:03 PM IST",
+        "pnl_points": -1.05,
+        "pnl_inr": -1050.0,
+        "status": "CLOSED",
         "target": 324.09,
         "stop_loss": 330.64,
-        "margin_required_inr": 52528.0
+        "margin_required_inr": 52528.0,
+        "exit_trigger": "STAGNATION_EXIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 329.35,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "EMA 20/50 Bearish Trend Confluence active: SELL @ \u20b9328.30 (Target: \u20b9324.09, SL: \u20b9330.64) | Parametric Model: 47.7% Target | 39.2% Stop | Expected: +0.47R"
+        "outcome": "WRONG",
+        "badge": "Stagnation Exit \u23f1\ufe0f (12:03 PM IST)",
+        "pnl_display": "\u20b9-1,050.00",
+        "summary": "90-Minute Stagnation Exit \u23f1\ufe0f (Below entry for 91m; capital protection) at 12:03 PM IST. Entry: \u20b9328.30 -> Exit: \u20b9329.35 (\u20b9-1,050.00).",
+        "exit_time": "12:03 PM IST",
+        "exit_trigger": "STAGNATION_EXIT"
       }
     },
     {
