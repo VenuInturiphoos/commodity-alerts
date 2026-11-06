@@ -6,11 +6,12 @@ highest-conviction Golden Crossover (50 EMA >= 200 EMA) value setup, and execute
 an automated investment using ONLY available stock investing capital (~₹30,000 INR
 with tolerance ±₹1,000 based on stock price).
 
-Enforces strictly defined Targets (Target 1 & Target 2) and Stop Loss rules:
-  • Target 1: 2.2x risk (mean reversion to 50 EMA / 20 MA) -> Books target exit
-  • Stop-Loss: Below lower Bollinger Band / 4.5% below CMP -> Protective stop exit
-  • Cash Management: Only available stock investing capital can be deployed.
-    When a trade hits Target or Stop Loss, the capital and realized P&L return to available cash.
+Enforces strictly defined Targets (Target 1 & Target 2) with Patience & Bounce-Back holding:
+  • Target 1: ~10% to 15% upside target -> Realizes target profit exit and frees capital.
+  • Delivery SIP Model: Zero premature stop-loss exits. Stocks are held as 100% cash delivery
+    in demat, giving blue chips ample time to consolidate and compound into target levels.
+  • Cash Management: Only available stock investing capital (~₹30,000 per daily pick) deployed.
+    When a trade hits Target 1, capital + realized gain return to the liquid cash pool.
 
 Outputs:
   web/stock_investments_tracker.json
@@ -314,8 +315,8 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         'ema_50': chosen_stock.get('ema_50'),
         'ema_200': chosen_stock.get('ema_200'),
         'crossover_status': 'Golden Cross Active 🌟',
-        'action': 'STRONG BUY (Daily SIP)',
-        'rationale': trade_plan.get('rationale', '50 EMA > 200 EMA Golden Cross with deep value confluence'),
+        'action': 'STRONG BUY (Delivery SIP - Hold for Target)',
+        'rationale': trade_plan.get('rationale', '50 EMA > 200 EMA Golden Cross with deep value confluence. Held for Target 1 without stop-loss panic exits.'),
         'status': 'ACTIVE',
         'exit_price': None,
         'exit_time': None,
@@ -468,28 +469,9 @@ def update_live_stock_investments():
                     alerter.send_alert(subj, bdy)
             except Exception:
                 pass
-
-        elif latest_price <= sl:
-            inv['status'] = 'STOP_LOSS_HIT'
-            inv['exit_price'] = latest_price
-            inv['exit_time'] = now_time_str
-            inv['exit_trigger'] = 'STOP_LOSS_HIT'
-            print(f"🛡️ STOP LOSS HIT for {inv['name']} at ₹{latest_price:,.2f}. Realized Loss: ₹{pnl:+,.2f} ({pnl_pct:+,.2f}%) - Capital protected in cash.")
-            updated = True
-            
-            # Dispatch Stop Loss alert
-            try:
-                if os.path.exists(CONFIG_FILE):
-                    with open(CONFIG_FILE, 'r') as cf:
-                        cfg = json.load(cf)
-                    from alerter import EmailAlerter
-                    alerter = EmailAlerter(cfg)
-                    subj = f"🛡️ [STOP LOSS HIT] {inv['name']} protected at ₹{latest_price:,.2f} ({pnl_pct}%)"
-                    bdy = f"🛡️ PROTECTIVE STOP LOSS EXECUTED!\n• Stock: {inv['name']} ({inv['symbol']})\n• Shares: {shares}\n• Entry: ₹{entry_p:,.2f} -> Exit: ₹{latest_price:,.2f}\n• Realized Loss: -₹{abs(pnl):,.2f} ({pnl_pct}%)\n• Remaining capital of ₹{cur_val:,.2f} returned to cash."
-                    alerter.send_alert(subj, bdy)
-            except Exception:
-                pass
         else:
+            # 100% Cash Delivery SIP: Give stocks room to consolidate and bounce back to Target 1.
+            # Zero premature stop-loss exits; holdings remain ACTIVE until Target 1 (+10%) is achieved.
             updated = True
 
     # Keep today's pick synchronized with latest updates
