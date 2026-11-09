@@ -1094,6 +1094,7 @@
         // Credentials
         let githubToken = localStorage.getItem('antigravity_gh_token') || '';
         let geminiKey = localStorage.getItem('antigravity_gemini_key') || '';
+        let availableGeminiModels = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             initAceEditor();
@@ -1105,7 +1106,10 @@
 
             // Populate settings if present in local storage
             if (githubToken) document.getElementById('input-gh-token').value = githubToken;
-            if (geminiKey) document.getElementById('input-gemini-key').value = geminiKey;
+            if (geminiKey) {
+                document.getElementById('input-gemini-key').value = geminiKey;
+                loadAvailableGeminiModels();
+            }
 
             // Initialize Google / Supabase Auth & Cloud Keys Hydration
             initAuth();
@@ -1262,6 +1266,7 @@
                 const el = document.getElementById('input-gemini-key');
                 if (el) el.value = cloudGemini;
                 loadedNewKeys = true;
+                loadAvailableGeminiModels();
             }
 
             if (loadedNewKeys) {
@@ -1676,8 +1681,57 @@
         // ==========================================
         // AI AGENT: NATURAL LANGUAGE CODE WRITER
         // ==========================================
+        async function loadAvailableGeminiModels() {
+            if (!geminiKey) return;
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`);
+                if (!res.ok) {
+                    console.warn("ModelService.ListModels HTTP error:", res.status);
+                    return;
+                }
+                const data = await res.json();
+                if (data.models && data.models.length > 0) {
+                    // Filter models that support generateContent
+                    const valid = data.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"));
+                    if (valid.length > 0) {
+                        // Sort: prefer flash / fast models at the top
+                        valid.sort((a, b) => {
+                            const aFlash = a.name.toLowerCase().includes('flash') ? 1 : 0;
+                            const bFlash = b.name.toLowerCase().includes('flash') ? 1 : 0;
+                            return bFlash - aFlash;
+                        });
+
+                        availableGeminiModels = valid.map(m => m.name.replace(/^models\//, ''));
+                        
+                        const select = document.getElementById('gemini-model-select');
+                        if (select) {
+                            const prevVal = select.value;
+                            select.innerHTML = '';
+                            valid.forEach(m => {
+                                const shortName = m.name.replace(/^models\//, '');
+                                const opt = document.createElement('option');
+                                opt.value = shortName;
+                                opt.textContent = m.displayName ? `${m.displayName} (${shortName})` : shortName;
+                                select.appendChild(opt);
+                            });
+
+                            if (prevVal && availableGeminiModels.includes(prevVal)) {
+                                select.value = prevVal;
+                            } else {
+                                select.selectedIndex = 0;
+                            }
+                        }
+                        console.log("Dynamically loaded valid Gemini models for key:", availableGeminiModels);
+                    }
+                }
+            } catch(e) {
+                console.warn("Failed to query ModelService.ListModels:", e);
+            }
+        }
+
         async function fetchGeminiContent(modelName, prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`;
+            const cleanModel = modelName.replace(/^models\//, '');
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${geminiKey}`;
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1707,9 +1761,14 @@
 
             const btn = document.getElementById('btn-run-agent');
             btn.disabled = true;
-            btn.innerHTML = `<div class="spinner"></div> Generating Update...`;
+            btn.innerHTML = `<div class="spinner"></div> Connecting to Gemini...`;
 
             try {
+                // Ensure model list is loaded dynamically from Google
+                if (availableGeminiModels.length === 0) {
+                    await loadAvailableGeminiModels();
+                }
+
                 const systemPrompt = `You are Antigravity AI Code Agent.
 You are assisting the user with their codebase repository.
 Active Target File: "${currentFile || 'none'}"
@@ -1721,14 +1780,28 @@ INSTRUCTIONS:
 1. If the user asks to modify, fix, or add code: return the COMPLETE updated file content wrapped inside a single markdown code block (\`\`\`...\`\`\`). Preserve all existing code structure, comments, and logic unless explicitly asked to modify them. Do NOT add conversational chatter before or after the code block.
 2. If the user asks a status question, connectivity question, or explanation: answer directly, professionally, and clearly. If confirmed, confirm that Antigravity is connected and ready for development.`;
 
-                const selectedModel = document.getElementById('gemini-model-select')?.value || 'gemini-3.8-flash';
-                const modelChain = [
-                    selectedModel,
-                    'gemini-3.8-flash',
-                    'gemini-2.5-flash',
-                    'gemini-1.5-flash',
-                    'gemini-1.5-pro'
-                ].filter((m, idx, arr) => arr.indexOf(m) === idx);
+                const selectedModel = document.getElementById('gemini-model-select')?.value;
+                let modelChain = [];
+                if (selectedModel) modelChain.push(selectedModel);
+
+                if (availableGeminiModels.length > 0) {
+                    const flashes = availableGeminiModels.filter(m => m.toLowerCase().includes('flash'));
+                    const others = availableGeminiModels.filter(m => !m.toLowerCase().includes('flash'));
+                    modelChain = modelChain.concat(flashes, others);
+                } else {
+                    // Standard fallback candidates across Google AI Studio versions
+                    modelChain.push(
+                        'gemini-1.5-flash-latest',
+                        'gemini-1.5-flash-8b',
+                        'gemini-1.5-flash',
+                        'gemini-2.0-flash-exp',
+                        'gemini-2.5-flash',
+                        'gemini-3.8-flash',
+                        'gemini-1.5-pro-latest',
+                        'gemini-1.5-pro'
+                    );
+                }
+                modelChain = modelChain.filter((m, idx, arr) => arr.indexOf(m) === idx);
 
                 let data = null;
                 let usedModel = '';
@@ -1742,7 +1815,7 @@ INSTRUCTIONS:
                         break;
                     } catch (e) {
                         lastErr = e;
-                        console.warn(`Model ${model} returned error:`, e.message);
+                        console.warn(`Model ${model} failed:`, e.message);
                         if (e.message.includes("API_KEY_INVALID") || e.message.includes("API key not valid")) {
                             throw e;
                         }
@@ -1997,9 +2070,11 @@ INSTRUCTIONS:
             if (g) {
                 localStorage.setItem('antigravity_gemini_key', g);
                 geminiKey = g;
+                loadAvailableGeminiModels();
             } else {
                 localStorage.removeItem('antigravity_gemini_key');
                 geminiKey = '';
+                availableGeminiModels = [];
             }
 
             const saveBtn = document.getElementById('btn-save-keys');
