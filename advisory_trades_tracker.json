@@ -1,24 +1,132 @@
 {
-  "last_updated": "09 Nov 2026, 08:59 AM IST",
+  "last_updated": "09 Nov 2026, 09:24 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 135,
-    "executed_count": 19,
+    "total_signals": 136,
+    "executed_count": 20,
     "correct_count": 6,
     "wrong_count": 12,
     "protected_count": 116,
     "win_rate_pct": 33.3,
     "total_pnl_inr": -33805.9,
-    "avg_trade_pnl_inr": -1779.26,
-    "active_trades_count": 0,
+    "avg_trade_pnl_inr": -1690.29,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 266194.1,
-    "used_margin_inr": 0,
-    "available_cash_inr": 266194.1,
+    "used_margin_inr": 9882.8,
+    "available_cash_inr": 256311.3,
     "net_worth_inr": 266194.1
   },
   "trades": [
+    {
+      "id": "ADV-09Nov2026-0924-HDFCBANK",
+      "date": "09 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "09:24 AM IST",
+      "time_6pm": "09:24 AM IST",
+      "time_validation": "09:24 AM IST",
+      "time_615": "09:24 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "HDFCBANK.NS",
+      "name": "HDFC Bank Limited",
+      "lot_size": 62,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 17.0%, Vol: 1.5%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "AGGRESSIVE_ENTRIES",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 20.0,
+        "rsi": 71.9,
+        "bb_width_pct": 17.03,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 7.2,
+        "p_stop_pct": 3.2,
+        "p_neither_pct": 89.6,
+        "resolved_win_rate_pct": 69.0,
+        "expected_r": 0.112,
+        "target_r": 2.0,
+        "sample_bars": 658,
+        "summary": "3,000 Replays: 7.2% Target | 3.2% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 2.0,
+        "loss_at_stop_inr": 889.7,
+        "potential_gain_inr": 1779.4
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b9797.00 breaking above range high \u20b9797.00."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b9797.00",
+        "rationale": "Breaking towards 20D/52W high (Chg: +1.60%) with strong RSI momentum (71.9) and verified ORB bar close. Sized with structural 2.0R target. 3,000 Replays: 7.2% Target | 3.2% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 797.0,
+        "stop_loss": 782.65,
+        "target": 825.7
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 797.0,
+        "action_taken": "Entered BUY 62 shares @ \u20b9797.00",
+        "detail": "20-Day / High-Beta Volatility Breakout: Breaking towards 20D/52W high (Chg: +1.60%) with strong RSI momentum (71.9) and verified ORB bar close. Sized with structural 2.0R target. | 3,000 Replays: 7.2% Target | 3.2% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 62,
+        "entry_price": 797.0,
+        "entry_time": "09:24 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 825.7,
+        "stop_loss": 782.65,
+        "margin_required_inr": 9882.8,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b9797.00 (Target: \u20b9825.70, SL: \u20b9782.65) | 3,000 Replays: 7.2% Target | 3.2% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
     {
       "id": "ADV-06Nov2026-1800-GOLD",
       "date": "06 Nov 2026",
