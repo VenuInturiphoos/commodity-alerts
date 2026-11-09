@@ -7143,14 +7143,52 @@ function applyAdvisoryMonthFilter(monthValue) {
     const activeMarginVal = activeStockTrades.reduce((sum, t) => sum + (t.paper_trade.margin_required_inr || ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0) * 0.20)), 0);
     const intradayAvailMargin = Math.max(0, 30000 - activeMarginVal);
 
+    const COMMODITY_MARGIN_RATES = {
+        'CRUDEOIL': 0.25, 'CRUDEOILM': 0.25,
+        'NATURALGAS': 0.18, 'NATURALGASM': 0.18,
+        'SILVER': 0.15, 'SILVERM': 0.15, 'SILVERMIC': 0.15,
+        'COPPER': 0.08, 'COPPERM': 0.08,
+        'ZINC': 0.13, 'ZINCM': 0.13, 'ZINCMINI': 0.13,
+        'ALUMINIUM': 0.16, 'ALUMINI': 0.16,
+        'GOLD': 0.10, 'GOLDM': 0.10, 'GOLDTEN': 0.10
+    };
+
+    const getFuturesTradeMargin = (t) => {
+        const pt = t.paper_trade || {};
+        if (pt.margin_required_inr && Number(pt.margin_required_inr) > 0) {
+            return Number(pt.margin_required_inr);
+        }
+        const p = Number(pt.entry_price || t.suggestion_6pm?.reference_price || 0);
+        const q = Number(pt.quantity || t.lot_size || 1);
+        if (p <= 0 || q <= 0) return 0;
+        const sym = t.symbol || '';
+        const cleanSym = sym.replace('MIC', '').replace('MINI', '').replace(/M$/, '');
+        const rate = COMMODITY_MARGIN_RATES[sym] || COMMODITY_MARGIN_RATES[cleanSym] || 0.15;
+        return p * q * rate;
+    };
+
+    const activeFuturesTrades = trades.filter(t => {
+        if (isIntradayStockTrade(t)) return false;
+        const pt = t.paper_trade || {};
+        if (pt.status !== 'ACTIVE') return false;
+        const isPast2330 = isPastISTWindow(t.date, 23, 30);
+        return !isPast2330;
+    });
+
+    const activeFuturesMarginVal = activeFuturesTrades.reduce((sum, t) => sum + getFuturesTradeMargin(t), 0);
+    const futuresStartingCash = Number(summary.starting_cash_inr || 300000.0);
+    const futuresRealizedPnl = trades.filter(t => !isIntradayStockTrade(t)).reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
+    const futuresNetCash = futuresStartingCash + futuresRealizedPnl;
+    const futuresUsedMargin = activeFuturesMarginVal || summary.used_margin_inr || 0;
+    const futuresAvailMargin = Math.max(0, futuresNetCash - futuresUsedMargin);
+
     if (cashEl) {
         if (isIntradayActive) {
             cashEl.textContent = '₹' + intradayAvailMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             cashEl.style.color = '#fbbf24';
             if (cashTitleEl) cashTitleEl.textContent = 'Available MIS Margin';
         } else {
-            const availCash = summary.available_cash_inr ?? 259150.96;
-            cashEl.textContent = '₹' + Number(availCash).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            cashEl.textContent = '₹' + futuresAvailMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             cashEl.style.color = '#60a5fa';
             if (cashTitleEl) cashTitleEl.textContent = 'Available Cash & Margin';
         }
@@ -7159,8 +7197,7 @@ function applyAdvisoryMonthFilter(monthValue) {
         if (isIntradayActive) {
             marginSubEl.textContent = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Max ₹30k (3 Stocks × ₹10k) | Flat 03:25 PM`;
         } else {
-            const usedMargin = summary.used_margin_inr || 0;
-            marginSubEl.textContent = `Used Margin: ₹${Number(usedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | Dedicated Pool: ₹3,00,000`;
+            marginSubEl.textContent = `Used Margin: ₹${Number(futuresUsedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | Dedicated Pool: ₹${futuresNetCash.toLocaleString('en-IN', {minimumFractionDigits: 0})}`;
         }
     }
     
@@ -7327,7 +7364,7 @@ function renderAdvisoryTradesTable() {
             `;
         }
 
-        const isEnteredTrade = Boolean(pt.action === 'BUY' || pt.action === 'SELL' || (pt.entry_price && Number(pt.entry_price) > 0));
+        const isEnteredTrade = Boolean((pt.entry_price && Number(pt.entry_price) > 0) || (pt.status === 'ACTIVE' && (pt.action === 'BUY' || pt.action === 'SELL')));
         const isStandAsideTrade = !isEnteredTrade && (
             isAvoidedAdvisoryTrade(t) ||
             pt.status === 'STAND_ASIDE' ||
@@ -7336,16 +7373,23 @@ function renderAdvisoryTradesTable() {
             c15.status === 'CONFIRMED_STAND_ASIDE' ||
             c15.status === 'NO_REVERSAL_STAND_ASIDE' ||
             c15.status === 'NO_GAP_STAND_ASIDE' ||
+            c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' ||
             outcome.outcome === 'PROTECTED'
         );
 
         let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
-        if (outcome.outcome === 'WRONG') {
+        if (outcome.badge && outcome.badge.includes('Margin Skipped')) {
+            outcomeBadge = `<span class="adv-badge-protected" style="border:1px solid rgba(245, 158, 11, 0.5); background:rgba(245, 158, 11, 0.15); color:#fbbf24;"><i class="fa-solid fa-wallet"></i> Margin Skipped 🛡️</span>`;
+        } else if (outcome.outcome === 'WRONG') {
             outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
-        } else if (pt.status === 'PENDING_615' && isPast1815) {
+        } else if ((pt.status === 'PENDING_615' || outcome.badge?.includes('Awaiting 6:15 PM')) && (isPast1815 || isStandAsideTrade)) {
             outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Window Lapsed 🛡️</span>`;
         } else if (isStandAsideTrade) {
-            outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${outcome.badge || 'Avoided Trap 🛡️'}</span>`;
+            let badgeText = outcome.badge || 'Avoided Trap 🛡️';
+            if (badgeText.includes('Awaiting 6:15 PM')) {
+                badgeText = isPast1815 ? 'Window Lapsed 🛡️' : 'Avoided Trap 🛡️';
+            }
+            outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${badgeText}</span>`;
         } else if (pt.status === 'ACTIVE') {
             if (isSessionExpired) {
                 const isWin = (pt.pnl_inr || 0) > 0;
@@ -7362,7 +7406,10 @@ function renderAdvisoryTradesTable() {
         let pnlColor = '#cbd5e1';
         let pnlText = outcome.pnl_display || '₹0.00';
         let ptsFormulaHtml = '';
-        if (isStandAsideTrade) {
+        if (outcome.badge?.includes('Margin Skipped') || c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE') {
+            pnlColor = '#fbbf24';
+            pnlText = '₹0.00 <span style="font-size:0.7rem; color:#fbbf24; display:block; font-weight:400;">(Discretionary)</span>';
+        } else if (isStandAsideTrade) {
             pnlColor = '#94a3b8';
             pnlText = '₹0.00 <span style="font-size:0.7rem; color:#60a5fa; display:block; font-weight:400;">(Protected)</span>';
         } else if (pt.status === 'ACTIVE' && !isSessionExpired && pt.entry_price) {
@@ -7456,10 +7503,19 @@ function renderAdvisoryTradesTable() {
             check615Html = `<span style="color:#38bdf8; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-shield"></i> Risk Engine Block</span>`;
         } else if (c15.status === 'CONFIRMED_STAND_ASIDE' || c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') {
             check615Html = `<span style="color:#60a5fa; font-size:0.8rem;"><i class="fa-solid fa-ban"></i> Stood Aside (Protected)</span>`;
+        } else if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
+            check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-wallet"></i> Margin Exhausted (Alert Sent)</span>`;
         }
 
         let paperTradeCell = `<span style="color:#94a3b8; font-size:0.8rem;">Stood Aside</span>`;
-        if (pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price) {
+        if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
+            paperTradeCell = `
+                <div>
+                    <span class="adv-action-tag adv-action-sell" style="background:rgba(245,158,11,0.18); color:#fbbf24; border-color:rgba(245,158,11,0.4);"><i class="fa-solid fa-ban"></i> Skipped</span>
+                    <div style="font-size:0.75rem; color:#fcd34d; margin-top:2px;">Margin Deficit (Alert Sent)</div>
+                </div>
+            `;
+        } else if (pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price) {
             const actColor = pt.action === 'BUY' ? 'adv-action-buy' : 'adv-action-sell';
             const unitLabel = isEqTrade ? 'shares' : 'units';
             const multLabel = isEqTrade ? `1 pt = ₹${pt.quantity}` : `1 pt = ₹${t.lot_size || 1}`;
@@ -7477,7 +7533,9 @@ function renderAdvisoryTradesTable() {
         const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || '11:30 PM Close';
         let exitDetailHtml = `<div style="font-size:0.75rem; color:#94a3b8;"><i class="fa-regular fa-clock"></i> ${exitTimeStr}</div>`;
         
-        if (pt.status === 'ACTIVE') {
+        if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#fbbf24;"><i class="fa-solid fa-bell"></i> Discretionary Alert Only</div>`;
+        } else if (pt.status === 'ACTIVE') {
             if (isSessionExpired) {
                 exitDetailHtml = isEqTrade
                     ? `<div style="font-size:0.75rem; color:#f59e0b; font-weight:700;"><i class="fa-solid fa-clock"></i> Intraday Exit (03:20 PM)</div>`
@@ -7550,7 +7608,7 @@ function renderAdvisoryTradesTable() {
                 </td>
                 <td>
                     ${outcomeBadge}
-                    <div style="font-size:0.72rem; color:#94a3b8; margin-top:4px; max-width:180px; line-height:1.3;">${(pt.status === 'PENDING_615' && isPast1815) ? '15-minute confirmation window lapsed. Stood aside to preserve capital.' : (outcome.summary || '')}</div>
+                    <div style="font-size:0.72rem; color:#94a3b8; margin-top:4px; max-width:180px; line-height:1.3;">${((pt.status === 'PENDING_615' || outcome.summary?.toLowerCase().includes('awaiting 6:15')) && (isPast1815 || isStandAsideTrade)) ? '15-minute confirmation window elapsed. Stood aside to preserve capital.' : (outcome.summary || '')}</div>
                 </td>
             </tr>
         `;
@@ -7594,7 +7652,7 @@ function renderAdvisoryTradesTable() {
                 }
             }
 
-            const isEnteredTrade = Boolean(pt.action === 'BUY' || pt.action === 'SELL' || (pt.entry_price && Number(pt.entry_price) > 0));
+            const isEnteredTrade = Boolean((pt.entry_price && Number(pt.entry_price) > 0) || (pt.status === 'ACTIVE' && (pt.action === 'BUY' || pt.action === 'SELL')));
             const isStandAsideTrade = !isEnteredTrade && (
                 isAvoidedAdvisoryTrade(t) ||
                 pt.status === 'STAND_ASIDE' ||
@@ -7603,16 +7661,23 @@ function renderAdvisoryTradesTable() {
                 c15.status === 'CONFIRMED_STAND_ASIDE' ||
                 c15.status === 'NO_REVERSAL_STAND_ASIDE' ||
                 c15.status === 'NO_GAP_STAND_ASIDE' ||
+                c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' ||
                 outcome.outcome === 'PROTECTED'
             );
 
             let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
-            if (outcome.outcome === 'WRONG') {
+            if (outcome.badge && outcome.badge.includes('Margin Skipped')) {
+                outcomeBadge = `<span class="adv-badge-protected" style="border:1px solid rgba(245, 158, 11, 0.5); background:rgba(245, 158, 11, 0.15); color:#fbbf24;"><i class="fa-solid fa-wallet"></i> Margin Skipped 🛡️</span>`;
+            } else if (outcome.outcome === 'WRONG') {
                 outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
-            } else if (pt.status === 'PENDING_615' && isPast1815) {
+            } else if ((pt.status === 'PENDING_615' || outcome.badge?.includes('Awaiting 6:15 PM')) && (isPast1815 || isStandAsideTrade)) {
                 outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Window Lapsed 🛡️</span>`;
             } else if (isStandAsideTrade) {
-                outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${outcome.badge || 'Avoided Trap 🛡️'}</span>`;
+                let badgeText = outcome.badge || 'Avoided Trap 🛡️';
+                if (badgeText.includes('Awaiting 6:15 PM')) {
+                    badgeText = isPast1815 ? 'Window Lapsed 🛡️' : 'Avoided Trap 🛡️';
+                }
+                outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${badgeText}</span>`;
             } else if (pt.status === 'ACTIVE') {
                 if (isSessionExpired) {
                     const isWin = (pt.pnl_inr || 0) > 0;
@@ -7629,7 +7694,10 @@ function renderAdvisoryTradesTable() {
             let pnlColor = '#cbd5e1';
             let pnlText = outcome.pnl_display || '₹0.00';
             let mobilePtsFormulaHtml = '';
-            if (isStandAsideTrade) {
+            if (outcome.badge?.includes('Margin Skipped') || c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE') {
+                pnlColor = '#fbbf24';
+                pnlText = '₹0.00 <small style="font-size:0.68rem; color:#fbbf24; display:block; font-weight:400;">(Discretionary)</small>';
+            } else if (isStandAsideTrade) {
                 pnlColor = '#94a3b8';
                 pnlText = '₹0.00 <small style="font-size:0.68rem; color:#60a5fa; display:block; font-weight:400;">(Protected)</small>';
             } else if (pt.status === 'ACTIVE' && !isSessionExpired && pt.entry_price) {
@@ -7673,6 +7741,9 @@ function renderAdvisoryTradesTable() {
             else if (c15.status === 'BREAKDOWN_ENTERED') checkLabel = 'London Breakdown';
             else if (c15.status === 'GAP_FADE_ENTERED') checkLabel = 'Gap Fade Entered';
             else if (c15.status === 'EXTENSION_CONFIRMED') checkLabel = 'Limit Broken (Stood Aside)';
+            else if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
+                checkLabel = 'Margin Deficit (Alert Sent)';
+            }
             else if (c15.status === 'PENDING_615' || c15.status === 'PENDING_615_CHECK') {
                 checkLabel = isPast1815 ? 'Window Lapsed (Stood Aside)' : 'Awaiting Confirmation';
             }
@@ -7685,15 +7756,21 @@ function renderAdvisoryTradesTable() {
             const unitLabel = isEqTrade ? 'shares' : 'qty';
             const multLabel = isEqTrade ? `1 pt = ₹${pt.quantity}` : `1 pt = ₹${t.lot_size || 1}`;
 
-            const executedText = pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price
-                ? `${pt.action} ${pt.quantity} ${unitLabel} <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:1px 4px; border-radius:3px;">${multLabel}</span><div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</div>`
-                : 'Stood Aside';
+            let executedText = 'Stood Aside';
+            if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
+                executedText = '<span style="color:#fbbf24;"><i class="fa-solid fa-ban"></i> Skipped (Margin Deficit)</span>';
+            } else if (pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price) {
+                executedText = `${pt.action} ${pt.quantity} ${unitLabel} <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:1px 4px; border-radius:3px;">${multLabel}</span><div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</div>`;
+            }
 
             const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || '11:30 PM';
             let mobileExitLabel = 'Exit (EOD)';
             let mobileExitVal = pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--';
 
-            if (pt.status === 'ACTIVE') {
+            if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
+                mobileExitLabel = 'Trade Status';
+                mobileExitVal = '<span style="color:#fbbf24;"><i class="fa-solid fa-bell"></i> Discretionary Alert Only</span>';
+            } else if (pt.status === 'ACTIVE') {
                 mobileExitLabel = 'Position Status';
                 mobileExitVal = isSessionExpired
                     ? `<span style="color:#4ade80; font-weight:700;"><i class="fa-solid fa-clock"></i> Session Close (${isEqTrade ? '03:20 PM' : '11:30 PM'})</span>`
@@ -7793,7 +7870,7 @@ function renderAdvisoryTradesTable() {
 
                     <div class="mobile-card-bottom">
                         <div style="font-size:0.74rem; color:#94a3b8; max-width:60%; line-height:1.3;">
-                            ${(pt.status === 'PENDING_615' && isPast1815) ? '15-minute confirmation window lapsed. Stood aside to preserve capital.' : (outcome.summary || '')}
+                            ${((pt.status === 'PENDING_615' || outcome.summary?.toLowerCase().includes('awaiting 6:15')) && (isPast1815 || isStandAsideTrade)) ? '15-minute confirmation window elapsed. Stood aside to preserve capital.' : (outcome.summary || '')}
                         </div>
                         <div style="text-align:right;">
                             <div style="font-size:0.68rem; color:#94a3b8; text-transform:uppercase; font-weight:600;">Net P&L</div>
