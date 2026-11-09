@@ -329,14 +329,35 @@ def get_cash_and_margin(tracker_data):
     starting_cash = tracker_data.get('starting_cash_inr', DEFAULT_STARTING_CASH)
     trades = tracker_data.get('trades', [])
     
-    # Realized P&L from closed trades
-    closed_pnl = sum(t.get('paper_trade', {}).get('pnl_inr', 0.0) for t in trades if t.get('paper_trade', {}).get('status') == 'CLOSED')
+    # Realized P&L from closed commodity trades (excluding intraday stock MIS which has dedicated 30k pool)
+    closed_pnl = sum(
+        t.get('paper_trade', {}).get('pnl_inr', 0.0) 
+        for t in trades 
+        if t.get('paper_trade', {}).get('status') == 'CLOSED' 
+        and t.get('asset_type') != 'INTRADAY_STOCK' 
+        and t.get('paper_trade', {}).get('product_type') != 'MIS_INTRADAY'
+    )
     current_cash = starting_cash + closed_pnl
     
-    # Used margin from currently active trades
-    active_trades = [t for t in trades if t.get('paper_trade', {}).get('status') == 'ACTIVE']
-    used_margin = sum(t.get('paper_trade', {}).get('margin_required_inr', 0.0) for t in active_trades)
-    
+    # Used margin from currently active commodity futures trades
+    active_trades = [
+        t for t in trades 
+        if t.get('paper_trade', {}).get('status') == 'ACTIVE'
+        and t.get('asset_type') != 'INTRADAY_STOCK'
+        and t.get('paper_trade', {}).get('product_type') != 'MIS_INTRADAY'
+    ]
+
+    def calc_commodity_margin(t):
+        pt = t.get('paper_trade', {})
+        if pt.get('margin_required_inr') and float(pt.get('margin_required_inr')) > 0:
+            return float(pt.get('margin_required_inr'))
+        p = float(pt.get('entry_price') or t.get('suggestion_6pm', {}).get('reference_price') or 0.0)
+        q = float(pt.get('quantity') or t.get('lot_size') or 1)
+        sym = t.get('symbol', '')
+        rate = MARGIN_RATES.get(sym, 0.15)
+        return round(p * q * rate, 2)
+
+    used_margin = sum(calc_commodity_margin(t) for t in active_trades)
     available_cash = max(0.0, current_cash - used_margin)
     net_worth = current_cash
     
@@ -347,6 +368,34 @@ def get_cash_and_margin(tracker_data):
         'available_cash': round(available_cash, 2),
         'net_worth': round(net_worth, 2)
     }
+
+def check_margin_availability(tracker_data, sym, cur_p, lot_size, is_equity=False):
+    """
+    Checks if there is sufficient margin balance available to execute the trade.
+    Returns:
+        (has_margin: bool, req_margin: float, avail_margin: float)
+    """
+    if is_equity:
+        trades = tracker_data.get('trades', [])
+        active_stock_trades = [
+            t for t in trades 
+            if t.get('paper_trade', {}).get('status') == 'ACTIVE' and 
+            (t.get('asset_type') == 'INTRADAY_STOCK' or t.get('paper_trade', {}).get('product_type') == 'MIS_INTRADAY')
+        ]
+        used_stock_margin = sum(
+            float(t.get('paper_trade', {}).get('margin_required_inr') or 
+                  (float(t.get('paper_trade', {}).get('entry_price', 0)) * float(t.get('paper_trade', {}).get('quantity', 0)) * 0.20)) 
+            for t in active_stock_trades
+        )
+        stock_avail = max(0.0, MAX_INTRADAY_STOCK_MARGIN_INR - used_stock_margin)
+        req = round(cur_p * lot_size * 0.20, 2)
+        return (req <= stock_avail and req > 0), req, stock_avail
+    else:
+        cash_info = get_cash_and_margin(tracker_data)
+        avail = cash_info['available_cash']
+        rate = MARGIN_RATES.get(sym, 0.15)
+        req = round(cur_p * lot_size * rate, 2)
+        return (req <= avail and req > 0), req, avail
 
 def load_tracker():
     if os.path.exists(TRACKER_FILE):
@@ -371,17 +420,19 @@ def save_tracker(tracker_data):
         is_past_day = bool(t_date and t_date != today_str)
         is_eq = t.get('asset_type') in ['EQUITY', 'STOCK_FUTURES'] or ('-FUT' in t.get('symbol', '')) or ('.NS' in t.get('symbol', ''))
         
-        # 1. Unconfirmed setups from past days
-        if is_past_day and (pt.get('status') in ['PENDING_615', 'PENDING_LIMIT', 'PENDING_615_CHECK'] or pt.get('entry_price') is None or pt.get('action') == 'STAND_ASIDE'):
+        # 1. Unconfirmed setups from past days or today's 6:00 PM session past 6:25 PM window
+        is_today_past_625 = (not is_past_day and ((now_dt.hour == 18 and now_dt.minute >= 25) or now_dt.hour > 18) and ('1800' in t.get('id', '') or t.get('time_validation') == '06:15 PM IST'))
+        if (is_past_day or is_today_past_625) and (pt.get('status') in ['PENDING_615', 'PENDING_LIMIT', 'PENDING_615_CHECK'] or (not pt.get('entry_price') and pt.get('status') != 'ACTIVE')):
             c15['checked'] = True
             c15['status'] = 'CONFIRMATION_EXPIRED'
-            c15['action_taken'] = 'Confirmation window elapsed without executed entry. STOOD ASIDE.'
+            c15['action_taken'] = '15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.'
             pt['action'] = 'STAND_ASIDE'
             pt['quantity'] = 0
             pt['status'] = 'CLOSED'
             pt['pnl_inr'] = 0.0
+            pt['margin_required_inr'] = 0.0
             eod['outcome'] = 'PROTECTED'
-            eod['badge'] = 'Avoided Trap 🛡️'
+            eod['badge'] = 'Window Lapsed 🛡️' if is_today_past_625 else 'Avoided Trap 🛡️'
             eod['pnl_display'] = '₹0.00 (Protected)'
             eod['summary'] = '15-minute confirmation check elapsed without executed entry. 100% capital protected in cash.'
 
@@ -1931,6 +1982,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                                 "pnl_points": 0.0,
                                 "pnl_inr": 0.0,
                                 "status": "ACTIVE",
+                                "margin_required_inr": round(cur_p * adaptive_lot * MARGIN_RATES.get(c_sym, 0.15), 2),
                                 "target": tgt,
                                 "stop_loss": sl
                             },
@@ -2104,6 +2156,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                                 "pnl_points": 0.0,
                                 "pnl_inr": 0.0,
                                 "status": "ACTIVE",
+                                "margin_required_inr": round(cur_p * adaptive_lot * MARGIN_RATES.get(c_sym, 0.15), 2),
                                 "target": tgt,
                                 "stop_loss": sl
                             },
@@ -2300,6 +2353,78 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 new_entries.append(entry)
                 continue
 
+            # Check Margin Availability before 8:00 PM evening active entry
+            has_margin, req_margin, avail_margin = check_margin_availability(tracker, c_sym, cur_p, adaptive_lot, is_equity=False)
+            if not has_margin:
+                entry = {
+                    "id": trade_id,
+                    "date": today_str,
+                    "session_name": "Evening Pit Review (8:00 PM)",
+                    "time_trigger": "08:00 PM IST",
+                    "time_6pm": "08:00 PM IST",
+                    "time_validation": "08:15 PM IST",
+                    "time_615": "08:15 PM IST",
+                    "time_exit": "11:30 PM IST",
+                    "symbol": sym,
+                    "name": item['name'],
+                    "lot_size": adaptive_lot,
+                    "event_context": f"US Evening {direction.title()} Circuit Band Test",
+                    "suggestion_6pm": {
+                        "status": "EVENING_CIRCUIT",
+                        "action_text": f"{action} / EVENING CIRCUIT PLAY",
+                        "rationale": "High evening liquidity test against circuit boundary.",
+                        "reference_price": cur_p,
+                        "stop_loss": sl,
+                        "target": tgt
+                    },
+                    "check_615": {
+                        "checked": True,
+                        "status": "INSUFFICIENT_MARGIN_STAND_ASIDE",
+                        "price_615": cur_p,
+                        "action_taken": f"Execution Skipped: Insufficient Margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent.",
+                        "detail": f"Evening setup confirmed, but available cash ₹{avail_margin:,.2f} is insufficient for margin ₹{req_margin:,.2f}. Discretionary alert broadcasted."
+                    },
+                    "paper_trade": {
+                        "user": USER_ACCOUNT,
+                        "action": "STAND_ASIDE",
+                        "quantity": 0,
+                        "entry_price": cur_p,
+                        "entry_time": "08:00 PM IST",
+                        "exit_price": cur_p,
+                        "exit_time": "11:30 PM IST",
+                        "pnl_points": 0.0,
+                        "pnl_inr": 0.0,
+                        "status": "STAND_ASIDE",
+                        "margin_required_inr": 0.0
+                    },
+                    "eod_outcome": {
+                        "session_close": None,
+                        "circuit_limit": lc_price if direction == 'LOWER' else uc_price,
+                        "outcome": "PROTECTED",
+                        "badge": "Margin Skipped 🛡️",
+                        "pnl_display": "₹0.00 (Discretionary)",
+                        "summary": f"Setup confirmed, but execution skipped on managed portfolio due to margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Discretionary alert sent."
+                    }
+                }
+                new_entries.append(entry)
+                
+                # Send alert notification
+                msg = (
+                    f"📢 <b>[8:00 PM TRADE ALERT - MARGIN EXHAUSTED] {item['name'].upper()}</b>\n"
+                    f"• Strategy: <b>US Evening Circuit Band Test Confirmed</b>\n"
+                    f"• Advisory Direction: <b>{action} {adaptive_lot} units</b> @ ₹{cur_p:,.2f}\n"
+                    f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{tgt:,.2f}\n"
+                    f"• Margin Check: ⚠️ <b>Required: ₹{req_margin:,.2f} | Available Pool: ₹{avail_margin:,.2f}</b>\n"
+                    f"• Execution Status: <b>SKIPPED on Managed Portfolio</b> (Zero margin balance remaining)\n"
+                    f"• Discretionary Notice: Broadcasted for manual execution if additional capital/broker margin is available."
+                )
+                try:
+                    from alerts import TelegramAlerter
+                    TelegramAlerter().send_alert(msg)
+                except Exception as ex:
+                    print(f"Telegram alert error: {ex}")
+                continue
+
             entry = {
                 "id": trade_id,
                 "date": today_str,
@@ -2339,6 +2464,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                     "pnl_points": 0.0,
                     "pnl_inr": 0.0,
                     "status": "ACTIVE",
+                    "margin_required_inr": round(cur_p * adaptive_lot * MARGIN_RATES.get(c_sym, 0.15), 2),
                     "target": tgt,
                     "stop_loss": sl
                 },
@@ -2477,7 +2603,38 @@ def check_and_execute_615_confirmation(checker, alerter):
                 trade['eod_outcome']['summary'] = f"Risk engine blocked 6:15 PM entry: {reason}"
                 continue
 
-            # MOMENTUM CONFIRMED & RISK PASSED: Enter paper trade!
+            # MOMENTUM CONFIRMED & RISK PASSED: Check Margin Availability
+            has_margin, req_margin, avail_margin = check_margin_availability(tracker, sym, cur_p, lot_size, is_equity=False)
+            if not has_margin:
+                # MARGIN DEFICIT: Skip portfolio paper execution, but broadcast alert!
+                trade['check_615']['status'] = "INSUFFICIENT_MARGIN_STAND_ASIDE"
+                trade['check_615']['action_taken'] = f"Execution Skipped: Insufficient Margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent."
+                trade['check_615']['detail'] = f"Rule verification passed, but available cash ₹{avail_margin:,.2f} is insufficient for margin ₹{req_margin:,.2f}."
+                trade['paper_trade']['status'] = "STAND_ASIDE"
+                trade['paper_trade']['action'] = "STAND_ASIDE"
+                trade['paper_trade']['quantity'] = 0
+                trade['paper_trade']['entry_price'] = cur_p
+                trade['paper_trade']['exit_price'] = cur_p
+                trade['paper_trade']['pnl_inr'] = 0.0
+                trade['paper_trade']['margin_required_inr'] = 0.0
+                trade['eod_outcome']['outcome'] = "PROTECTED"
+                trade['eod_outcome']['badge'] = "Margin Skipped 🛡️"
+                trade['eod_outcome']['pnl_display'] = "₹0.00 (Discretionary)"
+                trade['eod_outcome']['summary'] = f"Trade rule confirmed, but execution skipped on managed portfolio due to margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Discretionary alert sent."
+                
+                msg = (
+                    f"📢 <b>[6:15 PM TRADE ALERT - MARGIN EXHAUSTED] {trade['name'].upper()}</b>\n"
+                    f"• Rule Verification: <b>15-Minute Candle Confirmed Trend Momentum</b>\n"
+                    f"• Suggested Trade: <b>{action} {lot_size} units</b> @ ₹{cur_p:,.2f}\n"
+                    f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{tgt:,.2f}\n"
+                    f"• Margin Check: ⚠️ <b>Required: ₹{req_margin:,.2f} | Available Cash: ₹{avail_margin:,.2f}</b>\n"
+                    f"• Execution Status: <b>SKIPPED on Managed Portfolio</b> (Zero margin balance remaining)\n"
+                    f"• Discretionary Notice: Broadcasted for manual execution if additional capital/broker margin is available."
+                )
+                alert_messages.append(msg)
+                continue
+
+            # ENTER ACTIVE PAPER TRADE
             trade['check_615']['status'] = "TREND_CONFIRMED"
             trade['check_615']['action_taken'] = f"15-min candle confirmed US open momentum. ENTERED {action} {lot_size} units @ ₹{cur_p:,.2f}"
             trade['check_615']['detail'] = f"Price held structure (₹{cur_p:,.2f} vs ref ₹{ref_p:,.2f}). US open trend confirmed!"
@@ -2489,6 +2646,8 @@ def check_and_execute_615_confirmation(checker, alerter):
             trade['paper_trade']['entry_time'] = "06:15 PM IST"
             trade['paper_trade']['target'] = tgt
             trade['paper_trade']['stop_loss'] = sl
+            rate = MARGIN_RATES.get(trade['symbol'], 0.15)
+            trade['paper_trade']['margin_required_inr'] = round(cur_p * lot_size * rate, 2)
             
             trade['eod_outcome']['outcome'] = "ACTIVE"
             trade['eod_outcome']['badge'] = "Active Trade ⚡"
@@ -2646,35 +2805,67 @@ def check_and_execute_615_confirmation(checker, alerter):
                 )
                 alert_messages.append(msg)
             else:
-                # REVERSAL CONFIRMED & RISK PASSED: Enter paper trade!
-                trade['lot_size'] = adaptive_lot
-                trade['check_615']['status'] = "REVERSAL_CONFIRMED"
-                trade['check_615']['action_taken'] = f"15-min candle confirmed limit held. ENTERED {action} {adaptive_lot} units @ ₹{cur_p:,.2f}"
-                trade['check_615']['detail'] = f"Price held inside band (₹{cur_p:,.2f} vs limit ₹{lc_p if direction=='LOWER' else uc_p:,.2f}). Reversal confirmed!"
-                
-                trade['paper_trade']['status'] = "ACTIVE"
-                trade['paper_trade']['action'] = action
-                trade['paper_trade']['quantity'] = adaptive_lot
-                trade['paper_trade']['entry_price'] = cur_p
-                trade['paper_trade']['entry_time'] = "06:15 PM IST"
-                trade['paper_trade']['target'] = tgt
-                trade['paper_trade']['stop_loss'] = sl
-                
-                trade['eod_outcome']['outcome'] = "ACTIVE"
-                trade['eod_outcome']['badge'] = "Active Trade ⚡"
-                trade['eod_outcome']['pnl_display'] = "Ticking Live..."
-                trade['eod_outcome']['summary'] = f"Confirmed {action} position ({adaptive_lot} units) active for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
-                
-                msg = (
-                    f"🟢 <b>[6:15 PM TRADE CONFIRMED] {trade['name'].upper()}</b>\n"
-                    f"• 15-Minute Rule: <b>Limit Barrier Held Successfully</b>\n"
-                    f"• Execution: <b>{action} {adaptive_lot} units</b> @ ₹{cur_p:,.2f}\n"
-                    f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{prev_close:,.2f}\n"
-                    f"• Risk Audit: Max loss capped inside ₹5,000\n"
-                    f"• Account: Virtual Paper Trade logged for {USER_ACCOUNT}\n"
-                    f"• Auto-Exit: Position will be squared off at 11:30 PM IST."
-                )
-                alert_messages.append(msg)
+                # REVERSAL CONFIRMED & RISK PASSED: Check Margin Availability
+                has_margin, req_margin, avail_margin = check_margin_availability(tracker, sym, cur_p, adaptive_lot, is_equity=False)
+                if not has_margin:
+                    # MARGIN DEFICIT: Skip portfolio paper execution, but broadcast alert!
+                    trade['lot_size'] = adaptive_lot
+                    trade['check_615']['status'] = "INSUFFICIENT_MARGIN_STAND_ASIDE"
+                    trade['check_615']['action_taken'] = f"Execution Skipped: Insufficient Margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent."
+                    trade['check_615']['detail'] = f"Circuit reversal confirmed, but available cash ₹{avail_margin:,.2f} is insufficient for margin ₹{req_margin:,.2f}."
+                    trade['paper_trade']['status'] = "STAND_ASIDE"
+                    trade['paper_trade']['action'] = "STAND_ASIDE"
+                    trade['paper_trade']['quantity'] = 0
+                    trade['paper_trade']['entry_price'] = cur_p
+                    trade['paper_trade']['exit_price'] = cur_p
+                    trade['paper_trade']['pnl_inr'] = 0.0
+                    trade['paper_trade']['margin_required_inr'] = 0.0
+                    trade['eod_outcome']['outcome'] = "PROTECTED"
+                    trade['eod_outcome']['badge'] = "Margin Skipped 🛡️"
+                    trade['eod_outcome']['pnl_display'] = "₹0.00 (Discretionary)"
+                    trade['eod_outcome']['summary'] = f"Circuit reversal confirmed, but execution skipped on managed portfolio due to margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Discretionary alert sent."
+                    
+                    msg = (
+                        f"📢 <b>[6:15 PM REVERSAL ALERT - MARGIN EXHAUSTED] {trade['name'].upper()}</b>\n"
+                        f"• 15-Minute Rule: <b>Limit Barrier Held Successfully</b>\n"
+                        f"• Suggested Trade: <b>{action} {adaptive_lot} units</b> @ ₹{cur_p:,.2f}\n"
+                        f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{prev_close:,.2f}\n"
+                        f"• Margin Check: ⚠️ <b>Required: ₹{req_margin:,.2f} | Available Cash: ₹{avail_margin:,.2f}</b>\n"
+                        f"• Execution Status: <b>SKIPPED on Managed Portfolio</b> (Zero margin balance remaining)\n"
+                        f"• Discretionary Notice: Broadcasted for manual execution if additional capital/broker margin is available."
+                    )
+                    alert_messages.append(msg)
+                else:
+                    trade['lot_size'] = adaptive_lot
+                    trade['check_615']['status'] = "REVERSAL_CONFIRMED"
+                    trade['check_615']['action_taken'] = f"15-min candle confirmed limit held. ENTERED {action} {adaptive_lot} units @ ₹{cur_p:,.2f}"
+                    trade['check_615']['detail'] = f"Price held inside band (₹{cur_p:,.2f} vs limit ₹{lc_p if direction=='LOWER' else uc_p:,.2f}). Reversal confirmed!"
+                    
+                    trade['paper_trade']['status'] = "ACTIVE"
+                    trade['paper_trade']['action'] = action
+                    trade['paper_trade']['quantity'] = adaptive_lot
+                    trade['paper_trade']['entry_price'] = cur_p
+                    trade['paper_trade']['entry_time'] = "06:15 PM IST"
+                    trade['paper_trade']['target'] = tgt
+                    trade['paper_trade']['stop_loss'] = sl
+                    rate = MARGIN_RATES.get(trade['symbol'], 0.15)
+                    trade['paper_trade']['margin_required_inr'] = round(cur_p * adaptive_lot * rate, 2)
+                    
+                    trade['eod_outcome']['outcome'] = "ACTIVE"
+                    trade['eod_outcome']['badge'] = "Active Trade ⚡"
+                    trade['eod_outcome']['pnl_display'] = "Ticking Live..."
+                    trade['eod_outcome']['summary'] = f"Confirmed {action} position ({adaptive_lot} units) active for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                    
+                    msg = (
+                        f"🟢 <b>[6:15 PM TRADE CONFIRMED] {trade['name'].upper()}</b>\n"
+                        f"• 15-Minute Rule: <b>Limit Barrier Held Successfully</b>\n"
+                        f"• Execution: <b>{action} {adaptive_lot} units</b> @ ₹{cur_p:,.2f}\n"
+                        f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{prev_close:,.2f}\n"
+                        f"• Risk Audit: Max loss capped inside ₹5,000\n"
+                        f"• Account: Virtual Paper Trade logged for {USER_ACCOUNT}\n"
+                        f"• Auto-Exit: Position will be squared off at 11:30 PM IST."
+                    )
+                    alert_messages.append(msg)
 
         else:
             # CIRCUIT BROKEN / EXTENDED: Avoid false fade!
@@ -3419,6 +3610,89 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 print(f"🎲 Monte Carlo Time Machine Blocked {sym} {action}: {sim_metrics.get('summary')}")
                 continue
 
+            # Check Margin Availability for commodity trigger
+            has_margin, req_margin, avail_margin = check_margin_availability(tracker, contract_sym, cur_p, adaptive_lot, is_equity=False)
+            if not has_margin:
+                entry_obj = {
+                    "id": trade_id,
+                    "date": today_str,
+                    "session_name": f"Real-Time Technical Trigger ({setup_name})",
+                    "time_trigger": now_time_str,
+                    "time_6pm": now_time_str,
+                    "time_validation": now_time_str,
+                    "time_615": now_time_str,
+                    "time_exit": "11:30 PM IST",
+                    "symbol": contract_sym,
+                    "name": contract_name,
+                    "lot_size": adaptive_lot,
+                    "event_context": f"Indicator Confluence: {setup_name}",
+                    "regime": regime_info,
+                    "time_machine": sim_metrics,
+                    "risk_check": risk_metrics,
+                    "suggestion_6pm": {
+                        "status": "REALTIME_TRIGGER",
+                        "action_text": f"{action} @ ₹{cur_p:,.2f}",
+                        "rationale": f"{rationale} {sim_metrics.get('summary', '')}",
+                        "reference_price": cur_p,
+                        "stop_loss": sl,
+                        "target": tgt
+                    },
+                    "check_615": {
+                        "checked": True,
+                        "status": "INSUFFICIENT_MARGIN_STAND_ASIDE",
+                        "price_615": cur_p,
+                        "action_taken": f"Execution Skipped: Insufficient Margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent.",
+                        "detail": f"{setup_name}: Setup confirmed, but available cash ₹{avail_margin:,.2f} is insufficient for margin ₹{req_margin:,.2f}."
+                    },
+                    "paper_trade": {
+                        "user": USER_ACCOUNT,
+                        "action": "STAND_ASIDE",
+                        "quantity": 0,
+                        "entry_price": cur_p,
+                        "entry_time": now_time_str,
+                        "exit_price": cur_p,
+                        "exit_time": "11:30 PM IST",
+                        "pnl_points": 0.0,
+                        "pnl_inr": 0.0,
+                        "status": "STAND_ASIDE",
+                        "margin_required_inr": 0.0
+                    },
+                    "eod_outcome": {
+                        "session_close": None,
+                        "circuit_limit": None,
+                        "outcome": "PROTECTED",
+                        "badge": "Margin Skipped 🛡️",
+                        "pnl_display": "₹0.00 (Discretionary)",
+                        "summary": f"{setup_name} cleared rules, but execution skipped on managed portfolio due to margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Discretionary alert sent."
+                    }
+                }
+                new_trades.append(entry_obj)
+                active_sectors.add(item_sector)
+
+                mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
+                subject = f"📢 [MARGIN EXHAUSTED - DISCRETIONARY ALERT] {name} {action} @ ₹{cur_p:,.2f} ({now_time_str})"
+                body = (
+                    f"📢 <b>REAL-TIME TECHNICAL CONFLUENCE TRIGGER (MARGIN EXHAUSTED)</b>\n"
+                    f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                    f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                    f"• <b>Asset</b>: {name} ({sym})\n"
+                    f"• <b>Signal</b>: <b>{action} {adaptive_lot} units @ ₹{cur_p:,.2f}</b>\n"
+                    f"• <b>Setup</b>: {setup_name}\n"
+                    f"• <b>Technical Rationale</b>: {rationale}\n"
+                    f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
+                    f"• <b>Stop-Loss</b>: ₹{sl:,.2f} | <b>Target</b>: ₹{tgt:,.2f}\n"
+                    f"• <b>Margin Status</b>: ⚠️ <b>Required: ₹{req_margin:,.2f} | Available Pool: ₹{avail_margin:,.2f}</b>\n"
+                    f"• <b>Execution Status</b>: <b>SKIPPED on Managed Portfolio</b> (Zero margin balance remaining)\n"
+                    f"• <b>Discretionary Notice</b>: Broadcasted for manual execution if additional broker capital is available.\n\n"
+                    f"🛡️ <i>Disciplined Margin & Risk Governance Active</i>"
+                )
+                if alerter:
+                    try:
+                        alerter.send_advisory_alert(subject, body)
+                    except Exception as ex:
+                        print(f"Error dispatching margin-exhausted alert: {ex}")
+                continue
+
             entry_obj = {
                 "id": trade_id,
                 "date": today_str,
@@ -3461,9 +3735,9 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     "pnl_points": 0.0,
                     "pnl_inr": 0.0,
                     "status": "ACTIVE",
+                    "margin_required_inr": req_margin,
                     "target": tgt,
-                    "stop_loss": sl,
-                    "margin_required_inr": round(cur_p * adaptive_lot * MARGIN_RATES.get(sym, 0.15), 2)
+                    "stop_loss": sl
                 },
                 "eod_outcome": {
                     "session_close": None,
@@ -3806,6 +4080,89 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
 
                                         trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{clean_sym}FUT"
                                         if not any(t.get('id') == trade_id for t in (trades + new_trades)):
+                                            has_margin, req_margin, avail_margin = check_margin_availability(tracker, fut_sym, cur_p, fut_lot, is_equity=False)
+                                            if not has_margin:
+                                                entry_obj = {
+                                                    "id": trade_id,
+                                                    "date": today_str,
+                                                    "session_name": f"Real-Time Technical Trigger ({eq_setup})",
+                                                    "time_trigger": now_time_str,
+                                                    "time_6pm": now_time_str,
+                                                    "time_validation": now_time_str,
+                                                    "time_615": now_time_str,
+                                                    "time_exit": "03:25 PM IST",
+                                                    "symbol": fut_sym,
+                                                    "name": sfc['name'],
+                                                    "lot_size": fut_lot,
+                                                    "asset_type": "FUTURES",
+                                                    "event_context": f"NSE Stock Future ({sfc['sector']}): {eq_setup}",
+                                                    "regime": regime_info,
+                                                    "time_machine": sim_metrics,
+                                                    "risk_check": risk_metrics,
+                                                    "orb_check": orb_metrics,
+                                                    "event_check": event_metrics,
+                                                    "suggestion_6pm": {
+                                                        "status": "REALTIME_TRIGGER",
+                                                        "action_text": f"{eq_action} 1 Lot @ ₹{cur_p:,.2f}",
+                                                        "rationale": f"{eq_rationale} {sim_metrics.get('summary', '')}",
+                                                        "reference_price": cur_p,
+                                                        "stop_loss": fut_sl,
+                                                        "target": fut_tgt
+                                                    },
+                                                    "check_615": {
+                                                        "checked": True,
+                                                        "status": "INSUFFICIENT_MARGIN_STAND_ASIDE",
+                                                        "price_615": cur_p,
+                                                        "action_taken": f"Execution Skipped: Insufficient Margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent.",
+                                                        "detail": f"{eq_setup}: Setup confirmed, but available futures cash ₹{avail_margin:,.2f} is insufficient for margin ₹{req_margin:,.2f}."
+                                                    },
+                                                    "paper_trade": {
+                                                        "user": USER_ACCOUNT,
+                                                        "action": "STAND_ASIDE",
+                                                        "quantity": 0,
+                                                        "entry_price": cur_p,
+                                                        "entry_time": now_time_str,
+                                                        "exit_price": cur_p,
+                                                        "exit_time": "03:25 PM IST",
+                                                        "pnl_points": 0.0,
+                                                        "pnl_inr": 0.0,
+                                                        "status": "STAND_ASIDE",
+                                                        "margin_required_inr": 0.0,
+                                                        "product_type": "NRML_FUTURES"
+                                                    },
+                                                    "eod_outcome": {
+                                                        "session_close": None,
+                                                        "circuit_limit": None,
+                                                        "outcome": "PROTECTED",
+                                                        "badge": "Margin Skipped 🛡️",
+                                                        "pnl_display": "₹0.00 (Discretionary)",
+                                                        "summary": f"{eq_setup} cleared rules, but execution skipped on managed portfolio due to margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Discretionary alert sent."
+                                                    }
+                                                }
+                                                new_trades.append(entry_obj)
+                                                active_sectors.add(sfc['sector'])
+                                                mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
+                                                subject = f"📢 [STOCK FUTURE MARGIN EXHAUSTED - DISCRETIONARY ALERT] {sfc['name']} {eq_action} @ ₹{cur_p:,.2f} ({now_time_str})"
+                                                body = (
+                                                    f"📢 <b>REAL-TIME NSE STOCK FUTURE TRIGGER (MARGIN EXHAUSTED)</b>\n"
+                                                    f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                                                    f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                                                    f"• <b>Contract</b>: <b>{sfc['name']} ({fut_sym})</b>\n"
+                                                    f"• <b>Signal</b>: <b>{eq_action} 1 Lot ({fut_lot} units) @ ₹{cur_p:,.2f}</b>\n"
+                                                    f"• <b>Setup</b>: {eq_setup}\n"
+                                                    f"• <b>Technical Rationale</b>: {eq_rationale}\n"
+                                                    f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
+                                                    f"• <b>Stop-Loss</b>: <b>₹{fut_sl:,.2f}</b> | <b>Target (2.0R)</b>: <b>₹{fut_tgt:,.2f}</b>\n"
+                                                    f"• <b>Margin Status</b>: ⚠️ <b>Required: ₹{req_margin:,.2f} | Available Futures Pool: ₹{avail_margin:,.2f}</b>\n"
+                                                    f"• <b>Execution Status</b>: <b>SKIPPED on Managed Portfolio</b> (Cash pool fully deployed)\n"
+                                                    f"• <b>Discretionary Notice</b>: Broadcasted for manual execution if you have separate broker margin.\n\n"
+                                                    f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
+                                                )
+                                                alerts_to_send.append({'subject': subject, 'body': body})
+                                                print(f"📢 Discretionary Alert Queued (Futures Margin Exhausted): {sfc['name']} {eq_action} @ ₹{cur_p:,.2f}")
+                                                can_enter_futures = False
+                                                continue
+
                                             entry_obj = {
                                                 "id": trade_id,
                                                 "date": today_str,
@@ -3906,27 +4263,16 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             for t in active_intraday_trades
                         )
                         avail_intraday_margin = max(0.0, MAX_INTRADAY_STOCK_MARGIN_INR - used_intraday_margin)
-                        if avail_intraday_margin < 500.0:
-                            print(f"Intraday margin pool fully utilized (₹{used_intraday_margin:,.2f} / ₹{MAX_INTRADAY_STOCK_MARGIN_INR:,.2f}). Standing aside.")
-                            continue
-
-                        # Diversified Position Sizing across 3 distinct stocks within ₹30,000 margin:
-                        # Split across 3 stocks = ₹10,000 margin per stock (₹50,000 buying power each @ 5x MIS leverage)
-                        target_margin_per_stock = round(MAX_INTRADAY_STOCK_MARGIN_INR / MAX_CONCURRENT_EQUITIES, 2)
-                        allocated_margin = min(target_margin_per_stock, avail_intraday_margin)
                         
+                        target_margin_per_stock = round(MAX_INTRADAY_STOCK_MARGIN_INR / MAX_CONCURRENT_EQUITIES, 2)
                         margin_per_share = cur_p * 0.20  # 20% SEBI MIS intraday margin requirement (5x leverage)
                         if margin_per_share <= 0:
                             continue
 
-                        # Sizing: Compute shares for this diversified position
-                        eq_shares = math.floor(allocated_margin / margin_per_share)
-                        if eq_shares < 1:
-                            continue
-                        while eq_shares > 1 and ((cur_p * eq_shares * 0.20) > avail_intraday_margin):
-                            eq_shares -= 1
-                        if eq_shares < 1:
-                            continue
+                        # Standard sizing for ₹10,000 stock allocation (₹50,000 buying power)
+                        eq_shares = max(1, math.floor(target_margin_per_stock / margin_per_share))
+                        req_margin_equity = round(cur_p * eq_shares * 0.20, 2)
+                        has_equity_margin = (req_margin_equity <= avail_intraday_margin)
 
                         risk_per_share = abs(cur_p - eq_sl)
 
@@ -3966,6 +4312,89 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             if exp_r < 0.05 or win_rate < 48.0:
                                 print(f"🛡️ Short Profitability Filter Blocked {clean_sym} SELL: Statistical replay shows negative/marginal profit expectancy (Exp R: {exp_r:+.2f}R, Win Rate: {win_rate:.1f}%). Standing aside.")
                                 continue
+
+                        if not has_equity_margin:
+                            # MARGIN DEFICIT: Setup cleared all rules, but MIS pool is exhausted. Record Stood Aside & dispatch alert!
+                            entry_obj = {
+                                "id": trade_id,
+                                "date": today_str,
+                                "session_name": f"Real-Time Technical Trigger ({eq_setup})",
+                                "time_trigger": now_time_str,
+                                "time_6pm": now_time_str,
+                                "time_validation": now_time_str,
+                                "time_615": now_time_str,
+                                "time_exit": "03:25 PM IST",
+                                "symbol": sym,
+                                "name": name,
+                                "lot_size": eq_shares,
+                                "asset_type": "INTRADAY_STOCK",
+                                "event_context": f"Nifty Intraday MIS: {eq_setup}",
+                                "regime": regime_info,
+                                "time_machine": sim_metrics,
+                                "risk_check": risk_metrics,
+                                "orb_check": orb_metrics,
+                                "event_check": event_metrics,
+                                "suggestion_6pm": {
+                                    "status": "REALTIME_TRIGGER",
+                                    "action_text": f"{eq_action} @ ₹{cur_p:,.2f}",
+                                    "rationale": f"{eq_rationale} {sim_metrics.get('summary', '')}",
+                                    "reference_price": cur_p,
+                                    "stop_loss": eq_sl,
+                                    "target": eq_tgt
+                                },
+                                "check_615": {
+                                    "checked": True,
+                                    "status": "INSUFFICIENT_MARGIN_STAND_ASIDE",
+                                    "price_615": cur_p,
+                                    "action_taken": f"Execution Skipped: Insufficient Margin (Req: ₹{req_margin_equity:,.2f} > Avail: ₹{avail_intraday_margin:,.2f}). Alert Sent.",
+                                    "detail": f"{eq_setup}: Setup confirmed, but available MIS margin ₹{avail_intraday_margin:,.2f} is insufficient for ₹{req_margin_equity:,.2f}."
+                                },
+                                "paper_trade": {
+                                    "user": USER_ACCOUNT,
+                                    "action": "STAND_ASIDE",
+                                    "quantity": 0,
+                                    "entry_price": cur_p,
+                                    "entry_time": now_time_str,
+                                    "exit_price": cur_p,
+                                    "exit_time": "03:25 PM IST",
+                                    "pnl_points": 0.0,
+                                    "pnl_inr": 0.0,
+                                    "status": "STAND_ASIDE",
+                                    "margin_required_inr": 0.0,
+                                    "product_type": "MIS_INTRADAY"
+                                },
+                                "eod_outcome": {
+                                    "session_close": None,
+                                    "circuit_limit": None,
+                                    "outcome": "PROTECTED",
+                                    "badge": "Margin Skipped 🛡️",
+                                    "pnl_display": "₹0.00 (Discretionary)",
+                                    "summary": f"{eq_setup} cleared rules, but execution skipped on managed portfolio due to MIS margin (Req: ₹{req_margin_equity:,.2f} > Avail: ₹{avail_intraday_margin:,.2f}). Discretionary alert sent."
+                                }
+                            }
+                            new_trades.append(entry_obj)
+
+                            mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
+                            subject = f"📢 [NIFTY MIS MARGIN EXHAUSTED - DISCRETIONARY ALERT] {name} {eq_action} @ ₹{cur_p:,.2f} ({now_time_str})"
+                            body = (
+                                f"📢 <b>REAL-TIME INTRADAY STOCK TRIGGER (MIS MARGIN EXHAUSTED)</b>\n"
+                                f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                                f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                                f"• <b>Asset Class</b>: Nifty Intraday Stock (MIS 5x Margin Setup)\n"
+                                f"• <b>Stock</b>: <b>{name} ({clean_sym})</b>\n"
+                                f"• <b>Signal</b>: <b>{eq_action} {eq_shares} shares @ ₹{cur_p:,.2f}</b>\n"
+                                f"• <b>Setup</b>: {eq_setup}\n"
+                                f"• <b>Technical Rationale</b>: {eq_rationale}\n"
+                                f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
+                                f"• <b>Stop-Loss</b>: <b>₹{eq_sl:,.2f}</b> | <b>Target (2.0R)</b>: <b>₹{eq_tgt:,.2f}</b>\n"
+                                f"• <b>Margin Status</b>: ⚠️ <b>Required: ₹{req_margin_equity:,.2f} | Available MIS Pool: ₹{avail_intraday_margin:,.2f}</b>\n"
+                                f"• <b>Execution Status</b>: <b>SKIPPED on Managed Portfolio</b> (Intraday ₹30k margin pool fully allocated)\n"
+                                f"• <b>Discretionary Notice</b>: Broadcasted for manual execution if additional broker buying power is available.\n\n"
+                                f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
+                            )
+                            alerts_to_send.append({'subject': subject, 'body': body})
+                            print(f"📢 Discretionary Alert Queued (MIS Margin Exhausted): {name} {eq_action} @ ₹{cur_p:,.2f}")
+                            continue
 
                         entry_obj = {
                             "id": trade_id,
@@ -4014,7 +4443,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                                 "status": "ACTIVE",
                                 "target": eq_tgt,
                                 "stop_loss": eq_sl,
-                                "margin_required_inr": round(cur_p * eq_shares * 0.20, 2),
+                                "margin_required_inr": req_margin_equity,
                                 "product_type": "MIS_INTRADAY"
                             },
                             "eod_outcome": {
