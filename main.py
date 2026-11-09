@@ -133,7 +133,7 @@ def main():
     # Check and trigger 1:30 PM IST London/European Session Breakout Advisory (Mon - Fri)
     try:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
-        if now_ist.weekday() < 5 and (now_ist.hour == 13 and 28 <= now_ist.minute <= 42):
+        if now_ist.weekday() < 5 and (now_ist.hour >= 13 and now_ist.hour < 15 and now_ist.minute >= 28):
             print("\n--- Checking 1:30 PM IST London Breakout Advisory ---")
             from daily_6pm_advisory import generate_and_send_130pm_advisory
             generate_and_send_130pm_advisory()
@@ -153,7 +153,7 @@ def main():
     # Check and trigger Daily 6:00 PM IST Action Advisory (Monday - Friday)
     try:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
-        if now_ist.weekday() < 5 and (now_ist.hour == 18 and now_ist.minute <= 10):
+        if now_ist.weekday() < 5 and (now_ist.hour >= 18 and now_ist.hour < 20):
             print("\n--- Checking Daily 6:00 PM IST Action Advisory ---")
             from daily_6pm_advisory import generate_and_send_6pm_advisory
             generate_and_send_6pm_advisory()
@@ -173,7 +173,7 @@ def main():
     # Check and trigger 8:00 PM IST EIA Inventory & US Evening Advisory (Mon - Fri)
     try:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
-        if now_ist.weekday() < 5 and (now_ist.hour == 20 and now_ist.minute <= 12):
+        if now_ist.weekday() < 5 and (now_ist.hour >= 20 and now_ist.hour < 23):
             print("\n--- Checking 8:00 PM IST US Evening & EIA Inventory Advisory ---")
             from daily_6pm_advisory import generate_and_send_8pm_advisory
             generate_and_send_8pm_advisory()

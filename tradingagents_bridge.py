@@ -91,7 +91,15 @@ class TradingAgentsOrchestrator:
 
     @classmethod
     def is_available(cls) -> bool:
-        return TRADINGAGENTS_AVAILABLE
+        enabled = os.environ.get("ENABLE_TRADINGAGENTS", "false").lower() in ("true", "1")
+        has_key = bool(
+            os.environ.get("GOOGLE_API_KEY") or 
+            os.environ.get("GEMINI_API_KEY") or 
+            os.environ.get("OPENAI_API_KEY") or 
+            os.environ.get("ANTHROPIC_API_KEY") or 
+            os.environ.get("GROQ_API_KEY")
+        )
+        return bool(TRADINGAGENTS_AVAILABLE and enabled and has_key)
 
     @classmethod
     def detect_active_llm_provider(cls) -> Tuple[str, str, str]:
@@ -103,7 +111,7 @@ class TradingAgentsOrchestrator:
             # Set GOOGLE_API_KEY if only GEMINI_API_KEY was provided
             if not os.environ.get("GOOGLE_API_KEY") and os.environ.get("GEMINI_API_KEY"):
                 os.environ["GOOGLE_API_KEY"] = os.environ["GEMINI_API_KEY"]
-            return "google", "gemini-3.8-flash", "gemini-3.8-flash"
+            return "google", "gemini-1.5-flash", "gemini-1.5-flash"
         elif os.environ.get("OPENAI_API_KEY"):
             return "openai", "gpt-4o", "gpt-4o-mini"
         elif os.environ.get("ANTHROPIC_API_KEY"):
@@ -112,7 +120,7 @@ class TradingAgentsOrchestrator:
             return "groq", "llama-3.3-70b-versatile", "llama-3.1-8b-instant"
         
         # Default fallback
-        return "google", "gemini-3.8-flash", "gemini-3.8-flash"
+        return "google", "gemini-1.5-flash", "gemini-1.5-flash"
 
     @classmethod
     def resolve_ticker_for_analysis(cls, symbol: str) -> Tuple[str, str]:

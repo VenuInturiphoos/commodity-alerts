@@ -1,20 +1,20 @@
 {
-  "last_updated": "09 Nov 2026, 08:01 PM IST",
+  "last_updated": "09 Nov 2026, 08:42 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 158,
-    "executed_count": 24,
+    "total_signals": 157,
+    "executed_count": 22,
     "correct_count": 6,
     "wrong_count": 15,
-    "protected_count": 134,
+    "protected_count": 135,
     "win_rate_pct": 28.6,
     "total_pnl_inr": -34744.2,
-    "avg_trade_pnl_inr": -1447.67,
-    "active_trades_count": 2,
+    "avg_trade_pnl_inr": -1579.28,
+    "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 265255.8,
-    "used_margin_inr": 0.0,
+    "used_margin_inr": 0,
     "available_cash_inr": 265255.8,
     "net_worth_inr": 265255.8
   },
@@ -30,95 +30,42 @@
       "time_exit": "11:30 PM IST",
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
-      "lot_size": 70,
-      "event_context": "US Evening Lower Circuit Band Test",
+      "lot_size": 0,
+      "event_context": "Counter-Trend Knife-Catching Guard",
       "suggestion_6pm": {
-        "status": "EVENING_CIRCUIT",
-        "action_text": "BUY / EVENING CIRCUIT PLAY",
-        "rationale": "High evening liquidity test against circuit boundary.",
-        "reference_price": 8151.0,
-        "stop_loss": 8085.79,
-        "target": 8554.0
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / TREND GUARD",
+        "rationale": "Dumping into Lower Circuit (-3.86%): Intraday Bearish Session Momentum: Price (\u20b98,224.0) trading below VWAP (\u20b98,340.6) and Day Open (\u20b98,574.0) with downward expansion (-3.86%).. Knife-catching prohibited.",
+        "reference_price": 8224.0,
+        "stop_loss": null,
+        "target": null
       },
       "check_615": {
         "checked": true,
-        "status": "DIRECT_ENTRY",
-        "price_615": 8151.0,
-        "action_taken": "Entered BUY 70 units @ \u20b98,151.00",
-        "detail": "Entered at 8:00 PM IST."
+        "status": "STAND_ASIDE_CONFIRMED",
+        "price_615": 8224.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Dumping into Lower Circuit (-3.86%): Intraday Bearish Session Momentum: Price (\u20b98,224.0) trading below VWAP (\u20b98,340.6) and Day Open (\u20b98,574.0) with downward expansion (-3.86%).. Knife-catching prohibited."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "BUY",
-        "quantity": 70,
-        "entry_price": 8151.0,
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
         "entry_time": "08:00 PM IST",
         "exit_price": null,
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "ACTIVE",
-        "target": 8554.0,
-        "stop_loss": 8085.79
+        "status": "STAND_ASIDE"
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": 8211.84,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Active BUY position (70 units) entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
-      }
-    },
-    {
-      "id": "ADV-09Nov2026-2000-CRUDEOILM",
-      "date": "09 Nov 2026",
-      "session_name": "Evening Pit Review (8:00 PM)",
-      "time_trigger": "08:00 PM IST",
-      "time_6pm": "08:00 PM IST",
-      "time_validation": "08:15 PM IST",
-      "time_615": "08:15 PM IST",
-      "time_exit": "11:30 PM IST",
-      "symbol": "CRUDEOILM",
-      "name": "Crude Oil Mini",
-      "lot_size": 70,
-      "event_context": "US Evening Lower Circuit Band Test",
-      "suggestion_6pm": {
-        "status": "EVENING_CIRCUIT",
-        "action_text": "BUY / EVENING CIRCUIT PLAY",
-        "rationale": "High evening liquidity test against circuit boundary.",
-        "reference_price": 8144.0,
-        "stop_loss": 8078.85,
-        "target": 8556.0
-      },
-      "check_615": {
-        "checked": true,
-        "status": "DIRECT_ENTRY",
-        "price_615": 8144.0,
-        "action_taken": "Entered BUY 70 units @ \u20b98,144.00",
-        "detail": "Entered at 8:00 PM IST."
-      },
-      "paper_trade": {
-        "user": "venu.photos1@gmail.com",
-        "action": "BUY",
-        "quantity": 70,
-        "entry_price": 8144.0,
-        "entry_time": "08:00 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
-        "target": 8556.0,
-        "stop_loss": 8078.85
-      },
-      "eod_outcome": {
-        "session_close": null,
-        "circuit_limit": 8213.76,
-        "outcome": "PENDING",
-        "badge": "Active Trade \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Active BUY position (70 units) entered for venu.photos1@gmail.com. Auto-exit at 11:30 PM IST."
+        "outcome": "PROTECTED",
+        "badge": "Direction Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside: Dumping into Lower Circuit (-3.86%): Intraday Bearish Session Momentum: Price (\u20b98,224.0) trading below VWAP (\u20b98,340.6) and Day Open (\u20b98,574.0) with downward expansion (-3.86%).. Knife-catching prohibited."
       }
     },
     {

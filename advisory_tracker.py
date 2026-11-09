@@ -2119,11 +2119,18 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         new_entries.append(entry)
 
     # General US Evening Follow-through for other commodities
+    seen_underlyings = set()
     for item in commodities_list:
         sym = item['symbol']
         if (day_name == 'Wednesday' and sym == 'CRUDEOIL') or (day_name == 'Thursday' and sym == 'NATURALGAS'):
             continue
-        trade_id = f"ADV-{today_str.replace(' ', '')}-2000-{sym}"
+        clean_underlying = sym.replace('MIC', '').replace('MINI', '').rstrip('M')
+        if clean_underlying in seen_underlyings:
+            continue
+        seen_underlyings.add(clean_underlying)
+
+        c_sym, c_name, def_lot = get_defense_contract_and_lot(sym, item['name'])
+        trade_id = f"ADV-{today_str.replace(' ', '')}-2000-{clean_underlying}"
         if trade_id in existing_today_ids:
             continue
 
@@ -2135,21 +2142,28 @@ def record_live_8pm_advisory(commodities_list, day_name):
             uc_price = item['upper_circuit']
             day_h = float(item.get('day_high', cur_p))
             day_l = float(item.get('day_low', cur_p))
-            chg_pct = float(item.get('pct_change', 0.0))
+            chg_pct = float(item.get('change_pct') or item.get('pct_change') or 0.0)
             tgt = item['prev_close']
-            lot_size = LOT_SIZES.get(sym, 1)
+            lot_size = def_lot
 
-            # 🛡️ COUNTER-TREND KNIFE-CATCHING GUARD:
+            # 🛡️ COUNTER-TREND KNIFE-CATCHING & DIRECTION GUARD:
             # Never blind-buy a collapsing commodity or blind-short a surging commodity.
-            # If price is pressing Day Low / Lower Circuit (-2% or worse), standing aside is mandatory.
+            # If price is pressing Day Low / Lower Circuit (-1.5% or worse) or trend engine disallows, stand aside.
+            inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
+                c_sym, cur_p, item.get('open_price', cur_p), day_h, day_l, item.get('prev_close', cur_p),
+                ema20=item.get('ema_20'), ema50=item.get('ema_50'), ema200=item.get('ema_200'),
+                rsi=item.get('rsi_14'), adx=item.get('adx_14')
+            )
             is_knife_catching = False
             knife_reason = ""
-            if direction == 'LOWER' and (cur_p <= day_l * 1.002 or chg_pct <= -2.0):
-                is_knife_catching = True
-                knife_reason = f"Dumping into Lower Circuit ({chg_pct:+.2f}%). Counter-trend knife catching prohibited."
-            elif direction == 'UPPER' and (cur_p >= day_h * 0.998 or chg_pct >= 2.0):
-                is_knife_catching = True
-                knife_reason = f"Surging into Upper Circuit ({chg_pct:+.2f}%). Counter-trend shorting prohibited."
+            if direction == 'LOWER':
+                if cur_p <= day_l * 1.002 or chg_pct <= -1.5 or inst_dir.get('allowed_action') != 'BUY':
+                    is_knife_catching = True
+                    knife_reason = f"Dumping into Lower Circuit ({chg_pct:+.2f}%): {inst_dir.get('reason')}. Knife-catching prohibited."
+            elif direction == 'UPPER':
+                if cur_p >= day_h * 0.998 or chg_pct >= 1.5 or inst_dir.get('allowed_action') != 'SELL':
+                    is_knife_catching = True
+                    knife_reason = f"Surging into Upper Circuit ({chg_pct:+.2f}%): {inst_dir.get('reason')}. Counter-trend shorting prohibited."
 
             if is_knife_catching:
                 entry = {
@@ -2161,8 +2175,8 @@ def record_live_8pm_advisory(commodities_list, day_name):
                     "time_validation": "08:15 PM IST",
                     "time_615": "08:15 PM IST",
                     "time_exit": "11:30 PM IST",
-                    "symbol": sym,
-                    "name": item['name'],
+                    "symbol": c_sym,
+                    "name": c_name,
                     "lot_size": 0,
                     "event_context": "Counter-Trend Knife-Catching Guard",
                     "suggestion_6pm": {
@@ -2196,7 +2210,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         "session_close": None,
                         "circuit_limit": lc_price if direction == 'LOWER' else uc_price,
                         "outcome": "PROTECTED",
-                        "badge": "Trend Guard 🛡️",
+                        "badge": "Direction Protected 🛡️",
                         "pnl_display": "₹0.00 (Protected)",
                         "summary": f"Stood aside: {knife_reason}"
                     }
