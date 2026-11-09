@@ -1,22 +1,22 @@
 {
-  "last_updated": "09 Nov 2026, 12:46 PM IST",
+  "last_updated": "09 Nov 2026, 01:11 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 138,
     "executed_count": 22,
     "correct_count": 6,
-    "wrong_count": 13,
+    "wrong_count": 14,
     "protected_count": 116,
-    "win_rate_pct": 31.6,
-    "total_pnl_inr": -34277.1,
-    "avg_trade_pnl_inr": -1558.05,
-    "active_trades_count": 2,
+    "win_rate_pct": 30.0,
+    "total_pnl_inr": -34690.2,
+    "avg_trade_pnl_inr": -1576.83,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 265722.9,
-    "used_margin_inr": 19761.36,
-    "available_cash_inr": 245961.54,
-    "net_worth_inr": 265722.9
+    "current_cash_inr": 265309.8,
+    "used_margin_inr": 9765.36,
+    "available_cash_inr": 255544.44,
+    "net_worth_inr": 265309.8
   },
   "trades": [
     {
@@ -135,7 +135,7 @@
       "time_6pm": "11:11 AM IST",
       "time_validation": "11:11 AM IST",
       "time_615": "11:11 AM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "01:11 PM IST",
       "symbol": "MUTHOOTFIN.NS",
       "name": "Muthoot Finance Ltd",
       "lot_size": 17,
@@ -216,23 +216,26 @@
         "quantity": 17,
         "entry_price": 2940.0,
         "entry_time": "11:11 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 2915.7,
+        "exit_time": "01:11 PM IST",
+        "pnl_points": -24.3,
+        "pnl_inr": -413.1,
+        "status": "CLOSED",
         "target": 3045.84,
         "stop_loss": 2887.08,
         "margin_required_inr": 9996.0,
-        "product_type": "MIS_INTRADAY"
+        "product_type": "MIS_INTRADAY",
+        "exit_trigger": "STAGNATION_EXIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 2915.7,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b92,940.00 (Target: \u20b93,045.84, SL: \u20b92,887.08) | 3,000 Replays: 18.0% Target | 17.8% Stop | Expected: +0.18R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+        "outcome": "WRONG",
+        "badge": "Stagnation Exit \u23f1\ufe0f (01:11 PM IST)",
+        "pnl_display": "\u20b9-413.10",
+        "summary": "120-Minute Stagnation Exit \u23f1\ufe0f (Below entry for 120m; capital protection) at 01:11 PM IST. Entry: \u20b92,940.00 -> Exit: \u20b92,915.70 (\u20b9-413.10).",
+        "exit_time": "01:11 PM IST",
+        "exit_trigger": "STAGNATION_EXIT"
       }
     },
     {
