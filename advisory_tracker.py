@@ -134,6 +134,46 @@ def get_defense_contract_and_lot(sym, default_name=None):
     lot = LOT_SIZES.get(sym, LOT_SIZES.get(clean, 1))
     return sym, name, lot
 
+def resolve_commodity_item(sym, commodities_map):
+    """
+    Safely resolves a commodity dictionary from circuits commodities_map
+    handling mini/micro aliases like ZINCM -> ZINCMINI, SILVERMIC -> SILVERMIC/SILVER, etc.
+    """
+    if not sym or not commodities_map:
+        return None
+    if sym in commodities_map:
+        return commodities_map[sym]
+    
+    aliases = {
+        'ZINCM': ['ZINCMINI', 'ZINC'],
+        'ZINCMINI': ['ZINCM', 'ZINC'],
+        'ALUMINI': ['ALUMINIUM'],
+        'ALUMINIUM': ['ALUMINI'],
+        'SILVERMIC': ['SILVERM', 'SILVER'],
+        'SILVERM': ['SILVERMIC', 'SILVER'],
+        'SILVER': ['SILVERMIC', 'SILVERM'],
+        'GOLDM': ['GOLD'],
+        'GOLD': ['GOLDM'],
+        'CRUDEOILM': ['CRUDEOIL'],
+        'CRUDEOIL': ['CRUDEOILM'],
+        'NATURALGASM': ['NATURALGAS'],
+        'NATURALGAS': ['NATURALGASM'],
+        'COPPERM': ['COPPER'],
+        'COPPER': ['COPPERM'],
+    }
+    for alt in aliases.get(sym, []):
+        if alt in commodities_map:
+            return commodities_map[alt]
+    
+    # Try fuzzy strip / append
+    if sym.endswith('MINI') and sym[:-4] in commodities_map:
+        return commodities_map[sym[:-4]]
+    if sym.endswith('M') and sym[:-1] in commodities_map:
+        return commodities_map[sym[:-1]]
+    if (sym + 'MINI') in commodities_map:
+        return commodities_map[sym + 'MINI']
+    return None
+
 DEFAULT_STARTING_CASH = 300000.0  # ₹3,00,000 (3 Lakhs Virtual Cash)
 
 class IntradayStockSelector:
@@ -2331,14 +2371,11 @@ def check_and_execute_615_confirmation(checker, alerter):
     # 1. Process Pending Circuit Confirmation Trades
     for trade in pending_trades:
         sym = trade['symbol']
-        c_item = commodities_map.get(sym)
-        if not c_item:
-            continue
-            
-        cur_p = c_item['current_price']
-        lc_p = c_item['lower_circuit']
-        uc_p = c_item['upper_circuit']
-        prev_close = c_item['prev_close']
+        c_item = resolve_commodity_item(sym, commodities_map)
+        cur_p = c_item['current_price'] if c_item else float(trade.get('suggestion_6pm', {}).get('reference_price', 0.0))
+        lc_p = c_item.get('lower_circuit', 0.0) if c_item else 0.0
+        uc_p = c_item.get('upper_circuit', 0.0) if c_item else 0.0
+        prev_close = c_item.get('prev_close', cur_p) if c_item else cur_p
         direction = 'LOWER' if 'LOWER' in trade['event_context'] else 'UPPER'
         lot_size = trade['lot_size']
         
@@ -2655,7 +2692,7 @@ def check_and_execute_615_confirmation(checker, alerter):
     
     for sa_trade in stand_aside_trades:
         sym = sa_trade['symbol']
-        c_item = commodities_map.get(sym)
+        c_item = resolve_commodity_item(sym, commodities_map)
         cur_p = c_item['current_price'] if c_item else sa_trade['suggestion_6pm'].get('reference_price', 0)
         chg_pct = c_item['change_pct'] if c_item else 0.0
         
@@ -2756,7 +2793,7 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
     for trade in relevant_trades:
         sym = trade['symbol']
         clean_sym = sym.replace('-FUT', '').replace('.NS', '').upper() if sym else ''
-        c_item = commodities_map.get(sym) or commodities_map.get(clean_sym)
+        c_item = resolve_commodity_item(sym, commodities_map) or resolve_commodity_item(clean_sym, commodities_map)
         eq_item = equity_map.get(sym.upper()) or equity_map.get(clean_sym) or equity_map.get(f"{clean_sym}.NS")
 
         is_stock_future = ('-FUT' in sym) or (sym in STOCK_FUTURES_CONFIG) or (clean_sym in STOCK_FUTURES_CONFIG)
@@ -4157,7 +4194,7 @@ def exit_and_evaluate_eod_trades(checker, alerter):
 
     for trade in active_trades:
         sym = trade['symbol']
-        c_item = commodities_map.get(sym)
+        c_item = resolve_commodity_item(sym, commodities_map)
         is_eq = trade.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'] or '-FUT' in sym or sym in STOCK_FUTURES_CONFIG
         
         pt = trade.setdefault('paper_trade', {})
