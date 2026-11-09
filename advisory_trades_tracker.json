@@ -1,132 +1,24 @@
 {
-  "last_updated": "09 Nov 2026, 12:29 PM IST",
+  "last_updated": "09 Nov 2026, 11:25 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 138,
-    "executed_count": 22,
+    "total_signals": 137,
+    "executed_count": 21,
     "correct_count": 6,
     "wrong_count": 13,
     "protected_count": 116,
     "win_rate_pct": 31.6,
     "total_pnl_inr": -34277.1,
-    "avg_trade_pnl_inr": -1558.05,
-    "active_trades_count": 2,
+    "avg_trade_pnl_inr": -1632.24,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 265722.9,
-    "used_margin_inr": 19759.2,
-    "available_cash_inr": 245963.7,
+    "used_margin_inr": 9996.0,
+    "available_cash_inr": 255726.9,
     "net_worth_inr": 265722.9
   },
   "trades": [
-    {
-      "id": "ADV-09Nov2026-1229-GODREJPROP",
-      "date": "09 Nov 2026",
-      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
-      "time_trigger": "12:29 PM IST",
-      "time_6pm": "12:29 PM IST",
-      "time_validation": "12:29 PM IST",
-      "time_615": "12:29 PM IST",
-      "time_exit": "03:25 PM IST",
-      "symbol": "GODREJPROP.NS",
-      "name": "Godrej Properties Limited",
-      "lot_size": 27,
-      "asset_type": "INTRADAY_STOCK",
-      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
-      "regime": {
-        "regime": "VOLATILE_EXPANSION",
-        "badge": "\u26a1 Volatile Expansion",
-        "short_tag": "High Volatility",
-        "color": "#fbbf24",
-        "bg_color": "rgba(251, 191, 36, 0.12)",
-        "border_color": "rgba(251, 191, 36, 0.35)",
-        "mandate": "Wide volatility band (BBW: 21.6%, Vol: 1.5%). High whipsaw risk. Reduce position sizing by 50%.",
-        "allowed_strategies": [
-          "DEFENSIVE_SCALPING",
-          "REDUCED_SIZING"
-        ],
-        "blocked_strategies": [
-          "AGGRESSIVE_ENTRIES",
-          "FULL_LEVERAGE"
-        ],
-        "icon": "fa-solid fa-bolt",
-        "adx": 20.0,
-        "rsi": 65.8,
-        "bb_width_pct": 21.56,
-        "daily_vol_pct": 1.5
-      },
-      "time_machine": {
-        "replays": 3000,
-        "passed": true,
-        "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
-        "p_target_pct": 15.6,
-        "p_stop_pct": 14.0,
-        "p_neither_pct": 70.4,
-        "resolved_win_rate_pct": 52.6,
-        "expected_r": 0.172,
-        "target_r": 2.0,
-        "sample_bars": 694,
-        "summary": "3,000 Replays: 15.6% Target | 14.0% Stop | Expected: +0.17R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
-      },
-      "risk_check": {
-        "passed": true,
-        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
-        "reward_risk_ratio": 2.0,
-        "loss_at_stop_inr": 878.58,
-        "potential_gain_inr": 1757.16
-      },
-      "orb_check": {
-        "passed": true,
-        "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close \u20b91,808.00 breaking above range high \u20b91,808.00."
-      },
-      "event_check": {
-        "passed": true,
-        "status": "CLEAR",
-        "event_name": null,
-        "reason": "No high-impact event risk active."
-      },
-      "suggestion_6pm": {
-        "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ \u20b91,808.00",
-        "rationale": "Breaking towards 20D/52W high (Chg: +0.89%) with strong RSI momentum (65.8) and verified ORB bar close. Sized with structural 2.0R target. 3,000 Replays: 15.6% Target | 14.0% Stop | Expected: +0.17R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
-        "reference_price": 1808.0,
-        "stop_loss": 1775.46,
-        "target": 1873.08
-      },
-      "check_615": {
-        "checked": true,
-        "status": "TECHNICAL_TRIGGER_ENTERED",
-        "price_615": 1808.0,
-        "action_taken": "Entered BUY 27 shares @ \u20b91,808.00",
-        "detail": "20-Day / High-Beta Volatility Breakout: Breaking towards 20D/52W high (Chg: +0.89%) with strong RSI momentum (65.8) and verified ORB bar close. Sized with structural 2.0R target. | 3,000 Replays: 15.6% Target | 14.0% Stop | Expected: +0.17R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
-      },
-      "paper_trade": {
-        "user": "venu.photos1@gmail.com",
-        "action": "BUY",
-        "quantity": 27,
-        "entry_price": 1808.0,
-        "entry_time": "12:29 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
-        "target": 1873.08,
-        "stop_loss": 1775.46,
-        "margin_required_inr": 9763.2,
-        "product_type": "MIS_INTRADAY"
-      },
-      "eod_outcome": {
-        "session_close": null,
-        "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b91,808.00 (Target: \u20b91,873.08, SL: \u20b91,775.46) | 3,000 Replays: 15.6% Target | 14.0% Stop | Expected: +0.17R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
-      }
-    },
     {
       "id": "ADV-09Nov2026-1111-MUTHOOTFIN",
       "date": "09 Nov 2026",
