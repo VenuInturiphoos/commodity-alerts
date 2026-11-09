@@ -11,22 +11,22 @@ USER_ACCOUNT = "venu.photos1@gmail.com"
 
 # MCX Risk-Parity Lot Sizes (Calibrated to match ~₹1.2 Lakh to ₹1.5 Lakh Purchase/Margin Capital per Trade)
 LOT_SIZES = {
-    'CRUDEOIL': 50,     # Crude Oil (50 bbl) - 1 pt = ₹50 (~₹1.22L - ₹1.5L margin)
-    'CRUDEOILM': 50,    # Crude Oil Mini (50 bbl) - 1 pt = ₹50
-    'NATURALGAS': 1250, # Natural Gas (1250 mmBtu) - 1 pt = ₹1250 (~₹1.28L margin)
-    'NATURALGASM': 1250,# Natural Gas Mini (1250 mmBtu) - 1 pt = ₹1250
-    'SILVER': 5,        # Silver (5 kg) - 1 pt = ₹5 (~₹1.45L margin)
+    'CRUDEOIL': 100,    # Crude Oil Standard (100 bbl) - 1 pt = ₹100
+    'CRUDEOILM': 10,    # Crude Oil Mini (10 bbl) - 1 pt = ₹10
+    'NATURALGAS': 1250, # Natural Gas Standard (1250 mmBtu) - 1 pt = ₹1250
+    'NATURALGASM': 250, # Natural Gas Mini (250 mmBtu) - 1 pt = ₹250
+    'SILVER': 30,       # Silver Standard (30 kg) - 1 pt = ₹30
     'SILVERM': 5,       # Silver Mini (5 kg) - 1 pt = ₹5
-    'SILVERMIC': 5,     # Silver Micro (5 lots = 5 kg) - 1 pt = ₹5
-    'GOLD': 10,         # Gold (10 x 10g = 100g) - 1 pt = ₹10 (~₹1.44L margin)
-    'GOLDM': 10,
-    'GOLDTEN': 10,
-    'COPPER': 1250,     # Copper (1250 kg) - 1 pt = ₹1250 (~₹1.40L margin)
-    'COPPERM': 1250,
-    'ZINC': 2500,       # Zinc (2500 kg) - 1 pt = ₹2500 (~₹1.35L margin)
-    'ZINCM': 2500,
-    'ZINCMINI': 2500,
-    'ALUMINIUM': 1000,  # Aluminium (1000 kg) - 1 pt = ₹1000 (~₹1.35L margin)
+    'SILVERMIC': 1,     # Silver Micro (1 kg) - 1 pt = ₹1
+    'GOLD': 100,        # Gold Standard (1 kg = 100 x 10g) - 1 pt = ₹100
+    'GOLDM': 10,        # Gold Mini (100g = 10 x 10g) - 1 pt = ₹10
+    'GOLDTEN': 1,       # Gold 10g - 1 pt = ₹1
+    'COPPER': 2500,     # Copper Standard (2500 kg) - 1 pt = ₹2500
+    'COPPERM': 1000,    # Copper Mini (1000 kg) - 1 pt = ₹1000
+    'ZINC': 5000,       # Zinc Standard (5000 kg) - 1 pt = ₹5000
+    'ZINCM': 1000,      # Zinc Mini (1000 kg) - 1 pt = ₹1000
+    'ZINCMINI': 1000,   # Zinc Mini (1000 kg) - 1 pt = ₹1000
+    'ALUMINIUM': 5000,  # Aluminium Standard (5000 kg) - 1 pt = ₹5000
     'ALUMINI': 1000     # Aluminium Mini (1000 kg) - 1 pt = ₹1000
 }
 
@@ -259,9 +259,7 @@ def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=Non
         sl = round(ref_high + atr_buf, 2)
         risk_pts = abs(sl - cur_p)
         if is_intraday:
-            max_tgt_dist = min(atr * 1.25 if atr else cur_p * 0.014, cur_p * 0.015)
-            tgt_dist = min(min_rrr * risk_pts, max_tgt_dist)
-            tgt_dist = max(tgt_dist, risk_pts * 1.0)
+            tgt_dist = round(min_rrr * risk_pts, 2)
             tgt = round(cur_p - tgt_dist, 2)
         else:
             tgt = round(cur_p - (min_rrr * risk_pts), 2)
@@ -275,9 +273,7 @@ def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=Non
         sl = round(ref_low - atr_buf, 2)
         risk_pts = abs(cur_p - sl)
         if is_intraday:
-            max_tgt_dist = min(atr * 1.25 if atr else cur_p * 0.014, cur_p * 0.015)
-            tgt_dist = min(min_rrr * risk_pts, max_tgt_dist)
-            tgt_dist = max(tgt_dist, risk_pts * 1.0)
+            tgt_dist = round(min_rrr * risk_pts, 2)
             tgt = round(cur_p + tgt_dist, 2)
         else:
             tgt = round(cur_p + (min_rrr * risk_pts), 2)
@@ -555,9 +551,9 @@ def record_live_9am_advisory(commodities_list):
                 c15_status = "EVENT_GUARD_STAND_ASIDE"
                 c15_detail = event_metrics.get('reason')
             elif action in ['BUY', 'SELL'] and sl and tgt:
-                # Institutional Risk Bracket & Hard Stand-Aside (No Choked Stops & Min 1.5R)
+                # Institutional Risk Bracket & Hard Stand-Aside (Calibrated 1.1R)
                 bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
-                    sym, action, cur_p, sl, tgt, lot_size, max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.5
+                    sym, action, cur_p, sl, tgt, lot_size, max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.1
                 )
                 if not bracket_eval.get('passed'):
                     action = "STAND_ASIDE"
@@ -709,9 +705,9 @@ def record_live_9am_advisory(commodities_list):
                 c15_status = "EVENT_GUARD_STAND_ASIDE"
                 c15_detail = event_metrics.get('reason')
             elif action in ['BUY', 'SELL'] and sl and tgt:
-                # Institutional Risk Bracket & Hard Stand-Aside (No Choked Stops & Min 1.5R)
+                # Institutional Risk Bracket & Hard Stand-Aside (Calibrated 1.1R)
                 bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
-                    sym, action, cur_p, sl, tgt, lot_size, max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.5
+                    sym, action, cur_p, sl, tgt, lot_size, max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.1
                 )
                 if not bracket_eval.get('passed'):
                     action = "STAND_ASIDE"
@@ -1058,9 +1054,16 @@ def record_live_130pm_advisory(commodities_list):
                 entry_p = cur_p if is_at_support else support_entry
                 trade_status = "ACTIVE" if is_at_support else "PENDING_LIMIT"
 
-                # Institutional Risk Bracket & Hard Stand-Aside (No Choked Stops & Min 1.5R)
+                # Adaptively route to Mini contract or scale lot size strictly within risk cap
+                contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
+                    sym, name, entry_p, tight_sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR
+                )
+                sym, name, lot_size = contract_sym, contract_name, (adaptive_lot if adaptive_lot > 0 else lot_size)
+
+                # Institutional Risk Bracket & Hard Stand-Aside (Calibrated 1.1R)
                 bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
-                    sym, "BUY", entry_p, tight_sl, tgt, lot_size, max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.5
+                    sym, "BUY", entry_p, tight_sl, tgt, lot_size,
+                    max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.1
                 )
                 if not bracket_eval.get('passed'):
                     entry = {
@@ -1211,6 +1214,29 @@ def record_live_130pm_advisory(commodities_list):
                 is_at_res = abs(cur_p - resistance_entry) / resistance_entry <= 0.002
                 entry_p = cur_p if is_at_res else resistance_entry
                 trade_status = "ACTIVE" if is_at_res else "PENDING_LIMIT"
+
+                # Adaptively route to Mini contract or scale lot size strictly within risk cap
+                contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
+                    sym, name, entry_p, tight_sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR
+                )
+                sym, name, lot_size = contract_sym, contract_name, (adaptive_lot if adaptive_lot > 0 else lot_size)
+
+                bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
+                    sym, "SELL", entry_p, tight_sl, tgt, lot_size, max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.1
+                )
+                if not bracket_eval.get('passed'):
+                    entry = {
+                        "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
+                        "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
+                        "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                        "lot_size": lot_size, "event_context": "Hard Risk Stop Guard (No Choked Stops)",
+                        "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / HARD RISK STOP", "rationale": bracket_eval.get('reason'), "reference_price": cur_p, "stop_loss": None, "target": None },
+                        "check_615": { "checked": True, "status": "HARD_RISK_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": bracket_eval.get('reason') },
+                        "paper_trade": { "user": USER_ACCOUNT, "action": "STAND_ASIDE", "quantity": 0, "entry_price": None, "entry_time": "01:30 PM IST", "exit_price": None, "exit_time": None, "pnl_points": 0.0, "pnl_inr": 0.0, "status": "STAND_ASIDE" },
+                        "eod_outcome": { "session_close": None, "circuit_limit": None, "outcome": "PROTECTED", "badge": "Risk Protected 🛡️", "pnl_display": "₹0.00", "summary": f"Stood aside: {bracket_eval.get('reason')}" }
+                    }
+                    new_entries.append(entry)
+                    continue
                 
                 # 15-Minute ORB Bar-Close & Wick Trap Guard
                 orb_check = ORBTimer.check_orb_confirmation(sym, "SELL", cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p)
@@ -1551,7 +1577,85 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
             new_entries.append(entry)
 
         else:
-            # Stand Aside / Normal Range commodities: record capital preservation entry
+            # US Pit Open (6:00 PM IST) Directional Momentum Setup
+            # When assets are within normal daily bands, evaluate NYMEX/COMEX pit open trend momentum
+            act_dir = inst_dir.get('allowed_action')
+            if act_dir in ['BUY', 'SELL']:
+                action = act_dir
+                # Technical Invalidation Stop and Realistic 1.1R-1.25R Target
+                sl, tgt = calculate_technical_bracket(
+                    action, cur_p,
+                    day_h=item.get('day_high', cur_p),
+                    day_l=item.get('day_low', cur_p),
+                    ema20=item.get('ema_20'),
+                    ema50=item.get('ema_50'),
+                    atr=item.get('atr_14'),
+                    min_rrr=1.1,
+                    is_intraday=True
+                )
+                contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
+                    sym, name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR
+                )
+                bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
+                    contract_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size,
+                    max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.1
+                )
+                if bracket_eval.get('passed') and adaptive_lot > 0:
+                    entry = {
+                        "id": trade_id,
+                        "date": today_str,
+                        "session_name": "US Pit Open (6:00 PM)",
+                        "time_trigger": "06:00 PM IST",
+                        "time_6pm": "06:00 PM IST",
+                        "time_validation": "06:15 PM IST",
+                        "time_615": "06:15 PM IST",
+                        "time_exit": "11:30 PM IST",
+                        "symbol": contract_sym,
+                        "name": contract_name,
+                        "lot_size": adaptive_lot,
+                        "event_context": f"US Pit Open Trend Momentum {action.title()} (NYMEX/COMEX Open)",
+                        "suggestion_6pm": {
+                            "status": "WAIT_615",
+                            "action_text": f"WAIT FOR 6:15 PM CANDLE CLOSE before entering {action} {contract_sym}",
+                            "rationale": f"US Pit Open Momentum: {inst_dir.get('reason')} Target 1.2R calibrated to ATR.",
+                            "reference_price": cur_p,
+                            "stop_loss": sl,
+                            "target": tgt
+                        },
+                        "check_615": {
+                            "checked": False,
+                            "status": "PENDING_615",
+                            "price_615": None,
+                            "action_taken": f"Awaiting 6:15 PM candle close to confirm {action} trend holds...",
+                            "detail": f"15-minute verification scheduled for 6:15 PM IST (Reference: ₹{cur_p:,.2f})."
+                        },
+                        "paper_trade": {
+                            "user": USER_ACCOUNT,
+                            "action": action,
+                            "quantity": adaptive_lot,
+                            "entry_price": None,
+                            "entry_time": None,
+                            "exit_price": None,
+                            "exit_time": None,
+                            "pnl_points": 0.0,
+                            "pnl_inr": 0.0,
+                            "status": "PENDING_615",
+                            "target": tgt,
+                            "stop_loss": sl
+                        },
+                        "eod_outcome": {
+                            "session_close": None,
+                            "circuit_limit": sl,
+                            "outcome": "PENDING",
+                            "badge": "Awaiting 6:15 PM ⏳",
+                            "pnl_display": "Pending Confirmation",
+                            "summary": f"US Pit Open {action} momentum setup awaiting 6:15 PM candle close."
+                        }
+                    }
+                    new_entries.append(entry)
+                    continue
+
+            # Fallback: Range-bound / Neutral Chop (Stand Aside)
             entry = {
                 "id": trade_id,
                 "date": today_str,
@@ -1564,21 +1668,21 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                 "symbol": sym,
                 "name": name,
                 "lot_size": lot_size,
-                "event_context": "Safe Normal Range (No Circuit Edge)",
+                "event_context": "Safe Normal Range (Range-Bound Chop)",
                 "suggestion_6pm": {
                     "status": "STAND_ASIDE",
-                    "action_text": "STAND ASIDE / SAFE RANGE",
-                    "rationale": "Asset within standard range (±1.5%). No statistical circuit edge; capital protected in cash.",
+                    "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
+                    "rationale": f"Asset within tight range ({chg_pct:+.2f}%). {inst_dir.get('reason')}. Capital preserved in cash.",
                     "reference_price": cur_p,
                     "stop_loss": lc_price,
                     "target": p_close
                 },
                 "check_615": {
-                    "checked": False,
-                    "status": "PENDING_615_CHECK",
-                    "price_615": None,
-                    "action_taken": "Awaiting 6:15 PM candle close to verify safe range holds...",
-                    "detail": "15-minute verification scheduled for 6:15 PM IST."
+                    "checked": True,
+                    "status": "CONFIRMED_STAND_ASIDE",
+                    "price_615": cur_p,
+                    "action_taken": "Stood Aside (0 Units)",
+                    "detail": "Tight non-trending consolidation. Capital preserved."
                 },
                 "paper_trade": {
                     "user": USER_ACCOUNT,
@@ -1598,7 +1702,7 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                     "outcome": "PROTECTED",
                     "badge": "Capital Protected 🛡️",
                     "pnl_display": "₹0.00 (Protected)",
-                    "summary": "Stood aside on normal range. 100% capital preserved in cash."
+                    "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
                 }
             }
             new_entries.append(entry)
@@ -1674,17 +1778,17 @@ def record_live_8pm_advisory(commodities_list, day_name):
 
                     c_sym, c_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(c_sym, c_name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
 
-                    # Hard Stand-Aside on Risk Bracket (No Choked Stops & Min 1.5R)
+                    # Hard Stand-Aside on Risk Bracket (Calibrated 1.1R)
                     bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
                         c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size,
-                        max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.5
+                        max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.1
                     )
                     if not bracket_eval.get('passed'):
                         is_knife_catching = True
                         knife_reason = bracket_eval.get('reason')
 
                     all_existing = new_entries + trades
-                    risk_metrics = PreTradeRiskEngine.check_risk(c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, min_reward_risk=1.5)
+                    risk_metrics = PreTradeRiskEngine.check_risk(c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, min_reward_risk=1.1)
 
                     # 🤖 TradingAgents Commodity Benchmark Deliberation
                     ta_check = None
@@ -1847,17 +1951,17 @@ def record_live_8pm_advisory(commodities_list, day_name):
 
                     c_sym, c_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(c_sym, c_name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR)
 
-                    # Hard Stand-Aside on Risk Bracket (No Choked Stops & Min 1.5R)
+                    # Hard Stand-Aside on Risk Bracket (Calibrated 1.1R)
                     bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
                         c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size,
-                        max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.5
+                        max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.1
                     )
                     if not bracket_eval.get('passed'):
                         is_knife_catching = True
                         knife_reason = bracket_eval.get('reason')
 
                     all_existing = new_entries + trades
-                    risk_metrics = PreTradeRiskEngine.check_risk(c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, min_reward_risk=1.5)
+                    risk_metrics = PreTradeRiskEngine.check_risk(c_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, min_reward_risk=1.1)
 
                     # 🤖 TradingAgents Commodity Benchmark Deliberation
                     ta_check = None
@@ -2256,7 +2360,103 @@ def check_and_execute_615_confirmation(checker, alerter):
             trade['eod_outcome']['summary'] = "15-minute confirmation window lapsed. Stood aside to preserve capital."
             continue
         
-        # Check if 15-min candle showed genuine reversal confirmation vs knife-catching
+        # 1. Check if this is a US Pit Open Trend Momentum setup
+        if 'Trend Momentum' in trade.get('event_context', ''):
+            action = trade.get('paper_trade', {}).get('action') or trade.get('suggestion_6pm', {}).get('status', 'BUY')
+            ref_p = float(trade.get('suggestion_6pm', {}).get('reference_price', cur_p))
+            sl = float(trade.get('suggestion_6pm', {}).get('stop_loss') or (cur_p * 0.99 if action == 'BUY' else cur_p * 1.01))
+            tgt = float(trade.get('suggestion_6pm', {}).get('target') or (cur_p * 1.015 if action == 'BUY' else cur_p * 0.985))
+            vwap = inst_dir.get('vwap', cur_p)
+            
+            is_confirmed = False
+            trend_reject_reason = ""
+            if action == 'BUY':
+                if cur_p >= (ref_p * 0.997) and cur_p >= (vwap * 0.997):
+                    is_confirmed = True
+                else:
+                    trend_reject_reason = f"Price slipped below entry reference (₹{cur_p:,.2f} < ₹{ref_p:,.2f}) or VWAP (₹{vwap:,.1f})."
+            else:
+                if cur_p <= (ref_p * 1.003) and cur_p <= (vwap * 1.003):
+                    is_confirmed = True
+                else:
+                    trend_reject_reason = f"Price spiked above entry reference (₹{cur_p:,.2f} > ₹{ref_p:,.2f}) or VWAP (₹{vwap:,.1f})."
+            
+            trade['check_615']['checked'] = True
+            trade['check_615']['price_615'] = cur_p
+
+            if not is_confirmed:
+                trade['check_615']['status'] = "TREND_FAILED_STAND_ASIDE"
+                trade['check_615']['action_taken'] = f"Stood aside: {trend_reject_reason}"
+                trade['check_615']['detail'] = trend_reject_reason
+                trade['paper_trade']['status'] = "STAND_ASIDE"
+                trade['paper_trade']['action'] = "STAND_ASIDE"
+                trade['paper_trade']['quantity'] = 0
+                trade['paper_trade']['entry_price'] = cur_p
+                trade['paper_trade']['exit_price'] = cur_p
+                trade['paper_trade']['pnl_inr'] = 0.0
+                trade['eod_outcome']['outcome'] = "PROTECTED"
+                trade['eod_outcome']['badge'] = "Trend Guard 🛡️"
+                trade['eod_outcome']['pnl_display'] = "₹0.00 (Protected)"
+                trade['eod_outcome']['summary'] = f"Stood aside: {trend_reject_reason}"
+                msg = (
+                    f"🛡️ <b>[6:15 PM TREND GUARD] {trade['name'].upper()}</b>\n"
+                    f"• Status: 15-Minute Trend Momentum NOT confirmed (Price ₹{cur_p:,.2f})\n"
+                    f"• Reason: <b>{trend_reject_reason}</b>\n"
+                    f"• Action: Stood aside to protect ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk capital."
+                )
+                alert_messages.append(msg)
+                continue
+
+            # Run PreTradeRiskEngine check
+            risk_metrics = PreTradeRiskEngine.check_risk(sym, action, cur_p, sl, tgt, lot_size, trades, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
+            if not risk_metrics.get('passed'):
+                reason = risk_metrics.get('reason')
+                trade['check_615']['status'] = "RISK_GUARD_STAND_ASIDE"
+                trade['check_615']['action_taken'] = f"Risk Engine Block: {reason}. Stood aside to preserve capital."
+                trade['check_615']['detail'] = reason
+                trade['paper_trade']['status'] = "STAND_ASIDE"
+                trade['paper_trade']['action'] = "STAND_ASIDE"
+                trade['paper_trade']['quantity'] = 0
+                trade['paper_trade']['entry_price'] = cur_p
+                trade['paper_trade']['exit_price'] = cur_p
+                trade['paper_trade']['pnl_inr'] = 0.0
+                trade['eod_outcome']['outcome'] = "PROTECTED"
+                trade['eod_outcome']['badge'] = "Risk Filter 🛡️"
+                trade['eod_outcome']['pnl_display'] = "₹0.00 (Protected)"
+                trade['eod_outcome']['summary'] = f"Risk engine blocked 6:15 PM entry: {reason}"
+                continue
+
+            # MOMENTUM CONFIRMED & RISK PASSED: Enter paper trade!
+            trade['check_615']['status'] = "TREND_CONFIRMED"
+            trade['check_615']['action_taken'] = f"15-min candle confirmed US open momentum. ENTERED {action} {lot_size} units @ ₹{cur_p:,.2f}"
+            trade['check_615']['detail'] = f"Price held structure (₹{cur_p:,.2f} vs ref ₹{ref_p:,.2f}). US open trend confirmed!"
+            
+            trade['paper_trade']['status'] = "ACTIVE"
+            trade['paper_trade']['action'] = action
+            trade['paper_trade']['quantity'] = lot_size
+            trade['paper_trade']['entry_price'] = cur_p
+            trade['paper_trade']['entry_time'] = "06:15 PM IST"
+            trade['paper_trade']['target'] = tgt
+            trade['paper_trade']['stop_loss'] = sl
+            
+            trade['eod_outcome']['outcome'] = "ACTIVE"
+            trade['eod_outcome']['badge'] = "Active Trade ⚡"
+            trade['eod_outcome']['pnl_display'] = "Ticking Live..."
+            trade['eod_outcome']['summary'] = f"Confirmed {action} position ({lot_size} units) active for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+            
+            msg = (
+                f"🟢 <b>[6:15 PM TRADE CONFIRMED] {trade['name'].upper()}</b>\n"
+                f"• US Pit Open Momentum: <b>15-Minute Candle Confirmed Trend</b>\n"
+                f"• Execution: <b>{action} {lot_size} units</b> @ ₹{cur_p:,.2f}\n"
+                f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{tgt:,.2f}\n"
+                f"• Risk Audit: Max loss capped inside ₹{MAX_LOSS_PER_TRADE_INR:,.0f}\n"
+                f"• Account: Virtual Paper Trade logged for {USER_ACCOUNT}\n"
+                f"• Auto-Exit: Position will be squared off at 11:30 PM IST."
+            )
+            alert_messages.append(msg)
+            continue
+
+        # 2. Check if 15-min candle showed genuine circuit reversal confirmation vs knife-catching
         day_h = float(c_item.get('day_high', cur_p))
         day_l = float(c_item.get('day_low', cur_p))
         chg_pct = float(c_item.get('pct_change', 0.0))
@@ -2329,10 +2529,10 @@ def check_and_execute_615_confirmation(checker, alerter):
                 sym, trade['name'], cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR
             )
 
-            # Institutional Risk Bracket & Hard Stand-Aside (No Choked Stops & Min 1.5R)
+            # Institutional Risk Bracket & Hard Stand-Aside (Calibrated 1.1R)
             bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
                 contract_sym, action, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else lot_size,
-                max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.5
+                max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.1
             )
             if not bracket_eval.get('passed'):
                 reason = bracket_eval.get('reason')

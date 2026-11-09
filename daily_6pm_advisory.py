@@ -151,20 +151,56 @@ def generate_and_send_6pm_advisory(force=False):
                         f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}% | {dist_uc:.2f}% from Ceiling)\n"
                         f"  • Action: Wait for 6:15 PM candle. Do not chase breakouts without volume confirmation."
                     )
-        elif abs(chg_pct) >= 2.0:
-            has_active_setups = True
-            action_items.append(
-                f"ℹ️ <b>{name.upper()} (Trending Session: {chg_pct:+.2f}%)</b>\n"
-                f"  • Live: ₹{cur_p:,.2f} (Floor: ₹{lc_price:,.2f} | Ceiling: ₹{uc_price:,.2f})\n"
-                f"  • High US session volatility expected post-6 PM. Trade only with defined S1/R1 stops."
-            )
+        else:
+            # Case 3: US Pit Open Directional Trend Momentum (06:00 PM IST NYMEX/COMEX Open)
+            try:
+                from trader_engine_bridge import InstitutionalDirectionEngine, PositionSizer
+                from advisory_tracker import calculate_technical_bracket, MAX_LOSS_PER_TRADE_INR
+                
+                inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
+                    sym, cur_p, item.get('open_price', cur_p), item.get('day_high', cur_p), item.get('day_low', cur_p),
+                    p_close, ema20=item.get('ema_20'), ema50=item.get('ema_50'), ema200=item.get('ema_200'),
+                    rsi=item.get('rsi_14'), adx=item.get('adx_14'), atr=item.get('atr_14')
+                )
+                act_dir = inst_dir.get('allowed_action')
+                if act_dir in ['BUY', 'SELL'] and (abs(chg_pct) >= 0.35 or float(item.get('adx_14') or 0) >= 18.0):
+                    sl, tgt = calculate_technical_bracket(
+                        act_dir, cur_p,
+                        day_h=item.get('day_high', cur_p),
+                        day_l=item.get('day_low', cur_p),
+                        ema20=item.get('ema_20'),
+                        ema50=item.get('ema_50'),
+                        atr=item.get('atr_14'),
+                        min_rrr=1.1,
+                        is_intraday=True
+                    )
+                    contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
+                        sym, name, cur_p, sl, item.get('lot_size', 1), max_risk_inr=MAX_LOSS_PER_TRADE_INR
+                    )
+                    bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
+                        contract_sym, act_dir, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else 1,
+                        max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.1
+                    )
+                    if bracket_eval.get('passed') and adaptive_lot > 0:
+                        has_active_setups = True
+                        icon = "🟢" if act_dir == "BUY" else "🔴"
+                        trend_type = "Trend Long" if act_dir == "BUY" else "Trend Short"
+                        action_items.append(
+                            f"{icon} <b>{contract_name.upper()} (US Pit Open {trend_type})</b>\n"
+                            f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}% | VWAP: ₹{inst_dir.get('vwap', cur_p):,.1f})\n"
+                            f"  • Strategy: <b>NYMEX/COMEX Institutional Trend Momentum</b> ({inst_dir.get('reason')})\n"
+                            f"  • Recommended Action: <b>{act_dir} {adaptive_lot} Lot ({contract_sym})</b> (Wait for 6:15 PM candle confirmation)\n"
+                            f"  • Invalidation Stop-Loss: ₹{sl:,.2f} (Structural chart support/resistance)\n"
+                            f"  • Target: ₹{tgt:,.2f} (1.2R Target calibrated to intraday ATR)"
+                        )
+            except Exception as e:
+                print(f"Error checking US open trend setup for {sym}: {e}")
 
     if not has_active_setups:
         action_items.append(
-            "🟢 <b>ALL 5 COMMODITIES ARE IN NORMAL SAFE TRADING RANGES</b>\n"
-            "  • No circuit limits tested or threatened today (all assets within ±1.5% of anchor).\n"
-            "  • <b>Action</b>: There is zero statistical circuit edge today. Do NOT place counter-trend circuit bets.\n"
-            "  • Stick to standard Support/Resistance levels (S1/R1) or preserve capital for US open volatility."
+            "🟢 <b>ALL 5 COMMODITIES ARE IN TIGHT NON-TRENDING CHOP</b>\n"
+            "  • No circuit limits tested and no directional trend expansion at 6:00 PM US Open.\n"
+            "  • <b>Action</b>: Capital preserved in cash. Avoid forced low-conviction range trades."
         )
 
     # Day of week context

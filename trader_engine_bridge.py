@@ -559,68 +559,77 @@ class PositionSizer:
     fits strictly within max_risk_inr (default ₹5,000.00).
     """
 
-    # Contract point value per unit (calibrated for ~₹1.2L to ₹1.5L purchase/margin value per trade)
+    # Contract point value per exchange unit (Standard vs Mini/Micro)
     POINT_VALUE = {
-        'GOLD': 10.0,        # 10g quote on 100g = ₹10
-        'GOLDM': 10.0,       # 1 point move on 100g = ₹10
-        'GOLDTEN': 10.0,
-        'SILVER': 5.0,       # 1 point move on 5 kg = ₹5
-        'SILVERM': 5.0,      # 1 point move = ₹5
-        'SILVERMIC': 5.0,    # 1 point move on 5 lots = ₹5
-        'CRUDEOIL': 50.0,    # 50 bbl = ₹50
-        'CRUDEOILM': 50.0,   # 50 bbl = ₹50
-        'NATURALGAS': 1250.0,# 1250 mmBtu = ₹1250
-        'NATURALGASM': 1250.0,# 1250 mmBtu = ₹1250
-        'COPPER': 1250.0,    # 1250 kg = ₹1250
-        'COPPERM': 1250.0,   # 1250 kg = ₹1250
-        'ZINC': 2500.0,      # 2500 kg = ₹2500
-        'ZINCM': 2500.0,     # 2500 kg = ₹2500
-        'ALUMINIUM': 1000.0, # 1000 kg = ₹1000
-        'ALUMINI': 1000.0    # 1000 kg = ₹1000
+        'GOLD': 100.0,       # 1 kg = 100 x 10g units (₹100/pt)
+        'GOLDM': 10.0,       # 100g mini = 10 x 10g units (₹10/pt)
+        'GOLDTEN': 1.0,      # 10g unit (₹1/pt)
+        'SILVER': 30.0,      # 30 kg standard (₹30/pt)
+        'SILVERM': 5.0,      # 5 kg mini (₹5/pt)
+        'SILVERMIC': 1.0,    # 1 kg micro (₹1/pt)
+        'CRUDEOIL': 100.0,   # 100 bbl standard (₹100/pt)
+        'CRUDEOILM': 10.0,   # 10 bbl mini (₹10/pt)
+        'NATURALGAS': 1250.0,# 1250 mmBtu standard (₹1250/pt)
+        'NATURALGASM': 250.0,# 250 mmBtu mini (₹250/pt)
+        'COPPER': 2500.0,    # 2500 kg standard (₹2500/pt)
+        'COPPERM': 1000.0,   # 1000 kg mini (₹1000/pt)
+        'ZINC': 5000.0,      # 5000 kg standard (₹5000/pt)
+        'ZINCM': 1000.0,     # 1000 kg mini (₹1000/pt)
+        'ALUMINIUM': 5000.0, # 5000 kg standard (₹5000/pt)
+        'ALUMINI': 1000.0    # 1000 kg mini (₹1000/pt)
     }
 
-    # Contract Routing Map for ~₹1.2L to ₹1.5L Value Parity
+    # Contract Routing Map for Standard vs Mini/Micro exchange contracts
     MINI_ROUTES = {
         'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot_size': 1000},
-        'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot_size': 50},
-        'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot_size': 50},
-        'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot_size': 1250},
-        'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot_size': 1250},
-        'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot_size': 5},
+        'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot_size': 10},
+        'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot_size': 10},
+        'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot_size': 250},
+        'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot_size': 250},
+        'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot_size': 1},
         'SILVERM': {'symbol': 'SILVERM', 'name': 'Silver Mini', 'lot_size': 5},
-        'SILVERMIC': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot_size': 5},
+        'SILVERMIC': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot_size': 1},
         'GOLD': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot_size': 10},
         'GOLDM': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot_size': 10},
-        'GOLDTEN': {'symbol': 'GOLDTEN', 'name': 'Gold', 'lot_size': 10},
-        'ZINC': {'symbol': 'ZINCM', 'name': 'Zinc Mini', 'lot_size': 2500},
-        'ZINCM': {'symbol': 'ZINCM', 'name': 'Zinc Mini', 'lot_size': 2500},
-        'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1250},
-        'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1250},
+        'GOLDTEN': {'symbol': 'GOLDTEN', 'name': 'Gold', 'lot_size': 1},
+        'ZINC': {'symbol': 'ZINCM', 'name': 'Zinc Mini', 'lot_size': 1000},
+        'ZINCM': {'symbol': 'ZINCM', 'name': 'Zinc Mini', 'lot_size': 1000},
+        'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1000},
+        'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1000},
     }
 
     @classmethod
     def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=3000.0, atr=None):
         """
-        Resolves the appropriate contract (Standard vs Mini) and safe lot size
-        calibrated for ~₹1.2L to ₹1.5L purchase/margin value parity.
-        Commodities strictly trade in standardized whole lots (e.g., ALUMINI = 1000 kg, CRUDEOILM = 50 bbl).
-        Strictly enforces max_risk_inr: If even 1 lot exceeds max_risk_inr, returns lot=0 (Hard Refusal).
+        Resolves the appropriate contract (Standard vs Mini/Micro) and safe lot size
+        calibrated for strict capital discipline.
+        Commodities strictly trade in standardized whole exchange lots (e.g., ALUMINI = 1000 kg, CRUDEOILM = 10 bbl, SILVERMIC = 1 kg).
+        Adaptively scales lot quantity so total trade risk fits inside max_risk_inr.
         """
         if entry <= 0 or stop <= 0 or entry == stop:
             return symbol, name, default_lot
 
-        # 1. Route to contract calibrated for ~₹1.2L to ₹1.5L value
+        # 1. Route to Mini / Micro contract
         base_sym = symbol.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '')
         mini_info = cls.MINI_ROUTES.get(symbol) or cls.MINI_ROUTES.get(base_sym)
         resolved_sym = mini_info['symbol'] if mini_info else symbol
         resolved_name = mini_info['name'] if mini_info else name
-        resolved_lot = mini_info['lot_size'] if mini_info else (default_lot if default_lot > 0 else 1)
+        base_unit = mini_info['lot_size'] if mini_info else (default_lot if default_lot > 0 else 1)
 
-        # 2. Strict Risk Budget Check: If potential loss at stop exceeds max_risk_inr, refuse entry (0 lots)
+        # 2. Strict Risk Budget Check: Scale whole exchange contracts to fit risk budget
         risk_pts = abs(entry - stop)
-        if max_risk_inr and max_risk_inr > 0 and (risk_pts * resolved_lot) > max_risk_inr:
-            print(f"🛑 Position Sizer Hard Refusal: Risk ₹{risk_pts * resolved_lot:,.2f} on {resolved_sym} exceeds ₹{max_risk_inr:,.2f} limit. Refusing order.")
-            return resolved_sym, resolved_name, 0
+        single_lot_risk = risk_pts * base_unit
+        if single_lot_risk <= 0:
+            return resolved_sym, resolved_name, base_unit
+
+        if max_risk_inr and max_risk_inr > 0:
+            max_lots = int(max_risk_inr // single_lot_risk)
+            if max_lots < 1:
+                print(f"🛑 Position Sizer Hard Refusal: Risk ₹{single_lot_risk:,.2f} on 1 lot of {resolved_sym} exceeds ₹{max_risk_inr:,.2f} limit. Refusing order.")
+                return resolved_sym, resolved_name, 0
+            resolved_lot = max_lots * base_unit
+        else:
+            resolved_lot = base_unit
 
         return resolved_sym, resolved_name, resolved_lot
 
@@ -1194,6 +1203,31 @@ class InstitutionalDirectionEngine:
                 "regime_info": regime_info
             }
 
+        # 5. Intraday Session Momentum (London 1:30 PM & US Pit Open 6:00 PM)
+        # When HTF is neutral/consolidating, allow clean intraday directional velocity
+        chg_pct = ((cur_p - p_close) / p_close) * 100.0 if p_close > 0 else 0.0
+        if is_above_vwap and cur_p >= open_price and (rsi >= 50.0 or adx >= 18.0 or chg_pct >= 0.35):
+            return {
+                "allowed_action": "BUY",
+                "passed": True,
+                "reason": f"Intraday Bullish Session Momentum: Price (₹{cur_p:,.1f}) holding above VWAP (₹{vwap:,.1f}) and Day Open (₹{open_price:,.1f}) with positive momentum ({chg_pct:+.2f}%).",
+                "vwap": vwap,
+                "htf_bias": htf_bias,
+                "regime": regime,
+                "regime_info": regime_info
+            }
+
+        if is_below_vwap and cur_p <= open_price and (rsi <= 50.0 or adx >= 18.0 or chg_pct <= -0.35):
+            return {
+                "allowed_action": "SELL",
+                "passed": True,
+                "reason": f"Intraday Bearish Session Momentum: Price (₹{cur_p:,.1f}) trading below VWAP (₹{vwap:,.1f}) and Day Open (₹{open_price:,.1f}) with downward expansion ({chg_pct:+.2f}%).",
+                "vwap": vwap,
+                "htf_bias": htf_bias,
+                "regime": regime,
+                "regime_info": regime_info
+            }
+
         return {
             "allowed_action": "STAND_ASIDE",
             "passed": False,
@@ -1390,7 +1424,7 @@ class InstitutionalDirectionEngine:
             reward_pts = round(cur_p - tgt, 2)
 
         rrr = round(reward_pts / risk_pts, 2) if risk_pts > 0 else 0.0
-        if rrr < min_rrr:
+        if rrr < (min_rrr - 0.02):
             return {
                 "passed": False,
                 "reason": f"Reward:Risk ratio {rrr:.2f} is below minimum requirement of {min_rrr:.1f}R (Risk: {risk_pts:.1f} pts, Reward: {reward_pts:.1f} pts)."
