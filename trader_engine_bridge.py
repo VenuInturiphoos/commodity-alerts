@@ -598,13 +598,31 @@ class PositionSizer:
         'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1000},
     }
 
+    TARGET_COMMODITY_MARGIN_INR = 150000.0  # ₹1.5 Lakhs target margin per commodity position
+
+    # MCX Standard Initial Margin Rates for Sizing
+    MARGIN_RATES = {
+        'CRUDEOIL': 0.25, 'CRUDEOILM': 0.25,
+        'NATURALGAS': 0.18, 'NATURALGASM': 0.18,
+        'SILVER': 0.15, 'SILVERM': 0.15, 'SILVERMIC': 0.15,
+        'GOLD': 0.10, 'GOLDM': 0.10, 'GOLDTEN': 0.10,
+        'COPPER': 0.10, 'COPPERM': 0.10,
+        'ZINC': 0.15, 'ZINCM': 0.15, 'ZINCMINI': 0.15,
+        'ALUMINIUM': 0.16, 'ALUMINI': 0.16
+    }
+
     @classmethod
-    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=3000.0, atr=None):
+    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=8500.0, atr=None, target_margin_inr=150000.0):
         """
-        Resolves the appropriate contract (Standard vs Mini/Micro) and safe lot size
-        calibrated for strict capital discipline.
-        Commodities strictly trade in standardized whole exchange lots (e.g., ALUMINI = 1000 kg, CRUDEOILM = 10 bbl, SILVERMIC = 1 kg).
-        Adaptively scales lot quantity so total trade risk fits inside max_risk_inr.
+        Resolves the appropriate contract and scales lots to match ~₹1,50,000 deployed margin per position.
+        Commodities strictly trade in standardized whole exchange lots:
+        - CRUDEOILM: 7 lots (70 bbl) ≈ ₹1.48L margin
+        - SILVERMIC: 5 lots (5 kg) ≈ ₹1.41L margin
+        - NATURALGASM: 10-12 lots (2500-3000 mmBtu) ≈ ₹1.28L - ₹1.54L margin
+        - COPPERM: 1 lot (1000 kg) ≈ ₹1.35L margin
+        - ZINCMINI: 2 lots (2000 kg) ≈ ₹1.24L margin
+        - ALUMINI: 3 lots (3000 kg) ≈ ₹1.58L margin
+        - GOLDM: 1 lot (100g) ≈ ₹1.43L margin
         """
         if entry <= 0 or stop <= 0 or entry == stop:
             return symbol, name, default_lot
@@ -616,20 +634,26 @@ class PositionSizer:
         resolved_name = mini_info['name'] if mini_info else name
         base_unit = mini_info['lot_size'] if mini_info else (default_lot if default_lot > 0 else 1)
 
-        # 2. Strict Risk Budget Check: Scale whole exchange contracts to fit risk budget
-        risk_pts = abs(entry - stop)
-        single_lot_risk = risk_pts * base_unit
-        if single_lot_risk <= 0:
-            return resolved_sym, resolved_name, base_unit
-
-        if max_risk_inr and max_risk_inr > 0:
-            max_lots = int(max_risk_inr // single_lot_risk)
-            if max_lots < 1:
-                print(f"🛑 Position Sizer Hard Refusal: Risk ₹{single_lot_risk:,.2f} on 1 lot of {resolved_sym} exceeds ₹{max_risk_inr:,.2f} limit. Refusing order.")
-                return resolved_sym, resolved_name, 0
-            resolved_lot = max_lots * base_unit
+        # 2. Sizing by ~₹1,50,000 Target Margin
+        m_rate = cls.MARGIN_RATES.get(resolved_sym, cls.MARGIN_RATES.get(base_sym, 0.20))
+        single_lot_margin = (base_unit * entry) * m_rate
+        if single_lot_margin > 0:
+            target_lots = max(1, round(target_margin_inr / single_lot_margin))
+            resolved_lot = target_lots * base_unit
         else:
             resolved_lot = base_unit
+
+        # 3. Risk Check against structural stop: scale down gracefully if needed
+        risk_pts = abs(entry - stop)
+        total_trade_risk = risk_pts * resolved_lot
+        if max_risk_inr and max_risk_inr > 0 and total_trade_risk > max_risk_inr:
+            single_risk = risk_pts * base_unit
+            if single_risk > 0:
+                affordable_lots = int(max_risk_inr // single_risk)
+                if affordable_lots >= 1:
+                    resolved_lot = affordable_lots * base_unit
+                else:
+                    resolved_lot = base_unit  # Minimum 1 base lot
 
         return resolved_sym, resolved_name, resolved_lot
 
@@ -1392,7 +1416,7 @@ class InstitutionalDirectionEngine:
             }
 
     @classmethod
-    def validate_futures_risk_bracket(cls, symbol, action, entry_price, technical_sl, technical_tgt, lot_size, max_loss_inr=3000.0, min_rrr=1.1):
+    def validate_futures_risk_bracket(cls, symbol, action, entry_price, technical_sl, technical_tgt, lot_size, max_loss_inr=8500.0, min_rrr=1.1):
         """
         Guarantees that a stop loss is NEVER artificially choked/compressed to fit a max risk cap.
         If the natural structural stop requires > max_loss_inr, the trade must STAND ASIDE.
@@ -1402,7 +1426,7 @@ class InstitutionalDirectionEngine:
         sl = float(technical_sl or 0.0)
         tgt = float(technical_tgt or 0.0)
         lot = int(lot_size or 1)
-        max_loss = float(max_loss_inr or 3000.0)
+        max_loss = float(max_loss_inr or 8500.0)
 
         if cur_p <= 0 or sl <= 0 or tgt <= 0 or lot <= 0:
             return {"passed": False, "reason": "Invalid price, stop, target, or lot size."}

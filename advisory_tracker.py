@@ -77,8 +77,8 @@ for sfc_sym, sfc_cfg in STOCK_FUTURES_CONFIG.items():
 # =========================================================================
 # 🛡️ CAPITAL DEFENSE & RECOVERY PROTOCOL (CALIBRATED FOR ₹2.9L TRADING CAPITAL)
 # =========================================================================
-MAX_LOSS_PER_TRADE_INR = 3000.0   # Strictly 1.0% of capital (calibrated for ₹1.2L-₹1.5L commodity purchases)
-MAX_DAILY_LOSS_INR = 6000.0       # Strictly 2.0% daily circuit breaker for Futures (allows 2-3 trade buffer)
+MAX_LOSS_PER_TRADE_INR = 8500.0   # Calibrated for ~₹1.2L-₹1.5L commodity margin allocation (5.5% of margin)
+MAX_DAILY_LOSS_INR = 17000.0      # Portfolio daily risk circuit breaker (approx 5.5% of ₹3 Lakhs capital)
 MAX_INTRADAY_STOCK_MARGIN_INR = 30000.0 # Dedicated ₹30,000 margin allocated per day for Intraday Stock Trading (split across 3 stocks = ₹10,000 margin / ₹50,000 buying power each)
 INTRADAY_STOCK_MIS_LEVERAGE = 5.0 # 5x leverage for MIS intraday equity (20% margin requirement)
 MAX_INTRADAY_STOCK_POSITION_INR = MAX_INTRADAY_STOCK_MARGIN_INR * INTRADAY_STOCK_MIS_LEVERAGE # ₹1,50,000 buying power across 3 stocks
