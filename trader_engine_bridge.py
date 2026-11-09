@@ -69,11 +69,11 @@ class PreTradeRiskEngine:
     @staticmethod
     def check_risk(symbol, action, entry, stop, target, lot_size, existing_trades,
                    max_loss_per_trade_inr=1000.0, max_daily_loss_inr=3000.0,
-                   min_reward_risk=1.5, max_active_positions=3):
+                   min_reward_risk=1.1, max_active_positions=3):
         """
         Runs comprehensive pre-trade risk validation:
         1. Stop loss presence and direction
-        2. Minimum reward-to-risk ratio
+        2. Minimum reward-to-risk ratio (Calibrated to 1.1R for realistic intraday equity & futures)
         3. Maximum allowable rupee loss per trade (Strictly capped at max_loss_per_trade_inr)
         4. Portfolio daily loss circuit breaker (Strictly capped at max_daily_loss_inr)
         5. Maximum concurrent open positions
@@ -375,12 +375,24 @@ class ORBTimer:
 
     @classmethod
     def check_orb_confirmation(cls, symbol, action, current_price, day_high, day_low,
-                               open_price=None, volume_ratio=None, last_bar_close=None):
+                               open_price=None, volume_ratio=None, last_bar_close=None, current_time=None):
         """
         Validates breakout entry against opening range parameters.
         Returns:
             dict with 'passed', 'status', 'reason'
         """
+        # Strict 09:30 AM Opening Bell Blackout Guard:
+        # Pre-09:30 AM trades suffer from opening auction whipsaws, wide spreads, and incomplete ORB ranges.
+        if current_time is not None:
+            c_hour = getattr(current_time, 'hour', 0)
+            c_minute = getattr(current_time, 'minute', 0)
+            if c_hour == 9 and c_minute < 30:
+                return {
+                    "passed": False,
+                    "status": "OPENING_RANGE_FORMING",
+                    "reason": f"15-Minute Opening Range is currently forming ({c_hour:02d}:{c_minute:02d} IST < 09:30 AM). Breakouts before 09:30 AM are prohibited to avoid opening bell fakeouts."
+                }
+
         if not day_high or not day_low or day_high <= day_low:
             return {"passed": True, "status": "RANGE_UNAVAILABLE", "reason": "Range data unavailable; fallback to indicator confluence."}
 
@@ -1346,11 +1358,11 @@ class InstitutionalDirectionEngine:
             }
 
     @classmethod
-    def validate_futures_risk_bracket(cls, symbol, action, entry_price, technical_sl, technical_tgt, lot_size, max_loss_inr=3000.0, min_rrr=1.5):
+    def validate_futures_risk_bracket(cls, symbol, action, entry_price, technical_sl, technical_tgt, lot_size, max_loss_inr=3000.0, min_rrr=1.1):
         """
         Guarantees that a stop loss is NEVER artificially choked/compressed to fit a max risk cap.
         If the natural structural stop requires > max_loss_inr, the trade must STAND ASIDE.
-        Also enforces minimum R:R >= 1.5.
+        Also enforces minimum R:R >= 1.1 (Calibrated for realistic intraday stock futures targets).
         """
         cur_p = float(entry_price or 0.0)
         sl = float(technical_sl or 0.0)

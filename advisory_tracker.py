@@ -136,41 +136,54 @@ def get_defense_contract_and_lot(sym, default_name=None):
 
 DEFAULT_STARTING_CASH = 300000.0  # ₹3,00,000 (3 Lakhs Virtual Cash)
 
-def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=None, ema50=None, atr=None, min_rrr=1.8):
+def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=None, ema50=None, atr=None, min_rrr=1.2, is_intraday=True):
     """
-    📐 Technical Invalidation Stop & Target Engine:
+    📐 Technical Invalidation Stop & Realistic Target Engine:
     Places stop-losses strictly at structural chart invalidation points rather than arbitrary rupee caps.
-    - Short Trades: SL placed strictly above Day High / Resistance (+ buffer so wicks don't trigger it).
-    - Long Trades: SL placed strictly below Day Low / Support (- buffer).
-    - Target: Calculated as an asymmetric multiple (min 1.8R - 2.0R) of the technical risk.
+    - Short Trades: SL placed strictly above Day High / Dynamic 20 EMA Resistance (+ buffer).
+    - Long Trades: SL placed strictly below Day Low / Dynamic 20 EMA Support (- buffer).
+    - Target: Sized to achievable intraday price movement (1.0R - 1.3R, capped at 1.25x ATR or 1.5% move).
     """
     if cur_p <= 0:
         return None, None
         
-    atr_buf = round(atr * 0.20, 2) if (atr and atr > 0) else round(cur_p * 0.0015, 2)
-    # Ensure minimum technical buffer (e.g. 0.25 pts for base metals, 15 pts for crude)
-    atr_buf = max(atr_buf, round(cur_p * 0.0008, 2))
+    atr_buf = round(atr * 0.15, 2) if (atr and atr > 0) else round(cur_p * 0.0012, 2)
+    atr_buf = max(atr_buf, round(cur_p * 0.0006, 2))
     
     if action.upper() == 'SELL':
         ref_high = max(cur_p, day_h) if day_h and day_h > 0 else cur_p
         # If ema20 is above cur_p and closer than day_h, use ema20 as dynamic resistance stop
         if ema20 and cur_p < ema20 < ref_high:
             ref_high = ema20
-        # Guard against excessively wide stops (> 1.6x ATR) that make intraday targets unreachable
-        if atr and (ref_high - cur_p) > (atr * 1.6):
-            ref_high = cur_p + (atr * 1.35)
+        # Guard against excessively wide stops (> 1.2x ATR for intraday)
+        max_sl_dist = (atr * 1.2) if (atr and is_intraday) else ((atr * 1.6) if atr else (cur_p * 0.015))
+        if (ref_high - cur_p) > max_sl_dist:
+            ref_high = cur_p + (max_sl_dist * 0.85)
         sl = round(ref_high + atr_buf, 2)
         risk_pts = abs(sl - cur_p)
-        tgt = round(cur_p - (min_rrr * risk_pts), 2)
+        if is_intraday:
+            max_tgt_dist = min(atr * 1.25 if atr else cur_p * 0.014, cur_p * 0.015)
+            tgt_dist = min(min_rrr * risk_pts, max_tgt_dist)
+            tgt_dist = max(tgt_dist, risk_pts * 1.0)
+            tgt = round(cur_p - tgt_dist, 2)
+        else:
+            tgt = round(cur_p - (min_rrr * risk_pts), 2)
     else:
         ref_low = min(cur_p, day_l) if day_l and day_l > 0 else cur_p
         if ema20 and cur_p > ema20 > ref_low:
             ref_low = ema20
-        if atr and (cur_p - ref_low) > (atr * 1.6):
-            ref_low = cur_p - (atr * 1.35)
+        max_sl_dist = (atr * 1.2) if (atr and is_intraday) else ((atr * 1.6) if atr else (cur_p * 0.015))
+        if (cur_p - ref_low) > max_sl_dist:
+            ref_low = cur_p - (max_sl_dist * 0.85)
         sl = round(ref_low - atr_buf, 2)
         risk_pts = abs(cur_p - sl)
-        tgt = round(cur_p + (min_rrr * risk_pts), 2)
+        if is_intraday:
+            max_tgt_dist = min(atr * 1.25 if atr else cur_p * 0.014, cur_p * 0.015)
+            tgt_dist = min(min_rrr * risk_pts, max_tgt_dist)
+            tgt_dist = max(tgt_dist, risk_pts * 1.0)
+            tgt = round(cur_p + tgt_dist, 2)
+        else:
+            tgt = round(cur_p + (min_rrr * risk_pts), 2)
         
     return sl, tgt
 
@@ -3144,6 +3157,12 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 print(f"Warning: Could not read Nifty F&O scanner data: {e}")
                 equity_stocks = []
 
+            # 0. Strict 09:30 AM Opening Bell Blackout Guard:
+            # Pre-09:30 AM trades suffer from opening auction whipsaws, wide spreads, and incomplete ORB ranges.
+            if hour == 9 and minute < 30:
+                print(f"⏱️ Opening Bell Range Forming (09:15-09:30 AM IST): Intraday breakout scans paused until 15m range is established.")
+                equity_stocks = []
+
             # Sort candidate stocks by highest conviction to fill the 3 slots with distinct top-tier stocks
             equity_stocks = sorted(
                 equity_stocks,
@@ -3156,6 +3175,19 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
             )
 
             for s in equity_stocks:
+                # Guard A: Hard False Signal Invalidation Guard
+                if s.get('is_false_signal'):
+                    continue
+
+                # Guard B: Conviction Thresholds (Win Prob >= 55%, Safety >= 40%)
+                win_prob = float(s.get('win_probability') or 0)
+                safety_score = float(s.get('capital_safety_score') or 0)
+                if win_prob < 55.0 or safety_score < 40.0:
+                    continue
+
+                # Guard C: Market Regime Strategy Restrictions
+                regime_data = s.get('market_regime') or {}
+                blocked_strategies = regime_data.get('blocked_strategies') or []
                 cur_active_futures = len(active_commodity_trades) + sum(1 for t in new_trades if (t.get('asset_type') in ['FUTURES', 'COMMODITY'] or t.get('symbol') in LOT_SIZES or '-FUT' in str(t.get('symbol', ''))))
                 cur_active_equity = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'])
 
@@ -3225,86 +3257,111 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 eq_tgt = None
                 eq_rationale = ""
                 orb_metrics = {"passed": True, "status": "CONFIRMED", "reason": "Standard momentum confluence."}
+                vwap = round((day_h + day_l + cur_p) / 3.0, 2)
 
-                # Setup A: 20-Day / High-Beta Volatility Breakout (Momentum Expansion BUY)
-                if (cur_p >= high_52 * 0.985 or chg_pct >= 0.85) and (52.0 <= rsi <= 72.0):
+                # Setup A: High-Beta Intraday Momentum Breakout (BUY - Controlled Momentum, not Overextended)
+                if (cur_p >= high_52 * 0.985 or (0.60 <= chg_pct <= 2.0)) and (52.0 <= rsi <= 66.0) and (cur_p >= vwap * 0.998):
                     eq_action = "BUY"
                     eq_setup = "20-Day / High-Beta Volatility Breakout"
                     
-                    # 2. 15-Minute ORB Bar-Close & Wick Trap Guard (trader-entry skill)
-                    orb_metrics = ORBTimer.check_orb_confirmation(sym, eq_action, cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p)
+                    # 2. 15-Minute ORB Bar-Close & Opening Bell Blackout Guard (trader-entry skill)
+                    orb_metrics = ORBTimer.check_orb_confirmation(sym, eq_action, cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p, current_time=now_dt)
                     if not orb_metrics.get('passed'):
                         print(f"⏱️ ORB Timer Blocked {clean_sym} {eq_action}: {orb_metrics.get('reason')}")
                         continue
 
-                    # 3. Structural Invalidation Stop & 2.0R Target Bracket (trader-exit skill)
-                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=2.0)
-                    eq_sl = calc_sl or round(cur_p * 0.965, 2)
-                    eq_tgt = calc_tgt or round(cur_p + (2.0 * (cur_p - eq_sl)), 2)
+                    # 3. Structural Invalidation Stop & Realistic Intraday Target (trader-exit skill)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True)
+                    eq_sl = calc_sl or round(cur_p * 0.988, 2)
+                    eq_tgt = calc_tgt or round(cur_p + (1.2 * (cur_p - eq_sl)), 2)
                     eq_triggered = True
-                    eq_rationale = (f"Breaking towards 20D/52W high (Chg: +{chg_pct:.2f}%) with strong RSI momentum ({rsi:.1f}) "
-                                    f"and verified ORB bar close. Sized with structural 2.0R target.")
+                    eq_rationale = (f"High-Beta breakout momentum (Chg: +{chg_pct:.2f}%) with healthy RSI ({rsi:.1f}) "
+                                    f"holding above VWAP. Sized with realistic intraday 1.2R target.")
 
                 # Setup B: Oversold Mean Reversion Bounce (Bollinger Band Mean Reversion BUY)
                 elif (rsi <= 36.0) and (rsi_curling_up or near_bb or cur_p <= bb_lower * 1.01) and (discount_pct >= 15.0):
                     eq_action = "BUY"
                     eq_setup = "Oversold Mean Reversion Bounce"
-                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=min(bb_lower, day_l), ema20=ema20, ema50=ema50, atr=atr, min_rrr=2.0)
-                    eq_sl = calc_sl or round(min(bb_lower, cur_p * 0.955), 2)
-                    eq_tgt = calc_tgt or round(cur_p + (2.2 * (cur_p - eq_sl)), 2)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=min(bb_lower, day_l), ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True)
+                    eq_sl = calc_sl or round(min(bb_lower, cur_p * 0.985), 2)
+                    eq_tgt = calc_tgt or round(cur_p + (1.3 * (cur_p - eq_sl)), 2)
                     eq_triggered = True
                     eq_rationale = (f"Oversold accumulation RSI ({rsi:.1f} <= 36) bouncing off Lower Bollinger Band (₹{bb_lower:,.2f}) "
                                     f"at a deep {discount_pct:.1f}% discount to 52W high. High probability mean-reversion.")
 
                 # Setup C: EMA 50/200 Golden Cross Trend Pullback (BUY)
-                elif is_golden and (35.0 <= rsi <= 48.0):
+                elif is_golden and (35.0 <= rsi <= 52.0) and (cur_p >= vwap * 0.995):
                     eq_action = "BUY"
                     eq_setup = "EMA 50/200 Golden Cross Trend Pullback"
-                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=2.0)
-                    eq_sl = calc_sl or round(cur_p * 0.955, 2)
-                    eq_tgt = calc_tgt or round(cur_p + (2.0 * (cur_p - eq_sl)), 2)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True)
+                    eq_sl = calc_sl or round(cur_p * 0.988, 2)
+                    eq_tgt = calc_tgt or round(cur_p + (1.2 * (cur_p - eq_sl)), 2)
                     eq_triggered = True
                     eq_rationale = (f"50 EMA > 200 EMA Golden Cross confirmed with value pullback into demand zone (RSI: {rsi:.1f}). "
-                                    f"Trend continuation entry targeting 2.0R swing upside.")
+                                    f"Trend continuation entry targeting realistic intraday 1.2R upside.")
 
                 # Setup D: Intraday Breakdown / Weakness Expansion (SELL - High Velocity Short)
-                elif (cur_p <= day_l * 1.008 or chg_pct <= -0.85) and (30.0 <= rsi <= 48.0) and (cur_p <= ema20 * 1.002):
+                elif (cur_p <= day_l * 1.008 or (-2.0 <= chg_pct <= -0.85)) and (34.0 <= rsi <= 48.0) and (cur_p <= ema20 * 1.002) and (cur_p <= vwap * 1.002):
                     eq_action = "SELL"
                     eq_setup = "Intraday Breakdown / Weakness Expansion"
-                    orb_metrics = ORBTimer.check_orb_confirmation(sym, eq_action, cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p)
+                    orb_metrics = ORBTimer.check_orb_confirmation(sym, eq_action, cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p, current_time=now_dt)
                     if not orb_metrics.get('passed'):
                         print(f"⏱️ ORB Timer Blocked {clean_sym} {eq_action}: {orb_metrics.get('reason')}")
                         continue
-                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=2.0)
-                    eq_sl = calc_sl or round(cur_p * 1.035, 2)
-                    eq_tgt = calc_tgt or round(cur_p - (2.0 * abs(eq_sl - cur_p)), 2)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True)
+                    eq_sl = calc_sl or round(cur_p * 1.015, 2)
+                    eq_tgt = calc_tgt or round(cur_p - (1.2 * abs(eq_sl - cur_p)), 2)
                     eq_triggered = True
                     eq_rationale = (f"Breaking towards Day Low (Chg: {chg_pct:+.2f}%) with accelerating downward RSI momentum ({rsi:.1f}) "
-                                    f"and verified ORB breakdown bar close below VWAP. High velocity short targeting 2.0R downside.")
+                                    f"and verified ORB breakdown below VWAP. Realistic intraday short targeting 1.2R downside.")
 
                 # Setup E: Overbought Mean Reversion Rejection (SELL - Upper Band Exhaustion Fade)
                 elif (rsi >= 68.0) and (rsi_curling_down or near_bb_upper or cur_p >= bb_upper * 0.99):
                     eq_action = "SELL"
                     eq_setup = "Overbought Mean Reversion Rejection"
-                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=max(bb_upper, day_h), day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=2.0)
-                    eq_sl = calc_sl or round(max(bb_upper, cur_p * 1.045), 2)
-                    eq_tgt = calc_tgt or round(cur_p - (2.2 * abs(eq_sl - cur_p)), 2)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=max(bb_upper, day_h), day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True)
+                    eq_sl = calc_sl or round(max(bb_upper, cur_p * 1.025), 2)
+                    eq_tgt = calc_tgt or round(cur_p - (1.3 * abs(eq_sl - cur_p)), 2)
                     eq_triggered = True
                     eq_rationale = (f"Overbought exhaustion RSI ({rsi:.1f} >= 68) facing sharp rejection off Upper Bollinger Band (₹{bb_upper:,.2f}). "
                                     f"High probability mean-reversion fade targeting return to 20 EMA.")
 
                 # Setup F: EMA 50/200 Death Cross Trend Continuation Pullback (SELL - Bear Trend Short)
-                elif is_death and (48.0 <= rsi <= 62.0) and (cur_p <= ema50 * 1.008):
+                elif is_death and (48.0 <= rsi <= 62.0) and (cur_p <= ema50 * 1.008) and (cur_p <= vwap * 1.002):
                     eq_action = "SELL"
                     eq_setup = "EMA 50/200 Death Cross Trend Continuation"
-                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=2.0)
-                    eq_sl = calc_sl or round(cur_p * 1.045, 2)
-                    eq_tgt = calc_tgt or round(cur_p - (2.0 * abs(eq_sl - cur_p)), 2)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True)
+                    eq_sl = calc_sl or round(cur_p * 1.025, 2)
+                    eq_tgt = calc_tgt or round(cur_p - (1.2 * abs(eq_sl - cur_p)), 2)
                     eq_triggered = True
                     eq_rationale = (f"50 EMA < 200 EMA Death Cross confirmed with counter-trend pullback into supply zone (RSI: {rsi:.1f}). "
-                                    f"Trend continuation short entry targeting 2.0R swing downside.")
+                                    f"Trend continuation short entry targeting realistic intraday 1.2R downside.")
 
                 if eq_triggered and eq_action and eq_sl and eq_tgt:
+                    # Guard D1: Regime Blocked Strategy Filter
+                    if eq_action == "BUY" and any(strat in blocked_strategies for strat in ['BREAKOUT_BUY', 'BUY_EQUITY', 'GOLDEN_CROSS_BUY', 'TREND_BREAKOUT_BUY']):
+                        print(f"🛡️ Market Regime Blocked {clean_sym} BUY: In {regime_data.get('regime')} regime where breakout buying is blocked.")
+                        continue
+                    if eq_action == "SELL" and any(strat in blocked_strategies for strat in ['SHORT_FUTURES', 'SELL_EQUITY']):
+                        print(f"🛡️ Market Regime Blocked {clean_sym} SELL: In {regime_data.get('regime')} regime where shorting is blocked.")
+                        continue
+
+                    # Guard D2: Anti-Chasing Overextension Guard (Stop buying at day highs / panic selling at day lows)
+                    if eq_action == "BUY" and (chg_pct >= 2.0 or (cur_p >= day_h * 0.996 and rsi >= 66.0)):
+                        print(f"🛡️ Anti-Chase Guard Blocked {clean_sym} BUY: Stock already extended (+{chg_pct:.2f}%, RSI: {rsi:.1f}) near day high. Chasing forbidden; requires pullback to VWAP / 20 EMA.")
+                        continue
+                    if eq_action == "SELL" and (chg_pct <= -2.0 or (cur_p <= day_l * 1.004 and rsi <= 34.0)):
+                        print(f"🛡️ Anti-Chase Guard Blocked {clean_sym} SELL: Stock already dumped ({chg_pct:.2f}%, RSI: {rsi:.1f}) near day low. Selling into panic forbidden; requires pullback to VWAP / 20 EMA.")
+                        continue
+
+                    # Guard D3: Session VWAP Pullback Test (Avoid overextended entries)
+                    if eq_action == "BUY" and cur_p > (vwap * 1.015) and cur_p > (ema20 * 1.012):
+                        print(f"🛡️ Pullback Guard Blocked {clean_sym} BUY: Price ₹{cur_p:,.2f} is extended > 1.5% above VWAP (₹{vwap:,.2f}). Wait for pullback to VWAP/20 EMA.")
+                        continue
+                    if eq_action == "SELL" and cur_p < (vwap * 0.985) and cur_p < (ema20 * 0.988):
+                        print(f"🛡️ Pullback Guard Blocked {clean_sym} SELL: Price ₹{cur_p:,.2f} is extended > 1.5% below VWAP (₹{vwap:,.2f}). Wait for bounce to VWAP/20 EMA.")
+                        continue
+
                     # PATH A: Enter as an NSE Stock Future if futures pool has room and stock is an active F&O contract
                     if can_enter_futures and clean_sym in STOCK_FUTURES_CONFIG:
                         sfc = STOCK_FUTURES_CONFIG[clean_sym]
@@ -3341,7 +3398,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                                 bracket_check = InstitutionalDirectionEngine.validate_futures_risk_bracket(
                                     fut_sym, eq_action, cur_p, eq_sl, eq_tgt, fut_lot,
                                     max_loss_inr=MAX_LOSS_PER_TRADE_INR,
-                                    min_rrr=1.5
+                                    min_rrr=1.1
                                 )
                                 if not bracket_check.get('passed'):
                                     print(f"🛡️ Hard Risk Stop Blocked Stock Future {fut_sym}: {bracket_check.get('reason')}")
@@ -3520,7 +3577,8 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                         risk_metrics = PreTradeRiskEngine.check_risk(
                             sym, eq_action, cur_p, eq_sl, eq_tgt, eq_shares, all_existing,
                             max_loss_per_trade_inr=MAX_INTRADAY_STOCK_RISK_INR,
-                            max_daily_loss_inr=MAX_INTRADAY_STOCK_DAILY_LOSS_INR
+                            max_daily_loss_inr=MAX_INTRADAY_STOCK_DAILY_LOSS_INR,
+                            min_reward_risk=1.1
                         )
                         if not risk_metrics.get('passed'):
                             print(f"🛡️ Pre-Trade Risk Engine Blocked {clean_sym} {eq_action}: {risk_metrics.get('reason')}")
