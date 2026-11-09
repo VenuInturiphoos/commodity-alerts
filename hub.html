@@ -1394,39 +1394,66 @@
         let pendingAiContent = null;
         let aceEditor = null;
 
+        // Safe Storage Helper (handles private browsing / blocked storage)
+        const safeStorage = {
+            getItem(key) {
+                try { return window.localStorage ? window.localStorage.getItem(key) : null; }
+                catch(e) { return null; }
+            },
+            setItem(key, val) {
+                try { if (window.localStorage) window.localStorage.setItem(key, val); }
+                catch(e) {}
+            },
+            removeItem(key) {
+                try { if (window.localStorage) window.localStorage.removeItem(key); }
+                catch(e) {}
+            }
+        };
+
         // Credentials
-        let githubToken = localStorage.getItem('antigravity_gh_token') || '';
-        let geminiKey = localStorage.getItem('antigravity_gemini_key') || '';
+        let githubToken = safeStorage.getItem('antigravity_gh_token') || '';
+        let geminiKey = safeStorage.getItem('antigravity_gemini_key') || '';
         let availableGeminiModels = [];
-        let agentHistory = JSON.parse(localStorage.getItem('antigravity_agent_history') || '[]');
+        let agentHistory = [];
+        try {
+            const rawHist = safeStorage.getItem('antigravity_agent_history');
+            if (rawHist) agentHistory = JSON.parse(rawHist);
+        } catch(e) {
+            agentHistory = [];
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
-            initAceEditor();
-            checkMobileScreen();
-            window.addEventListener('resize', checkMobileScreen);
-            renderAgentFeed();
-
-            // Update Codespaces link
-            updateCodespacesLink();
+            try { initAceEditor(); } catch(e) { console.warn("Ace init err:", e); }
+            try { checkMobileScreen(); } catch(e) {}
+            try { window.addEventListener('resize', checkMobileScreen); } catch(e) {}
+            try { renderAgentFeed(); } catch(e) { console.warn("Feed render err:", e); }
+            try { updateCodespacesLink(); } catch(e) {}
 
             // Populate settings if present in local storage
-            if (githubToken) document.getElementById('input-gh-token').value = githubToken;
-            if (geminiKey) {
-                document.getElementById('input-gemini-key').value = geminiKey;
-                loadAvailableGeminiModels();
-            }
+            try {
+                if (githubToken) {
+                    const el = document.getElementById('input-gh-token');
+                    if (el) el.value = githubToken;
+                }
+                if (geminiKey) {
+                    const el = document.getElementById('input-gemini-key');
+                    if (el) el.value = geminiKey;
+                    loadAvailableGeminiModels();
+                }
+            } catch(e) {}
 
             // Initialize Google / Supabase Auth & Cloud Keys Hydration
-            initAuth();
+            try { initAuth(); } catch(e) { console.warn("Auth init err:", e); }
+
+            // ALWAYS fetch repository tree immediately!
+            try { fetchRepoTree(); } catch(e) { console.warn("Repo tree fetch err:", e); }
 
             if (!githubToken) {
                 setTimeout(() => {
                     if (!currentUser && !githubToken) {
                         openSettingsModal();
                     }
-                }, 800);
-            } else {
-                fetchRepoTree();
+                }, 1000);
             }
         });
 
@@ -1560,14 +1587,14 @@
             let loadedNewKeys = false;
             if (cloudGh && cloudGh !== githubToken) {
                 githubToken = cloudGh;
-                localStorage.setItem('antigravity_gh_token', cloudGh);
+                safeStorage.setItem('antigravity_gh_token', cloudGh);
                 const el = document.getElementById('input-gh-token');
                 if (el) el.value = cloudGh;
                 loadedNewKeys = true;
             }
             if (cloudGemini && cloudGemini !== geminiKey) {
                 geminiKey = cloudGemini;
-                localStorage.setItem('antigravity_gemini_key', cloudGemini);
+                safeStorage.setItem('antigravity_gemini_key', cloudGemini);
                 const el = document.getElementById('input-gemini-key');
                 if (el) el.value = cloudGemini;
                 loadedNewKeys = true;
@@ -1607,33 +1634,47 @@
         // ACE EDITOR INITIALIZATION
         // ==========================================
         function initAceEditor() {
-            aceEditor = ace.edit("editor-container");
-            aceEditor.setTheme("ace/theme/one_dark");
-            aceEditor.session.setMode("ace/mode/python");
-            aceEditor.setOptions({
-                fontSize: "13.5px",
-                fontFamily: "JetBrains Mono, monospace",
-                showPrintMargin: false,
-                tabSize: 4,
-                useSoftTabs: true,
-                wrap: true,
-                enableBasicAutocompletion: true,
-                enableLiveAutocompletion: true
-            });
+            try {
+                if (typeof ace === 'undefined') {
+                    console.warn("Ace editor script not loaded or blocked.");
+                    return;
+                }
+                const container = document.getElementById("editor-container");
+                if (!container) return;
+                aceEditor = ace.edit("editor-container");
+                aceEditor.setTheme("ace/theme/one_dark");
+                aceEditor.session.setMode("ace/mode/python");
+                aceEditor.setOptions({
+                    fontSize: "13.5px",
+                    fontFamily: "JetBrains Mono, monospace",
+                    showPrintMargin: false,
+                    tabSize: 4,
+                    useSoftTabs: true,
+                    wrap: true,
+                    enableBasicAutocompletion: true,
+                    enableLiveAutocompletion: true
+                });
+            } catch(e) {
+                console.warn("Ace editor initialization error:", e);
+            }
         }
 
         function setEditorMode(filename) {
-            if (!aceEditor) return;
-            const ext = filename.split('.').pop().toLowerCase();
-            let mode = 'ace/mode/text';
-            if (ext === 'py') mode = 'ace/mode/python';
-            else if (ext === 'js') mode = 'ace/mode/javascript';
-            else if (ext === 'html') mode = 'ace/mode/html';
-            else if (ext === 'css') mode = 'ace/mode/css';
-            else if (ext === 'json') mode = 'ace/mode/json';
-            else if (ext === 'md') mode = 'ace/mode/markdown';
-            else if (ext === 'yml' || ext === 'yaml') mode = 'ace/mode/yaml';
-            aceEditor.session.setMode(mode);
+            if (!aceEditor || typeof ace === 'undefined') return;
+            try {
+                const ext = filename.split('.').pop().toLowerCase();
+                let mode = 'ace/mode/text';
+                if (ext === 'py') mode = 'ace/mode/python';
+                else if (ext === 'js') mode = 'ace/mode/javascript';
+                else if (ext === 'html') mode = 'ace/mode/html';
+                else if (ext === 'css') mode = 'ace/mode/css';
+                else if (ext === 'json') mode = 'ace/mode/json';
+                else if (ext === 'md') mode = 'ace/mode/markdown';
+                else if (ext === 'yml' || ext === 'yaml') mode = 'ace/mode/yaml';
+                aceEditor.session.setMode(mode);
+            } catch(e) {
+                console.warn("Set editor mode error:", e);
+            }
         }
 
         // ==========================================
@@ -1673,12 +1714,23 @@
                     if (firstFile) loadFile(firstFile.path);
                 }
             } catch (err) {
+                console.error("fetchRepoTree error:", err);
+                const isRateLimit = err.message && (err.message.includes('rate limit') || err.message.includes('403'));
                 listEl.innerHTML = `
                     <div style="padding: 1.5rem; text-align: center; color: #fb7185;">
                         <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.5rem; margin-bottom: 8px;"></i>
-                        <div style="font-size: 0.85rem;">Failed to load files</div>
-                        <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 4px;">${err.message}</div>
-                        <button class="btn btn-secondary" style="margin-top: 10px; padding: 4px 10px; font-size: 0.75rem;" onclick="openSettingsModal()">Check Token</button>
+                        <div style="font-size: 0.85rem; font-weight: 700;">Failed to load files</div>
+                        <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 4px; line-height: 1.4;">
+                            ${isRateLimit ? 'GitHub API rate limit reached for anonymous access. Add your GitHub token or sign in with Google to browse files.' : escapeHtml(err.message)}
+                        </div>
+                        <div style="display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" style="padding: 5px 12px; font-size: 0.75rem;" onclick="openSettingsModal()">
+                                <i class="fa-solid fa-key"></i> Add GitHub Token
+                            </button>
+                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.75rem;" onclick="fetchRepoTree()">
+                                <i class="fa-solid fa-rotate-right"></i> Retry
+                            </button>
+                        </div>
                     </div>
                 `;
             }
@@ -2067,6 +2119,16 @@
         function generateUnifiedDiff(oldStr, newStr) {
             oldStr = oldStr || '';
             newStr = newStr || '';
+
+            if (typeof diff_match_patch === 'undefined') {
+                const newLines = newStr.split(/\r?\n/);
+                let rowsHtml = '';
+                newLines.forEach((line, idx) => {
+                    rowsHtml += `<tr class="diff-row diff-row-add"><td class="diff-num"></td><td class="diff-num">${idx + 1}</td><td class="diff-sign">+</td><td class="diff-code">${escapeHtml(line)}</td></tr>`;
+                });
+                return { addCount: newLines.length, delCount: 0, rowsHtml };
+            }
+
             const dmp = new diff_match_patch();
             const a = dmp.diff_linesToChars_(oldStr, newStr);
             const lineText1 = a.chars1;
@@ -2241,7 +2303,7 @@
                 
                 turn.status = 'committed';
                 turn.commitSha = result.commit?.sha ? result.commit.sha.substring(0, 7) : 'main';
-                localStorage.setItem('antigravity_agent_history', JSON.stringify(agentHistory));
+                safeStorage.setItem('antigravity_agent_history', JSON.stringify(agentHistory));
 
                 if (currentFile === turn.targetFile) {
                     originalFileContent = turn.newContent;
@@ -2264,7 +2326,7 @@
             const turn = agentHistory.find(t => t.id === turnId);
             if (turn) {
                 turn.status = 'discarded';
-                localStorage.setItem('antigravity_agent_history', JSON.stringify(agentHistory));
+                safeStorage.setItem('antigravity_agent_history', JSON.stringify(agentHistory));
                 renderAgentFeed();
                 showToast("Diff discarded.", "info");
             }
@@ -2273,7 +2335,7 @@
         function clearAgentHistory() {
             if (!confirm("Clear this conversation thread?")) return;
             agentHistory = [];
-            localStorage.removeItem('antigravity_agent_history');
+            safeStorage.removeItem('antigravity_agent_history');
             renderAgentFeed();
             showToast("Conversation cleared.", "info");
         }
@@ -2422,7 +2484,7 @@ INSTRUCTIONS:
 
                 agentHistory.push(newTurn);
                 if (agentHistory.length > 25) agentHistory.shift();
-                localStorage.setItem('antigravity_agent_history', JSON.stringify(agentHistory));
+                safeStorage.setItem('antigravity_agent_history', JSON.stringify(agentHistory));
 
                 promptInput.value = '';
                 promptInput.style.height = 'auto';
@@ -2585,19 +2647,19 @@ INSTRUCTIONS:
             const g = document.getElementById('input-gemini-key').value.trim();
             
             if (t) {
-                localStorage.setItem('antigravity_gh_token', t);
+                safeStorage.setItem('antigravity_gh_token', t);
                 githubToken = t;
             } else {
-                localStorage.removeItem('antigravity_gh_token');
+                safeStorage.removeItem('antigravity_gh_token');
                 githubToken = '';
             }
 
             if (g) {
-                localStorage.setItem('antigravity_gemini_key', g);
+                safeStorage.setItem('antigravity_gemini_key', g);
                 geminiKey = g;
                 loadAvailableGeminiModels();
             } else {
-                localStorage.removeItem('antigravity_gemini_key');
+                safeStorage.removeItem('antigravity_gemini_key');
                 geminiKey = '';
                 availableGeminiModels = [];
             }
