@@ -136,6 +136,103 @@ def get_defense_contract_and_lot(sym, default_name=None):
 
 DEFAULT_STARTING_CASH = 300000.0  # ₹3,00,000 (3 Lakhs Virtual Cash)
 
+class IntradayStockSelector:
+    """
+    🎯 Institutional Intraday Stock Selection Engine:
+    Identifies high-conviction intraday leaders & laggards based on:
+    1. Relative Strength / Weakness vs Market
+    2. Proximity to 52-Week High (Minimal overhead trapped supply)
+    3. Daily Trend Alignment (Close > 50 EMA > 200 EMA for Longs; Close < 50 EMA for Shorts)
+    4. Institutional Liquidity & Turnover (>= ₹15-20 Crores minimum turnover)
+    5. Healthy Volatility & Momentum (RSI in active expansion zone)
+    """
+    @classmethod
+    def rank_candidates(cls, raw_stocks, action="BUY"):
+        ranked = []
+        for s in raw_stocks:
+            cur_p = float(s.get('close') or 0.0)
+            if cur_p <= 0 or s.get('is_false_signal'):
+                continue
+
+            vol = float(s.get('volume') or 0)
+            turnover_cr = (vol * cur_p) / 10000000.0  # Turnover in INR Crores
+            if turnover_cr < 15.0:  # Must have active institutional liquidity
+                continue
+
+            chg_pct = float(s.get('change_pct') or 0.0)
+            h52 = float(s.get('price_52_week_high') or cur_p)
+            l52 = float(s.get('price_52_week_low') or cur_p)
+            ema50 = float(s.get('ema_50') or cur_p)
+            ema200 = float(s.get('ema_200') or cur_p)
+            rsi = float(s.get('rsi') or 50.0)
+            discount = float(s.get('discount_pct') or 0.0)
+            regime = (s.get('market_regime') or {}).get('regime', '')
+
+            if action.upper() == "BUY":
+                # LONG CRITERIA:
+                # 1. Positive price action today (+0.4% to +2.5%)
+                if chg_pct < 0.40 or chg_pct > 2.50:
+                    continue
+                # 2. Bullish Regime only (No Breakdown or Chop traps)
+                if regime in ['BREAKDOWN', 'CHOP_CONSOLIDATION']:
+                    continue
+                # 3. Macro Trend Stack: Price above 50 EMA, 50 EMA >= 200 EMA (Golden Alignment)
+                if cur_p < ema50 or ema50 < (ema200 * 0.99):
+                    continue
+
+                score = 0.0
+                # Momentum & Relative Strength (up to 40 pts)
+                score += min(chg_pct, 2.5) * 16.0
+                # Proximity to 52W High (Clean chart without trapped overhead supply)
+                if discount <= 5.0:
+                    score += 35.0  # Near ATH breakout: maximum momentum potential
+                elif discount <= 10.0:
+                    score += 25.0
+                elif discount <= 15.0:
+                    score += 15.0
+                else:
+                    score += 5.0
+                # Healthy Momentum RSI (52 to 66 is prime breakout velocity)
+                if 52.0 <= rsi <= 66.0:
+                    score += 25.0
+                elif 66.0 < rsi <= 72.0:
+                    score += 15.0
+                # Liquidity bonus (institutions driving the tape)
+                score += min(turnover_cr / 20.0, 15.0)
+
+                ranked.append((s, round(score, 1)))
+
+            elif action.upper() == "SELL":
+                # SHORT CRITERIA:
+                # 1. Clearly negative price action today (-0.6% to -3.5%)
+                if chg_pct > -0.60 or chg_pct < -3.50:
+                    continue
+                # 2. Bearish or Volatile Expansion Regime (No strong bull trends)
+                if regime in ['BULL_TREND', 'CHOP_CONSOLIDATION']:
+                    continue
+                # 3. Macro Trend Stack: Price below 50 EMA
+                if cur_p > ema50:
+                    continue
+
+                score = 0.0
+                # Downward momentum (up to 40 pts)
+                score += abs(chg_pct) * 15.0
+                # Proximity to multi-month breakdown (Deeper discount = confirmed breakdown)
+                if discount >= 25.0:
+                    score += 35.0
+                elif discount >= 15.0:
+                    score += 20.0
+                # Breakdown RSI zone (32 to 46)
+                if 32.0 <= rsi <= 46.0:
+                    score += 25.0
+                score += min(turnover_cr / 20.0, 15.0)
+
+                ranked.append((s, round(score, 1)))
+
+        ranked.sort(key=lambda x: x[1], reverse=True)
+        return [item[0] for item in ranked]
+
+
 def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=None, ema50=None, atr=None, min_rrr=1.2, is_intraday=True):
     """
     📐 Technical Invalidation Stop & Realistic Target Engine:
@@ -3163,16 +3260,25 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 print(f"⏱️ Opening Bell Range Forming (09:15-09:30 AM IST): Intraday breakout scans paused until 15m range is established.")
                 equity_stocks = []
 
-            # Sort candidate stocks by highest conviction to fill the 3 slots with distinct top-tier stocks
-            equity_stocks = sorted(
-                equity_stocks,
-                key=lambda x: (
-                    float(x.get('win_probability') or 0),
-                    float(x.get('capital_safety_score') or 0),
-                    float(x.get('discount_pct') or 0)
-                ),
-                reverse=True
-            )
+            # Institutional Intraday Stock Selection Engine:
+            # Selects the premier Relative Strength leaders (for BUY) and premier Relative Weakness breakdowns (for SELL).
+            # Eliminates sluggish 52-week discount value traps; targets stocks with institutional turnover and clean momentum.
+            long_candidates = IntradayStockSelector.rank_candidates(equity_stocks, action="BUY")
+            short_candidates = IntradayStockSelector.rank_candidates(equity_stocks, action="SELL")
+            
+            # Interleave curated leaders and laggards so engine has balanced, high-conviction candidates
+            curated_intraday_stocks = []
+            max_cand = max(len(long_candidates), len(short_candidates))
+            for idx in range(max_cand):
+                if idx < len(long_candidates):
+                    curated_intraday_stocks.append(long_candidates[idx])
+                if idx < len(short_candidates):
+                    curated_intraday_stocks.append(short_candidates[idx])
+            
+            equity_stocks = curated_intraday_stocks
+            if equity_stocks:
+                top_syms = [s.get('symbol', '').replace('.NS', '') for s in equity_stocks[:5]]
+                print(f"🎯 Intraday Stock Selection Engine Curated {len(equity_stocks)} Institutional Candidates: {', '.join(top_syms)}")
 
             for s in equity_stocks:
                 # Guard A: Hard False Signal Invalidation Guard
