@@ -2925,6 +2925,18 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
     circuits_res = checker.generate_circuits_data() if checker else {}
     commodities = circuits_res.get('commodities', []) if (checker and len(active_commodity_trades) < MAX_CONCURRENT_COMMODITIES) else []
 
+    # 🎯 Institutional Directional Movement Ranking for Commodities:
+    # Prioritizes commodities displaying the highest directional impulse (ADX Trend Strength + Absolute % Move + Volume Expansion).
+    # Ensures the engine acts on active trending movers (e.g. Crude Oil, Natural Gas, Silver) rather than choppy, flat contracts.
+    commodities.sort(
+        key=lambda c: (
+            float(c.get('adx_14') or 15.0) * 1.5 +
+            abs(float(c.get('change_pct') or 0.0)) * 20.0 +
+            (float(c.get('volume_ratio') or 1.0) if c.get('volume_ratio') else 1.0) * 10.0
+        ),
+        reverse=True
+    )
+
     SECTORS = {
         'GOLD': 'BULLION', 'GOLDM': 'BULLION', 'GOLDTEN': 'BULLION',
         'SILVER': 'BULLION', 'SILVERM': 'BULLION', 'SILVERMIC': 'BULLION',
@@ -3094,7 +3106,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 continue
 
             # 📐 Structural Technical Bracket: Stop placed beyond Day High/Low to eliminate noise stop-outs
-            sl, tgt = calculate_technical_bracket(action, cur_p, day_h, day_l, ema20=ema20, ema50=ema50, atr=atr_val, min_rrr=1.8)
+            sl, tgt = calculate_technical_bracket(action, cur_p, day_h, day_l, ema20=ema20, ema50=ema50, atr=atr_val, min_rrr=1.2, is_intraday=True)
 
             trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{sym}"
             if any(t.get('id') == trade_id for t in trades):
