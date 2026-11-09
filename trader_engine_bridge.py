@@ -353,6 +353,7 @@ class MonteCarloTimeMachine:
             "p_target_pct": p_target,
             "p_stop_pct": p_stop,
             "p_neither_pct": p_neither,
+            "resolved_win_rate": round(p_target / (p_target + p_stop) * 100, 1),
             "resolved_win_rate_pct": round(p_target / (p_target + p_stop) * 100, 1),
             "expected_r": expected_r,
             "target_r": r_target,
@@ -1194,11 +1195,11 @@ class InstitutionalDirectionEngine:
     @classmethod
     def evaluate_equity_futures_direction(cls, symbol, current_price, open_price, high_price, low_price,
                                           prev_close, ema20, ema50, ema200, crossover_status, rsi,
-                                          adx=None, bb_lower=None, bb_upper=None, atr=None):
+                                          adx=None, bb_lower=None, bb_upper=None, atr=None, action="BUY"):
         """
-        Evaluates institutional direction for NSE Stock Futures.
-        Bans long futures on Death Cross / below 200 EMA.
-        Bans chasing extreme intraday highs (> 2.0% gain at day high with RSI > 62).
+        Evaluates institutional direction for NSE Stock Futures (Long & Short).
+        - BUY: Bans long futures on Death Cross / below 200 EMA / below VWAP / overextended chase.
+        - SELL: Bans short futures on Golden Cross / above 200 EMA / above VWAP / overextended dump panic.
         """
         cur_p = float(current_price or 0.0)
         if cur_p <= 0:
@@ -1212,69 +1213,137 @@ class InstitutionalDirectionEngine:
         adx = float(adx or 20.0)
         p_close = float(prev_close or cur_p)
         day_h = float(high_price or cur_p)
+        day_l = float(low_price or cur_p)
         chg_pct = round(((cur_p - p_close) / p_close) * 100, 2) if p_close > 0 else 0.0
+        act_upper = str(action or "BUY").upper()
 
-        # RULE 1: Death Cross or Sub-200 EMA Absolute Ban for Long Futures
-        is_death_cross = (str(crossover_status).upper() == "DEATH") or (ema50 < ema200 * 0.995)
-        is_below_200 = cur_p < (ema200 * 0.99)
-        if is_death_cross or is_below_200:
-            return {
-                "allowed_action": "STAND_ASIDE",
-                "passed": False,
-                "reason": f"STOCK FUTURES BANNED: {symbol} in Death Cross/Bearish Regime (Close ₹{cur_p:,.1f} vs 200E ₹{ema200:,.1f}, 50E vs 200E: {crossover_status}). Long futures forbidden.",
-                "vwap": vwap,
-                "htf_bias": "BEARISH",
-                "regime": "BREAKDOWN"
-            }
-
-        # RULE 2: Session VWAP Line in the Sand
-        if cur_p < (vwap * 0.998):
-            return {
-                "allowed_action": "STAND_ASIDE",
-                "passed": False,
-                "reason": f"Price ₹{cur_p:,.1f} is trading below Session VWAP ₹{vwap:,.1f}. Institutional intraday sellers in control; long entry rejected.",
-                "vwap": vwap,
-                "htf_bias": "BULLISH",
-                "regime": "VWAP_DEFICIT"
-            }
-
-        # RULE 3: Overextended Breakout Chase Ban
-        # If trading within 0.3% of day high with >= 2.0% change and high RSI, do not chase market order
-        if cur_p >= (day_h * 0.997) and chg_pct >= 2.0 and rsi >= 62.0:
-            return {
-                "allowed_action": "STAND_ASIDE",
-                "passed": False,
-                "reason": f"Overextended Breakout Trap: {symbol} up +{chg_pct:.2f}% at day high (RSI: {rsi:.1f}). Chasing forbidden; requires pullback to 20 EMA / VWAP.",
-                "vwap": vwap,
-                "htf_bias": "BULLISH",
-                "regime": "OVEREXTENDED"
-            }
-
-        # RULE 4: Market Regime Check
         regime_info = MarketRegimeDetector.classify_regime(
             symbol=symbol, close=cur_p, ema50=ema50, ema200=ema200,
             adx=adx, rsi=rsi, bb_lower=bb_lower, bb_upper=bb_upper, atr=atr
         )
-        if regime_info.get("regime") in ["CHOP_CONSOLIDATION", "BREAKDOWN"]:
+
+        if act_upper == "SELL":
+            # SHORT RULE 1: Golden Cross or Well Above 200 EMA Ban for Short Futures
+            is_golden_cross = (str(crossover_status).upper() == "GOLDEN") or (ema50 > ema200 * 1.005)
+            is_above_200 = cur_p > (ema200 * 1.01)
+            if is_golden_cross and is_above_200:
+                return {
+                    "allowed_action": "STAND_ASIDE",
+                    "passed": False,
+                    "reason": f"STOCK FUTURES SHORT BANNED: {symbol} in Golden Cross/Bullish Regime (Close ₹{cur_p:,.1f} vs 200E ₹{ema200:,.1f}). Shorting strong uptrends forbidden.",
+                    "vwap": vwap,
+                    "htf_bias": "BULLISH",
+                    "regime": "BULL_TREND",
+                    "regime_info": regime_info
+                }
+
+            # SHORT RULE 2: Session VWAP Line in the Sand (Must be below VWAP for institutional shorting)
+            if cur_p > (vwap * 1.002):
+                return {
+                    "allowed_action": "STAND_ASIDE",
+                    "passed": False,
+                    "reason": f"Price ₹{cur_p:,.1f} is trading above Session VWAP ₹{vwap:,.1f}. Institutional intraday buyers in control; short entry rejected.",
+                    "vwap": vwap,
+                    "htf_bias": "BULLISH",
+                    "regime": "VWAP_SURPLUS",
+                    "regime_info": regime_info
+                }
+
+            # SHORT RULE 3: Overextended Breakdown Panic Trap
+            # If trading within 0.3% of day low with <= -2.5% loss and oversold RSI, do not chase short
+            if cur_p <= (day_l * 1.003) and chg_pct <= -2.5 and rsi <= 30.0:
+                return {
+                    "allowed_action": "STAND_ASIDE",
+                    "passed": False,
+                    "reason": f"Overextended Breakdown Trap: {symbol} down {chg_pct:.2f}% at day low (RSI: {rsi:.1f}). Selling into panic lows forbidden; requires pullback to 20 EMA / VWAP.",
+                    "vwap": vwap,
+                    "htf_bias": "BEARISH",
+                    "regime": "OVERSOLD_TRAP",
+                    "regime_info": regime_info
+                }
+
+            # SHORT RULE 4: Market Regime Check
+            if regime_info.get("regime") in ["CHOP_CONSOLIDATION", "BULL_TREND"]:
+                return {
+                    "allowed_action": "STAND_ASIDE",
+                    "passed": False,
+                    "reason": f"Market Regime is {regime_info.get('regime')} (ADX: {adx:.1f}). Short futures blocked to avoid chop/counter-trend losses.",
+                    "vwap": vwap,
+                    "htf_bias": "NEUTRAL",
+                    "regime": regime_info.get("regime"),
+                    "regime_info": regime_info
+                }
+
             return {
-                "allowed_action": "STAND_ASIDE",
-                "passed": False,
-                "reason": f"Market Regime is {regime_info.get('regime')} (ADX: {adx:.1f}). Futures trading blocked to avoid chop/whipsaw.",
+                "allowed_action": "SELL",
+                "passed": True,
+                "reason": f"Institutional Short Confirmed: Below 50/200 EMA Death Cross / below VWAP (₹{vwap:,.1f}), high probability shorting alignment.",
                 "vwap": vwap,
-                "htf_bias": "NEUTRAL",
-                "regime": regime_info.get("regime"),
+                "htf_bias": "BEARISH",
+                "regime": "BEAR_TREND",
                 "regime_info": regime_info
             }
 
-        return {
-            "allowed_action": "BUY",
-            "passed": True,
-            "reason": f"Institutional Long Confirmed: Above 50/200 EMA Golden Cross (200E: ₹{ema200:,.1f}), above VWAP (₹{vwap:,.1f}), healthy pullback/momentum.",
-            "vwap": vwap,
-            "htf_bias": "BULLISH",
-            "regime": "BULL_TREND",
-            "regime_info": regime_info
-        }
+        else:
+            # LONG RULE 1: Death Cross or Sub-200 EMA Absolute Ban for Long Futures
+            is_death_cross = (str(crossover_status).upper() == "DEATH") or (ema50 < ema200 * 0.995)
+            is_below_200 = cur_p < (ema200 * 0.99)
+            if is_death_cross or is_below_200:
+                return {
+                    "allowed_action": "STAND_ASIDE",
+                    "passed": False,
+                    "reason": f"STOCK FUTURES BANNED: {symbol} in Death Cross/Bearish Regime (Close ₹{cur_p:,.1f} vs 200E ₹{ema200:,.1f}, 50E vs 200E: {crossover_status}). Long futures forbidden.",
+                    "vwap": vwap,
+                    "htf_bias": "BEARISH",
+                    "regime": "BREAKDOWN",
+                    "regime_info": regime_info
+                }
+
+            # LONG RULE 2: Session VWAP Line in the Sand
+            if cur_p < (vwap * 0.998):
+                return {
+                    "allowed_action": "STAND_ASIDE",
+                    "passed": False,
+                    "reason": f"Price ₹{cur_p:,.1f} is trading below Session VWAP ₹{vwap:,.1f}. Institutional intraday sellers in control; long entry rejected.",
+                    "vwap": vwap,
+                    "htf_bias": "BULLISH",
+                    "regime": "VWAP_DEFICIT",
+                    "regime_info": regime_info
+                }
+
+            # LONG RULE 3: Overextended Breakout Chase Ban
+            if cur_p >= (day_h * 0.997) and chg_pct >= 2.0 and rsi >= 62.0:
+                return {
+                    "allowed_action": "STAND_ASIDE",
+                    "passed": False,
+                    "reason": f"Overextended Breakout Trap: {symbol} up +{chg_pct:.2f}% at day high (RSI: {rsi:.1f}). Chasing forbidden; requires pullback to 20 EMA / VWAP.",
+                    "vwap": vwap,
+                    "htf_bias": "BULLISH",
+                    "regime": "OVEREXTENDED",
+                    "regime_info": regime_info
+                }
+
+            # LONG RULE 4: Market Regime Check
+            if regime_info.get("regime") in ["CHOP_CONSOLIDATION", "BREAKDOWN"]:
+                return {
+                    "allowed_action": "STAND_ASIDE",
+                    "passed": False,
+                    "reason": f"Market Regime is {regime_info.get('regime')} (ADX: {adx:.1f}). Futures trading blocked to avoid chop/whipsaw.",
+                    "vwap": vwap,
+                    "htf_bias": "NEUTRAL",
+                    "regime": regime_info.get("regime"),
+                    "regime_info": regime_info
+                }
+
+            return {
+                "allowed_action": "BUY",
+                "passed": True,
+                "reason": f"Institutional Long Confirmed: Above 50/200 EMA Golden Cross (200E: ₹{ema200:,.1f}), above VWAP (₹{vwap:,.1f}), healthy pullback/momentum.",
+                "vwap": vwap,
+                "htf_bias": "BULLISH",
+                "regime": "BULL_TREND",
+                "regime_info": regime_info
+            }
 
     @classmethod
     def validate_futures_risk_bracket(cls, symbol, action, entry_price, technical_sl, technical_tgt, lot_size, max_loss_inr=3000.0, min_rrr=1.5):

@@ -153,15 +153,21 @@ def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=Non
     
     if action.upper() == 'SELL':
         ref_high = max(cur_p, day_h) if day_h and day_h > 0 else cur_p
-        if ema20 and ema20 > ref_high:
+        # If ema20 is above cur_p and closer than day_h, use ema20 as dynamic resistance stop
+        if ema20 and cur_p < ema20 < ref_high:
             ref_high = ema20
+        # Guard against excessively wide stops (> 1.6x ATR) that make intraday targets unreachable
+        if atr and (ref_high - cur_p) > (atr * 1.6):
+            ref_high = cur_p + (atr * 1.35)
         sl = round(ref_high + atr_buf, 2)
         risk_pts = abs(sl - cur_p)
         tgt = round(cur_p - (min_rrr * risk_pts), 2)
     else:
         ref_low = min(cur_p, day_l) if day_l and day_l > 0 else cur_p
-        if ema20 and ema20 < ref_low:
+        if ema20 and cur_p > ema20 > ref_low:
             ref_low = ema20
+        if atr and (cur_p - ref_low) > (atr * 1.6):
+            ref_low = cur_p - (atr * 1.35)
         sl = round(ref_low - atr_buf, 2)
         risk_pts = abs(cur_p - sl)
         tgt = round(cur_p + (min_rrr * risk_pts), 2)
@@ -3198,9 +3204,13 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 high_52 = float(s.get('price_52_week_high') or cur_p)
                 discount_pct = float(s.get('discount_pct') or 0)
                 bb_lower = float(s.get('bb_lower') or (cur_p * 0.95))
+                bb_upper = float(s.get('bb_upper') or (cur_p * 1.05))
                 is_golden = bool(s.get('is_golden'))
+                is_death = (str(s.get('crossover_status', '')).upper() == 'DEATH') or (float(s.get('ema_50') or cur_p) < float(s.get('ema_200') or cur_p) * 0.995)
                 rsi_curling_up = bool(s.get('rsi_curling_up'))
+                rsi_curling_down = bool(s.get('rsi_curling_down') or (float(s.get('rsi_prev') or rsi) > rsi))
                 near_bb = bool(s.get('near_bb_lower'))
+                near_bb_upper = bool(s.get('near_bb_upper') or (cur_p >= bb_upper * 0.99))
                 day_h = float(s.get('day_high') or s.get('high') or (high_52 if cur_p >= high_52 * 0.985 else cur_p))
                 day_l = float(s.get('day_low') or s.get('low') or (cur_p * 0.985))
                 vol_ratio = float(s.get('volume_ratio') or 1.15)
@@ -3216,7 +3226,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 eq_rationale = ""
                 orb_metrics = {"passed": True, "status": "CONFIRMED", "reason": "Standard momentum confluence."}
 
-                # Setup A: 20-Day / High-Beta Volatility Breakout (Momentum Expansion)
+                # Setup A: 20-Day / High-Beta Volatility Breakout (Momentum Expansion BUY)
                 if (cur_p >= high_52 * 0.985 or chg_pct >= 0.85) and (52.0 <= rsi <= 72.0):
                     eq_action = "BUY"
                     eq_setup = "20-Day / High-Beta Volatility Breakout"
@@ -3235,7 +3245,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     eq_rationale = (f"Breaking towards 20D/52W high (Chg: +{chg_pct:.2f}%) with strong RSI momentum ({rsi:.1f}) "
                                     f"and verified ORB bar close. Sized with structural 2.0R target.")
 
-                # Setup B: Oversold Mean Reversion Bounce (Bollinger Band Mean Reversion)
+                # Setup B: Oversold Mean Reversion Bounce (Bollinger Band Mean Reversion BUY)
                 elif (rsi <= 36.0) and (rsi_curling_up or near_bb or cur_p <= bb_lower * 1.01) and (discount_pct >= 15.0):
                     eq_action = "BUY"
                     eq_setup = "Oversold Mean Reversion Bounce"
@@ -3246,7 +3256,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     eq_rationale = (f"Oversold accumulation RSI ({rsi:.1f} <= 36) bouncing off Lower Bollinger Band (₹{bb_lower:,.2f}) "
                                     f"at a deep {discount_pct:.1f}% discount to 52W high. High probability mean-reversion.")
 
-                # Setup C: EMA 50/200 Golden Cross Trend Pullback
+                # Setup C: EMA 50/200 Golden Cross Trend Pullback (BUY)
                 elif is_golden and (35.0 <= rsi <= 48.0):
                     eq_action = "BUY"
                     eq_setup = "EMA 50/200 Golden Cross Trend Pullback"
@@ -3256,6 +3266,43 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     eq_triggered = True
                     eq_rationale = (f"50 EMA > 200 EMA Golden Cross confirmed with value pullback into demand zone (RSI: {rsi:.1f}). "
                                     f"Trend continuation entry targeting 2.0R swing upside.")
+
+                # Setup D: Intraday Breakdown / Weakness Expansion (SELL - High Velocity Short)
+                elif (cur_p <= day_l * 1.008 or chg_pct <= -0.85) and (30.0 <= rsi <= 48.0) and (cur_p <= ema20 * 1.002):
+                    eq_action = "SELL"
+                    eq_setup = "Intraday Breakdown / Weakness Expansion"
+                    orb_metrics = ORBTimer.check_orb_confirmation(sym, eq_action, cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p)
+                    if not orb_metrics.get('passed'):
+                        print(f"⏱️ ORB Timer Blocked {clean_sym} {eq_action}: {orb_metrics.get('reason')}")
+                        continue
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=2.0)
+                    eq_sl = calc_sl or round(cur_p * 1.035, 2)
+                    eq_tgt = calc_tgt or round(cur_p - (2.0 * abs(eq_sl - cur_p)), 2)
+                    eq_triggered = True
+                    eq_rationale = (f"Breaking towards Day Low (Chg: {chg_pct:+.2f}%) with accelerating downward RSI momentum ({rsi:.1f}) "
+                                    f"and verified ORB breakdown bar close below VWAP. High velocity short targeting 2.0R downside.")
+
+                # Setup E: Overbought Mean Reversion Rejection (SELL - Upper Band Exhaustion Fade)
+                elif (rsi >= 68.0) and (rsi_curling_down or near_bb_upper or cur_p >= bb_upper * 0.99):
+                    eq_action = "SELL"
+                    eq_setup = "Overbought Mean Reversion Rejection"
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=max(bb_upper, day_h), day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=2.0)
+                    eq_sl = calc_sl or round(max(bb_upper, cur_p * 1.045), 2)
+                    eq_tgt = calc_tgt or round(cur_p - (2.2 * abs(eq_sl - cur_p)), 2)
+                    eq_triggered = True
+                    eq_rationale = (f"Overbought exhaustion RSI ({rsi:.1f} >= 68) facing sharp rejection off Upper Bollinger Band (₹{bb_upper:,.2f}). "
+                                    f"High probability mean-reversion fade targeting return to 20 EMA.")
+
+                # Setup F: EMA 50/200 Death Cross Trend Continuation Pullback (SELL - Bear Trend Short)
+                elif is_death and (48.0 <= rsi <= 62.0) and (cur_p <= ema50 * 1.008):
+                    eq_action = "SELL"
+                    eq_setup = "EMA 50/200 Death Cross Trend Continuation"
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=2.0)
+                    eq_sl = calc_sl or round(cur_p * 1.045, 2)
+                    eq_tgt = calc_tgt or round(cur_p - (2.0 * abs(eq_sl - cur_p)), 2)
+                    eq_triggered = True
+                    eq_rationale = (f"50 EMA < 200 EMA Death Cross confirmed with counter-trend pullback into supply zone (RSI: {rsi:.1f}). "
+                                    f"Trend continuation short entry targeting 2.0R swing downside.")
 
                 if eq_triggered and eq_action and eq_sl and eq_tgt:
                     # PATH A: Enter as an NSE Stock Future if futures pool has room and stock is an active F&O contract
@@ -3267,8 +3314,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             fut_margin_rate = sfc['margin_rate']
                             fut_margin_req = round(cur_p * fut_lot * fut_margin_rate, 2)
 
-                            # 1. Institutional Direction Engine Evaluation for Stock Futures
-                            # Bans long futures on Death Cross, below 200 EMA, below VWAP, or overextended chase
+                            # 1. Institutional Direction Engine Evaluation for Stock Futures (Long & Short)
                             inst_fut_check = InstitutionalDirectionEngine.evaluate_equity_futures_direction(
                                 symbol=clean_sym,
                                 current_price=cur_p,
@@ -3283,8 +3329,9 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                                 rsi=rsi,
                                 adx=float(s.get('adx') or 20.0),
                                 bb_lower=bb_lower,
-                                bb_upper=float(s.get('bb_upper') or cur_p * 1.05),
-                                atr=atr
+                                bb_upper=bb_upper,
+                                atr=atr,
+                                action=eq_action
                             )
                             if not inst_fut_check.get('passed'):
                                 print(f"🛡️ Institutional Direction Engine Blocked Stock Future {fut_sym}: {inst_fut_check.get('reason')}")
@@ -3322,6 +3369,15 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                                     # Monte Carlo Time Machine simulation (3,000 replays)
                                     sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, fut_sl, fut_tgt, action=eq_action.lower(), replays=3000)
                                     if sim_metrics.get('passed'):
+                                        # Rigorous Profitability Verification Gate for Short Trades:
+                                        if eq_action == "SELL":
+                                            exp_r = float(sim_metrics.get('expected_r', 0.0) or 0.0)
+                                            win_rate = float(sim_metrics.get('resolved_win_rate', 0.0) or sim_metrics.get('resolved_win_rate_pct', 0.0) or 0.0)
+                                            if exp_r < 0.05 or win_rate < 48.0:
+                                                print(f"🛡️ Short Profitability Filter Blocked {fut_sym} SELL: Statistical replay shows negative/marginal profit expectancy (Exp R: {exp_r:+.2f}R, Win Rate: {win_rate:.1f}%). Standing aside.")
+                                                can_enter_futures = False
+                                                continue
+
                                         trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{clean_sym}FUT"
                                         if not any(t.get('id') == trade_id for t in (trades + new_trades)):
                                             entry_obj = {
@@ -3475,6 +3531,14 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                         if not sim_metrics.get('passed'):
                             print(f"🎲 Monte Carlo Time Machine Blocked {clean_sym} {eq_action}: {sim_metrics.get('summary')}")
                             continue
+
+                        # Rigorous Profitability Verification Gate for Short Trades:
+                        if eq_action == "SELL":
+                            exp_r = float(sim_metrics.get('expected_r', 0.0) or 0.0)
+                            win_rate = float(sim_metrics.get('resolved_win_rate', 0.0) or sim_metrics.get('resolved_win_rate_pct', 0.0) or 0.0)
+                            if exp_r < 0.05 or win_rate < 48.0:
+                                print(f"🛡️ Short Profitability Filter Blocked {clean_sym} SELL: Statistical replay shows negative/marginal profit expectancy (Exp R: {exp_r:+.2f}R, Win Rate: {win_rate:.1f}%). Standing aside.")
+                                continue
 
                         entry_obj = {
                             "id": trade_id,
