@@ -14,6 +14,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ext-language_tools.js"></script>
     <!-- Diff Lib for side-by-side / inline diffs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"></script>
+    <!-- Supabase Client for Google Auth & Cloud Keys Sync -->
+    <script src="supabase.js"></script>
 
     <style>
         :root {
@@ -154,6 +156,93 @@
         .btn-success {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
+        }
+
+        .btn-google {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #ffffff;
+            color: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+            font-family: inherit;
+        }
+        .btn-google:hover {
+            background: #f8fafc;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            padding: 4px 10px 4px 5px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .user-pill:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(30, 41, 59, 1);
+        }
+        .user-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1.5px solid var(--accent-cyan);
+        }
+        .user-avatar-large {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-cyan);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+        .synced-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .google-auth-box {
+            background: rgba(66, 133, 244, 0.08);
+            border: 1px solid rgba(66, 133, 244, 0.25);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .google-user-connected-box {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .btn-danger {
@@ -646,6 +735,14 @@
                 <span class="hide-mobile">Market</span>
             </a>
 
+            <!-- Google Login & Cloud Sync Button / User Pill -->
+            <div id="auth-header-slot">
+                <button class="btn btn-primary" onclick="openSettingsModal()" id="btn-header-login" style="background: linear-gradient(135deg, #4285F4, #3367D6); font-weight: 700;">
+                    <i class="fa-brands fa-google"></i>
+                    <span class="hide-mobile">Sign In</span>
+                </button>
+            </div>
+
             <!-- Settings / Credentials -->
             <button class="btn btn-secondary btn-icon" onclick="openSettingsModal()" title="Configure GitHub & Gemini Keys">
                 <i class="fa-solid fa-gear"></i>
@@ -880,45 +977,83 @@
         </main>
     </div>
 
-    <!-- Credentials & Settings Modal -->
+    <!-- Credentials & Cloud Sync Modal -->
     <div class="modal-overlay hidden" id="settings-modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 520px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-                <h3 style="font-size: 1.2rem; font-weight: 800; color: #f8fafc;">
-                    <i class="fa-solid fa-key" style="color: #6366f1;"></i> Hub Security & API Keys
+                <h3 style="font-size: 1.2rem; font-weight: 800; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-cloud-arrow-up" style="color: #6366f1;"></i> Cloud Keys & Google Sync
                 </h3>
                 <button class="btn btn-secondary btn-icon" onclick="closeSettingsModal()">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5;">
-                Keys are stored <strong>strictly locally inside your browser's private storage</strong> and are never transmitted to any third-party server.
-            </p>
+            <!-- Dynamic Google Login / Account Status Area -->
+            <div id="google-auth-container">
+                <div class="google-auth-box" id="google-login-box">
+                    <div style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 10px; line-height: 1.45;">
+                        <strong style="color: #60a5fa;"><i class="fa-brands fa-google"></i> Connect with Google:</strong> Save your GitHub and Gemini API keys once to your Google account. When you open this Hub on your phone, tablet, or another laptop, your keys will synchronize automatically.
+                    </div>
+                    <button class="btn-google" type="button" onclick="signInWithGoogle()">
+                        <svg width="18" height="18" viewBox="0 0 18 18">
+                            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+                            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+                            <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
+                            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+                        </svg>
+                        <span>Continue with Google</span>
+                    </button>
+                </div>
 
-            <div>
-                <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">
-                    GitHub Personal Access Token (Classic / Fine-Grained)
-                </label>
-                <input type="password" id="input-gh-token" class="modal-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                <div style="font-size: 0.75rem; color: #64748b; margin-top: -8px; margin-bottom: 12px;">
-                    Requires <code>repo</code> scope to view, edit, and commit code. <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--accent-cyan);">Generate on GitHub &rarr;</a>
+                <div class="google-user-connected-box" id="google-connected-box" style="display: none;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img id="modal-user-avatar" src="" class="user-avatar-large" alt="User Avatar">
+                        <div>
+                            <div id="modal-user-name" style="font-weight: 700; color: #f8fafc; font-size: 0.95rem;">User</div>
+                            <div id="modal-user-email" style="font-size: 0.78rem; color: #94a3b8;">email@gmail.com</div>
+                            <div class="synced-badge" style="margin-top: 4px;">
+                                <i class="fa-solid fa-cloud-check"></i> Google Account Connected
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger" type="button" onclick="signOutGoogle()" style="padding: 6px 12px; font-size: 0.78rem;">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+                    </button>
                 </div>
             </div>
 
-            <div>
-                <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">
-                    Google Gemini API Key (For Cloud AI Agent)
-                </label>
-                <input type="password" id="input-gemini-key" class="modal-input" placeholder="AIzaSyxxxxxxxxxxxxxxxxxxxx">
-                <div style="font-size: 0.75rem; color: #64748b; margin-top: -8px; margin-bottom: 14px;">
-                    Powers the Antigravity natural language code writing assistant. <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent-cyan);">Get free key from Google AI Studio &rarr;</a>
+            <div style="border-top: 1px solid var(--border-color); padding-top: 1.15rem; margin-top: 0.5rem;">
+                <div>
+                    <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">
+                        GitHub Personal Access Token (Classic / Fine-Grained)
+                    </label>
+                    <input type="password" id="input-gh-token" class="modal-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                    <div style="font-size: 0.75rem; color: #64748b; margin-top: -8px; margin-bottom: 12px;">
+                        Requires <code>repo</code> scope to view, edit, and commit code. <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--accent-cyan);">Generate on GitHub &rarr;</a>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">
+                        Google Gemini API Key (For Cloud AI Agent)
+                    </label>
+                    <input type="password" id="input-gemini-key" class="modal-input" placeholder="AIzaSyxxxxxxxxxxxxxxxxxxxx">
+                    <div style="font-size: 0.75rem; color: #64748b; margin-top: -8px; margin-bottom: 14px;">
+                        Powers the natural language AI Code Agent. <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent-cyan);">Get free key from Google AI Studio &rarr;</a>
+                    </div>
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 1rem;">
-                <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveCredentials()">Save Keys</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 8px;">
+                <div id="cloud-sync-status-text" style="font-size: 0.78rem; color: #10b981; font-weight: 600;"></div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-keys" onclick="saveCredentials()">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Save & Sync Keys</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -928,6 +1063,19 @@
 
     <!-- Application Script -->
     <script>
+        // Supabase Client for Google Auth & Cloud Keys Sync
+        const SUPABASE_URL = 'https://cohupetijvykzmeliubg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvaHVwZXRpanZ5a3ptZWxpdWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMjg4ODAsImV4cCI6MjEwMjcwNDg4MH0.zA5IwTKp0f-IRQ5dB3a9vXJSD1X2EVzxIDEyzXC27Cw';
+        let supabaseClient = null;
+        if (window.supabase) {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } catch(e) {
+                console.warn("Supabase init error:", e);
+            }
+        }
+        let currentUser = null;
+
         // State
         let currentRepo = 'VenuInturiphoos/commodity-alerts';
         let currentBranch = 'main';
@@ -949,18 +1097,172 @@
             // Update Codespaces link
             updateCodespacesLink();
 
-            // Populate settings if present
+            // Populate settings if present in local storage
             if (githubToken) document.getElementById('input-gh-token').value = githubToken;
             if (geminiKey) document.getElementById('input-gemini-key').value = geminiKey;
 
-            // Prompt settings if token is missing
+            // Initialize Google / Supabase Auth & Cloud Keys Hydration
+            initAuth();
+
             if (!githubToken) {
-                showToast("Welcome! Please enter your GitHub token to start browsing and updating code.", "info");
-                setTimeout(openSettingsModal, 600);
+                setTimeout(() => {
+                    if (!currentUser && !githubToken) {
+                        openSettingsModal();
+                    }
+                }, 800);
             } else {
                 fetchRepoTree();
             }
         });
+
+        // ==========================================
+        // GOOGLE AUTH & CLOUD KEY SYNCHRONIZATION
+        // ==========================================
+        async function initAuth() {
+            if (!supabaseClient) return;
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                await handleSession(session);
+
+                supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                    await handleSession(session);
+                });
+            } catch(e) {
+                console.warn("Auth init error:", e);
+            }
+        }
+
+        async function handleSession(session) {
+            if (session && session.user) {
+                currentUser = session.user;
+                updateAuthUI(currentUser);
+                await hydrateKeysFromCloud(currentUser);
+            } else {
+                currentUser = null;
+                updateAuthUI(null);
+            }
+        }
+
+        function updateAuthUI(user) {
+            const authSlot = document.getElementById('auth-header-slot');
+            const loginBox = document.getElementById('google-login-box');
+            const connectedBox = document.getElementById('google-connected-box');
+            const statusText = document.getElementById('cloud-sync-status-text');
+            const saveBtn = document.getElementById('btn-save-keys');
+
+            if (user) {
+                const avatar = user.user_metadata?.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
+                const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+                const email = user.email || '';
+
+                if (authSlot) {
+                    authSlot.innerHTML = `
+                        <div class="user-pill" onclick="openSettingsModal()" title="Logged in with Google (${email}) - Click to manage API keys">
+                            <img src="${avatar}" class="user-avatar" alt="Avatar">
+                            <span class="hide-mobile" style="font-size:0.8rem; font-weight:600; color:#f8fafc;">${name.split(' ')[0]}</span>
+                            <span class="synced-badge"><i class="fa-solid fa-cloud-check"></i> Synced</span>
+                        </div>
+                    `;
+                }
+
+                if (loginBox) loginBox.style.display = 'none';
+                if (connectedBox) connectedBox.style.display = 'flex';
+                
+                const avatarImg = document.getElementById('modal-user-avatar');
+                if (avatarImg) avatarImg.src = avatar;
+                const nameEl = document.getElementById('modal-user-name');
+                if (nameEl) nameEl.textContent = name;
+                const emailEl = document.getElementById('modal-user-email');
+                if (emailEl) emailEl.textContent = email;
+
+                if (statusText) statusText.innerHTML = `<i class="fa-solid fa-cloud-check"></i> Synced to ${email}`;
+                if (saveBtn) saveBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>Save & Sync Keys</span>`;
+            } else {
+                if (authSlot) {
+                    authSlot.innerHTML = `
+                        <button class="btn btn-primary" onclick="openSettingsModal()" id="btn-header-login" style="background: linear-gradient(135deg, #4285F4, #3367D6); font-weight: 700;">
+                            <i class="fa-brands fa-google"></i>
+                            <span class="hide-mobile">Sign In</span>
+                        </button>
+                    `;
+                }
+
+                if (loginBox) loginBox.style.display = 'block';
+                if (connectedBox) connectedBox.style.display = 'none';
+                if (statusText) statusText.textContent = '';
+                if (saveBtn) saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Save Keys</span>`;
+            }
+        }
+
+        async function signInWithGoogle() {
+            if (!supabaseClient) return alert("Supabase auth is not available");
+            try {
+                const cleanUrl = window.location.origin + window.location.pathname;
+                const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: cleanUrl
+                    }
+                });
+                if (error) throw error;
+            } catch(e) {
+                showToast(`Google login error: ${e.message}`, "error");
+            }
+        }
+
+        async function signOutGoogle() {
+            if (!supabaseClient) return;
+            try {
+                await supabaseClient.auth.signOut();
+                currentUser = null;
+                updateAuthUI(null);
+                showToast("Signed out from Google account.", "info");
+            } catch(e) {
+                showToast(e.message, "error");
+            }
+        }
+
+        async function hydrateKeysFromCloud(user) {
+            if (!user) return;
+            let cloudGh = user.user_metadata?.github_token || '';
+            let cloudGemini = user.user_metadata?.gemini_api_key || '';
+
+            // Also check profiles table
+            if ((!cloudGh || !cloudGemini) && supabaseClient) {
+                try {
+                    const { data: profile } = await supabaseClient
+                        .from('profiles')
+                        .select('github_token, gemini_api_key')
+                        .eq('id', user.id)
+                        .single();
+                    if (profile) {
+                        if (profile.github_token && !cloudGh) cloudGh = profile.github_token;
+                        if (profile.gemini_api_key && !cloudGemini) cloudGemini = profile.gemini_api_key;
+                    }
+                } catch(e) {}
+            }
+
+            let loadedNewKeys = false;
+            if (cloudGh && cloudGh !== githubToken) {
+                githubToken = cloudGh;
+                localStorage.setItem('antigravity_gh_token', cloudGh);
+                const el = document.getElementById('input-gh-token');
+                if (el) el.value = cloudGh;
+                loadedNewKeys = true;
+            }
+            if (cloudGemini && cloudGemini !== geminiKey) {
+                geminiKey = cloudGemini;
+                localStorage.setItem('antigravity_gemini_key', cloudGemini);
+                const el = document.getElementById('input-gemini-key');
+                if (el) el.value = cloudGemini;
+                loadedNewKeys = true;
+            }
+
+            if (loadedNewKeys) {
+                showToast(`API keys synchronized from your Google account!`, "success");
+                fetchRepoTree();
+            }
+        }
 
         function checkMobileScreen() {
             const toggleBtn = document.getElementById('sidebar-toggle-btn');
@@ -1612,19 +1914,74 @@ INSTRUCTIONS:
             document.getElementById('settings-modal').classList.add('hidden');
         }
 
-        function saveCredentials() {
+        async function saveCredentials() {
             const t = document.getElementById('input-gh-token').value.trim();
             const g = document.getElementById('input-gemini-key').value.trim();
+            
             if (t) {
                 localStorage.setItem('antigravity_gh_token', t);
                 githubToken = t;
+            } else {
+                localStorage.removeItem('antigravity_gh_token');
+                githubToken = '';
             }
+
             if (g) {
                 localStorage.setItem('antigravity_gemini_key', g);
                 geminiKey = g;
+            } else {
+                localStorage.removeItem('antigravity_gemini_key');
+                geminiKey = '';
             }
+
+            const saveBtn = document.getElementById('btn-save-keys');
+            
+            if (currentUser && supabaseClient) {
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Syncing to Cloud...</span>`;
+                }
+
+                try {
+                    // Update user metadata in Supabase Auth (persists directly with the user profile)
+                    const { error } = await supabaseClient.auth.updateUser({
+                        data: {
+                            github_token: t,
+                            gemini_api_key: g
+                        }
+                    });
+                    if (error) throw error;
+
+                    // Also try saving to profiles table as secondary storage
+                    try {
+                        await supabaseClient.from('profiles').upsert({
+                            id: currentUser.id,
+                            email: currentUser.email,
+                            github_token: t,
+                            gemini_api_key: g,
+                            updated_at: new Date().toISOString()
+                        });
+                    } catch(pe) {
+                        // ignore if profiles table is not configured
+                    }
+
+                    showToast("API keys saved and synced with your Google account!", "success");
+                    const statusText = document.getElementById('cloud-sync-status');
+                    if (statusText) statusText.innerHTML = `<i class="fa-solid fa-cloud-check"></i> Synced to ${currentUser.email}`;
+                } catch(err) {
+                    console.error("Cloud sync error:", err);
+                    showToast(`Keys saved locally (Cloud sync: ${err.message})`, "info");
+                } finally {
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>Save & Sync Keys</span>`;
+                    }
+                }
+            } else {
+                showToast("Credentials saved locally in browser!", "success");
+            }
+
             closeSettingsModal();
-            showToast("Credentials saved locally!", "success");
             fetchRepoTree();
         }
 
