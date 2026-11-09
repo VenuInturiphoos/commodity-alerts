@@ -242,7 +242,86 @@
             font-size: 0.82rem;
             overflow-y: auto;
             flex: 1;
-            padding: 0.5rem 0.75rem;
+            padding: 0.25rem 0.5rem 1rem 0.5rem;
+        }
+
+        .tree-folder {
+            margin-bottom: 2px;
+        }
+
+        .tree-folder-header {
+            padding: 5px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: #cbd5e1;
+            font-weight: 600;
+            user-select: none;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tree-folder-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #f8fafc;
+        }
+
+        .caret-icon {
+            font-size: 0.65rem;
+            color: #64748b;
+            transition: transform 0.2s ease;
+            width: 12px;
+            text-align: center;
+        }
+        .caret-icon.expanded {
+            transform: rotate(90deg);
+            color: var(--accent-cyan);
+        }
+
+        .folder-icon {
+            font-size: 0.85rem;
+            width: 16px;
+            text-align: center;
+            color: #38bdf8;
+        }
+
+        .tree-folder-children {
+            position: relative;
+        }
+        .tree-folder-children::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 17px;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .tree-search-box {
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.25);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tree-search-box input {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 5px 9px;
+            font-size: 0.78rem;
+            color: var(--text-main);
+            width: 100%;
+            outline: none;
+            font-family: inherit;
+        }
+        .tree-search-box input:focus {
+            border-color: var(--accent-cyan);
         }
 
         .tree-item {
@@ -258,16 +337,17 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-bottom: 1px;
         }
         .tree-item:hover {
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-main);
         }
         .tree-item.active {
-            background: rgba(99, 102, 241, 0.18);
+            background: rgba(99, 102, 241, 0.2);
             color: #c7d2fe;
-            border: 1px solid rgba(99, 102, 241, 0.35);
-            font-weight: 600;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            font-weight: 700;
         }
         .tree-item i {
             width: 16px;
@@ -596,21 +676,35 @@
                 </div>
             </div>
 
-            <!-- New File Action -->
-            <div style="padding: 0.6rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.15);">
-                <span style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Files</span>
-                <div style="display: flex; gap: 4px;">
-                    <button class="btn btn-secondary btn-icon" style="padding: 2px 6px; font-size: 0.7rem;" onclick="promptNewFile()" title="Create new file in repo">
+            <!-- File Header & Tree Controls -->
+            <div style="padding: 0.6rem 0.85rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.2);">
+                <span style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">
+                    <i class="fa-solid fa-folder-tree" style="margin-right: 4px; color: #60a5fa;"></i> Explorer
+                </span>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <button class="btn btn-secondary btn-icon" style="padding: 2px 6px; font-size: 0.7rem;" onclick="toggleAllFolders(true)" title="Expand all folders">
+                        <i class="fa-solid fa-angles-down"></i>
+                    </button>
+                    <button class="btn btn-secondary btn-icon" style="padding: 2px 6px; font-size: 0.7rem;" onclick="toggleAllFolders(false)" title="Collapse all folders">
+                        <i class="fa-solid fa-angles-up"></i>
+                    </button>
+                    <button class="btn btn-secondary btn-icon" style="padding: 2px 6px; font-size: 0.7rem;" onclick="promptNewFile()" title="Create new file">
                         <i class="fa-solid fa-file-circle-plus" style="color: #10b981;"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- File Tree List -->
+            <!-- Quick Filter Box -->
+            <div class="tree-search-box">
+                <i class="fa-solid fa-magnifying-glass" style="color: var(--text-dim); font-size: 0.75rem;"></i>
+                <input type="text" id="tree-search-input" placeholder="Filter files..." oninput="filterTree(this.value)">
+            </div>
+
+            <!-- Hierarchical File Tree List -->
             <div class="file-tree" id="file-tree-list">
                 <div style="padding: 1.5rem; text-align: center; color: var(--text-dim);">
                     <div class="spinner" style="margin-bottom: 8px;"></div>
-                    <div>Loading repository files...</div>
+                    <div>Loading repository folder tree...</div>
                 </div>
             </div>
         </aside>
@@ -972,38 +1066,175 @@
             }
         }
 
+        let rawTreeData = [];
+        let rootTreeHierarchy = null;
+
+        function buildTreeHierarchy(treeItems) {
+            const root = { name: '', path: '', isDir: true, children: {} };
+            for (const item of treeItems) {
+                if (item.type !== 'blob') continue;
+                const parts = item.path.split('/');
+                let current = root;
+                for (let i = 0; i < parts.length; i++) {
+                    const part = parts[i];
+                    const isLast = (i === parts.length - 1);
+                    if (isLast) {
+                        current.children[part] = {
+                            name: part,
+                            path: item.path,
+                            isDir: false,
+                            sha: item.sha
+                        };
+                    } else {
+                        if (!current.children[part]) {
+                            const subPath = parts.slice(0, i + 1).join('/');
+                            current.children[part] = {
+                                name: part,
+                                path: subPath,
+                                isDir: true,
+                                children: {}
+                            };
+                        }
+                        current = current.children[part];
+                    }
+                }
+            }
+            return root;
+        }
+
         function renderFileTree(tree) {
+            rawTreeData = tree;
+            rootTreeHierarchy = buildTreeHierarchy(tree);
+            renderHierarchicalTree();
+        }
+
+        function renderHierarchicalTree(filterQuery = '') {
             const listEl = document.getElementById('file-tree-list');
             listEl.innerHTML = '';
+            if (!rootTreeHierarchy) return;
 
-            const files = tree.filter(item => item.type === 'blob');
-            // Sort files alphabetically
-            files.sort((a, b) => a.path.localeCompare(b.path));
+            const q = (filterQuery || '').trim().toLowerCase();
+            if (q) {
+                // Flat filter view when searching
+                const matchingFiles = rawTreeData.filter(i => i.type === 'blob' && (i.path.toLowerCase().includes(q)));
+                if (matchingFiles.length === 0) {
+                    listEl.innerHTML = `<div style="padding: 1.5rem 1rem; text-align: center; color: var(--text-dim); font-size: 0.8rem;">No files matching "${filterQuery}"</div>`;
+                    return;
+                }
+                matchingFiles.forEach(file => {
+                    renderFileItem(file.path, file.path.split('/').pop(), listEl, 0, file.path);
+                });
+                return;
+            }
 
-            files.forEach(item => {
-                const div = document.createElement('div');
-                div.className = `tree-item ${item.path === currentFile ? 'active' : ''}`;
-                div.setAttribute('data-path', item.path);
-                
-                // Icon based on extension
-                const ext = item.path.split('.').pop().toLowerCase();
-                let icon = 'fa-file-code';
-                let iconColor = '#94a3b8';
-                if (ext === 'py') { icon = 'fa-brands fa-python'; iconColor = '#38bdf8'; }
-                else if (ext === 'js') { icon = 'fa-brands fa-js'; iconColor = '#facc15'; }
-                else if (ext === 'html') { icon = 'fa-brands fa-html5'; iconColor = '#f97316'; }
-                else if (ext === 'json') { icon = 'fa-solid fa-brackets-curly'; iconColor = '#a78bfa'; }
-                else if (ext === 'md') { icon = 'fa-solid fa-file-lines'; iconColor = '#34d399'; }
+            renderNode(rootTreeHierarchy, listEl, 0);
+        }
 
-                div.innerHTML = `<i class="${icon}" style="color: ${iconColor};"></i> <span>${item.path}</span>`;
-                div.onclick = () => {
-                    document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
-                    div.classList.add('active');
-                    loadFile(item.path);
-                    if (window.innerWidth <= 900) toggleSidebar();
-                };
-                listEl.appendChild(div);
+        function renderNode(node, container, depth) {
+            const keys = Object.keys(node.children).sort((a, b) => {
+                const itemA = node.children[a];
+                const itemB = node.children[b];
+                if (itemA.isDir && !itemB.isDir) return -1;
+                if (!itemA.isDir && itemB.isDir) return 1;
+                return a.localeCompare(b);
             });
+
+            for (const key of keys) {
+                const child = node.children[key];
+                if (child.isDir) {
+                    const folderDiv = document.createElement('div');
+                    folderDiv.className = 'tree-folder';
+
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'tree-folder-header';
+                    headerDiv.style.paddingLeft = `${depth * 14 + 8}px`;
+
+                    // Auto-expand folder if current active file is inside this folder
+                    const isAutoExpanded = currentFile && (currentFile.startsWith(child.path + '/') || (depth === 0 && (child.name === 'web' || child.name === 'scripts')));
+
+                    headerDiv.innerHTML = `
+                        <i class="fa-solid fa-chevron-right caret-icon ${isAutoExpanded ? 'expanded' : ''}"></i>
+                        <i class="fa-solid ${isAutoExpanded ? 'fa-folder-open' : 'fa-folder'} folder-icon"></i>
+                        <span style="overflow: hidden; text-overflow: ellipsis;">${child.name}</span>
+                    `;
+
+                    const subContainer = document.createElement('div');
+                    subContainer.className = 'tree-folder-children';
+                    subContainer.style.display = isAutoExpanded ? 'block' : 'none';
+
+                    headerDiv.onclick = (e) => {
+                        e.stopPropagation();
+                        const isExpanded = subContainer.style.display === 'block';
+                        subContainer.style.display = isExpanded ? 'none' : 'block';
+                        const caret = headerDiv.querySelector('.caret-icon');
+                        const folderIcon = headerDiv.querySelector('.folder-icon');
+                        if (isExpanded) {
+                            caret.classList.remove('expanded');
+                            folderIcon.className = 'fa-solid fa-folder folder-icon';
+                        } else {
+                            caret.classList.add('expanded');
+                            folderIcon.className = 'fa-solid fa-folder-open folder-icon';
+                        }
+                    };
+
+                    folderDiv.appendChild(headerDiv);
+                    renderNode(child, subContainer, depth + 1);
+                    folderDiv.appendChild(subContainer);
+                    container.appendChild(folderDiv);
+                } else {
+                    renderFileItem(child.path, child.name, container, depth, child.path);
+                }
+            }
+        }
+
+        function renderFileItem(fullPath, displayName, container, depth, tooltip) {
+            const div = document.createElement('div');
+            div.className = `tree-item ${fullPath === currentFile ? 'active' : ''}`;
+            div.setAttribute('data-path', fullPath);
+            div.style.paddingLeft = `${depth * 14 + 24}px`;
+
+            const ext = displayName.split('.').pop().toLowerCase();
+            let icon = 'fa-file-code';
+            let iconColor = '#94a3b8';
+            if (ext === 'py') { icon = 'fa-brands fa-python'; iconColor = '#38bdf8'; }
+            else if (ext === 'js') { icon = 'fa-brands fa-js'; iconColor = '#facc15'; }
+            else if (ext === 'html') { icon = 'fa-brands fa-html5'; iconColor = '#f97316'; }
+            else if (ext === 'css') { icon = 'fa-brands fa-css3-alt'; iconColor = '#38bdf8'; }
+            else if (ext === 'json') { icon = 'fa-solid fa-brackets-curly'; iconColor = '#a78bfa'; }
+            else if (ext === 'md') { icon = 'fa-solid fa-file-lines'; iconColor = '#34d399'; }
+            else if (ext === 'yml' || ext === 'yaml') { icon = 'fa-solid fa-gear'; iconColor = '#fbbf24'; }
+            else if (ext === 'txt') { icon = 'fa-solid fa-file-lines'; iconColor = '#94a3b8'; }
+
+            div.innerHTML = `<i class="${icon}" style="color: ${iconColor}; font-size: 0.85rem;"></i> <span title="${tooltip}">${displayName}</span>`;
+            div.onclick = (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
+                div.classList.add('active');
+                loadFile(fullPath);
+                if (window.innerWidth <= 900) toggleSidebar();
+            };
+            container.appendChild(div);
+        }
+
+        function toggleAllFolders(expand) {
+            document.querySelectorAll('.tree-folder-children').forEach(el => {
+                el.style.display = expand ? 'block' : 'none';
+            });
+            document.querySelectorAll('.tree-folder-header').forEach(header => {
+                const caret = header.querySelector('.caret-icon');
+                const folderIcon = header.querySelector('.folder-icon');
+                if (caret) {
+                    if (expand) caret.classList.add('expanded');
+                    else caret.classList.remove('expanded');
+                }
+                if (folderIcon) {
+                    folderIcon.className = expand ? 'fa-solid fa-folder-open folder-icon' : 'fa-solid fa-folder folder-icon';
+                }
+            });
+        }
+
+        function filterTree(query) {
+            renderHierarchicalTree(query);
         }
 
         async function loadFile(path) {
@@ -1416,3 +1647,4 @@ INSTRUCTIONS:
     </script>
 </body>
 </html>
+
