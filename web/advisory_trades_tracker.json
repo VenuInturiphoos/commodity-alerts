@@ -1,16 +1,16 @@
 {
-  "last_updated": "09 Nov 2026, 02:46 PM IST",
+  "last_updated": "09 Nov 2026, 06:01 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 147,
-    "executed_count": 22,
+    "total_signals": 156,
+    "executed_count": 27,
     "correct_count": 6,
     "wrong_count": 15,
-    "protected_count": 125,
+    "protected_count": 129,
     "win_rate_pct": 28.6,
     "total_pnl_inr": -34744.2,
-    "avg_trade_pnl_inr": -1579.28,
+    "avg_trade_pnl_inr": -1286.82,
     "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 265255.8,
@@ -19,6 +19,457 @@
     "net_worth_inr": 265255.8
   },
   "trades": [
+    {
+      "id": "ADV-09Nov2026-1800-GOLD",
+      "date": "09 Nov 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 100,
+      "event_context": "Safe Normal Range (Range-Bound Chop)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
+        "rationale": "Asset within tight range (+0.83%). Aligned with HTF Bear Trend (50E: \u20b9147,568.6) & trading below Session VWAP (\u20b9143,738.0).. Capital preserved in cash.",
+        "reference_price": 143739.0,
+        "stop_loss": 138275.44,
+        "target": 142552.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 143739.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Tight non-trending consolidation. Capital preserved."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 143739.0,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 143739.0,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 138275.44,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
+      }
+    },
+    {
+      "id": "ADV-09Nov2026-1800-SILVER",
+      "date": "09 Nov 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVERMIC",
+      "name": "Silver Micro",
+      "lot_size": 1,
+      "event_context": "US Pit Open Trend Momentum Sell (NYMEX/COMEX Open)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL SILVERMIC",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9211,465.1) & trading below Session VWAP (\u20b9187,833.6). Target 1.2R calibrated to ATR.",
+        "reference_price": 187625.0,
+        "stop_loss": 190235.02,
+        "target": 184753.98
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close to confirm SELL trend holds...",
+        "detail": "15-minute verification scheduled for 6:15 PM IST (Reference: \u20b9187,625.00)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "PENDING_615",
+        "target": 184753.98,
+        "stop_loss": 190235.02
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 190235.02,
+        "outcome": "PENDING",
+        "badge": "Awaiting 6:15 PM \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "US Pit Open SELL momentum setup awaiting 6:15 PM candle close."
+      }
+    },
+    {
+      "id": "ADV-09Nov2026-1800-CRUDEOIL",
+      "date": "09 Nov 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "Pre-6 PM Lower Circuit Test (15-Min Confirmation Enforced)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Pre-6 PM Lower Circuit fade blocked: Intraday Bearish Session Momentum: Price (\u20b98,276.0) trading below VWAP (\u20b98,388.0) and Day Open (\u20b98,574.0) with downward expansion (-3.25%).. Knife-catching prohibited.",
+        "reference_price": 8276.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 8276.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Intraday Bearish Session Momentum: Price (\u20b98,276.0) trading below VWAP (\u20b98,388.0) and Day Open (\u20b98,574.0) with downward expansion (-3.25%)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 8211.84,
+        "outcome": "PROTECTED",
+        "badge": "Direction Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Pre-6 PM Lower Circuit fade blocked: Intraday Bearish Session Momentum: Price (\u20b98,276.0) trading below VWAP (\u20b98,388.0) and Day Open (\u20b98,574.0) with downward expansion (-3.25%).. Knife-catching prohibited."
+      }
+    },
+    {
+      "id": "ADV-09Nov2026-1800-NATURALGAS",
+      "date": "09 Nov 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "Safe Normal Range (Range-Bound Chop)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
+        "rationale": "Asset within tight range (+0.32%). Conflict: HTF is Bearish but price (\u20b9285.9) is trading above Session VWAP (\u20b9285.1). Counter-trend short blocked.. Capital preserved in cash.",
+        "reference_price": 285.9,
+        "stop_loss": 267.9,
+        "target": 285.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 285.9,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Tight non-trending consolidation. Capital preserved."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 285.9,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 285.9,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 267.9,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
+      }
+    },
+    {
+      "id": "ADV-09Nov2026-1800-COPPER",
+      "date": "09 Nov 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPER",
+      "name": "Copper",
+      "lot_size": 2500,
+      "event_context": "Safe Normal Range (Range-Bound Chop)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
+        "rationale": "Asset within tight range (+0.80%). Aligned with HTF Bear Trend (50E: \u20b91,389.0) & trading below Session VWAP (\u20b91,349.2).. Capital preserved in cash.",
+        "reference_price": 1350.0,
+        "stop_loss": 1285.78,
+        "target": 1339.35
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 1350.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Tight non-trending consolidation. Capital preserved."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 1350.0,
+        "entry_time": "06:00 PM IST",
+        "exit_price": 1350.0,
+        "exit_time": "11:30 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 1285.78,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
+      }
+    },
+    {
+      "id": "ADV-09Nov2026-1800-ZINC",
+      "date": "09 Nov 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ZINCM",
+      "name": "Zinc Mini",
+      "lot_size": 1000,
+      "event_context": "US Pit Open Trend Momentum Buy (NYMEX/COMEX Open)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering BUY ZINCM",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bull Trend (50E: \u20b9401.7) & trading above Session VWAP (\u20b9413.6). Target 1.2R calibrated to ATR.",
+        "reference_price": 413.9,
+        "stop_loss": 411.06,
+        "target": 417.02
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close to confirm BUY trend holds...",
+        "detail": "15-minute verification scheduled for 6:15 PM IST (Reference: \u20b9413.90)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1000,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "PENDING_615",
+        "target": 417.02,
+        "stop_loss": 411.06
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 411.06,
+        "outcome": "PENDING",
+        "badge": "Awaiting 6:15 PM \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "US Pit Open BUY momentum setup awaiting 6:15 PM candle close."
+      }
+    },
+    {
+      "id": "ADV-09Nov2026-1800-ALUMINIUM",
+      "date": "09 Nov 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 1000,
+      "event_context": "US Pit Open Trend Momentum Sell (NYMEX/COMEX Open)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL ALUMINI",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9334.3) & trading below Session VWAP (\u20b9330.7). Target 1.2R calibrated to ATR.",
+        "reference_price": 330.5,
+        "stop_loss": 332.66,
+        "target": 328.12
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close to confirm SELL trend holds...",
+        "detail": "15-minute verification scheduled for 6:15 PM IST (Reference: \u20b9330.50)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1000,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "PENDING_615",
+        "target": 328.12,
+        "stop_loss": 332.66
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 332.66,
+        "outcome": "PENDING",
+        "badge": "Awaiting 6:15 PM \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "US Pit Open SELL momentum setup awaiting 6:15 PM candle close."
+      }
+    },
+    {
+      "id": "ADV-09Nov2026-1800-ZINCMINI",
+      "date": "09 Nov 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ZINCM",
+      "name": "Zinc Mini",
+      "lot_size": 1000,
+      "event_context": "US Pit Open Trend Momentum Buy (NYMEX/COMEX Open)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering BUY ZINCM",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bull Trend (50E: \u20b9401.7) & trading above Session VWAP (\u20b9414.1). Target 1.2R calibrated to ATR.",
+        "reference_price": 414.05,
+        "stop_loss": 411.98,
+        "target": 416.33
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close to confirm BUY trend holds...",
+        "detail": "15-minute verification scheduled for 6:15 PM IST (Reference: \u20b9414.05)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1000,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "PENDING_615",
+        "target": 416.33,
+        "stop_loss": 411.98
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 411.98,
+        "outcome": "PENDING",
+        "badge": "Awaiting 6:15 PM \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "US Pit Open BUY momentum setup awaiting 6:15 PM candle close."
+      }
+    },
+    {
+      "id": "ADV-09Nov2026-1800-ALUMINI",
+      "date": "09 Nov 2026",
+      "session_name": "US Pit Open (6:00 PM)",
+      "time_trigger": "06:00 PM IST",
+      "time_6pm": "06:00 PM IST",
+      "time_validation": "06:15 PM IST",
+      "time_615": "06:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 1000,
+      "event_context": "US Pit Open Trend Momentum Sell (NYMEX/COMEX Open)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL ALUMINI",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9335.1) & trading below Session VWAP (\u20b9331.8). Target 1.2R calibrated to ATR.",
+        "reference_price": 331.5,
+        "stop_loss": 333.58,
+        "target": 329.21
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615",
+        "price_615": null,
+        "action_taken": "Awaiting 6:15 PM candle close to confirm SELL trend holds...",
+        "detail": "15-minute verification scheduled for 6:15 PM IST (Reference: \u20b9331.50)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1000,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "PENDING_615",
+        "target": 329.21,
+        "stop_loss": 333.58
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 333.58,
+        "outcome": "PENDING",
+        "badge": "Awaiting 6:15 PM \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "US Pit Open SELL momentum setup awaiting 6:15 PM candle close."
+      }
+    },
     {
       "id": "ADV-09Nov2026-1330-GOLD",
       "date": "09 Nov 2026",
