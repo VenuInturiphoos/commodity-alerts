@@ -1032,11 +1032,13 @@
             <div style="border-top: 1px solid var(--border-color); padding-top: 1.15rem; margin-top: 0.5rem;">
                 <div>
                     <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">
-                        GitHub Personal Access Token (Classic / Fine-Grained)
+                        GitHub Personal Access Token
                     </label>
                     <input type="password" id="input-gh-token" class="modal-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                    <div style="font-size: 0.75rem; color: #64748b; margin-top: -8px; margin-bottom: 12px;">
-                        Requires <code>repo</code> scope to view, edit, and commit code. <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--accent-cyan);">Generate on GitHub &rarr;</a>
+                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: -8px; margin-bottom: 12px; line-height: 1.45;">
+                        <span style="color: #cbd5e1; font-weight: 600;">Required to push code commits:</span><br>
+                        &bull; <a href="https://github.com/settings/tokens/new?scopes=repo&description=Antigravity+Hub" target="_blank" style="color: var(--accent-cyan); font-weight: 700; text-decoration: underline;">Generate Classic Token (1-Click 'repo' scope pre-checked) &rarr;</a><br>
+                        &bull; If using <em>Fine-Grained Token</em>: Set repository permission <strong>Contents: Read and write</strong> on <code style="color: var(--accent-cyan);">commodity-alerts</code>.
                     </div>
                 </div>
 
@@ -1630,7 +1632,11 @@
 
             if (!res.ok) {
                 const errData = await res.json();
-                throw new Error(errData.message || res.statusText);
+                let msg = errData.message || res.statusText;
+                if (msg.includes("Resource not accessible by personal access token")) {
+                    msg = "GitHub Token lacks write permission! In your GitHub token settings, set 'Contents: Read and write' on this repo, or create a Classic token with 'repo' scope.";
+                }
+                throw new Error(msg);
             }
             return await res.json();
         }
@@ -1958,7 +1964,11 @@ INSTRUCTIONS:
 
                 if (!res.ok) {
                     const data = await res.json();
-                    throw new Error(data.message || res.statusText);
+                    let msg = data.message || res.statusText;
+                    if (msg.includes("Resource not accessible by personal access token")) {
+                        msg = "GitHub Token lacks Actions permission! In your Fine-grained token, enable 'Actions: Read and write', or create a Classic token with 'repo' scope.";
+                    }
+                    throw new Error(msg);
                 }
 
                 showToast(`Triggered ${workflowFileName}! Running in cloud.`, "success");
