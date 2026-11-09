@@ -1296,13 +1296,15 @@
                 </button>
             </div>
 
-            <!-- Dynamic Google Login / Account Status Area -->
+            <!-- Dynamic Cloud Auth & Keys Sync Area -->
             <div id="google-auth-container">
                 <div class="google-auth-box" id="google-login-box">
                     <div style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 10px; line-height: 1.45;">
-                        <strong style="color: #60a5fa;"><i class="fa-brands fa-google"></i> Connect with Google:</strong> Save your GitHub and Gemini API keys once to your Google account. When you open this Hub on your phone, tablet, or another laptop, your keys will synchronize automatically.
+                        <strong style="color: #60a5fa;"><i class="fa-solid fa-cloud-arrow-up"></i> Cloud Account Sync:</strong> Save your GitHub and Gemini API keys to your cloud profile so they synchronize automatically across all your devices.
                     </div>
-                    <button class="btn-google" type="button" onclick="signInWithGoogle()">
+
+                    <!-- Continue with Google -->
+                    <button class="btn-google" type="button" onclick="signInWithGoogle()" id="btn-modal-google">
                         <svg width="18" height="18" viewBox="0 0 18 18">
                             <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
                             <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
@@ -1311,6 +1313,21 @@
                         </svg>
                         <span>Continue with Google</span>
                     </button>
+
+                    <div style="display: flex; align-items: center; gap: 8px; margin: 10px 0; color: #64748b; font-size: 0.72rem; text-align: center;">
+                        <div style="flex:1; height:1px; background:rgba(255,255,255,0.1);"></div>
+                        <span>OR 1-CLICK EMAIL SIGN IN</span>
+                        <div style="flex:1; height:1px; background:rgba(255,255,255,0.1);"></div>
+                    </div>
+
+                    <!-- 1-Click Magic Link / OTP -->
+                    <div style="display: flex; gap: 8px;">
+                        <input type="email" id="auth-email-input" class="modal-input" placeholder="Enter your email (e.g. name@gmail.com)" style="margin-bottom: 0;">
+                        <button class="btn btn-primary" type="button" onclick="sendMagicLink()" id="btn-send-magic" style="white-space: nowrap; padding: 0 14px; font-weight: 700;">
+                            <i class="fa-solid fa-paper-plane"></i> Send Link
+                        </button>
+                    </div>
+                    <div id="auth-feedback-msg" style="font-size: 0.74rem; margin-top: 6px; display: none;"></div>
                 </div>
 
                 <div class="google-user-connected-box" id="google-connected-box" style="display: none;">
@@ -1538,6 +1555,8 @@
 
         async function signInWithGoogle() {
             if (!supabaseClient) return alert("Supabase auth is not available");
+            const btn = document.getElementById('btn-modal-google');
+            if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Connecting to Google...`;
             try {
                 const cleanUrl = window.location.origin + window.location.pathname;
                 const { data, error } = await supabaseClient.auth.signInWithOAuth({
@@ -1546,9 +1565,64 @@
                         redirectTo: cleanUrl
                     }
                 });
-                if (error) throw error;
+                if (error) {
+                    if (error.message && error.message.includes("Unsupported provider")) {
+                        throw new Error("Google OAuth provider is not enabled in Supabase yet. Please use the 'Send Link' email option below to log in instantly!");
+                    }
+                    throw error;
+                }
             } catch(e) {
-                showToast(`Google login error: ${e.message}`, "error");
+                showToast(e.message, "error");
+                const feedback = document.getElementById('auth-feedback-msg');
+                if (feedback) {
+                    feedback.style.display = 'block';
+                    feedback.style.color = '#fb7185';
+                    feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${e.message}`;
+                }
+            } finally {
+                if (btn) btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg> <span>Continue with Google</span>`;
+            }
+        }
+
+        async function sendMagicLink() {
+            if (!supabaseClient) return alert("Supabase auth is not available");
+            const emailInput = document.getElementById('auth-email-input');
+            const email = emailInput?.value.trim();
+            if (!email) return alert("Please enter your email address.");
+
+            const btn = document.getElementById('btn-send-magic');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+            }
+
+            try {
+                const cleanUrl = window.location.origin + window.location.pathname;
+                const { error } = await supabaseClient.auth.signInWithOtp({
+                    email,
+                    options: { emailRedirectTo: cleanUrl }
+                });
+                if (error) throw error;
+                showToast(`Magic login link sent to ${email}! Check your inbox.`, "success");
+                const feedback = document.getElementById('auth-feedback-msg');
+                if (feedback) {
+                    feedback.style.display = 'block';
+                    feedback.style.color = '#34d399';
+                    feedback.innerHTML = `<i class="fa-solid fa-envelope-circle-check"></i> Login link sent to <strong>${escapeHtml(email)}</strong>! Click it in your inbox to sign in.`;
+                }
+            } catch(e) {
+                showToast(`Login error: ${e.message}`, "error");
+                const feedback = document.getElementById('auth-feedback-msg');
+                if (feedback) {
+                    feedback.style.display = 'block';
+                    feedback.style.color = '#fb7185';
+                    feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${e.message}`;
+                }
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send Link`;
+                }
             }
         }
 
@@ -2503,16 +2577,6 @@ INSTRUCTIONS:
             const div = document.createElement('div');
             div.textContent = text || '';
             return div.innerHTML;
-        }
-                document.getElementById('agent-prompt-input').value = '';
-                showToast(`Pushed AI updates to ${currentFile} on GitHub!`, "success");
-                loadFile(currentFile); // Refresh SHA
-            } catch (err) {
-                showToast(`Push failed: ${err.message}`, "error");
-            } finally {
-                commitBtn.disabled = false;
-                commitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>Commit & Push to GitHub</span>`;
-            }
         }
 
         // ==========================================
