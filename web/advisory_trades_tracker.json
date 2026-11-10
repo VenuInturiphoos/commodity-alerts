@@ -1,5 +1,5 @@
 {
-  "last_updated": "10 Nov 2026, 11:59 PM IST",
+  "last_updated": "11 Nov 2026, 12:01 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -42,9 +42,9 @@
       },
       "check_615": {
         "checked": true,
-        "status": "STAND_ASIDE_CONFIRMED",
+        "status": "CONFIRMATION_EXPIRED",
         "price_615": 7916.0,
-        "action_taken": "Stood Aside (0 Units)",
+        "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
         "detail": "Dumping into Lower Circuit (-3.80%): Intraday Bearish Session Momentum: Price (\u20b97,916.0) trading below VWAP (\u20b97,960.8) and Day Open (\u20b98,033.0) with downward expansion (-3.80%).. Knife-catching prohibited."
       },
       "paper_trade": {
@@ -57,15 +57,16 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "STAND_ASIDE"
+        "status": "CLOSED",
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": 7899.84,
         "outcome": "PROTECTED",
-        "badge": "Direction Protected \ud83d\udee1\ufe0f",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00 (Protected)",
-        "summary": "Stood aside: Dumping into Lower Circuit (-3.80%): Intraday Bearish Session Momentum: Price (\u20b97,916.0) trading below VWAP (\u20b97,960.8) and Day Open (\u20b98,033.0) with downward expansion (-3.80%).. Knife-catching prohibited."
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -115,7 +116,7 @@
         "session_close": null,
         "circuit_limit": 142827.24,
         "outcome": "PROTECTED",
-        "badge": "Window Lapsed \ud83d\udee1\ufe0f",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
@@ -167,7 +168,7 @@
         "session_close": null,
         "circuit_limit": 187121.05,
         "outcome": "PROTECTED",
-        "badge": "Window Lapsed \ud83d\udee1\ufe0f",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
@@ -217,7 +218,7 @@
         "session_close": null,
         "circuit_limit": 7899.84,
         "outcome": "PROTECTED",
-        "badge": "Window Lapsed \ud83d\udee1\ufe0f",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
@@ -269,7 +270,7 @@
         "session_close": null,
         "circuit_limit": 309.49,
         "outcome": "PROTECTED",
-        "badge": "Window Lapsed \ud83d\udee1\ufe0f",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
@@ -321,7 +322,7 @@
         "session_close": null,
         "circuit_limit": 1350.27,
         "outcome": "PROTECTED",
-        "badge": "Window Lapsed \ud83d\udee1\ufe0f",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
@@ -422,7 +423,7 @@
         "session_close": null,
         "circuit_limit": 330.31,
         "outcome": "PROTECTED",
-        "badge": "Window Lapsed \ud83d\udee1\ufe0f",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
@@ -523,7 +524,7 @@
         "session_close": null,
         "circuit_limit": 330.69,
         "outcome": "PROTECTED",
-        "badge": "Window Lapsed \ud83d\udee1\ufe0f",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
@@ -756,9 +757,9 @@
       },
       "check_615": {
         "checked": true,
-        "status": "CONFIRMED_STAND_ASIDE",
+        "status": "CONFIRMATION_EXPIRED",
         "price_615": 142087.0,
-        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
         "detail": "Price at 6:15 PM \u20b9142,087.00 (-0.75%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
@@ -771,15 +772,16 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "STAND_ASIDE"
+        "status": "CLOSED",
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
         "badge": "Avoided Trap \ud83d\udee1\ufe0f",
-        "pnl_display": "\u20b90.00",
-        "summary": "Counter-trend SELL blocked by Daily CPR Trend Filter. Capital protected."
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -805,9 +807,9 @@
       },
       "check_615": {
         "checked": true,
-        "status": "CONFIRMED_STAND_ASIDE",
+        "status": "CONFIRMATION_EXPIRED",
         "price_615": 185200.0,
-        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
         "detail": "Price at 6:15 PM \u20b9185,200.00 (-1.03%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
@@ -820,15 +822,16 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "STAND_ASIDE"
+        "status": "CLOSED",
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
-        "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -854,9 +857,9 @@
       },
       "check_615": {
         "checked": true,
-        "status": "CONFIRMED_STAND_ASIDE",
+        "status": "CONFIRMATION_EXPIRED",
         "price_615": 7941.0,
-        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
         "detail": "Price at 6:15 PM \u20b97,941.00 (-3.50%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
@@ -869,15 +872,16 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "STAND_ASIDE"
+        "status": "CLOSED",
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
-        "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -903,9 +907,9 @@
       },
       "check_615": {
         "checked": true,
-        "status": "CONFIRMED_STAND_ASIDE",
+        "status": "CONFIRMATION_EXPIRED",
         "price_615": 305.1,
-        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
         "detail": "Price at 6:15 PM \u20b9305.10 (+1.53%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
@@ -918,15 +922,16 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "STAND_ASIDE"
+        "status": "CLOSED",
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
-        "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -952,9 +957,9 @@
       },
       "check_615": {
         "checked": true,
-        "status": "CONFIRMED_STAND_ASIDE",
+        "status": "CONFIRMATION_EXPIRED",
         "price_615": 1343.0,
-        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
         "detail": "Price at 6:15 PM \u20b91,343.00 (-0.62%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
@@ -967,15 +972,16 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "STAND_ASIDE"
+        "status": "CLOSED",
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
-        "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -1001,9 +1007,9 @@
       },
       "check_615": {
         "checked": true,
-        "status": "CONFIRMED_STAND_ASIDE",
+        "status": "CONFIRMATION_EXPIRED",
         "price_615": 410.5,
-        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
         "detail": "Price at 6:15 PM \u20b9410.50 (-0.73%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
@@ -1016,15 +1022,16 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "STAND_ASIDE"
+        "status": "CLOSED",
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
-        "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -1050,9 +1057,9 @@
       },
       "check_615": {
         "checked": true,
-        "status": "CONFIRMED_STAND_ASIDE",
+        "status": "CONFIRMATION_EXPIRED",
         "price_615": 326.4,
-        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
         "detail": "Price at 6:15 PM \u20b9326.40 (-1.33%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
@@ -1065,15 +1072,16 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "STAND_ASIDE"
+        "status": "CLOSED",
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
-        "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -1099,9 +1107,9 @@
       },
       "check_615": {
         "checked": true,
-        "status": "CONFIRMED_STAND_ASIDE",
+        "status": "CONFIRMATION_EXPIRED",
         "price_615": 410.2,
-        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
         "detail": "Price at 6:15 PM \u20b9410.20 (-0.79%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
@@ -1114,15 +1122,16 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "STAND_ASIDE"
+        "status": "CLOSED",
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
-        "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -1148,9 +1157,9 @@
       },
       "check_615": {
         "checked": true,
-        "status": "CONFIRMED_STAND_ASIDE",
+        "status": "CONFIRMATION_EXPIRED",
         "price_615": 327.6,
-        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
         "detail": "Price at 6:15 PM \u20b9327.60 (-1.28%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
@@ -1163,15 +1172,16 @@
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "STAND_ASIDE"
+        "status": "CLOSED",
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
-        "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
