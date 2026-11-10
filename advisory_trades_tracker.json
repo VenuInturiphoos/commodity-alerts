@@ -1,13 +1,13 @@
 {
-  "last_updated": "10 Nov 2026, 07:15 PM IST",
+  "last_updated": "10 Nov 2026, 08:01 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 24,
+    "total_signals": 25,
     "executed_count": 6,
     "correct_count": 1,
     "wrong_count": 0,
-    "protected_count": 18,
+    "protected_count": 19,
     "win_rate_pct": 100.0,
     "total_pnl_inr": 5840.0,
     "avg_trade_pnl_inr": 973.33,
@@ -19,6 +19,55 @@
     "net_worth_inr": 305840.0
   },
   "trades": [
+    {
+      "id": "ADV-10Nov2026-2000-CRUDEOIL",
+      "date": "10 Nov 2026",
+      "session_name": "Evening Pit Review (8:00 PM)",
+      "time_trigger": "08:00 PM IST",
+      "time_6pm": "08:00 PM IST",
+      "time_validation": "08:15 PM IST",
+      "time_615": "08:15 PM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 0,
+      "event_context": "Counter-Trend Knife-Catching Guard",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / TREND GUARD",
+        "rationale": "Dumping into Lower Circuit (-3.80%): Intraday Bearish Session Momentum: Price (\u20b97,916.0) trading below VWAP (\u20b97,960.8) and Day Open (\u20b98,033.0) with downward expansion (-3.80%).. Knife-catching prohibited.",
+        "reference_price": 7916.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "STAND_ASIDE_CONFIRMED",
+        "price_615": 7916.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Dumping into Lower Circuit (-3.80%): Intraday Bearish Session Momentum: Price (\u20b97,916.0) trading below VWAP (\u20b97,960.8) and Day Open (\u20b98,033.0) with downward expansion (-3.80%).. Knife-catching prohibited."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "08:00 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 7899.84,
+        "outcome": "PROTECTED",
+        "badge": "Direction Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside: Dumping into Lower Circuit (-3.80%): Intraday Bearish Session Momentum: Price (\u20b97,916.0) trading below VWAP (\u20b97,960.8) and Day Open (\u20b98,033.0) with downward expansion (-3.80%).. Knife-catching prohibited."
+      }
+    },
     {
       "id": "ADV-10Nov2026-1800-GOLD",
       "date": "10 Nov 2026",
