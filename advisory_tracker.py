@@ -3010,8 +3010,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             day_l = float(c_item.get('day_low', cur_p))
         elif eq_item:
             cur_p = float(eq_item.get('close', 0))
-            day_h = float(eq_item.get('price_52_week_high', cur_p))
-            day_l = float(eq_item.get('price_52_week_low', cur_p))
+            day_h = float(eq_item.get('day_high', eq_item.get('high', cur_p)))
+            day_l = float(eq_item.get('day_low', eq_item.get('low', cur_p)))
         elif c_item:
             cur_p = float(c_item['current_price'])
             day_h = float(c_item.get('day_high', cur_p))
@@ -3031,6 +3031,24 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
         target = float(s6.get('target')) if s6.get('target') is not None else (float(pt.get('target')) if pt.get('target') is not None else None)
         stop_loss = float(s6.get('stop_loss')) if s6.get('stop_loss') is not None else (float(pt.get('stop_loss')) if pt.get('stop_loss') is not None else None)
         entry_p = float(pt.get('entry_price')) if pt.get('entry_price') is not None else float(s6.get('reference_price', cur_p))
+
+        # Track session boundaries at entry & cumulative high/low watermarks to catch intra-interval breaches
+        if pt.get('entry_day_high') is None and day_h > 0:
+            pt['entry_day_high'] = day_h
+        if pt.get('entry_day_low') is None and day_l > 0:
+            pt['entry_day_low'] = day_l
+
+        entry_h_base = float(pt.get('entry_day_high', entry_p))
+        entry_l_base = float(pt.get('entry_day_low', entry_p))
+
+        session_h_post_entry = day_h if (day_h > entry_h_base and day_h >= cur_p) else cur_p
+        session_l_post_entry = day_l if (day_l < entry_l_base and day_l <= cur_p) else cur_p
+
+        effective_high = max(cur_p, float(pt.get('peak_high', cur_p)), session_h_post_entry)
+        effective_low = min(cur_p, float(pt.get('trough_low', cur_p)), session_l_post_entry)
+
+        pt['peak_high'] = round(effective_high, 2)
+        pt['trough_low'] = round(effective_low, 2)
 
         # 1. Check PENDING_LIMIT orders (Support / Resistance Retests)
         if trade_status == 'PENDING_LIMIT':
@@ -3074,7 +3092,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             target_dist = (target - entry_p) if action == 'BUY' else (entry_p - target)
             if target_dist > 0:
                 current_favorable_move = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
-                pct_to_target = (current_favorable_move / target_dist) * 100
+                peak_favorable_move = (effective_high - entry_p) if action == 'BUY' else (entry_p - effective_low)
+                pct_to_target = max((current_favorable_move / target_dist) * 100, (peak_favorable_move / target_dist) * 100)
 
                 # Stage 1: Breakeven Lock at +30% towards Target (+0.5R lock guarantees zero-risk position)
                 if pct_to_target >= 30.0 and not pt.get('trailing_sl_active'):
@@ -3210,27 +3229,69 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 pass
 
         if action == 'BUY':
-            if target and cur_p >= target:
+            reached_target = bool(target and (cur_p >= target or effective_high >= target))
+            reached_sl = bool(stop_loss and (cur_p <= stop_loss or effective_low <= stop_loss))
+
+            if reached_target and not reached_sl:
                 hit_target = True
                 exit_p = target
-                reason = "Target Achieved 🎯"
-            elif stop_loss and cur_p <= stop_loss:
+                if effective_high >= target and cur_p < target:
+                    reason = f"Target Achieved 🎯 (Price reached ₹{effective_high:,.2f} ≥ Target ₹{target:,.2f} during interval and reversed to ₹{cur_p:,.2f})"
+                else:
+                    reason = "Target Achieved 🎯"
+            elif reached_sl and not reached_target:
                 hit_sl = True
                 exit_p = stop_loss
-                reason = "Trailing Stop Triggered (Breakeven) 🛡️" if pt.get('trailing_sl_active') else "Stop-Loss Triggered 🛑"
+                is_breakeven = pt.get('trailing_sl_active') or pt.get('stage_2_profit_locked')
+                tag = "Trailing Stop Triggered (Breakeven) 🛡️" if is_breakeven else "Stop-Loss Triggered 🛑"
+                if effective_low <= stop_loss and cur_p > stop_loss:
+                    reason = f"{tag} (Price pierced ₹{effective_low:,.2f} ≤ Stop ₹{stop_loss:,.2f} during interval and bounced to ₹{cur_p:,.2f})"
+                else:
+                    reason = tag
+            elif reached_target and reached_sl:
+                # Both extremes reached: if currently above entry or trailing SL active, target was attained
+                if cur_p >= entry_p or pt.get('trailing_sl_active'):
+                    hit_target = True
+                    exit_p = target
+                    reason = f"Target Achieved 🎯 (Price reached ₹{effective_high:,.2f} ≥ Target ₹{target:,.2f})"
+                else:
+                    hit_sl = True
+                    exit_p = stop_loss
+                    reason = f"Stop-Loss Triggered 🛑 (Price pierced ₹{effective_low:,.2f} ≤ Stop ₹{stop_loss:,.2f})"
             elif is_equity and ((now_dt.hour == 15 and now_dt.minute >= 20) or now_dt.hour >= 16 or now_dt.hour < 9):
                 hit_eod = True
                 exit_p = cur_p
                 reason = "Intraday EOD Square-off (03:20 PM) ⏰"
+
         elif action == 'SELL':
-            if target and cur_p <= target:
+            reached_target = bool(target and (cur_p <= target or effective_low <= target))
+            reached_sl = bool(stop_loss and (cur_p >= stop_loss or effective_high >= stop_loss))
+
+            if reached_target and not reached_sl:
                 hit_target = True
                 exit_p = target
-                reason = "Target Achieved 🎯"
-            elif stop_loss and cur_p >= stop_loss:
+                if effective_low <= target and cur_p > target:
+                    reason = f"Target Achieved 🎯 (Price plunged to ₹{effective_low:,.2f} ≤ Target ₹{target:,.2f} during interval and bounced to ₹{cur_p:,.2f})"
+                else:
+                    reason = "Target Achieved 🎯"
+            elif reached_sl and not reached_target:
                 hit_sl = True
                 exit_p = stop_loss
-                reason = "Trailing Stop Triggered (Breakeven) 🛡️" if pt.get('trailing_sl_active') else "Stop-Loss Triggered 🛑"
+                is_breakeven = pt.get('trailing_sl_active') or pt.get('stage_2_profit_locked')
+                tag = "Trailing Stop Triggered (Breakeven) 🛡️" if is_breakeven else "Stop-Loss Triggered 🛑"
+                if effective_high >= stop_loss and cur_p < stop_loss:
+                    reason = f"{tag} (Price spiked to ₹{effective_high:,.2f} ≥ Stop ₹{stop_loss:,.2f} during interval and pulled back to ₹{cur_p:,.2f})"
+                else:
+                    reason = tag
+            elif reached_target and reached_sl:
+                if cur_p <= entry_p or pt.get('trailing_sl_active'):
+                    hit_target = True
+                    exit_p = target
+                    reason = f"Target Achieved 🎯 (Price plunged to ₹{effective_low:,.2f} ≤ Target ₹{target:,.2f})"
+                else:
+                    hit_sl = True
+                    exit_p = stop_loss
+                    reason = f"Stop-Loss Triggered 🛑 (Price spiked to ₹{effective_high:,.2f} ≥ Stop ₹{stop_loss:,.2f})"
             elif is_equity and ((now_dt.hour == 15 and now_dt.minute >= 20) or now_dt.hour >= 16 or now_dt.hour < 9):
                 hit_eod = True
                 exit_p = cur_p
