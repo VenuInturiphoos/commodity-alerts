@@ -1,22 +1,22 @@
 {
-  "last_updated": "10 Nov 2026, 06:55 PM IST",
+  "last_updated": "10 Nov 2026, 07:01 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 181,
     "executed_count": 28,
-    "correct_count": 6,
+    "correct_count": 7,
     "wrong_count": 15,
     "protected_count": 153,
-    "win_rate_pct": 28.6,
-    "total_pnl_inr": -34744.2,
-    "avg_trade_pnl_inr": -1240.86,
-    "active_trades_count": 1,
+    "win_rate_pct": 31.8,
+    "total_pnl_inr": -28904.2,
+    "avg_trade_pnl_inr": -1032.29,
+    "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 266337.75,
-    "used_margin_inr": 107632.0,
-    "available_cash_inr": 158705.75,
-    "net_worth_inr": 266337.75
+    "current_cash_inr": 272177.75,
+    "used_margin_inr": 0,
+    "available_cash_inr": 272177.75,
+    "net_worth_inr": 272177.75
   },
   "trades": [
     {
@@ -487,7 +487,7 @@
       "time_6pm": "05:41 PM IST",
       "time_validation": "05:41 PM IST",
       "time_615": "05:41 PM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "07:01 PM IST",
       "symbol": "COPPERM",
       "name": "Copper Mini",
       "lot_size": 1000,
@@ -558,25 +558,28 @@
         "quantity": 1000,
         "entry_price": 1345.4,
         "entry_time": "05:41 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 1339.56,
+        "exit_time": "07:01 PM IST",
+        "pnl_points": 5.84,
+        "pnl_inr": 5840.0,
+        "status": "CLOSED",
         "margin_required_inr": 107632.0,
         "target": 1339.56,
         "stop_loss": 1343.06,
         "trailing_sl_active": true,
         "original_sl": 1350.27,
-        "stage_2_profit_locked": true
+        "stage_2_profit_locked": true,
+        "exit_trigger": "TARGET_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 1339.56,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "EMA 20/50 Bearish Trend Confluence active: SELL @ \u20b91,345.40 (Target: \u20b91,339.56, SL: \u20b91,350.27) | 3,000 Replays: 47.6% Target | 46.5% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+        "outcome": "CORRECT",
+        "badge": "Target Achieved \ud83c\udfaf (07:01 PM IST)",
+        "pnl_display": "+\u20b95,840.00",
+        "summary": "Target Achieved \ud83c\udfaf at 07:01 PM IST. Entry: \u20b91,345.40 -> Exit: \u20b91,339.56 (+\u20b95,840.00).",
+        "exit_time": "07:01 PM IST",
+        "exit_trigger": "TARGET_HIT"
       }
     },
     {
