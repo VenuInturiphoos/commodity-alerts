@@ -778,13 +778,14 @@
             word-break: break-all;
         }
 
-        /* Bottom Input Dock */
+        /* Top Input Dock (Option A) */
         .agent-dock-wrapper {
             background: rgba(15, 23, 42, 0.98);
-            border-top: 1px solid var(--border-color);
-            padding: 10px 1.5rem 12px 1.5rem;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 1.5rem 14px 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.35);
             flex-shrink: 0;
+            z-index: 20;
         }
         .agent-dock-toolbar {
             display: flex;
@@ -792,6 +793,47 @@
             align-items: center;
             margin-bottom: 8px;
             font-size: 0.78rem;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .dock-autopush-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #fbbf24;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+        .dock-autopush-btn:hover {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.5);
+        }
+        .dock-autopush-btn.active {
+            background: rgba(16, 185, 129, 0.18);
+            border-color: rgba(16, 185, 129, 0.45);
+            color: #34d399;
+        }
+        .dock-target-select {
+            background: rgba(15, 23, 42, 0.95);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            outline: none;
+            cursor: pointer;
+            font-family: var(--font-code);
+        }
+        .dock-target-select:focus {
+            border-color: var(--accent-cyan);
         }
         .context-pill {
             background: rgba(56, 189, 248, 0.1);
@@ -1167,13 +1209,51 @@
                         </div>
                     </div>
 
+                    <!-- Antigravity Chat Dock (Option A: Pinned at TOP) -->
+                    <div class="agent-dock-wrapper">
+                        <div class="agent-dock-toolbar">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <div class="context-pill" title="Target File to Modify">
+                                    <i class="fa-solid fa-file-code"></i>
+                                    <span style="color: #94a3b8; font-size: 0.72rem; text-transform: uppercase;">Target:</span>
+                                    <select id="dock-target-file-select" class="dock-target-select" onchange="onTargetFileSelectChange(this.value)">
+                                        <option value="web/hub.html" selected>🌐 Remote Hub (web/hub.html)</option>
+                                        <option value="web/index.html">📊 Main Portal (web/index.html)</option>
+                                        <option value="advisory_tracker.py">⚙️ Strategy Engine (advisory_tracker.py)</option>
+                                        <option value="main.py">🚀 Main Runner (main.py)</option>
+                                        <option value="custom">📁 Current Editor File (<span id="dock-active-file">web/hub.html</span>)</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="dock-autopush-btn active" id="btn-autopush-toggle" onclick="toggleAutoPush()" title="When ON, code diffs are automatically committed & pushed directly to GitHub!">
+                                    <i class="fa-solid fa-bolt" style="color: #fbbf24;"></i>
+                                    <span>Auto-Push: <strong>ON</strong></span>
+                                </button>
+                            </div>
+                            <div class="dock-model-select-wrapper">
+                                <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700;">MODEL:</span>
+                                <select id="gemini-model-select" class="dock-model-select">
+                                    <option value="gemini-flash-latest" selected>Gemini Flash Latest</option>
+                                    <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="agent-dock-input-box">
+                            <textarea id="agent-prompt-input" class="agent-dock-textarea" rows="2" placeholder="Ask Antigravity to make changes, fix errors, or add features... (Cmd+Enter to send)" oninput="autoGrowTextarea(this)" onkeydown="handleDockKeydown(event)"></textarea>
+                            <button class="btn btn-primary btn-dock-send" id="btn-run-agent" onclick="runAiAgentUpdate()" title="Run Agent (Cmd+Enter)">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Scrollable Conversation / Trajectory Feed -->
                     <div class="chat-feed-scroll" id="agent-chat-feed">
-                        <div class="glass-card" style="text-align: center; max-width: 680px; margin: 3rem auto; padding: 2.25rem 1.5rem;">
-                            <div style="font-size: 2.5rem; margin-bottom: 0.85rem; color: #a78bfa;"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.5rem;">Antigravity Pair-Programming Workspace</h3>
-                            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem;">
-                                Ask anything or describe the code change you want. Antigravity reads the target file, explains the modifications, and generates the line-by-line diff ready to review & push to GitHub.
+                        <div class="glass-card" style="text-align: center; max-width: 680px; margin: 2rem auto; padding: 2rem 1.5rem;">
+                            <div style="font-size: 2.2rem; margin-bottom: 0.75rem; color: #a78bfa;"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.5rem;">Antigravity Pair-Programming Workspace</h3>
+                            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.25rem;">
+                                Enter your request in the box above. Antigravity will update the selected application file, explain the changes, and automatically push directly to GitHub.
                             </p>
                             <div style="display: flex; justify-content: center; gap: 10px; font-size: 0.8rem; color: #cbd5e1; flex-wrap: wrap;">
                                 <span style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.25); padding: 5px 12px; border-radius: 999px;">
@@ -1186,32 +1266,6 @@
                                     <i class="fa-solid fa-code-compare" style="color: #f87171; margin-right: 4px;"></i> Line-by-Line Diff
                                 </span>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Antigravity Chat Dock (at bottom) -->
-                    <div class="agent-dock-wrapper">
-                        <div class="agent-dock-toolbar">
-                            <div class="context-pill" title="Active Target File in Workspace">
-                                <i class="fa-solid fa-file-code"></i>
-                                <span id="dock-active-file">stock_investment_tracker.py</span>
-                            </div>
-                            <div class="dock-model-select-wrapper">
-                                <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700;">MODEL:</span>
-                                <select id="gemini-model-select" class="dock-model-select">
-                                    <option value="gemini-flash-latest" selected>Gemini Flash Latest</option>
-                                    <option value="gemini-3.8-flash">Gemini 3.8 Flash</option>
-                                    <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="agent-dock-input-box">
-                            <textarea id="agent-prompt-input" class="agent-dock-textarea" rows="2" placeholder="Ask Antigravity to make changes, fix errors, or add features... (Cmd+Enter to send)" oninput="autoGrowTextarea(this)" onkeydown="handleDockKeydown(event)"></textarea>
-                            <button class="btn btn-primary btn-dock-send" id="btn-run-agent" onclick="runAiAgentUpdate()" title="Run Agent (Cmd+Enter)">
-                                <i class="fa-solid fa-arrow-up"></i>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -1434,7 +1488,7 @@
         // State
         let currentRepo = 'VenuInturiphoos/commodity-alerts';
         let currentBranch = 'main';
-        let currentFile = 'stock_investment_tracker.py';
+        let currentFile = 'web/hub.html';
         let currentFileSha = null;
         let originalFileContent = '';
         let pendingAiContent = null;
@@ -1444,6 +1498,53 @@
         // Safe Storage Helper (handles private browsing / blocked storage)
         const safeStorage = {
             getItem(key) {
+                try { return localStorage.getItem(key); } catch(e) { return null; }
+            },
+            setItem(key, val) {
+                try { localStorage.setItem(key, val); } catch(e) {}
+            },
+            removeItem(key) {
+                try { localStorage.removeItem(key); } catch(e) {}
+            }
+        };
+
+        // Auto-Push to GitHub state (default: ON)
+        let isAutoPush = safeStorage.getItem('antigravity_autopush') !== 'false';
+
+        function toggleAutoPush(forceVal) {
+            if (typeof forceVal === 'boolean') {
+                isAutoPush = forceVal;
+            } else {
+                isAutoPush = !isAutoPush;
+            }
+            safeStorage.setItem('antigravity_autopush', isAutoPush ? 'true' : 'false');
+            updateAutoPushUI();
+            showToast(isAutoPush ? "⚡ Auto-Push ON: Code updates will deploy directly to GitHub!" : "⏸️ Auto-Push OFF: Manual approval required before pushing.", "info");
+        }
+
+        function updateAutoPushUI() {
+            const btn = document.getElementById('btn-autopush-toggle');
+            if (btn) {
+                if (isAutoPush) {
+                    btn.className = 'dock-autopush-btn active';
+                    btn.innerHTML = `<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> <span>Auto-Push: <strong>ON</strong></span>`;
+                } else {
+                    btn.className = 'dock-autopush-btn';
+                    btn.innerHTML = `<i class="fa-solid fa-pause" style="color: #94a3b8;"></i> <span>Auto-Push: <strong>OFF</strong></span>`;
+                }
+            }
+        }
+
+        async function onTargetFileSelectChange(val) {
+            let targetPath = val;
+            if (targetPath === 'custom') {
+                targetPath = currentFile;
+            }
+            if (targetPath && targetPath !== currentFile) {
+                await loadFile(targetPath);
+                showToast(`Target switched to ${targetPath}`, "info");
+            }
+        }
                 try { return window.localStorage ? window.localStorage.getItem(key) : null; }
                 catch(e) { return null; }
             },
@@ -2038,6 +2139,20 @@
             if (el3) el3.textContent = path;
             const el4 = document.getElementById('dock-active-file');
             if (el4) el4.textContent = path;
+            const targetSelect = document.getElementById('dock-target-file-select');
+            if (targetSelect) {
+                let matched = false;
+                for (let opt of targetSelect.options) {
+                    if (opt.value === path) {
+                        targetSelect.value = path;
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched) {
+                    targetSelect.value = 'custom';
+                }
+            }
             setEditorMode(path);
 
             try {
@@ -2114,7 +2229,18 @@
                 content: encodedContent,
                 branch: currentBranch
             };
-            if (sha) body.sha = sha;
+
+            let shaToUse = null;
+            try {
+                const checkRes = await fetch(`https://api.github.com/repos/${currentRepo}/contents/${path}?ref=${currentBranch}`, { headers });
+                if (checkRes.ok) {
+                    const checkData = await checkRes.json();
+                    shaToUse = checkData.sha;
+                }
+            } catch(e) {
+                shaToUse = sha;
+            }
+            if (shaToUse) body.sha = shaToUse;
 
             const res = await fetch(`https://api.github.com/repos/${currentRepo}/contents/${path}`, {
                 method: 'PUT',
@@ -2513,12 +2639,33 @@
                     await loadAvailableGeminiModels();
                 }
 
+                // Intelligent Target File Routing
+                let targetFile = currentFile;
+                const targetSelect = document.getElementById('dock-target-file-select');
+                if (targetSelect && targetSelect.value && targetSelect.value !== 'custom') {
+                    targetFile = targetSelect.value;
+                } else {
+                    const lower = promptText.toLowerCase();
+                    if (lower.includes('web hub') || lower.includes('hub.html') || lower.includes('dock') || lower.includes('autopush') || lower.includes('remote hub') || lower.includes('textbox') || lower.includes('text box')) {
+                        targetFile = 'web/hub.html';
+                    } else if (lower.includes('portal') || lower.includes('trading tab') || lower.includes('index.html') || lower.includes('table') || lower.includes('card') || lower.includes('dashboard') || lower.includes('market hub') || lower.includes('ui')) {
+                        targetFile = 'web/index.html';
+                    } else if (lower.includes('advisory') || lower.includes('margin') || lower.includes('6:15') || lower.includes('8:00') || lower.includes('risk') || lower.includes('trade rule')) {
+                        targetFile = 'advisory_tracker.py';
+                    }
+                }
+
+                // Ensure the target file's content and latest SHA are loaded
+                if (currentFile !== targetFile || !originalFileContent) {
+                    await loadFile(targetFile);
+                }
+
                 const systemPrompt = `You are Antigravity AI Code Agent, an expert pair programmer.
 You are assisting the user with their codebase repository.
-Active Target File: "${currentFile || 'none'}"
+Active Target File: "${targetFile || 'none'}"
 User Request: "${promptText}".
 
-${originalFileContent ? `Current content of "${currentFile}":\n\`\`\`\n${originalFileContent}\n\`\`\`` : ''}
+${originalFileContent ? `Current content of "${targetFile}":\n\`\`\`\n${originalFileContent}\n\`\`\`` : ''}
 
 INSTRUCTIONS:
 1. First, provide a clear, structured summary under a heading "### What Was Changed" with bullet points detailing:
@@ -2623,6 +2770,17 @@ INSTRUCTIONS:
 
                 renderAgentFeed();
                 showToast(`Response & diff generated with ${usedModel}!`, "success");
+
+                // Auto-Push Execution (if enabled and code diff is present)
+                if (isAutoPush && hasCodeDiff && codeContent) {
+                    showToast(`⚡ Auto-Push active: Committing & deploying ${targetFile} directly to GitHub...`, "info");
+                    try {
+                        await commitTurnDiff(turnId);
+                    } catch (pushErr) {
+                        console.error("Auto-push error:", pushErr);
+                        showToast(`Auto-push failed: ${pushErr.message}`, "error");
+                    }
+                }
             } catch (err) {
                 showToast(`AI generation failed: ${err.message}`, "error");
             } finally {
@@ -2867,6 +3025,7 @@ INSTRUCTIONS:
             try { checkMobileScreen(); } catch(e) {}
             try { window.addEventListener('resize', checkMobileScreen); } catch(e) {}
             try { renderAgentFeed(); } catch(e) { console.warn("Feed render err:", e); }
+            try { updateAutoPushUI(); } catch(e) {}
             try { updateCodespacesLink(); } catch(e) {}
 
             // Populate settings if present in local storage
