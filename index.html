@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    <link rel="stylesheet" href="styles.css?v=smooth3">
+    <link rel="stylesheet" href="styles.css?v=smooth2">
     <script>
         window.onerror = function(msg, url, line, col, error) {
             console.error("Global Error: " + msg + " at line " + line + ":" + col, error);
@@ -820,7 +820,7 @@
                         </div>
                         <div class="circuit-search-box">
                             <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="adv-search-input" placeholder="Search commodity, session or date..." oninput="filterAdvisoryTradesTable()" onkeyup="filterAdvisoryTradesTable()">
+                            <input type="text" id="adv-search-input" placeholder="Search commodity, session or date..." onkeyup="renderAdvisoryTradesTable()">
                         </div>
                     </div>
 
@@ -1916,19 +1916,16 @@ function initApp() {
     console.log("Initializing App...");
     try { setupSubscribeForm(); } catch(e) { console.error("Form setup error:", e); }
     try { setupUnsubscribeForm(); } catch(e) { console.error("Unsub Form setup error:", e); }
+    try { fetchMarketData(); } catch(e) { console.error("Fetch data error:", e); }
+    try { fetchNiftyOpportunities(); } catch(e) { console.error("Fetch nifty error:", e); }
+    try { fetchCircuitsData(); } catch(e) { console.error("Fetch circuits error:", e); }
+    try { fetchCircuitsHistory(); } catch(e) { console.error("Fetch circuits history error:", e); }
     try { setupAuth(); } catch(e) { console.error("Auth setup error:", e); }
     
-    // Restore exact module and subview that the user was currently in (loads active tab only)
+    // Restore exact module and subview that the user was currently in
     try { restoreActiveModule(); } catch(e) { console.error("Restore module error:", e); }
     
-    // Background polling intervals
-    setInterval(() => { 
-        const marketTab = document.getElementById('market-hub-tab');
-        const investingTab = document.getElementById('investing-tab');
-        if ((marketTab && marketTab.classList.contains('active')) || (investingTab && investingTab.classList.contains('active'))) {
-            if (typeof fetchMarketData === 'function') fetchMarketData(); 
-        }
-    }, 300000); 
+    setInterval(() => { if (typeof fetchMarketData === 'function') fetchMarketData(); }, 300000); 
     setInterval(() => {
         const circuitsTab = document.getElementById('market-hub-tab');
         if (circuitsTab && circuitsTab.classList.contains('active')) {
@@ -6104,20 +6101,16 @@ function renderTradeMarket() {
 }
 window.renderTradeMarket = renderTradeMarket;
 
-let stockInvestSearchTimer = null;
 function filterStockInvestingTable() {
-    clearTimeout(stockInvestSearchTimer);
-    stockInvestSearchTimer = setTimeout(() => {
-        const q = (document.getElementById('stock-invest-search')?.value || '').trim().toLowerCase();
-        document.querySelectorAll('.stock-invest-row').forEach(row => {
-            const text = row.getAttribute('data-search') || '';
-            row.style.display = (!q || text.includes(q)) ? '' : 'none';
-        });
-        document.querySelectorAll('.stock-invest-card').forEach(card => {
-            const text = card.getAttribute('data-search') || '';
-            card.style.display = (!q || text.includes(q)) ? '' : 'none';
-        });
-    }, 100);
+    const q = (document.getElementById('stock-invest-search')?.value || '').trim().toLowerCase();
+    document.querySelectorAll('.stock-invest-row').forEach(row => {
+        const text = row.getAttribute('data-search') || '';
+        row.style.display = (!q || text.includes(q)) ? '' : 'none';
+    });
+    document.querySelectorAll('.stock-invest-card').forEach(card => {
+        const text = card.getAttribute('data-search') || '';
+        card.style.display = (!q || text.includes(q)) ? '' : 'none';
+    });
 }
 window.filterStockInvestingTable = filterStockInvestingTable;
 
@@ -6984,39 +6977,26 @@ function populateAdvisoryMonthDropdown() {
     }
 }
 
-let lastAdvisoryFetchTime = 0;
-let isAdvisoryTrackerLoading = false;
-
-async function loadAdvisoryTracker(forceNetwork = false) {
+async function loadAdvisoryTracker() {
     const timeEl = document.getElementById('tracker-last-updated');
-    const now = Date.now();
-
-    // Fast-path: If freshly loaded within last 25s and not forced, render from in-memory cache instantly
-    if (!forceNetwork && activeTrackerCache && (now - lastAdvisoryFetchTime < 25000)) {
-        populateAdvisoryMonthDropdown();
-        applyAdvisoryMonthFilter(currentAdvMonth);
-        if (typeof renderOrderHistory === 'function') renderOrderHistory();
-        return;
-    }
-
-    if (isAdvisoryTrackerLoading) return;
-    isAdvisoryTrackerLoading = true;
-
     if (timeEl) timeEl.textContent = 'Syncing...';
+
+    // Clear stale in-memory cache to force a fresh parse
+    activeTrackerCache = null;
 
     try {
         const fetchOptions = {
-            cache: forceNetwork ? 'no-store' : 'default',
-            headers: forceNetwork ? {
+            cache: 'no-store',
+            headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache'
-            } : {}
+            }
         };
-        const cacheBuster = forceNetwork ? ('?v=' + Date.now()) : '';
+        const cacheBuster = Date.now() + '_' + Math.floor(Math.random() * 1000000);
         const liveCandidates = [
-            'advisory_trades_tracker.json' + cacheBuster,
-            'web/advisory_trades_tracker.json' + cacheBuster,
-            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_tracker.json' + cacheBuster
+            'advisory_trades_tracker.json?v=' + cacheBuster,
+            'web/advisory_trades_tracker.json?v=' + cacheBuster,
+            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_tracker.json?v=' + cacheBuster
         ];
 
         // 1. Fetch live active tracker (Current Month)
@@ -7025,7 +7005,6 @@ async function loadAdvisoryTracker(forceNetwork = false) {
                 const res = await fetch(u, fetchOptions);
                 if (res && res.ok) {
                     activeTrackerCache = await res.json();
-                    lastAdvisoryFetchTime = Date.now();
                     break;
                 }
             } catch (err) {
@@ -7033,23 +7012,21 @@ async function loadAdvisoryTracker(forceNetwork = false) {
             }
         }
 
-        // 2. Fetch historical archive tracker (Past Months) ONLY if not already cached
-        if (!archiveTrackerCache || forceNetwork) {
-            const archiveCandidates = [
-                'advisory_trades_history_archive.json',
-                'web/advisory_trades_history_archive.json',
-                'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_history_archive.json'
-            ];
-            for (const u of archiveCandidates) {
-                try {
-                    const res = await fetch(u);
-                    if (res && res.ok) {
-                        archiveTrackerCache = await res.json();
-                        break;
-                    }
-                } catch (err) {
-                    // continue to next candidate
+        // 2. Fetch historical archive tracker (Past Months)
+        const archiveCandidates = [
+            'advisory_trades_history_archive.json?v=' + cacheBuster,
+            'web/advisory_trades_history_archive.json?v=' + cacheBuster,
+            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_history_archive.json?v=' + cacheBuster
+        ];
+        for (const u of archiveCandidates) {
+            try {
+                const res = await fetch(u, fetchOptions);
+                if (res && res.ok) {
+                    archiveTrackerCache = await res.json();
+                    break;
                 }
+            } catch (err) {
+                // continue to next candidate
             }
         }
 
@@ -7070,11 +7047,9 @@ async function loadAdvisoryTracker(forceNetwork = false) {
     } catch (e) {
         console.error("Error loading advisory tracker:", e);
         const tbody = document.getElementById('advisory-tracker-body');
-        if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="error" style="text-align:center; padding:2rem; color:#fb7185;"><i class="fa-solid fa-triangle-exclamation"></i> Failed to load advisory tracker data: ${e.message}<br><button onclick="loadAdvisoryTracker(true)" style="margin-top:10px; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:6px 14px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-arrows-rotate"></i> Retry</button></td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="error" style="text-align:center; padding:2rem; color:#fb7185;"><i class="fa-solid fa-triangle-exclamation"></i> Failed to load advisory tracker data: ${e.message}<br><button onclick="loadAdvisoryTracker()" style="margin-top:10px; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:6px 14px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-arrows-rotate"></i> Retry</button></td></tr>`;
         const cardsFeed = document.getElementById('advisory-cards-feed');
-        if (cardsFeed) cardsFeed.innerHTML = `<div style="text-align:center; padding:2rem; color:#fb7185; background:rgba(255,255,255,0.02); border-radius:10px;"><i class="fa-solid fa-triangle-exclamation"></i> Failed to load advisory cards: ${e.message}<br><button onclick="loadAdvisoryTracker(true)" style="margin-top:10px; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:6px 14px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-arrows-rotate"></i> Retry</button></div>`;
-    } finally {
-        isAdvisoryTrackerLoading = false;
+        if (cardsFeed) cardsFeed.innerHTML = `<div style="text-align:center; padding:2rem; color:#fb7185; background:rgba(255,255,255,0.02); border-radius:10px;"><i class="fa-solid fa-triangle-exclamation"></i> Failed to load advisory cards: ${e.message}<br><button onclick="loadAdvisoryTracker()" style="margin-top:10px; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:6px 14px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-arrows-rotate"></i> Retry</button></div>`;
     }
 }
 
@@ -7301,15 +7276,6 @@ function filterAdvisoryTrades(filterType, btnEl) {
     if (btnEl) btnEl.classList.add('active');
     renderAdvisoryTradesTable();
 }
-
-let advSearchTimer = null;
-function filterAdvisoryTradesTable() {
-    clearTimeout(advSearchTimer);
-    advSearchTimer = setTimeout(() => {
-        renderAdvisoryTradesTable();
-    }, 120);
-}
-window.filterAdvisoryTradesTable = filterAdvisoryTradesTable;
 
 function renderAdvisoryTradesTable() {
     const tbody = document.getElementById('advisory-tracker-body');
@@ -8056,18 +8022,11 @@ function startApp() {
     try { initApp(); } catch(e) { console.error("Init Error:", e); }
     try { if (typeof loadGuestPaperTradingData === 'function') loadGuestPaperTradingData(); } catch(e) {}
     try { if (typeof switchTradingSubTab === 'function') switchTradingSubTab(currentTradingSubTab); } catch(e) {}
-
-    // Gentle idle prefetch for background data to keep UI at solid 60fps on load
-    const prefetchIdle = () => {
-        if (typeof fetchMarketData === 'function' && !lastMarketFetchTime) {
-            try { fetchMarketData(); } catch(e){}
-        }
-    };
-    if (window.requestIdleCallback) {
-        requestIdleCallback(prefetchIdle, { timeout: 3500 });
-    } else {
-        setTimeout(prefetchIdle, 1800);
-    }
+    try { if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker(); } catch(e) { console.error("Load Advisory Error:", e); }
+    try { if (typeof fetchNiftyOpportunities === 'function') fetchNiftyOpportunities(); } catch(e) { console.error("Load Nifty Error:", e); }
+    try { if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker(); } catch(e) { console.error("Load Stock Investments Error:", e); }
+    try { if (typeof renderInvestHistory === 'function') renderInvestHistory(); } catch(e) { console.error("Load Invest History Error:", e); }
+    try { if (typeof loadAndRenderOrderHistory === 'function') loadAndRenderOrderHistory(); } catch(e) { console.error("Load Order History Error:", e); }
 }
 
 if (document.readyState === 'loading') {
