@@ -806,7 +806,8 @@
                             <div class="circuit-month-filter-wrap" style="display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.4rem;">
                                 <label for="adv-month-select" style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;"><i class="fa-regular fa-calendar"></i> Month:</label>
                                 <select id="adv-month-select" onchange="changeAdvisoryMonthFilter(this.value)" class="circuit-month-select">
-                                    <option value="CURRENT_MONTH" selected>📅 Current Month (Nov 2026)</option>
+                                    <option value="CURRENT_MONTH" selected>📅 Current Live Phase (10 Nov 2026 Onward)</option>
+                                    <option value="Nov 2026">🗓️ Nov 2026 Prior Phase (02–09 Nov - 157 Trades)</option>
                                     <option value="Oct 2026">🗓️ October 2026 (Archive - 72 Trades)</option>
                                     <option value="ALL">🌐 All Months (Complete History)</option>
                                 </select>
@@ -6955,11 +6956,15 @@ function populateAdvisoryMonthDropdown() {
         }
     });
 
-    let html = `<option value="CURRENT_MONTH">📅 Current Month (${curMonthLabel})</option>`;
+    let html = `<option value="CURRENT_MONTH">📅 Current Live Phase (10 Nov 2026 Onward)</option>`;
     
-    // Past months from archive
+    // Past phases from archive
     Object.keys(monthCounts).forEach(m => {
-        html += `<option value="${m}">🗓️ ${m} (Archive - ${monthCounts[m]} Trades)</option>`;
+        let label = `🗓️ ${m} (Archive - ${monthCounts[m]} Trades)`;
+        if (m === 'Nov 2026') {
+            label = `🗓️ Nov 2026 Prior Phase (02–09 Nov - ${monthCounts[m]} Trades)`;
+        }
+        html += `<option value="${m}">${label}</option>`;
     });
 
     html += `<option value="ALL">🌐 All Months (Complete History)</option>`;
