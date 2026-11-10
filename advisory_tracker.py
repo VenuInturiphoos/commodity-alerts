@@ -369,11 +369,13 @@ def get_cash_and_margin(tracker_data):
         'net_worth': round(net_worth, 2)
     }
 
-def check_margin_availability(tracker_data, sym, cur_p, lot_size, is_equity=False):
+def check_margin_availability(tracker_data, sym, cur_p, lot_size, is_equity=False, sl=None):
     """
     Checks if there is sufficient margin balance available to execute the trade.
+    If the requested lot size requires more margin than available (e.g. ~₹1.5L target),
+    it dynamically downsizes to the maximum whole lots affordable with the available cash balance.
     Returns:
-        (has_margin: bool, req_margin: float, avail_margin: float)
+        (has_margin: bool, req_margin: float, avail_margin: float, adapted_lot: int)
     """
     if is_equity:
         trades = tracker_data.get('trades', [])
@@ -388,14 +390,58 @@ def check_margin_availability(tracker_data, sym, cur_p, lot_size, is_equity=Fals
             for t in active_stock_trades
         )
         stock_avail = max(0.0, MAX_INTRADAY_STOCK_MARGIN_INR - used_stock_margin)
+        unit_margin = round(cur_p * 0.20, 2)
         req = round(cur_p * lot_size * 0.20, 2)
-        return (req <= stock_avail and req > 0), req, stock_avail
+
+        if req <= stock_avail and req > 0:
+            return True, req, stock_avail, lot_size
+
+        # If full size exceeds stock margin pool, downscale to affordable shares
+        if unit_margin > 0 and stock_avail >= unit_margin:
+            affordable_shares = int(stock_avail // unit_margin)
+            adapted_lot = max(1, affordable_shares)
+            adapted_req = round(cur_p * adapted_lot * 0.20, 2)
+            return True, adapted_req, stock_avail, adapted_lot
+        else:
+            return False, req, stock_avail, 0
+
     else:
         cash_info = get_cash_and_margin(tracker_data)
         avail = cash_info['available_cash']
-        rate = MARGIN_RATES.get(sym, 0.15)
-        req = round(cur_p * lot_size * rate, 2)
-        return (req <= avail and req > 0), req, avail
+        
+        base_sym = sym.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '')
+        rate = MARGIN_RATES.get(sym, MARGIN_RATES.get(base_sym, 0.15))
+        
+        mini_info = PositionSizer.MINI_ROUTES.get(sym) or PositionSizer.MINI_ROUTES.get(base_sym)
+        base_unit = mini_info['lot_size'] if mini_info else (lot_size if lot_size > 0 else 1)
+        single_lot_margin = round(base_unit * cur_p * rate, 2)
+        target_req = round(cur_p * lot_size * rate, 2)
+
+        # Case 1: Ample margin for full target lot size (~₹1.5L allocation)
+        if target_req <= avail and target_req > 0:
+            return True, target_req, avail, lot_size
+
+        # Case 2: Insufficient for ~₹1.5L target, but available balance can afford at least 1 whole contract lot
+        # Ignore the ₹1,50,000 target and take as many whole lots as available balance permits!
+        if single_lot_margin > 0 and avail >= single_lot_margin:
+            affordable_lots_count = int(avail // single_lot_margin)
+            
+            # Risk check against structural stop
+            if sl and sl > 0 and abs(cur_p - sl) > 0:
+                single_lot_risk = abs(cur_p - sl) * base_unit
+                if single_lot_risk > 0:
+                    risk_lots = int(MAX_LOSS_PER_TRADE_INR // single_lot_risk)
+                    if risk_lots >= 1:
+                        affordable_lots_count = min(affordable_lots_count, risk_lots)
+            
+            affordable_lots_count = max(1, affordable_lots_count)
+            adapted_lot = affordable_lots_count * base_unit
+            adapted_req = round(cur_p * adapted_lot * rate, 2)
+            return True, adapted_req, avail, adapted_lot
+
+        # Case 3: Available balance cannot afford even 1 minimum whole lot
+        min_req = single_lot_margin if single_lot_margin > 0 else target_req
+        return False, min_req, avail, 0
 
 def load_tracker():
     if os.path.exists(TRACKER_FILE):
@@ -2354,7 +2400,8 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 continue
 
             # Check Margin Availability before 8:00 PM evening active entry
-            has_margin, req_margin, avail_margin = check_margin_availability(tracker, c_sym, cur_p, adaptive_lot, is_equity=False)
+            # If available balance < ₹1.5L target margin, downscale to affordable whole lots instead of skipping
+            has_margin, req_margin, avail_margin, adaptive_lot = check_margin_availability(tracker, c_sym, cur_p, adaptive_lot, is_equity=False, sl=sl)
             if not has_margin:
                 entry = {
                     "id": trade_id,
@@ -2381,8 +2428,8 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         "checked": True,
                         "status": "INSUFFICIENT_MARGIN_STAND_ASIDE",
                         "price_615": cur_p,
-                        "action_taken": f"Execution Skipped: Insufficient Margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent.",
-                        "detail": f"Evening setup confirmed, but available cash ₹{avail_margin:,.2f} is insufficient for margin ₹{req_margin:,.2f}. Discretionary alert broadcasted."
+                        "action_taken": f"Execution Skipped: Insufficient Margin (Min Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent.",
+                        "detail": f"Evening setup confirmed, but available cash ₹{avail_margin:,.2f} cannot afford even 1 lot (Min Req: ₹{req_margin:,.2f}). Discretionary alert broadcasted."
                     },
                     "paper_trade": {
                         "user": USER_ACCOUNT,
@@ -2403,7 +2450,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         "outcome": "PROTECTED",
                         "badge": "Margin Skipped 🛡️",
                         "pnl_display": "₹0.00 (Discretionary)",
-                        "summary": f"Setup confirmed, but execution skipped on managed portfolio due to margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Discretionary alert sent."
+                        "summary": f"Setup confirmed, but execution skipped on managed portfolio due to margin (Min Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Discretionary alert sent."
                     }
                 }
                 new_entries.append(entry)
@@ -2415,7 +2462,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                     f"• Advisory Direction: <b>{action} {adaptive_lot} units</b> @ ₹{cur_p:,.2f}\n"
                     f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{tgt:,.2f}\n"
                     f"• Margin Check: ⚠️ <b>Required: ₹{req_margin:,.2f} | Available Pool: ₹{avail_margin:,.2f}</b>\n"
-                    f"• Execution Status: <b>SKIPPED on Managed Portfolio</b> (Zero margin balance remaining)\n"
+                    f"• Execution Status: <b>SKIPPED on Managed Portfolio</b> (Insufficient margin for even 1 lot)\n"
                     f"• Discretionary Notice: Broadcasted for manual execution if additional capital/broker margin is available."
                 )
                 try:
@@ -2464,7 +2511,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                     "pnl_points": 0.0,
                     "pnl_inr": 0.0,
                     "status": "ACTIVE",
-                    "margin_required_inr": round(cur_p * adaptive_lot * MARGIN_RATES.get(c_sym, 0.15), 2),
+                    "margin_required_inr": req_margin,
                     "target": tgt,
                     "stop_loss": sl
                 },
@@ -2604,12 +2651,13 @@ def check_and_execute_615_confirmation(checker, alerter):
                 continue
 
             # MOMENTUM CONFIRMED & RISK PASSED: Check Margin Availability
-            has_margin, req_margin, avail_margin = check_margin_availability(tracker, sym, cur_p, lot_size, is_equity=False)
+            # If available balance < ₹1.5L target margin, downscale to affordable whole lots instead of skipping
+            has_margin, req_margin, avail_margin, lot_size = check_margin_availability(tracker, sym, cur_p, lot_size, is_equity=False, sl=sl)
             if not has_margin:
                 # MARGIN DEFICIT: Skip portfolio paper execution, but broadcast alert!
                 trade['check_615']['status'] = "INSUFFICIENT_MARGIN_STAND_ASIDE"
-                trade['check_615']['action_taken'] = f"Execution Skipped: Insufficient Margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent."
-                trade['check_615']['detail'] = f"Rule verification passed, but available cash ₹{avail_margin:,.2f} is insufficient for margin ₹{req_margin:,.2f}."
+                trade['check_615']['action_taken'] = f"Execution Skipped: Insufficient Margin (Min Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent."
+                trade['check_615']['detail'] = f"Rule verification passed, but available cash ₹{avail_margin:,.2f} cannot afford even 1 lot (Min Req: ₹{req_margin:,.2f})."
                 trade['paper_trade']['status'] = "STAND_ASIDE"
                 trade['paper_trade']['action'] = "STAND_ASIDE"
                 trade['paper_trade']['quantity'] = 0
@@ -2620,7 +2668,7 @@ def check_and_execute_615_confirmation(checker, alerter):
                 trade['eod_outcome']['outcome'] = "PROTECTED"
                 trade['eod_outcome']['badge'] = "Margin Skipped 🛡️"
                 trade['eod_outcome']['pnl_display'] = "₹0.00 (Discretionary)"
-                trade['eod_outcome']['summary'] = f"Trade rule confirmed, but execution skipped on managed portfolio due to margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Discretionary alert sent."
+                trade['eod_outcome']['summary'] = f"Trade rule confirmed, but execution skipped on managed portfolio due to margin (Min Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Discretionary alert sent."
                 
                 msg = (
                     f"📢 <b>[6:15 PM TRADE ALERT - MARGIN EXHAUSTED] {trade['name'].upper()}</b>\n"
@@ -2628,13 +2676,14 @@ def check_and_execute_615_confirmation(checker, alerter):
                     f"• Suggested Trade: <b>{action} {lot_size} units</b> @ ₹{cur_p:,.2f}\n"
                     f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{tgt:,.2f}\n"
                     f"• Margin Check: ⚠️ <b>Required: ₹{req_margin:,.2f} | Available Cash: ₹{avail_margin:,.2f}</b>\n"
-                    f"• Execution Status: <b>SKIPPED on Managed Portfolio</b> (Zero margin balance remaining)\n"
+                    f"• Execution Status: <b>SKIPPED on Managed Portfolio</b> (Insufficient margin for even 1 lot)\n"
                     f"• Discretionary Notice: Broadcasted for manual execution if additional capital/broker margin is available."
                 )
                 alert_messages.append(msg)
                 continue
 
             # ENTER ACTIVE PAPER TRADE
+            trade['lot_size'] = lot_size
             trade['check_615']['status'] = "TREND_CONFIRMED"
             trade['check_615']['action_taken'] = f"15-min candle confirmed US open momentum. ENTERED {action} {lot_size} units @ ₹{cur_p:,.2f}"
             trade['check_615']['detail'] = f"Price held structure (₹{cur_p:,.2f} vs ref ₹{ref_p:,.2f}). US open trend confirmed!"
@@ -2646,8 +2695,7 @@ def check_and_execute_615_confirmation(checker, alerter):
             trade['paper_trade']['entry_time'] = "06:15 PM IST"
             trade['paper_trade']['target'] = tgt
             trade['paper_trade']['stop_loss'] = sl
-            rate = MARGIN_RATES.get(trade['symbol'], 0.15)
-            trade['paper_trade']['margin_required_inr'] = round(cur_p * lot_size * rate, 2)
+            trade['paper_trade']['margin_required_inr'] = req_margin
             
             trade['eod_outcome']['outcome'] = "ACTIVE"
             trade['eod_outcome']['badge'] = "Active Trade ⚡"
@@ -2806,13 +2854,14 @@ def check_and_execute_615_confirmation(checker, alerter):
                 alert_messages.append(msg)
             else:
                 # REVERSAL CONFIRMED & RISK PASSED: Check Margin Availability
-                has_margin, req_margin, avail_margin = check_margin_availability(tracker, sym, cur_p, adaptive_lot, is_equity=False)
+                # If available balance < ₹1.5L target margin, downscale to affordable whole lots instead of skipping
+                has_margin, req_margin, avail_margin, adaptive_lot = check_margin_availability(tracker, sym, cur_p, adaptive_lot, is_equity=False, sl=sl)
                 if not has_margin:
                     # MARGIN DEFICIT: Skip portfolio paper execution, but broadcast alert!
                     trade['lot_size'] = adaptive_lot
                     trade['check_615']['status'] = "INSUFFICIENT_MARGIN_STAND_ASIDE"
-                    trade['check_615']['action_taken'] = f"Execution Skipped: Insufficient Margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent."
-                    trade['check_615']['detail'] = f"Circuit reversal confirmed, but available cash ₹{avail_margin:,.2f} is insufficient for margin ₹{req_margin:,.2f}."
+                    trade['check_615']['action_taken'] = f"Execution Skipped: Insufficient Margin (Min Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent."
+                    trade['check_615']['detail'] = f"Circuit reversal confirmed, but available cash ₹{avail_margin:,.2f} cannot afford even 1 lot (Min Req: ₹{req_margin:,.2f})."
                     trade['paper_trade']['status'] = "STAND_ASIDE"
                     trade['paper_trade']['action'] = "STAND_ASIDE"
                     trade['paper_trade']['quantity'] = 0
@@ -2823,7 +2872,7 @@ def check_and_execute_615_confirmation(checker, alerter):
                     trade['eod_outcome']['outcome'] = "PROTECTED"
                     trade['eod_outcome']['badge'] = "Margin Skipped 🛡️"
                     trade['eod_outcome']['pnl_display'] = "₹0.00 (Discretionary)"
-                    trade['eod_outcome']['summary'] = f"Circuit reversal confirmed, but execution skipped on managed portfolio due to margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Discretionary alert sent."
+                    trade['eod_outcome']['summary'] = f"Circuit reversal confirmed, but execution skipped on managed portfolio due to margin (Min Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Discretionary alert sent."
                     
                     msg = (
                         f"📢 <b>[6:15 PM REVERSAL ALERT - MARGIN EXHAUSTED] {trade['name'].upper()}</b>\n"
@@ -2831,7 +2880,7 @@ def check_and_execute_615_confirmation(checker, alerter):
                         f"• Suggested Trade: <b>{action} {adaptive_lot} units</b> @ ₹{cur_p:,.2f}\n"
                         f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{prev_close:,.2f}\n"
                         f"• Margin Check: ⚠️ <b>Required: ₹{req_margin:,.2f} | Available Cash: ₹{avail_margin:,.2f}</b>\n"
-                        f"• Execution Status: <b>SKIPPED on Managed Portfolio</b> (Zero margin balance remaining)\n"
+                        f"• Execution Status: <b>SKIPPED on Managed Portfolio</b> (Insufficient margin for even 1 lot)\n"
                         f"• Discretionary Notice: Broadcasted for manual execution if additional capital/broker margin is available."
                     )
                     alert_messages.append(msg)
@@ -2848,8 +2897,7 @@ def check_and_execute_615_confirmation(checker, alerter):
                     trade['paper_trade']['entry_time'] = "06:15 PM IST"
                     trade['paper_trade']['target'] = tgt
                     trade['paper_trade']['stop_loss'] = sl
-                    rate = MARGIN_RATES.get(trade['symbol'], 0.15)
-                    trade['paper_trade']['margin_required_inr'] = round(cur_p * adaptive_lot * rate, 2)
+                    trade['paper_trade']['margin_required_inr'] = req_margin
                     
                     trade['eod_outcome']['outcome'] = "ACTIVE"
                     trade['eod_outcome']['badge'] = "Active Trade ⚡"
@@ -3751,7 +3799,8 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 continue
 
             # Check Margin Availability for commodity trigger
-            has_margin, req_margin, avail_margin = check_margin_availability(tracker, contract_sym, cur_p, adaptive_lot, is_equity=False)
+            # If available balance < ₹1.5L target margin, downscale to affordable whole lots instead of skipping
+            has_margin, req_margin, avail_margin, adaptive_lot = check_margin_availability(tracker, contract_sym, cur_p, adaptive_lot, is_equity=False, sl=sl)
             if not has_margin:
                 entry_obj = {
                     "id": trade_id,
@@ -3781,8 +3830,8 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                         "checked": True,
                         "status": "INSUFFICIENT_MARGIN_STAND_ASIDE",
                         "price_615": cur_p,
-                        "action_taken": f"Execution Skipped: Insufficient Margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent.",
-                        "detail": f"{setup_name}: Setup confirmed, but available cash ₹{avail_margin:,.2f} is insufficient for margin ₹{req_margin:,.2f}."
+                        "action_taken": f"Execution Skipped: Insufficient Margin (Min Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent.",
+                        "detail": f"{setup_name}: Setup confirmed, but available cash ₹{avail_margin:,.2f} cannot afford even 1 lot (Min Req: ₹{req_margin:,.2f})."
                     },
                     "paper_trade": {
                         "user": USER_ACCOUNT,
@@ -4220,7 +4269,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
 
                                         trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{clean_sym}FUT"
                                         if not any(t.get('id') == trade_id for t in (trades + new_trades)):
-                                            has_margin, req_margin, avail_margin = check_margin_availability(tracker, fut_sym, cur_p, fut_lot, is_equity=False)
+                                            has_margin, req_margin, avail_margin, fut_lot = check_margin_availability(tracker, fut_sym, cur_p, fut_lot, is_equity=False, sl=fut_sl)
                                             if not has_margin:
                                                 entry_obj = {
                                                     "id": trade_id,

@@ -612,17 +612,19 @@ class PositionSizer:
     }
 
     @classmethod
-    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=8500.0, atr=None, target_margin_inr=150000.0):
+    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=8500.0, atr=None, target_margin_inr=150000.0, available_margin_inr=None):
         """
         Resolves the appropriate contract and scales lots to match ~₹1,50,000 deployed margin per position.
+        If available margin is constrained (available_margin_inr < ₹1,50,000), it ignores the ₹1,50,000
+        target and sizes the maximum whole exchange lots that fit inside the available balance.
         Commodities strictly trade in standardized whole exchange lots:
-        - CRUDEOILM: 7 lots (70 bbl) ≈ ₹1.48L margin
-        - SILVERMIC: 5 lots (5 kg) ≈ ₹1.41L margin
-        - NATURALGASM: 10-12 lots (2500-3000 mmBtu) ≈ ₹1.28L - ₹1.54L margin
-        - COPPERM: 1 lot (1000 kg) ≈ ₹1.35L margin
-        - ZINCMINI: 2 lots (2000 kg) ≈ ₹1.24L margin
-        - ALUMINI: 3 lots (3000 kg) ≈ ₹1.58L margin
-        - GOLDM: 1 lot (100g) ≈ ₹1.43L margin
+        - CRUDEOILM: 7-10 lots (70-100 bbl)
+        - SILVERMIC: 5-11 lots (5-11 kg)
+        - NATURALGASM: 10-12 lots (2500-3000 mmBtu)
+        - COPPERM: 1 lot (1000 kg)
+        - ZINCMINI: 2 lots (2000 kg)
+        - ALUMINI: 3 lots (3000 kg)
+        - GOLDM: 1 lot (100g)
         """
         if entry <= 0 or stop <= 0 or entry == stop:
             return symbol, name, default_lot
@@ -634,11 +636,20 @@ class PositionSizer:
         resolved_name = mini_info['name'] if mini_info else name
         base_unit = mini_info['lot_size'] if mini_info else (default_lot if default_lot > 0 else 1)
 
-        # 2. Sizing by ~₹1,50,000 Target Margin
+        # 2. Sizing by ~₹1,50,000 Target Margin OR Available Balance if constrained
         m_rate = cls.MARGIN_RATES.get(resolved_sym, cls.MARGIN_RATES.get(base_sym, 0.20))
         single_lot_margin = (base_unit * entry) * m_rate
+        
+        effective_margin_cap = target_margin_inr
+        if available_margin_inr is not None and available_margin_inr < target_margin_inr:
+            effective_margin_cap = max(0.0, available_margin_inr)
+
         if single_lot_margin > 0:
-            target_lots = max(1, round(target_margin_inr / single_lot_margin))
+            if available_margin_inr is not None and available_margin_inr < target_margin_inr:
+                # With limited balance, strictly fit whole lots inside available margin
+                target_lots = int(effective_margin_cap // single_lot_margin)
+            else:
+                target_lots = max(1, round(effective_margin_cap / single_lot_margin))
             resolved_lot = target_lots * base_unit
         else:
             resolved_lot = base_unit
@@ -653,7 +664,7 @@ class PositionSizer:
                 if affordable_lots >= 1:
                     resolved_lot = affordable_lots * base_unit
                 else:
-                    resolved_lot = base_unit  # Minimum 1 base lot
+                    resolved_lot = base_unit if (available_margin_inr is None or available_margin_inr >= single_lot_margin) else 0
 
         return resolved_sym, resolved_name, resolved_lot
 
