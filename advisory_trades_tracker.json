@@ -1,17 +1,17 @@
 {
-  "last_updated": "10 Nov 2026, 08:59 AM IST",
+  "last_updated": "10 Nov 2026, 09:30 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 157,
-    "executed_count": 22,
+    "total_signals": 160,
+    "executed_count": 25,
     "correct_count": 6,
     "wrong_count": 15,
     "protected_count": 135,
     "win_rate_pct": 28.6,
     "total_pnl_inr": -34744.2,
-    "avg_trade_pnl_inr": -1579.28,
-    "active_trades_count": 0,
+    "avg_trade_pnl_inr": -1389.77,
+    "active_trades_count": 3,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 266337.75,
     "used_margin_inr": 0,
@@ -19,6 +19,333 @@
     "net_worth_inr": 266337.75
   },
   "trades": [
+    {
+      "id": "ADV-10Nov2026-0930-APOLLOHOSP",
+      "date": "10 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "09:30 AM IST",
+      "time_6pm": "09:30 AM IST",
+      "time_validation": "09:30 AM IST",
+      "time_615": "09:30 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "APOLLOHOSP.NS",
+      "name": "Apollo Hospitals Enterprise Limited",
+      "lot_size": 5,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 59.7). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 59.7,
+        "bb_width_pct": 15.91,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 16.6,
+        "p_stop_pct": 12.9,
+        "p_neither_pct": 70.5,
+        "resolved_win_rate_pct": 56.3,
+        "expected_r": 0.07,
+        "target_r": 1.2,
+        "sample_bars": 727,
+        "summary": "3,000 Replays: 16.6% Target | 12.9% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 737.4,
+        "potential_gain_inr": 884.9
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b98,549.50 breaking above range high \u20b98,549.50."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b98,549.50",
+        "rationale": "High-Beta breakout momentum (Chg: +1.20%) with healthy RSI (59.7) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 16.6% Target | 12.9% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 8549.5,
+        "stop_loss": 8402.02,
+        "target": 8726.48
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 8549.5,
+        "action_taken": "Entered BUY 5 shares @ \u20b98,549.50",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.20%) with healthy RSI (59.7) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 16.6% Target | 12.9% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 5,
+        "entry_price": 8549.5,
+        "entry_time": "09:30 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 8726.48,
+        "stop_loss": 8402.02,
+        "margin_required_inr": 8549.5,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b98,549.50 (Target: \u20b98,726.48, SL: \u20b98,402.02) | 3,000 Replays: 16.6% Target | 12.9% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
+    {
+      "id": "ADV-10Nov2026-0930-ABCAPITAL",
+      "date": "10 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "09:30 AM IST",
+      "time_6pm": "09:30 AM IST",
+      "time_validation": "09:30 AM IST",
+      "time_615": "09:30 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "ABCAPITAL.NS",
+      "name": "Aditya Birla Capital Ltd.",
+      "lot_size": 124,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 65.1). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 65.1,
+        "bb_width_pct": 16.1,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 33.4,
+        "p_stop_pct": 16.9,
+        "p_neither_pct": 49.7,
+        "resolved_win_rate_pct": 66.4,
+        "expected_r": 0.232,
+        "target_r": 1.2,
+        "sample_bars": 727,
+        "summary": "3,000 Replays: 33.4% Target | 16.9% Stop | Expected: +0.23R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 858.08,
+        "potential_gain_inr": 1029.2
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b9401.65 breaking above range high \u20b9401.65."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b9401.65",
+        "rationale": "High-Beta breakout momentum (Chg: +1.13%) with healthy RSI (65.1) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 33.4% Target | 16.9% Stop | Expected: +0.23R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 401.65,
+        "stop_loss": 394.73,
+        "target": 409.95
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 401.65,
+        "action_taken": "Entered BUY 124 shares @ \u20b9401.65",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.13%) with healthy RSI (65.1) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 33.4% Target | 16.9% Stop | Expected: +0.23R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 124,
+        "entry_price": 401.65,
+        "entry_time": "09:30 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 409.95,
+        "stop_loss": 394.73,
+        "margin_required_inr": 9960.92,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b9401.65 (Target: \u20b9409.95, SL: \u20b9394.73) | 3,000 Replays: 33.4% Target | 16.9% Stop | Expected: +0.23R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
+    {
+      "id": "ADV-10Nov2026-0930-BAJAJ-AUTO",
+      "date": "10 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "09:30 AM IST",
+      "time_6pm": "09:30 AM IST",
+      "time_validation": "09:30 AM IST",
+      "time_615": "09:30 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "BAJAJ-AUTO.NS",
+      "name": "Bajaj Auto Limited",
+      "lot_size": 4,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 62.8). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 62.8,
+        "bb_width_pct": 9.82,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 21.0,
+        "p_stop_pct": 13.0,
+        "p_neither_pct": 66.0,
+        "resolved_win_rate_pct": 61.8,
+        "expected_r": 0.122,
+        "target_r": 1.2,
+        "sample_bars": 727,
+        "summary": "3,000 Replays: 21.0% Target | 13.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 757.56,
+        "potential_gain_inr": 909.08
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b910,979.00 breaking above range high \u20b910,979.00."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b910,979.00",
+        "rationale": "High-Beta breakout momentum (Chg: +0.63%) with healthy RSI (62.8) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 21.0% Target | 13.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 10979.0,
+        "stop_loss": 10789.61,
+        "target": 11206.27
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 10979.0,
+        "action_taken": "Entered BUY 4 shares @ \u20b910,979.00",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.63%) with healthy RSI (62.8) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 21.0% Target | 13.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 4,
+        "entry_price": 10979.0,
+        "entry_time": "09:30 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 11206.27,
+        "stop_loss": 10789.61,
+        "margin_required_inr": 8783.2,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b910,979.00 (Target: \u20b911,206.27, SL: \u20b910,789.61) | 3,000 Replays: 21.0% Target | 13.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
     {
       "id": "ADV-09Nov2026-2000-CRUDEOIL",
       "date": "09 Nov 2026",
