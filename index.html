@@ -7441,6 +7441,8 @@ function renderAdvisoryTradesTable() {
             if (isSessionExpired) {
                 const isWin = (pt.pnl_inr || 0) > 0;
                 outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : '11:30 PM'})</span>`;
+            } else if (pt.target_runner_active) {
+                outcomeBadge = `<span class="adv-badge-active" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🚀</span>`;
             } else {
                 outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
             }
@@ -7594,6 +7596,12 @@ function renderAdvisoryTradesTable() {
             exitDetailHtml = isPast1815
                 ? `<div style="font-size:0.75rem; color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</div>`
                 : `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Pending Check</div>`;
+        } else if (pt.exit_trigger === 'TARGET_RUNNER_EXIT' || pt.exit_trigger === 'TARGET_RUNNER_EOD' || outcome.badge?.includes('Target Runner') || outcome.summary?.includes('Target Runner')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#4ade80; font-weight:700;"><i class="fa-solid fa-rocket"></i> Target Runner (${exitTimeStr})</div>`;
+        } else if (pt.exit_trigger === 'TRAILING_PROFIT_HIT' || outcome.badge?.includes('Trailing Profit') || outcome.summary?.includes('Trailing Profit')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#38bdf8; font-weight:700;"><i class="fa-solid fa-sack-dollar"></i> Trailing Profit (${exitTimeStr})</div>`;
+        } else if (pt.exit_trigger === 'TRAILING_BREAKEVEN_HIT' || outcome.badge?.includes('Breakeven') || outcome.summary?.includes('Breakeven')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#60a5fa; font-weight:700;"><i class="fa-solid fa-shield-halved"></i> Breakeven Exit (${exitTimeStr})</div>`;
         } else if (pt.exit_trigger === 'STAGNATION_EXIT' || outcome.badge?.includes('Stagnation') || outcome.summary?.includes('Stagnation')) {
             exitDetailHtml = `<div style="font-size:0.75rem; color:#60a5fa; font-weight:700;"><i class="fa-solid fa-hourglass-end"></i> Stagnation Exit (${exitTimeStr})</div>`;
         } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {
@@ -7607,6 +7615,23 @@ function renderAdvisoryTradesTable() {
         const assetBadge = isEqTrade 
             ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-bolt"></i> MIS INTRADAY (5x)</span>`
             : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
+
+        const displaySl = pt.stop_loss || s6.stop_loss;
+        let slBadge = '';
+        let slColor = '#fb7185';
+        if (pt.target_runner_active) {
+            slBadge = '<span style="font-size:0.65rem; color:#4ade80; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Trailing 🚀</span>';
+            slColor = '#4ade80';
+        } else if (pt.stage_3_target_approaching) {
+            slBadge = '<span style="font-size:0.65rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+65% Locked</span>';
+            slColor = '#38bdf8';
+        } else if (pt.stage_2_profit_locked) {
+            slBadge = '<span style="font-size:0.65rem; color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+35% Locked</span>';
+            slColor = '#fbbf24';
+        } else if (pt.trailing_sl_active) {
+            slBadge = '<span style="font-size:0.65rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Breakeven</span>';
+            slColor = '#a5b4fc';
+        }
 
         return `
             <tr>
@@ -7642,7 +7667,7 @@ function renderAdvisoryTradesTable() {
                 <td>${check615Html}</td>
                 <td>${paperTradeCell}</td>
                 <td>
-                    <div style="font-size:0.8rem; color:#fb7185; font-weight:600;">SL: ₹${s6.stop_loss ? Number(s6.stop_loss).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
+                    <div style="font-size:0.8rem; color:${slColor}; font-weight:600;">SL: ₹${displaySl ? Number(displaySl).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} ${slBadge}</div>
                     <div style="font-size:0.8rem; color:#4ade80; font-weight:600;">TGT: ₹${s6.target ? Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
                 </td>
                 <td>
@@ -7729,6 +7754,8 @@ function renderAdvisoryTradesTable() {
                 if (isSessionExpired) {
                     const isWin = (pt.pnl_inr || 0) > 0;
                     outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : '11:30 PM'})</span>`;
+                } else if (pt.target_runner_active) {
+                    outcomeBadge = `<span class="adv-badge-active" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🚀</span>`;
                 } else {
                     outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
                 }
@@ -7827,6 +7854,15 @@ function renderAdvisoryTradesTable() {
                 mobileExitVal = isPast1815
                     ? '<span style="color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</span>'
                     : '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Pending Check</span>';
+            } else if (pt.exit_trigger === 'TARGET_RUNNER_EXIT' || pt.exit_trigger === 'TARGET_RUNNER_EOD' || outcome.badge?.includes('Target Runner') || outcome.summary?.includes('Target Runner')) {
+                mobileExitLabel = `<i class="fa-solid fa-rocket" style="color:#4ade80;"></i> Target Runner`;
+                mobileExitVal = `<span style="color:#4ade80; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
+            } else if (pt.exit_trigger === 'TRAILING_PROFIT_HIT' || outcome.badge?.includes('Trailing Profit') || outcome.summary?.includes('Trailing Profit')) {
+                mobileExitLabel = `<i class="fa-solid fa-sack-dollar" style="color:#38bdf8;"></i> Trailing Profit`;
+                mobileExitVal = `<span style="color:#38bdf8; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
+            } else if (pt.exit_trigger === 'TRAILING_BREAKEVEN_HIT' || outcome.badge?.includes('Breakeven') || outcome.summary?.includes('Breakeven')) {
+                mobileExitLabel = `<i class="fa-solid fa-shield-halved" style="color:#60a5fa;"></i> Breakeven Exit`;
+                mobileExitVal = `<span style="color:#60a5fa; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
             } else if (pt.exit_trigger === 'STAGNATION_EXIT' || outcome.badge?.includes('Stagnation') || outcome.summary?.includes('Stagnation')) {
                 mobileExitLabel = `<i class="fa-solid fa-hourglass-end" style="color:#60a5fa;"></i> Stagnation Exit`;
                 mobileExitVal = `<span style="color:#60a5fa; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
@@ -7846,6 +7882,23 @@ function renderAdvisoryTradesTable() {
             const assetBadge = isEqTrade 
                 ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-bolt"></i> MIS INTRADAY (5x)</span>`
                 : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
+
+            const mobDisplaySl = pt.stop_loss || s6.stop_loss;
+            let mobSlBadge = '';
+            let mobSlColor = '#fb7185';
+            if (pt.target_runner_active) {
+                mobSlBadge = '<span style="font-size:0.6rem; color:#4ade80; background:rgba(34,197,94,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">Trailing 🚀</span>';
+                mobSlColor = '#4ade80';
+            } else if (pt.stage_3_target_approaching) {
+                mobSlBadge = '<span style="font-size:0.6rem; color:#38bdf8; background:rgba(56,189,248,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">+65%</span>';
+                mobSlColor = '#38bdf8';
+            } else if (pt.stage_2_profit_locked) {
+                mobSlBadge = '<span style="font-size:0.6rem; color:#fbbf24; background:rgba(245,158,11,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">+35%</span>';
+                mobSlColor = '#fbbf24';
+            } else if (pt.trailing_sl_active) {
+                mobSlBadge = '<span style="font-size:0.6rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">BE</span>';
+                mobSlColor = '#a5b4fc';
+            }
 
             return `
                 <div class="mobile-trading-card">
@@ -7896,7 +7949,7 @@ function renderAdvisoryTradesTable() {
                         </div>
                         <div class="mobile-cell-item">
                             <span class="mobile-cell-label">Stop Loss</span>
-                            <span class="mobile-cell-val" style="color:#fb7185; font-weight:600;">₹${s6.stop_loss ? Number(s6.stop_loss).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</span>
+                            <span class="mobile-cell-val" style="color:${mobSlColor}; font-weight:600;">₹${mobDisplaySl ? Number(mobDisplaySl).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} ${mobSlBadge}</span>
                         </div>
                         <div class="mobile-cell-item">
                             <span class="mobile-cell-label">Target</span>
