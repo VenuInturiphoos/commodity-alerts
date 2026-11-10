@@ -420,9 +420,9 @@ def save_tracker(tracker_data):
         is_past_day = bool(t_date and t_date != today_str)
         is_eq = t.get('asset_type') in ['EQUITY', 'STOCK_FUTURES'] or ('-FUT' in t.get('symbol', '')) or ('.NS' in t.get('symbol', ''))
         
-        # 1. Unconfirmed setups from past days or today's 6:00 PM session past 6:25 PM window
-        is_today_past_625 = (not is_past_day and ((now_dt.hour == 18 and now_dt.minute >= 25) or now_dt.hour > 18) and ('1800' in t.get('id', '') or t.get('time_validation') == '06:15 PM IST'))
-        if (is_past_day or is_today_past_625) and (pt.get('status') in ['PENDING_615', 'PENDING_LIMIT', 'PENDING_615_CHECK'] or (not pt.get('entry_price') and pt.get('status') != 'ACTIVE')):
+        # 1. Unconfirmed setups from past days or today's 6:00 PM session past 6:15 PM window
+        is_today_past_615 = (not is_past_day and ((now_dt.hour == 18 and now_dt.minute >= 15) or now_dt.hour > 18) and ('1800' in t.get('id', '') or t.get('time_validation') == '06:15 PM IST'))
+        if (is_past_day or is_today_past_615) and (pt.get('status') in ['PENDING_615', 'PENDING_LIMIT', 'PENDING_615_CHECK'] or (not pt.get('entry_price') and pt.get('status') != 'ACTIVE')):
             c15['checked'] = True
             c15['status'] = 'CONFIRMATION_EXPIRED'
             c15['action_taken'] = '15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.'
@@ -432,7 +432,7 @@ def save_tracker(tracker_data):
             pt['pnl_inr'] = 0.0
             pt['margin_required_inr'] = 0.0
             eod['outcome'] = 'PROTECTED'
-            eod['badge'] = 'Window Lapsed 🛡️' if is_today_past_625 else 'Avoided Trap 🛡️'
+            eod['badge'] = 'Window Lapsed 🛡️' if is_today_past_615 else 'Avoided Trap 🛡️'
             eod['pnl_display'] = '₹0.00 (Protected)'
             eod['summary'] = '15-minute confirmation check elapsed without executed entry. 100% capital protected in cash.'
 
