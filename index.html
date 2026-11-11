@@ -7644,21 +7644,6 @@ function renderAdvisoryTradesTable() {
         let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
         if (outcome.badge && outcome.badge.includes('Margin Skipped')) {
             outcomeBadge = `<span class="adv-badge-protected" style="border:1px solid rgba(245, 158, 11, 0.5); background:rgba(245, 158, 11, 0.15); color:#fbbf24;"><i class="fa-solid fa-wallet"></i> Margin Skipped 🛡️</span>`;
-        } else if (pt.status === 'CLOSED' || pt.exit_price) {
-            const exitTimeTag = pt.exit_time || outcome.exit_time || 'Closed';
-            if (pt.exit_trigger === 'TARGET_RUNNER_EXIT' || pt.exit_trigger === 'TARGET_RUNNER_EOD' || outcome.badge?.includes('Target Runner') || (pt.target_runner_active && (pt.pnl_inr || 0) > 0)) {
-                outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🎯🚀 (${exitTimeTag})</span>`;
-            } else if (pt.exit_trigger === 'TRAILING_PROFIT_HIT' || outcome.badge?.includes('Trailing Profit') || ((pt.stage_3_target_approaching || pt.stage_2_profit_locked) && (pt.pnl_inr || 0) > 0)) {
-                outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(56,189,248,0.18); border:1px solid rgba(56,189,248,0.45); color:#38bdf8;"><i class="fa-solid fa-sack-dollar"></i> Trailing Profit 💰 (${exitTimeTag})</span>`;
-            } else if (pt.exit_trigger === 'TRAILING_BREAKEVEN_HIT' || outcome.badge?.includes('Breakeven') || (pt.trailing_sl_active && Math.abs(pt.pnl_inr || 0) < 1.0)) {
-                outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Breakeven Exit 🛡️ (${exitTimeTag})</span>`;
-            } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || (pt.pnl_inr || 0) < 0) {
-                outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> Stop Loss Hit 🛑 (${exitTimeTag})</span>`;
-            } else if ((pt.pnl_inr || 0) > 0) {
-                outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> Correct ✅ (${exitTimeTag})</span>`;
-            } else {
-                outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge && !outcome.badge.includes('Active') ? outcome.badge : 'Closed ✅'}</span>`;
-            }
         } else if (outcome.outcome === 'WRONG') {
             outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
         } else if ((pt.status === 'PENDING_615' || outcome.badge?.includes('Awaiting 6:15 PM')) && (isPast1815 || isStandAsideTrade)) {
@@ -7887,9 +7872,6 @@ function renderAdvisoryTradesTable() {
         if (pt.status === 'ACTIVE' && isTargetScrapped) {
             const curSl = Number(displaySl || 0);
             activeSummary = `Target removed — Trailing Profit Stop (+65% locked @ ₹${curSl.toFixed(2)}) active. Relying entirely on trailing stoploss.`;
-        } else if ((pt.status === 'CLOSED' || pt.exit_price) && activeSummary.startsWith('Dynamic Trailing Stop active')) {
-            const exitTimeTag = pt.exit_time || outcome.exit_time || '12:51 PM IST';
-            activeSummary = `Target Runner Trailing Stop Triggered (Exit ₹${Number(pt.exit_price || displaySl).toFixed(2)} | Profit locked) at ${exitTimeTag}.`;
         }
 
         return `
@@ -7979,21 +7961,6 @@ function renderAdvisoryTradesTable() {
             let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
             if (outcome.badge && outcome.badge.includes('Margin Skipped')) {
                 outcomeBadge = `<span class="adv-badge-protected" style="border:1px solid rgba(245, 158, 11, 0.5); background:rgba(245, 158, 11, 0.15); color:#fbbf24;"><i class="fa-solid fa-wallet"></i> Margin Skipped 🛡️</span>`;
-            } else if (pt.status === 'CLOSED' || pt.exit_price) {
-                const exitTimeTag = pt.exit_time || outcome.exit_time || 'Closed';
-                if (pt.exit_trigger === 'TARGET_RUNNER_EXIT' || pt.exit_trigger === 'TARGET_RUNNER_EOD' || outcome.badge?.includes('Target Runner') || (pt.target_runner_active && (pt.pnl_inr || 0) > 0)) {
-                    outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🎯🚀 (${exitTimeTag})</span>`;
-                } else if (pt.exit_trigger === 'TRAILING_PROFIT_HIT' || outcome.badge?.includes('Trailing Profit') || ((pt.stage_3_target_approaching || pt.stage_2_profit_locked) && (pt.pnl_inr || 0) > 0)) {
-                    outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(56,189,248,0.18); border:1px solid rgba(56,189,248,0.45); color:#38bdf8;"><i class="fa-solid fa-sack-dollar"></i> Trailing Profit 💰 (${exitTimeTag})</span>`;
-                } else if (pt.exit_trigger === 'TRAILING_BREAKEVEN_HIT' || outcome.badge?.includes('Breakeven') || (pt.trailing_sl_active && Math.abs(pt.pnl_inr || 0) < 1.0)) {
-                    outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Breakeven Exit 🛡️ (${exitTimeTag})</span>`;
-                } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || (pt.pnl_inr || 0) < 0) {
-                    outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> Stop Loss Hit 🛑 (${exitTimeTag})</span>`;
-                } else if ((pt.pnl_inr || 0) > 0) {
-                    outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> Correct ✅ (${exitTimeTag})</span>`;
-                } else {
-                    outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge && !outcome.badge.includes('Active') ? outcome.badge : 'Closed ✅'}</span>`;
-                }
             } else if (outcome.outcome === 'WRONG') {
                 outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
             } else if ((pt.status === 'PENDING_615' || outcome.badge?.includes('Awaiting 6:15 PM')) && (isPast1815 || isStandAsideTrade)) {
@@ -8165,9 +8132,6 @@ function renderAdvisoryTradesTable() {
             if (pt.status === 'ACTIVE' && mobIsTargetScrapped) {
                 const curSl = Number(mobDisplaySl || 0);
                 mobActiveSummary = `Target removed — Trailing Profit Stop (+65% locked @ ₹${curSl.toFixed(2)}) active. Relying entirely on trailing stoploss.`;
-            } else if ((pt.status === 'CLOSED' || pt.exit_price) && mobActiveSummary.startsWith('Dynamic Trailing Stop active')) {
-                const exitTimeTag = pt.exit_time || outcome.exit_time || '12:51 PM IST';
-                mobActiveSummary = `Target Runner Trailing Stop Triggered (Exit ₹${Number(pt.exit_price || mobDisplaySl).toFixed(2)} | Profit locked) at ${exitTimeTag}.`;
             }
 
             return `
