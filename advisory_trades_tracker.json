@@ -1,17 +1,17 @@
 {
-  "last_updated": "11 Nov 2026, 08:59 AM IST",
+  "last_updated": "11 Nov 2026, 09:30 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 25,
-    "executed_count": 6,
+    "total_signals": 26,
+    "executed_count": 7,
     "correct_count": 1,
     "wrong_count": 0,
     "protected_count": 19,
     "win_rate_pct": 100.0,
     "total_pnl_inr": 5840.0,
-    "avg_trade_pnl_inr": 973.33,
-    "active_trades_count": 0,
+    "avg_trade_pnl_inr": 834.29,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 305840.0,
     "used_margin_inr": 0,
@@ -19,6 +19,115 @@
     "net_worth_inr": 305840.0
   },
   "trades": [
+    {
+      "id": "ADV-11Nov2026-0930-SHRIRAMFIN",
+      "date": "11 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "09:30 AM IST",
+      "time_6pm": "09:30 AM IST",
+      "time_validation": "09:30 AM IST",
+      "time_615": "09:30 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "SHRIRAMFIN.NS",
+      "name": "Shriram Finance Limited",
+      "lot_size": 51,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 60.1). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 60.1,
+        "bb_width_pct": 21.74,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "STRONG_POSITIVE_EXPECTANCY",
+        "verdict_text": "Strongly Leans Toward Target \ud83c\udfaf (High Edge)",
+        "p_target_pct": 32.0,
+        "p_stop_pct": 13.2,
+        "p_neither_pct": 54.8,
+        "resolved_win_rate_pct": 70.9,
+        "expected_r": 0.252,
+        "target_r": 1.2,
+        "sample_bars": 658,
+        "summary": "3,000 Replays: 32.0% Target | 13.2% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 857.82,
+        "potential_gain_inr": 1029.18
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b9975.45 breaking above range high \u20b9975.45."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b9975.45",
+        "rationale": "High-Beta breakout momentum (Chg: +1.08%) with healthy RSI (60.1) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 32.0% Target | 13.2% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))",
+        "reference_price": 975.45,
+        "stop_loss": 958.63,
+        "target": 995.63
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 975.45,
+        "action_taken": "Entered BUY 51 shares @ \u20b9975.45",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.08%) with healthy RSI (60.1) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 32.0% Target | 13.2% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 51,
+        "entry_price": 975.45,
+        "entry_time": "09:30 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 995.63,
+        "stop_loss": 958.63,
+        "margin_required_inr": 9949.59,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b9975.45 (Target: \u20b9995.63, SL: \u20b9958.63) | 3,000 Replays: 32.0% Target | 13.2% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      }
+    },
     {
       "id": "ADV-10Nov2026-2000-CRUDEOIL",
       "date": "10 Nov 2026",
