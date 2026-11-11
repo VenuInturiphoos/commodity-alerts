@@ -3149,6 +3149,12 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                     pt['original_sl'] = stop_loss
                     pt['stop_loss'] = entry_p
                     stop_loss = entry_p
+                    if action == 'BUY':
+                        pt['trough_low'] = cur_p
+                        effective_low = cur_p
+                    else:
+                        pt['peak_high'] = cur_p
+                        effective_high = cur_p
                     if s6:
                         s6['stop_loss'] = entry_p
                     updated_any = True
@@ -3176,6 +3182,12 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                     if (action == 'BUY' and lock_price > stop_loss) or (action == 'SELL' and lock_price < stop_loss):
                         pt['stop_loss'] = lock_price
                         stop_loss = lock_price
+                        if action == 'BUY':
+                            pt['trough_low'] = cur_p
+                            effective_low = cur_p
+                        else:
+                            pt['peak_high'] = cur_p
+                            effective_high = cur_p
                         if s6:
                             s6['stop_loss'] = lock_price
                     updated_any = True
@@ -3202,6 +3214,12 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                     if (action == 'BUY' and lock_price > stop_loss) or (action == 'SELL' and lock_price < stop_loss):
                         pt['stop_loss'] = lock_price
                         stop_loss = lock_price
+                        if action == 'BUY':
+                            pt['trough_low'] = cur_p
+                            effective_low = cur_p
+                        else:
+                            pt['peak_high'] = cur_p
+                            effective_high = cur_p
                         if s6:
                             s6['stop_loss'] = lock_price
                     updated_any = True
@@ -3237,6 +3255,12 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         if (action == 'BUY' and floor_lock > stop_loss) or (action == 'SELL' and floor_lock < stop_loss):
                             stop_loss = floor_lock
                             pt['stop_loss'] = floor_lock
+                            if action == 'BUY':
+                                pt['trough_low'] = cur_p
+                                effective_low = cur_p
+                            else:
+                                pt['peak_high'] = cur_p
+                                effective_high = cur_p
                             if s6:
                                 s6['stop_loss'] = floor_lock
                         updated_any = True
@@ -3263,6 +3287,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         if ratchet_sl > stop_loss:
                             stop_loss = ratchet_sl
                             pt['stop_loss'] = ratchet_sl
+                            pt['trough_low'] = cur_p
+                            effective_low = cur_p
                             if s6:
                                 s6['stop_loss'] = ratchet_sl
                             updated_any = True
@@ -3271,6 +3297,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         if ratchet_sl < stop_loss:
                             stop_loss = ratchet_sl
                             pt['stop_loss'] = ratchet_sl
+                            pt['peak_high'] = cur_p
+                            effective_high = cur_p
                             if s6:
                                 s6['stop_loss'] = ratchet_sl
                             updated_any = True
@@ -3360,8 +3388,15 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             except Exception:
                 pass
 
+        is_trailing = bool(pt.get('target_runner_active') or pt.get('stage_3_target_approaching') or pt.get('stage_2_profit_locked') or pt.get('trailing_sl_active'))
+
         if action == 'BUY':
-            reached_sl = bool(stop_loss and (cur_p <= stop_loss or effective_low <= stop_loss))
+            if is_trailing:
+                # For trailing stops (Breakeven / Profit Lock / Runner), ONLY exit if the current price cur_p <= stop_loss!
+                # Historical effective_low happened earlier at lower prices before the stop was trailed and must NOT trigger exits.
+                reached_sl = bool(stop_loss and cur_p <= stop_loss)
+            else:
+                reached_sl = bool(stop_loss and (cur_p <= stop_loss or effective_low <= stop_loss))
 
             if reached_sl:
                 hit_exit = True
@@ -3389,7 +3424,12 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 reason = "Intraday EOD Square-off (03:20 PM) ⏰"
 
         elif action == 'SELL':
-            reached_sl = bool(stop_loss and (cur_p >= stop_loss or effective_high >= stop_loss))
+            if is_trailing:
+                # For trailing stops (Breakeven / Profit Lock / Runner), ONLY exit if the current price cur_p >= stop_loss!
+                # Historical effective_high happened earlier at higher prices before the stop was trailed and must NOT trigger exits.
+                reached_sl = bool(stop_loss and cur_p >= stop_loss)
+            else:
+                reached_sl = bool(stop_loss and (cur_p >= stop_loss or effective_high >= stop_loss))
 
             if reached_sl:
                 hit_exit = True
