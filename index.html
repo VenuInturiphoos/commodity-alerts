@@ -6944,16 +6944,30 @@ function isAvoidedAdvisoryTrade(t) {
     const c15 = t.check_615 || {};
     const s6 = t.suggestion_6pm || {};
     const isPast1815 = isPastISTWindow(t.date, 18, 15);
+    const todayStrRef = advisoryTrackerData?.last_updated ? advisoryTrackerData.last_updated.split(',')[0].trim() : '';
 
-    // If it is an active real trade or filled execution with quantity > 0 and price > 0, it is NOT avoided
-    if (pt.status === 'ACTIVE' && pt.entry_price && Number(pt.entry_price) > 0 && Number(pt.quantity || 0) > 0) {
-        return false;
-    }
-    if (pt.entry_price && Number(pt.entry_price) > 0 && Number(pt.quantity || 0) > 0 && pt.action !== 'STAND_ASIDE' && (outcome.outcome === 'CORRECT' || outcome.outcome === 'WRONG')) {
+    // Active trade in progress is NEVER avoided
+    if (pt.status === 'ACTIVE' && pt.entry_price && Number(pt.entry_price) > 0) {
         return false;
     }
 
-    // 1. Explicitly stood aside or protected
+    // Trailing breakeven hit or trailing profit hit was a real executed position, NEVER avoided
+    const isTrailingExit = (pt.exit_trigger === 'TRAILING_BREAKEVEN_HIT' || pt.exit_trigger === 'TRAILING_PROFIT_HIT' || (outcome.badge && (outcome.badge.includes('Breakeven') || outcome.badge.includes('Runner'))));
+    if (isTrailingExit) {
+        return false;
+    }
+
+    // Any trade executed today with real position is ALWAYS called, NEVER avoided
+    if (todayStrRef && t.date === todayStrRef && pt.entry_price && Number(pt.entry_price) > 0 && Number(pt.quantity || 0) > 0 && pt.action && pt.action !== 'STAND_ASIDE') {
+        return false;
+    }
+
+    // Historical trades that finished with win/loss are called
+    if (pt.entry_price && Number(pt.entry_price) > 0 && Number(pt.quantity || 0) > 0 && pt.action && pt.action !== 'STAND_ASIDE' && (outcome.outcome === 'CORRECT' || outcome.outcome === 'WRONG' || outcome.outcome === 'INCORRECT')) {
+        return false;
+    }
+
+    // 1. Explicitly stood aside or protected before entry
     if (pt.status === 'STAND_ASIDE' || pt.action === 'STAND_ASIDE') return true;
     if (outcome.outcome === 'PROTECTED') return true;
     if (outcome.badge && (outcome.badge.includes('Avoided') || outcome.badge.includes('Protected') || outcome.badge.includes('Margin Skipped') || outcome.badge.includes('Window Lapsed') || outcome.badge.includes('Trend Guard'))) return true;
@@ -6977,21 +6991,20 @@ function isAvoidedAdvisoryTrade(t) {
 
 function isCalledAdvisoryTrade(t) {
     if (!t) return false;
-    // Stood aside trades are never called trades
-    if (isAvoidedAdvisoryTrade(t)) return false;
-
     const pt = t.paper_trade || {};
     const c15 = t.check_615 || {};
     const outcome = t.eod_outcome || {};
     const isPast1815 = isPastISTWindow(t.date, 18, 15);
+    const todayStrRef = advisoryTrackerData?.last_updated ? advisoryTrackerData.last_updated.split(',')[0].trim() : '';
 
-    // Active trade in progress with real position
-    if (pt.status === 'ACTIVE') return true;
+    // Real executed trades (active, won, lost, or breakeven)
+    if (pt.status === 'ACTIVE' && pt.entry_price && Number(pt.entry_price) > 0) return true;
+    if (todayStrRef && t.date === todayStrRef && pt.entry_price && Number(pt.entry_price) > 0 && pt.action && pt.action !== 'STAND_ASIDE') return true;
+    if (pt.exit_trigger === 'TRAILING_BREAKEVEN_HIT' || pt.exit_trigger === 'TRAILING_PROFIT_HIT') return true;
+    if (outcome.badge && (outcome.badge.includes('Breakeven') || outcome.badge.includes('Runner'))) return true;
 
-    // Real executed entry with verified fills
-    if (pt.entry_price && Number(pt.entry_price) > 0 && Number(pt.quantity || 0) > 0 && pt.action !== 'STAND_ASIDE') {
-        return true;
-    }
+    // Stood aside / avoided setups are never called trades
+    if (isAvoidedAdvisoryTrade(t)) return false;
 
     // Actively awaiting 6:15 PM check (only within the window before 6:15 PM)
     if ((pt.status === 'PENDING_615' || c15.status === 'PENDING_615') && !isPast1815) {
@@ -6999,7 +7012,7 @@ function isCalledAdvisoryTrade(t) {
     }
 
     // Real completed trades with wins/losses
-    if ((outcome.outcome === 'CORRECT' || outcome.outcome === 'WRONG' || outcome.outcome === 'INCORRECT') && outcome.outcome !== 'PROTECTED') {
+    if ((outcome.outcome === 'CORRECT' || outcome.outcome === 'WRONG' || outcome.outcome === 'INCORRECT')) {
         return true;
     }
 
@@ -7337,19 +7350,14 @@ function applyAdvisoryMonthFilter(monthValue) {
     const countCalled = calledTrades.length;
     const countCorrect = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'CORRECT').length;
     const countWrong = trades.filter(t => t.eod_outcome && (t.eod_outcome.outcome === 'WRONG' || t.eod_outcome.outcome === 'INCORRECT')).length;
-    const countProtected = trades.filter(t => t.eod_outcome?.outcome === 'PROTECTED' || isAvoidedAdvisoryTrade(t)).length;
+    const countProtected = trades.filter(t => isAvoidedAdvisoryTrade(t) || (t.eod_outcome?.outcome === 'PROTECTED' && !isCalledAdvisoryTrade(t))).length;
+    const todayStrRef = advisoryTrackerData.last_updated ? advisoryTrackerData.last_updated.split(',')[0].trim() : '';
     const countActive = trades.filter(t => {
         const pt = t.paper_trade || {};
-        if (pt.status === 'CLOSED' || pt.status === 'STAND_ASIDE' || t.eod_outcome?.outcome === 'PROTECTED') return false;
-        if (isAvoidedAdvisoryTrade(t)) return false;
-        const isPast1815 = isPastISTWindow(t.date, 18, 15);
-        const isPast1520 = isPastISTWindow(t.date, 15, 20);
-        const isPast2330 = isPastISTWindow(t.date, 23, 30);
-        const isEq = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
-        if (isEq && isPast1520) return false;
-        if (!isEq && isPast2330) return false;
+        if (pt.status === 'STAND_ASIDE' || isAvoidedAdvisoryTrade(t)) return false;
+        const isToday = Boolean(todayStrRef && t.date === todayStrRef);
         if (pt.status === 'ACTIVE' && pt.entry_price && Number(pt.entry_price) > 0) return true;
-        if ((pt.status === 'PENDING_615' || t.check_615?.status === 'PENDING_615') && !isPast1815) return true;
+        if (isToday && pt.entry_price && Number(pt.entry_price) > 0 && pt.action !== 'STAND_ASIDE') return true;
         return false;
     }).length;
 
@@ -7525,6 +7533,7 @@ function renderAdvisoryTradesTable() {
 
     const allTrades = advisoryTrackerData.trades || [];
     const searchVal = (document.getElementById('adv-search-input')?.value || '').trim().toLowerCase();
+    const todayStrRef = advisoryTrackerData?.last_updated ? advisoryTrackerData.last_updated.split(',')[0].trim() : '';
 
     const filtered = allTrades.filter(t => {
         // Filter by active sub-tab (Futures vs Intraday Stocks)
@@ -7543,15 +7552,11 @@ function renderAdvisoryTradesTable() {
             if (!isCalledAdvisoryTrade(t)) return false;
         } else if (activeAdvFilter === 'ACTIVE') {
             const st = t.paper_trade?.status;
-            if (st === 'CLOSED' || st === 'STAND_ASIDE' || t.eod_outcome?.outcome === 'PROTECTED') return false;
-            if (isAvoidedAdvisoryTrade(t)) return false;
-            const isPast1815 = isPastISTWindow(t.date, 18, 15);
-            const isPast1520 = isPastISTWindow(t.date, 15, 20);
-            const isPast2330 = isPastISTWindow(t.date, 23, 30);
-            const isEq = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
-            if (isEq && isPast1520) return false;
-            if (!isEq && isPast2330) return false;
+            if (st === 'STAND_ASIDE' || isAvoidedAdvisoryTrade(t)) return false;
+            const isToday = Boolean(todayStrRef && t.date === todayStrRef);
             if (st === 'ACTIVE' && t.paper_trade?.entry_price && Number(t.paper_trade.entry_price) > 0) return true;
+            if (isToday && t.paper_trade?.entry_price && Number(t.paper_trade.entry_price) > 0 && t.paper_trade.action !== 'STAND_ASIDE') return true;
+            const isPast1815 = isPastISTWindow(t.date, 18, 15);
             if ((st === 'PENDING_615' || t.check_615?.status === 'PENDING_615') && !isPast1815) return true;
             return false;
         } else if (activeAdvFilter === 'CORRECT') {
