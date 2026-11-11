@@ -1,16 +1,16 @@
 {
-  "last_updated": "11 Nov 2026, 09:51 AM IST",
+  "last_updated": "11 Nov 2026, 10:15 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 28,
-    "executed_count": 9,
-    "correct_count": 1,
+    "total_signals": 29,
+    "executed_count": 10,
+    "correct_count": 2,
     "wrong_count": 0,
     "protected_count": 19,
     "win_rate_pct": 100.0,
-    "total_pnl_inr": 5840.0,
-    "avg_trade_pnl_inr": 648.89,
+    "total_pnl_inr": 6200.81,
+    "avg_trade_pnl_inr": 620.08,
     "active_trades_count": 3,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 305840.0,
@@ -20,6 +20,115 @@
   },
   "trades": [
     {
+      "id": "ADV-11Nov2026-1015-PRESTIGE",
+      "date": "11 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "10:15 AM IST",
+      "time_6pm": "10:15 AM IST",
+      "time_validation": "10:15 AM IST",
+      "time_615": "10:15 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "PRESTIGE.NS",
+      "name": "Prestige Estates Projects Limited",
+      "lot_size": 31,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 63.9). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 63.9,
+        "bb_width_pct": 20.32,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "STRONG_POSITIVE_EXPECTANCY",
+        "verdict_text": "Strongly Leans Toward Target \ud83c\udfaf (High Edge)",
+        "p_target_pct": 35.2,
+        "p_stop_pct": 16.1,
+        "p_neither_pct": 48.7,
+        "resolved_win_rate_pct": 68.7,
+        "expected_r": 0.261,
+        "target_r": 1.2,
+        "sample_bars": 667,
+        "summary": "3,000 Replays: 35.2% Target | 16.1% Stop | Expected: +0.26R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 861.8,
+        "potential_gain_inr": 1034.16
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b91,611.50 breaking above range high \u20b91,611.50."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b91,611.50",
+        "rationale": "High-Beta breakout momentum (Chg: +0.88%) with healthy RSI (63.9) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 35.2% Target | 16.1% Stop | Expected: +0.26R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))",
+        "reference_price": 1611.5,
+        "stop_loss": 1583.7,
+        "target": 1644.86
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 1611.5,
+        "action_taken": "Entered BUY 31 shares @ \u20b91,611.50",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.88%) with healthy RSI (63.9) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 35.2% Target | 16.1% Stop | Expected: +0.26R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 31,
+        "entry_price": 1611.5,
+        "entry_time": "10:15 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 1644.86,
+        "stop_loss": 1583.7,
+        "margin_required_inr": 9991.3,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b91,611.50 (Target: \u20b91,644.86, SL: \u20b91,583.70) | 3,000 Replays: 35.2% Target | 16.1% Stop | Expected: +0.26R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      }
+    },
+    {
       "id": "ADV-11Nov2026-0936-IDFCFIRSTB",
       "date": "11 Nov 2026",
       "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
@@ -27,7 +136,7 @@
       "time_6pm": "09:36 AM IST",
       "time_validation": "09:36 AM IST",
       "time_615": "09:36 AM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "10:15 AM IST",
       "symbol": "IDFCFIRSTB.NS",
       "name": "IDFC First Bank Ltd.",
       "lot_size": 633,
@@ -93,7 +202,7 @@
         "action_text": "BUY @ \u20b978.96",
         "rationale": "High-Beta breakout momentum (Chg: +1.40%) with healthy RSI (56.5) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 20.5% Target | 13.6% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 78.96,
-        "stop_loss": 78.96,
+        "stop_loss": 79.53,
         "target": 80.59
       },
       "check_615": {
@@ -109,29 +218,33 @@
         "quantity": 633,
         "entry_price": 78.96,
         "entry_time": "09:36 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 79.53,
+        "exit_time": "10:15 AM IST",
+        "pnl_points": 0.57,
+        "pnl_inr": 360.81,
+        "status": "CLOSED",
         "target": 80.59,
-        "stop_loss": 78.96,
+        "stop_loss": 79.53,
         "margin_required_inr": 9996.34,
         "product_type": "MIS_INTRADAY",
         "entry_day_high": 79.5,
         "entry_day_low": 79.5,
-        "peak_high": 79.5,
+        "peak_high": 79.94,
         "trough_low": 79.5,
         "trailing_sl_active": true,
-        "original_sl": 77.6
+        "original_sl": 77.6,
+        "stage_2_profit_locked": true,
+        "exit_trigger": "TRAILING_PROFIT_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 79.53,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b978.96 (Target: \u20b980.59, SL: \u20b977.60) | 3,000 Replays: 20.5% Target | 13.6% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+        "outcome": "CORRECT",
+        "badge": "Trailing Profit \ud83d\udcb0 (10:15 AM IST)",
+        "pnl_display": "+\u20b9360.81",
+        "summary": "Trailing Profit Stop Triggered \ud83d\udcb0 (Exit \u20b979.53 | +35% Target Gains Secured) at 10:15 AM IST. Entry: \u20b978.96 -> Exit: \u20b979.53 (+\u20b9360.81).",
+        "exit_time": "10:15 AM IST",
+        "exit_trigger": "TRAILING_PROFIT_HIT"
       }
     },
     {
@@ -235,7 +348,7 @@
         "product_type": "MIS_INTRADAY",
         "entry_day_high": 7741.5,
         "entry_day_low": 7741.5,
-        "peak_high": 7741.5,
+        "peak_high": 7752.0,
         "trough_low": 7741.5
       },
       "eod_outcome": {
@@ -348,7 +461,7 @@
         "product_type": "MIS_INTRADAY",
         "entry_day_high": 977.0,
         "entry_day_low": 977.0,
-        "peak_high": 977.0,
+        "peak_high": 977.9,
         "trough_low": 977.0
       },
       "eod_outcome": {

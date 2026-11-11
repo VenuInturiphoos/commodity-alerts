@@ -732,7 +732,7 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                             <span id="tracker-last-updated" style="font-size: 0.8rem; color: var(--text-secondary);">Syncing...</span>
-                            <button onclick="loadAdvisoryTracker(true)" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #c7d2fe; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                            <button onclick="loadAdvisoryTracker()" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #c7d2fe; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
                                 <i class="fa-solid fa-arrows-rotate"></i> Refresh Tracker
                             </button>
                         </div>
@@ -888,9 +888,6 @@
                                     </div>
                                 </div>
                                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                    <button onclick="loadStockInvestmentsTracker()" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #c7d2fe; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
-                                        <i class="fa-solid fa-arrows-rotate"></i> Refresh
-                                    </button>
                                     <button onclick="editVirtualBalance()" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #c7d2fe; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
                                         <i class="fa-solid fa-pen-to-square"></i> Edit Cash
                                     </button>
@@ -1940,23 +1937,6 @@ function initApp() {
             if (typeof fetchCircuitsData === 'function') fetchCircuitsData();
         }
     }, 45000);
-
-    // Live background polling for Advisory Trades, Stock Investments & Nifty Scanner (every 30 seconds)
-    setInterval(() => {
-        const tradingTab = document.getElementById('trading-tab');
-        const investingTab = document.getElementById('investing-tab');
-        const niftyTab = document.getElementById('nifty-tab');
-
-        if (tradingTab && tradingTab.classList.contains('active')) {
-            if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker(true);
-        }
-        if (investingTab && investingTab.classList.contains('active')) {
-            if (typeof loadStockInvestmentsTracker === 'function') loadStockInvestmentsTracker();
-        }
-        if (niftyTab && niftyTab.classList.contains('active')) {
-            if (typeof fetchNiftyOpportunities === 'function') fetchNiftyOpportunities(false);
-        }
-    }, 30000);
 }
 
 // ==========================================
