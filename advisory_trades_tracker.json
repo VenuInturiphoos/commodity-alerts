@@ -1,16 +1,16 @@
 {
-  "last_updated": "11 Nov 2026, 06:01 PM IST",
+  "last_updated": "11 Nov 2026, 06:32 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 38,
-    "executed_count": 12,
+    "executed_count": 10,
     "correct_count": 2,
     "wrong_count": 1,
-    "protected_count": 26,
+    "protected_count": 28,
     "win_rate_pct": 66.7,
     "total_pnl_inr": 6650.17,
-    "avg_trade_pnl_inr": 554.18,
+    "avg_trade_pnl_inr": 665.02,
     "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 305840.0,
@@ -43,9 +43,9 @@
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 141101.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Tight non-trending consolidation. Capital preserved."
+        "price_615": 141029.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9141,029.00 (+0.36%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -92,9 +92,9 @@
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 186745.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Tight non-trending consolidation. Capital preserved."
+        "price_615": 186350.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9186,350.00 (+2.07%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -139,33 +139,34 @@
         "target": 8416.83
       },
       "check_615": {
-        "checked": false,
-        "status": "PENDING_615",
-        "price_615": null,
-        "action_taken": "Awaiting 6:15 PM candle close to confirm BUY trend holds...",
-        "detail": "15-minute verification scheduled for 6:15 PM IST (Reference: \u20b98,191.00)."
+        "checked": true,
+        "status": "CONFIRMATION_EXPIRED",
+        "price_615": 8178.0,
+        "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
+        "detail": "Price at 6:15 PM \u20b98,178.00 (+0.99%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "BUY",
-        "quantity": 40,
+        "action": "STAND_ASIDE",
+        "quantity": 0,
         "entry_price": null,
         "entry_time": null,
         "exit_price": null,
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "PENDING_615",
+        "status": "CLOSED",
         "target": 8416.83,
-        "stop_loss": 7985.7
+        "stop_loss": 7985.7,
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": 7985.7,
-        "outcome": "PENDING",
-        "badge": "Awaiting 6:15 PM \u23f3",
-        "pnl_display": "Pending Confirmation",
-        "summary": "US Pit Open BUY momentum setup awaiting 6:15 PM candle close."
+        "outcome": "PROTECTED",
+        "badge": "Window Lapsed \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -190,33 +191,34 @@
         "target": 304.9
       },
       "check_615": {
-        "checked": false,
-        "status": "PENDING_615",
-        "price_615": null,
-        "action_taken": "Awaiting 6:15 PM candle close to confirm SELL trend holds...",
-        "detail": "15-minute verification scheduled for 6:15 PM IST (Reference: \u20b9310.70)."
+        "checked": true,
+        "status": "CONFIRMATION_EXPIRED",
+        "price_615": 314.0,
+        "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
+        "detail": "Price at 6:15 PM \u20b9314.00 (+1.72%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "SELL",
-        "quantity": 1500,
+        "action": "STAND_ASIDE",
+        "quantity": 0,
         "entry_price": null,
         "entry_time": null,
         "exit_price": null,
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "PENDING_615",
+        "status": "CLOSED",
         "target": 304.9,
-        "stop_loss": 315.97
+        "stop_loss": 315.97,
+        "margin_required_inr": 0.0
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": 315.97,
-        "outcome": "PENDING",
-        "badge": "Awaiting 6:15 PM \u23f3",
-        "pnl_display": "Pending Confirmation",
-        "summary": "US Pit Open SELL momentum setup awaiting 6:15 PM candle close."
+        "outcome": "PROTECTED",
+        "badge": "Window Lapsed \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
     {
@@ -243,9 +245,9 @@
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 1341.2,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Tight non-trending consolidation. Capital preserved."
+        "price_615": 1342.05,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b91,342.05 (+0.36%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -292,9 +294,9 @@
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 411.5,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Tight non-trending consolidation. Capital preserved."
+        "price_615": 411.25,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9411.25 (+0.22%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -341,9 +343,9 @@
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 328.1,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Tight non-trending consolidation. Capital preserved."
+        "price_615": 329.3,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9329.30 (+1.20%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -390,9 +392,9 @@
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 411.35,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Tight non-trending consolidation. Capital preserved."
+        "price_615": 411.1,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9411.10 (+0.16%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -439,9 +441,9 @@
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 329.05,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Tight non-trending consolidation. Capital preserved."
+        "price_615": 330.25,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9330.25 (+1.18%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2555,5 +2557,5 @@
       }
     }
   ],
-  "check_615_sent_date": "10 Nov 2026"
+  "check_615_sent_date": "11 Nov 2026"
 }
