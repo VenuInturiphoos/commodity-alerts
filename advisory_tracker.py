@@ -3052,20 +3052,63 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
         is_stock_future = ('-FUT' in sym) or (sym in STOCK_FUTURES_CONFIG) or (clean_sym in STOCK_FUTURES_CONFIG)
         is_equity = trade.get('asset_type') in ['EQUITY', 'STOCK_FUTURES'] or is_stock_future or (sym and '.NS' in sym) or bool(eq_item and not c_item)
 
+        recent_low = None
+        recent_high = None
+
         if c_item and not is_stock_future:
             cur_p = float(c_item['current_price'])
             day_h = float(c_item.get('day_high', cur_p))
             day_l = float(c_item.get('day_low', cur_p))
+            recent_low = cur_p
+            recent_high = cur_p
         elif eq_item:
             cur_p = float(eq_item.get('close', 0))
             day_h = float(eq_item.get('day_high', eq_item.get('high', cur_p)))
             day_l = float(eq_item.get('day_low', eq_item.get('low', cur_p)))
+            recent_low = cur_p
+            recent_high = cur_p
         elif c_item:
             cur_p = float(c_item['current_price'])
             day_h = float(c_item.get('day_high', cur_p))
             day_l = float(c_item.get('day_low', cur_p))
+            recent_low = cur_p
+            recent_high = cur_p
         else:
             continue
+
+        # Real-time authoritative live quote & candle fetch for all active equity positions
+        if is_equity or (sym and '.NS' in sym):
+            try:
+                import yfinance as yf
+                yf_sym = sym if sym.endswith('.NS') else f"{clean_sym}.NS"
+                t_obj = yf.Ticker(yf_sym)
+                fast_p = getattr(t_obj.fast_info, 'last_price', None)
+                if fast_p and float(fast_p) > 0:
+                    cur_p = round(float(fast_p), 2)
+                    day_h = max(day_h, round(float(getattr(t_obj.fast_info, 'day_high', cur_p) or cur_p), 2))
+                    day_l = min(day_l, round(float(getattr(t_obj.fast_info, 'day_low', cur_p) or cur_p), 2))
+                
+                # Fetch recent 1-minute intraday bars to check intra-interval stop breaches
+                hist_1m = t_obj.history(period='1d', interval='1m')
+                if not hist_1m.empty:
+                    if cur_p <= 0:
+                        cur_p = round(float(hist_1m['Close'].iloc[-1]), 2)
+                    day_h = max(day_h, round(float(hist_1m['High'].max()), 2))
+                    day_l = min(day_l, round(float(hist_1m['Low'].min()), 2))
+                    recent_low = round(float(hist_1m['Low'].tail(5).min()), 2)
+                    recent_high = round(float(hist_1m['High'].tail(5).max()), 2)
+                else:
+                    recent_low = cur_p
+                    recent_high = cur_p
+            except Exception as e:
+                print(f"Warning: Could not fetch real-time yfinance quote for active equity {sym}: {e}")
+                recent_low = cur_p
+                recent_high = cur_p
+        
+        if recent_low is None:
+            recent_low = cur_p
+        if recent_high is None:
+            recent_high = cur_p
 
         if cur_p <= 0:
             continue
@@ -3129,7 +3172,7 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                     f"• <b>Asset</b>: {trade['name']} ({sym})\n"
                     f"• <b>Action</b>: {action} {lot_size} units\n"
                     f"• <b>Fill Price</b>: ₹{entry_p:,.2f} ({retest_type} Retest Filled)\n"
-                    f"• <b>Target</b>: ₹{target:,.2f} | <b>Stop-Loss</b>: ₹{stop_loss:,.2f}\n"
+                    f"• <b>Target</b>: {f'₹{target:,.2f}' if target is not None else (f'₹{calc_target:,.2f} (Trailed)' if calc_target else 'None')} | <b>Stop-Loss</b>: ₹{stop_loss:,.2f}\n"
                     f"• <b>Status</b>: Active paper trade running. Auto-trailing SL and 11:30 PM settlement enabled.\n\n"
                     f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
                 )
@@ -3431,9 +3474,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
 
         if action == 'BUY':
             if is_trailing:
-                # For trailing stops (Breakeven / Profit Lock / Runner), ONLY exit if the current price cur_p <= stop_loss!
-                # Historical effective_low happened earlier at lower prices before the stop was trailed and must NOT trigger exits.
-                reached_sl = bool(stop_loss and cur_p <= stop_loss)
+                # For trailing stops (Breakeven / Profit Lock / Runner), check both current price and recent 1m candle lows
+                reached_sl = bool(stop_loss and (cur_p <= stop_loss or recent_low <= stop_loss))
             else:
                 reached_sl = bool(stop_loss and (cur_p <= stop_loss or effective_low <= stop_loss))
 
@@ -3442,7 +3484,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 exit_p = stop_loss
                 if pt.get('target_runner_active'):
                     hit_target_runner_exit = True
-                    reason = f"Target Runner Trailing Stop Triggered 🎯🚀 (Exit ₹{exit_p:,.2f} vs Target ₹{target:,.2f} | Peak ₹{effective_high:,.2f})"
+                    tgt_str = f"₹{target:,.2f}" if target is not None else (f"₹{calc_target:,.2f} (Target Reached & Trailed)" if calc_target else "None")
+                    reason = f"Target Runner Trailing Stop Triggered 🎯🚀 (Exit ₹{exit_p:,.2f} vs {tgt_str} | Peak ₹{effective_high:,.2f})"
                 elif pt.get('stage_3_target_approaching') or pt.get('stage_2_profit_locked'):
                     hit_trailing_profit = True
                     pct_desc = "+65%" if pt.get('stage_3_target_approaching') else "+35%"
@@ -3464,9 +3507,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
 
         elif action == 'SELL':
             if is_trailing:
-                # For trailing stops (Breakeven / Profit Lock / Runner), ONLY exit if the current price cur_p >= stop_loss!
-                # Historical effective_high happened earlier at higher prices before the stop was trailed and must NOT trigger exits.
-                reached_sl = bool(stop_loss and cur_p >= stop_loss)
+                # For trailing stops (Breakeven / Profit Lock / Runner), check both current price and recent 1m candle highs
+                reached_sl = bool(stop_loss and (cur_p >= stop_loss or recent_high >= stop_loss))
             else:
                 reached_sl = bool(stop_loss and (cur_p >= stop_loss or effective_high >= stop_loss))
 
@@ -3475,7 +3517,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 exit_p = stop_loss
                 if pt.get('target_runner_active'):
                     hit_target_runner_exit = True
-                    reason = f"Target Runner Trailing Stop Triggered 🎯🚀 (Exit ₹{exit_p:,.2f} vs Target ₹{target:,.2f} | Trough ₹{effective_low:,.2f})"
+                    tgt_str = f"₹{target:,.2f}" if target is not None else (f"₹{calc_target:,.2f} (Target Reached & Trailed)" if calc_target else "None")
+                    reason = f"Target Runner Trailing Stop Triggered 🎯🚀 (Exit ₹{exit_p:,.2f} vs {tgt_str} | Trough ₹{effective_low:,.2f})"
                 elif pt.get('stage_3_target_approaching') or pt.get('stage_2_profit_locked'):
                     hit_trailing_profit = True
                     pct_desc = "+65%" if pt.get('stage_3_target_approaching') else "+35%"
@@ -3552,7 +3595,7 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 f"• <b>Position</b>: {action} {lot_size} units\n"
                 f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
                 f"• <b>Exit Price</b>: ₹{exit_p:,.2f} ({reason})\n"
-                f"• <b>Target</b>: ₹{target:,.2f} | <b>Stop-Loss</b>: ₹{stop_loss:,.2f}\n"
+                f"• <b>Target</b>: {f'₹{target:,.2f}' if target is not None else (f'₹{calc_target:,.2f} (Trailed)' if calc_target else 'None')} | <b>Stop-Loss</b>: ₹{stop_loss:,.2f}\n"
                 f"• <b>Net Realized P&L</b>: <b>{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}</b>\n\n"
                 f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
             )
