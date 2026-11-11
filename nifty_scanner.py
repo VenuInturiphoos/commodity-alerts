@@ -123,6 +123,16 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
 
     now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
     timestamp_str = now_ist.strftime('%d %b %Y, %I:%M %p IST')
+    today_iso = now_ist.strftime('%Y-%m-%d')
+
+    history_file = os.path.join(os.path.dirname(output_path), 'golden_cross_history.json')
+    golden_history = {}
+    if os.path.exists(history_file):
+        try:
+            with open(history_file, 'r') as f:
+                golden_history = json.load(f)
+        except Exception:
+            golden_history = {}
 
     opportunities = []
     seen_symbols = set()
@@ -167,24 +177,61 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         discount_pct = round(((h52 - close) / h52) * 100, 2) if h52 > 0 else 0.0
         discount_inr = round(h52 - close, 2)
 
-        # Crossover Evaluation
+        # Crossover Evaluation & Newly Added Tracking
         is_golden = ema50 >= ema200
         near_golden = (not is_golden) and (abs(ema50 - ema200) / ema200 <= 0.025)
         sma_golden = sma50 >= sma200
         ema_spread_pct = round(((ema50 - ema200) / ema200) * 100, 2)
 
+        is_fresh_cross = is_golden and (ema_spread_pct <= 2.5)
+        is_new_golden = False
+        cross_detected_date = today_iso
+
         if is_golden:
-            crossover_status = 'GOLDEN'
-            crossover_label = 'Golden Cross Active 🌟'
-            crossover_badge = 'GOLDEN'
-        elif near_golden:
-            crossover_status = 'BREWING'
-            crossover_label = 'Cross Brewing ⏳'
-            crossover_badge = 'BREWING'
+            if orig_sym not in golden_history:
+                # Newly added crossover detected!
+                golden_history[orig_sym] = {
+                    'symbol': orig_sym,
+                    'name': name,
+                    'first_detected_date': today_iso,
+                    'first_detected_time': timestamp_str,
+                    'initial_close': close,
+                    'initial_spread_pct': ema_spread_pct
+                }
+                is_new_golden = True
+                cross_detected_date = today_iso
+            else:
+                hist_date = golden_history[orig_sym].get('first_detected_date', today_iso)
+                cross_detected_date = hist_date
+                try:
+                    d0 = datetime.strptime(hist_date, '%Y-%m-%d').date()
+                    days_active = (now_ist.date() - d0).days
+                except Exception:
+                    days_active = 0
+                # Newly added if within last 7 calendar days or fresh EMA convergence
+                if days_active <= 7 or is_fresh_cross:
+                    is_new_golden = True
+
+            if is_new_golden:
+                crossover_status = 'NEW_GOLDEN'
+                crossover_label = f'Fresh Golden Cross 🌟 (New +{ema_spread_pct}%)'
+                crossover_badge = 'NEW_GOLDEN'
+            else:
+                crossover_status = 'GOLDEN'
+                crossover_label = f'Golden Cross Active 🌟 (+{ema_spread_pct}%)'
+                crossover_badge = 'GOLDEN'
         else:
-            crossover_status = 'DEATH'
-            crossover_label = '50 < 200 EMA ❄️'
-            crossover_badge = 'BEARISH'
+            if orig_sym in golden_history:
+                golden_history.pop(orig_sym, None)
+            
+            if near_golden:
+                crossover_status = 'BREWING'
+                crossover_label = 'Cross Brewing ⏳'
+                crossover_badge = 'BREWING'
+            else:
+                crossover_status = 'DEATH'
+                crossover_label = '50 < 200 EMA ❄️'
+                crossover_badge = 'BEARISH'
 
         # RSI Evaluation
         rsi_curling_up = rsi > rsi_prev
@@ -452,6 +499,9 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
             'crossover_label': crossover_label,
             'crossover_badge': crossover_badge,
             'is_golden': is_golden,
+            'is_new_golden': is_new_golden,
+            'is_fresh_cross': is_fresh_cross,
+            'golden_cross_date': cross_detected_date,
             'near_golden': near_golden,
             'rsi': round(rsi, 1),
             'rsi_prev': round(rsi_prev, 1),
@@ -505,6 +555,7 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
     high_safety_count = len([o for o in opportunities if o.get('capital_safety_score', 0) >= 80.0])
     high_win_prob_count = len([o for o in opportunities if o['win_probability'] >= 80])
     golden_cross_count = len([o for o in opportunities if o['is_golden']])
+    new_golden_cross_count = len([o for o in opportunities if o.get('is_new_golden')])
     oversold_count = len([o for o in opportunities if o['rsi'] < 40.0])
     deep_discount_count = len([o for o in opportunities if o['discount_pct'] >= 15.0])
     large_cap_count = len([o for o in opportunities if o.get('cap_category') == 'Large Cap'])
@@ -527,6 +578,7 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
             'high_safety_count': high_safety_count,
             'high_win_prob_count': high_win_prob_count,
             'golden_cross_count': golden_cross_count,
+            'new_golden_cross_count': new_golden_cross_count,
             'oversold_count': oversold_count,
             'deep_discount_count': deep_discount_count,
             'avg_discount_top_10': avg_discount_top_10,
@@ -542,8 +594,14 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
     with open(output_path, 'w') as f:
         json.dump(output_payload, f, indent=2)
 
+    try:
+        with open(history_file, 'w') as f:
+            json.dump(golden_history, f, indent=2)
+    except Exception as e:
+        print(f"Error saving golden_cross_history.json: {e}")
+
     print(f"Successfully generated Nifty 50 Scanner data with {len(opportunities)} stocks -> {output_path}")
-    print(f"KPIs: {high_win_prob_count} High Win-Rate | {golden_cross_count} Golden Crosses | {oversold_count} Oversold | Avg Disc Top-10: {avg_discount_top_10}%")
+    print(f"KPIs: {high_win_prob_count} High Win-Rate | {golden_cross_count} Golden Crosses ({new_golden_cross_count} Newly Added) | {oversold_count} Oversold | Avg Disc Top-10: {avg_discount_top_10}%")
     return output_payload
 
 if __name__ == '__main__':
