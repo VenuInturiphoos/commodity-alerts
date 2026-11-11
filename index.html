@@ -7656,7 +7656,10 @@ function renderAdvisoryTradesTable() {
             outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${badgeText}</span>`;
         } else if (pt.status === 'ACTIVE') {
             const curSl = Number(pt.stop_loss || s6.stop_loss || 0);
-            if (isSessionExpired) {
+            const isSlBreached = Boolean(curSl > 0 && liveSource && liveSource.current_price && ((pt.action === 'BUY' && Number(liveSource.current_price) <= curSl) || (pt.action === 'SELL' && Number(liveSource.current_price) >= curSl)));
+            if (isSlBreached) {
+                outcomeBadge = `<span class="adv-badge-active" style="background:rgba(239,68,68,0.18); border:1px solid rgba(239,68,68,0.45); color:#fca5a5;"><i class="fa-solid fa-arrows-rotate fa-spin"></i> SL Breached (Auto-Exiting...)</span>`;
+            } else if (isSessionExpired) {
                 const isWin = (pt.pnl_inr || 0) > 0;
                 outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : '11:30 PM'})</span>`;
             } else if (pt.target_runner_active) {
@@ -7969,7 +7972,11 @@ function renderAdvisoryTradesTable() {
                 }
                 outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${badgeText}</span>`;
             } else if (pt.status === 'ACTIVE') {
-                if (isSessionExpired) {
+                const curSl = Number(pt.stop_loss || s6.stop_loss || 0);
+                const isSlBreached = Boolean(curSl > 0 && liveSource && liveSource.current_price && ((pt.action === 'BUY' && Number(liveSource.current_price) <= curSl) || (pt.action === 'SELL' && Number(liveSource.current_price) >= curSl)));
+                if (isSlBreached) {
+                    outcomeBadge = `<span class="adv-badge-active" style="background:rgba(239,68,68,0.18); border:1px solid rgba(239,68,68,0.45); color:#fca5a5;"><i class="fa-solid fa-arrows-rotate fa-spin"></i> SL Breached (Auto-Exiting...)</span>`;
+                } else if (isSessionExpired) {
                     const isWin = (pt.pnl_inr || 0) > 0;
                     outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : '11:30 PM'})</span>`;
                 } else if (pt.target_runner_active) {
