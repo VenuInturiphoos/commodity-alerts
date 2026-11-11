@@ -764,13 +764,13 @@
 
                         <div class="circuit-kpi-card">
                             <div class="circuit-kpi-header">
-                                <span>Live Realized P&L</span>
+                                <span id="kpi-adv-pnl-title">Live Realized P&L</span>
                                 <div class="circuit-kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
                                     <i class="fa-solid fa-sack-dollar"></i>
                                 </div>
                             </div>
                             <div class="circuit-kpi-value" id="kpi-adv-pnl" style="color: #4ade80;">₹--</div>
-                            <div class="circuit-kpi-sub">Actual forward paper trading return</div>
+                            <div class="circuit-kpi-sub" id="kpi-adv-pnl-sub">Actual forward paper trading return</div>
                         </div>
 
                         <div class="circuit-kpi-card">
@@ -6999,6 +6999,55 @@ function isCalledAdvisoryTrade(t) {
     return false;
 }
 
+function getAdvisoryTradeLivePriceData(t) {
+    if (!t) return null;
+    const cleanSym = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
+    const baseSym = (typeof COMMODITY_BASE_MAP !== 'undefined' && COMMODITY_BASE_MAP[cleanSym]) ? COMMODITY_BASE_MAP[cleanSym] : cleanSym;
+
+    if (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) {
+        const item = rawCircuitsData.find(c => {
+            const cs = (c.symbol || '').toUpperCase();
+            return cs === cleanSym || cs === baseSym || cs === (t.symbol || '').toUpperCase();
+        });
+        if (item && item.current_price) {
+            return { current_price: Number(item.current_price), change_pct: Number(item.change_pct || 0) };
+        }
+    }
+
+    if (typeof marketData !== 'undefined' && Array.isArray(marketData)) {
+        const item = marketData.find(m => {
+            const ms = (m.symbol || '').toUpperCase();
+            return ms === (t.symbol || '').toUpperCase() || ms === cleanSym || ms === baseSym;
+        });
+        if (item && item.current_price) {
+            return { current_price: Number(item.current_price), change_pct: Number(item.change_pct || 0) };
+        }
+    }
+
+    if (typeof niftyOpportunitiesData !== 'undefined' && Array.isArray(niftyOpportunitiesData?.stocks)) {
+        const eqItem = niftyOpportunitiesData.stocks.find(s => 
+            (s.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase() || 
+            (s.symbol || '').replace('.NS', '').toUpperCase() === cleanSym || 
+            (s.name || '').toUpperCase() === cleanSym
+        );
+        if (eqItem && (eqItem.close || eqItem.current_price)) {
+            return {
+                current_price: Number(eqItem.close || eqItem.current_price),
+                change_pct: Number(eqItem.change_pct || 0)
+            };
+        }
+    }
+
+    if (t.live_price_data && t.live_price_data.current_price) {
+        return {
+            current_price: Number(t.live_price_data.current_price),
+            change_pct: Number(t.live_price_data.change_pct || 0)
+        };
+    }
+
+    return null;
+}
+
 function parseDateStrToParts(str) {
     if (!str) return null;
     const parts = str.trim().split(/[\s\-]+/);
@@ -7297,7 +7346,28 @@ function applyAdvisoryMonthFilter(monthValue) {
         return false;
     }).length;
 
-    const subPnl = trades.reduce((acc, t) => acc + (Number(t.paper_trade?.pnl_inr) || 0), 0);
+    // Calculate Realized P&L and Live Unrealized (MTM) P&L
+    let realizedPnl = 0;
+    let unrealizedPnl = 0;
+    let activeTradesCount = 0;
+
+    trades.forEach(t => {
+        const pt = t.paper_trade || {};
+        if (pt.status === 'CLOSED') {
+            realizedPnl += Number(pt.pnl_inr || 0);
+        } else if (pt.status === 'ACTIVE' && pt.entry_price && Number(pt.entry_price) > 0) {
+            activeTradesCount++;
+            const liveData = getAdvisoryTradeLivePriceData(t);
+            if (liveData && liveData.current_price) {
+                const curPrice = Number(liveData.current_price);
+                const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
+                const lot = pt.quantity || t.lot_size || 1;
+                unrealizedPnl += pts * lot;
+            }
+        }
+    });
+
+    const totalLivePnl = realizedPnl + unrealizedPnl;
     const resolvedCount = countCorrect + countWrong;
     const winRate = resolvedCount > 0 ? Number(((countCorrect / resolvedCount) * 100).toFixed(1)) : (isIntradayActive ? 100.0 : (summary.win_rate_pct || 0));
 
@@ -7306,6 +7376,8 @@ function applyAdvisoryMonthFilter(monthValue) {
     const winrateEl = document.getElementById('kpi-adv-winrate');
     const correctSubEl = document.getElementById('kpi-adv-correct-sub');
     const pnlEl = document.getElementById('kpi-adv-pnl');
+    const pnlTitleEl = document.getElementById('kpi-adv-pnl-title');
+    const pnlSubEl = document.getElementById('kpi-adv-pnl-sub');
     
     if (totalEl) totalEl.textContent = `${countCalled} Called`;
     if (totalSubEl) totalSubEl.textContent = `${countAll} Total Signals (${countProtected} Avoided Traps)`;
@@ -7313,9 +7385,23 @@ function applyAdvisoryMonthFilter(monthValue) {
     if (correctSubEl) {
         correctSubEl.textContent = `${countCorrect} Won / ${countWrong} Lost (${countProtected} Filtered)`;
     }
+    if (pnlTitleEl) {
+        pnlTitleEl.textContent = activeTradesCount > 0 ? 'Live P&L (MTM)' : 'Live Realized P&L';
+    }
     if (pnlEl) {
-        pnlEl.textContent = (subPnl >= 0 ? '+₹' : '-₹') + Math.abs(subPnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        pnlEl.style.color = subPnl >= 0 ? '#4ade80' : '#fb7185';
+        pnlEl.textContent = (totalLivePnl >= 0 ? '+₹' : '-₹') + Math.abs(totalLivePnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        pnlEl.style.color = totalLivePnl >= 0 ? '#4ade80' : '#fb7185';
+    }
+    if (pnlSubEl) {
+        if (activeTradesCount > 0) {
+            const rSign = realizedPnl >= 0 ? '+' : '-';
+            const uSign = unrealizedPnl >= 0 ? '+' : '-';
+            const rColor = realizedPnl >= 0 ? '#4ade80' : '#fb7185';
+            const uColor = unrealizedPnl >= 0 ? '#4ade80' : '#fb7185';
+            pnlSubEl.innerHTML = `Realized: <strong style="color:${rColor};">${rSign}₹${Math.abs(realizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · Unrealized: <strong style="color:${uColor};">${uSign}₹${Math.abs(unrealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong>`;
+        } else {
+            pnlSubEl.textContent = 'Actual forward paper trading return';
+        }
     }
     
     const cashEl = document.getElementById('kpi-adv-cash');
@@ -7498,35 +7584,8 @@ function renderAdvisoryTradesTable() {
         const isPast2330 = isPastISTWindow(t.date, 23, 30);
         const isSessionExpired = isEqTrade ? isPast1520 : isPast2330;
 
-        // Find live market data: prioritized from rawCircuitsData (authoritative exchange feed), then marketData, then niftyOpportunitiesData
-        const cleanSym = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
-        const baseSym = (typeof COMMODITY_BASE_MAP !== 'undefined' && COMMODITY_BASE_MAP[cleanSym]) ? COMMODITY_BASE_MAP[cleanSym] : cleanSym;
-        const circuitItem = (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) 
-            ? rawCircuitsData.find(c => {
-                const cs = (c.symbol || '').toUpperCase();
-                return cs === cleanSym || cs === baseSym || cs === (t.symbol || '').toUpperCase();
-            }) 
-            : null;
-        const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) 
-            ? marketData.find(m => {
-                const ms = (m.symbol || '').toUpperCase();
-                return ms === (t.symbol || '').toUpperCase() || ms === cleanSym || ms === baseSym;
-            }) 
-            : null;
-        let liveSource = circuitItem || mktItem;
-        if (!liveSource && typeof niftyOpportunitiesData !== 'undefined' && Array.isArray(niftyOpportunitiesData?.stocks)) {
-            const eqItem = niftyOpportunitiesData.stocks.find(s => 
-                (s.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase() || 
-                (s.symbol || '').replace('.NS', '').toUpperCase() === cleanSym || 
-                (s.name || '').toUpperCase() === cleanSym
-            );
-            if (eqItem) {
-                liveSource = {
-                    current_price: eqItem.close,
-                    change_pct: eqItem.change_pct
-                };
-            }
-        }
+        // Find live market data from authoritative exchange / scanner feed
+        const liveSource = getAdvisoryTradeLivePriceData(t);
 
         // Current Price column computation
         let curPriceHtml = '<span style="color:#64748b; font-size:0.8rem;">--</span>';
@@ -7849,28 +7908,8 @@ function renderAdvisoryTradesTable() {
             const isPast2330 = isPastISTWindow(t.date, 23, 30);
             const isSessionExpired = isEqTrade ? isPast1520 : isPast2330;
 
-            // Find live market data: prioritized from rawCircuitsData (authoritative exchange feed), then marketData, then niftyOpportunitiesData
-            const cleanSym = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
-            const circuitItem = (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) 
-                ? rawCircuitsData.find(c => (c.symbol || '').toUpperCase() === cleanSym || (c.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase()) 
-                : null;
-            const mktItem = (typeof marketData !== 'undefined' && Array.isArray(marketData)) 
-                ? marketData.find(m => (m.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase() || (m.symbol || '').toUpperCase() === cleanSym) 
-                : null;
-            let liveSource = circuitItem || mktItem;
-            if (!liveSource && typeof niftyOpportunitiesData !== 'undefined' && Array.isArray(niftyOpportunitiesData?.stocks)) {
-                const eqItem = niftyOpportunitiesData.stocks.find(s => 
-                    (s.symbol || '').toUpperCase() === (t.symbol || '').toUpperCase() || 
-                    (s.symbol || '').replace('.NS', '').toUpperCase() === cleanSym || 
-                    (s.name || '').toUpperCase() === cleanSym
-                );
-                if (eqItem) {
-                    liveSource = {
-                        current_price: eqItem.close,
-                        change_pct: eqItem.change_pct
-                    };
-                }
-            }
+            // Find live market data from authoritative exchange / scanner feed
+            const liveSource = getAdvisoryTradeLivePriceData(t);
 
             const isEnteredTrade = Boolean((pt.entry_price && Number(pt.entry_price) > 0) || (pt.status === 'ACTIVE' && (pt.action === 'BUY' || pt.action === 'SELL')));
             const isStandAsideTrade = !isEnteredTrade && (
