@@ -1,17 +1,17 @@
 {
-  "last_updated": "11 Nov 2026, 09:30 AM IST",
+  "last_updated": "11 Nov 2026, 09:33 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 26,
-    "executed_count": 7,
+    "total_signals": 27,
+    "executed_count": 8,
     "correct_count": 1,
     "wrong_count": 0,
     "protected_count": 19,
     "win_rate_pct": 100.0,
     "total_pnl_inr": 5840.0,
-    "avg_trade_pnl_inr": 834.29,
-    "active_trades_count": 1,
+    "avg_trade_pnl_inr": 730.0,
+    "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 305840.0,
     "used_margin_inr": 0,
@@ -19,6 +19,115 @@
     "net_worth_inr": 305840.0
   },
   "trades": [
+    {
+      "id": "ADV-11Nov2026-0933-EICHERMOT",
+      "date": "11 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "09:33 AM IST",
+      "time_6pm": "09:33 AM IST",
+      "time_validation": "09:33 AM IST",
+      "time_615": "09:33 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "EICHERMOT.NS",
+      "name": "Eicher Motors Limited",
+      "lot_size": 6,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 65.9). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 65.9,
+        "bb_width_pct": 11.51,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 16.8,
+        "p_stop_pct": 8.5,
+        "p_neither_pct": 74.7,
+        "resolved_win_rate_pct": 66.3,
+        "expected_r": 0.117,
+        "target_r": 1.2,
+        "sample_bars": 659,
+        "summary": "3,000 Replays: 16.8% Target | 8.5% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 801.84,
+        "potential_gain_inr": 962.22
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b97,747.50 breaking above range high \u20b97,747.50."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b97,747.50",
+        "rationale": "High-Beta breakout momentum (Chg: +1.55%) with healthy RSI (65.9) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 16.8% Target | 8.5% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 7747.5,
+        "stop_loss": 7613.86,
+        "target": 7907.87
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 7747.5,
+        "action_taken": "Entered BUY 6 shares @ \u20b97,747.50",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.55%) with healthy RSI (65.9) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 16.8% Target | 8.5% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 6,
+        "entry_price": 7747.5,
+        "entry_time": "09:33 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 7907.87,
+        "stop_loss": 7613.86,
+        "margin_required_inr": 9297.0,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b97,747.50 (Target: \u20b97,907.87, SL: \u20b97,613.86) | 3,000 Replays: 16.8% Target | 8.5% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
     {
       "id": "ADV-11Nov2026-0930-SHRIRAMFIN",
       "date": "11 Nov 2026",
