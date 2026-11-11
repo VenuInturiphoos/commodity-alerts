@@ -3306,31 +3306,37 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         )
                         alerts_to_send.append({'subject': subject, 'body': body})
 
-                    # Continuous Dynamic Ratchet as price makes higher highs (BUY) or lower lows (SELL)
-                    if action == 'BUY':
-                        ratchet_sl = round(effective_high - trail_buffer, 2)
-                        if ratchet_sl > stop_loss:
-                            stop_loss = ratchet_sl
-                            pt['stop_loss'] = ratchet_sl
-                            pt['trough_low'] = cur_p
-                            effective_low = cur_p
-                            if s6:
-                                s6['stop_loss'] = ratchet_sl
-                            trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{ratchet_sl:,.2f} | Runner 🚀)"
-                            trade['eod_outcome']['summary'] = f"Dynamic Runner trailing stop ratcheted to ₹{ratchet_sl:,.2f} behind peak ₹{effective_high:,.2f}."
-                            updated_any = True
-                    elif action == 'SELL':
-                        ratchet_sl = round(effective_low + trail_buffer, 2)
-                        if ratchet_sl < stop_loss:
-                            stop_loss = ratchet_sl
-                            pt['stop_loss'] = ratchet_sl
-                            pt['peak_high'] = cur_p
-                            effective_high = cur_p
-                            if s6:
-                                s6['stop_loss'] = ratchet_sl
-                            trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{ratchet_sl:,.2f} | Runner 🚀)"
-                            trade['eod_outcome']['summary'] = f"Dynamic Runner trailing stop ratcheted to ₹{ratchet_sl:,.2f} ahead of trough ₹{effective_low:,.2f}."
-                            updated_any = True
+        # Continuous Dynamic Trailing Stop: Retains 65% of peak profit (Max 35% pullback from session peak gain)
+        if trade_status == 'ACTIVE' and (pt.get('stage_3_target_approaching') or pt.get('target_scrapped') or pt.get('target_runner_active')):
+            target_ref_dist = target_dist if target_dist > 0 else 1.0
+            trail_buffer = round(max(target_ref_dist * 0.15, 0.25 if is_equity else 1.0), 2)
+            if action == 'BUY' and peak_favorable_move > 0:
+                # Retain 65% of peak profit: Entry + 0.65 * Peak Gain
+                dynamic_65_sl = round(entry_p + (peak_favorable_move * 0.65), 2)
+                ratchet_sl = max(dynamic_65_sl, round(effective_high - trail_buffer, 2))
+                if ratchet_sl > stop_loss:
+                    stop_loss = ratchet_sl
+                    pt['stop_loss'] = ratchet_sl
+                    pt['trough_low'] = cur_p
+                    effective_low = cur_p
+                    if s6:
+                        s6['stop_loss'] = ratchet_sl
+                    trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{ratchet_sl:,.2f} | 65% Locked 🚀)"
+                    trade['eod_outcome']['summary'] = f"Dynamic Trailing Stop active: 65% peak profit locked @ ₹{ratchet_sl:,.2f} (Max 35% pullback from peak ₹{effective_high:,.2f})."
+                    updated_any = True
+            elif action == 'SELL' and peak_favorable_move > 0:
+                dynamic_65_sl = round(entry_p - (peak_favorable_move * 0.65), 2)
+                ratchet_sl = min(dynamic_65_sl, round(effective_low + trail_buffer, 2))
+                if ratchet_sl < stop_loss:
+                    stop_loss = ratchet_sl
+                    pt['stop_loss'] = ratchet_sl
+                    pt['peak_high'] = cur_p
+                    effective_high = cur_p
+                    if s6:
+                        s6['stop_loss'] = ratchet_sl
+                    trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{ratchet_sl:,.2f} | 65% Locked 🚀)"
+                    trade['eod_outcome']['summary'] = f"Dynamic Trailing Stop active: 65% peak profit locked @ ₹{ratchet_sl:,.2f} (Max 35% pullback from trough ₹{effective_low:,.2f})."
+                    updated_any = True
 
         # Ensure paper_trade object has target and stop_loss stored
         if pt.get('target_scrapped'):
