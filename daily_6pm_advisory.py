@@ -912,7 +912,17 @@ def run_auto_session(force=False):
     # 6. 9:01 AM IST or later -> Morning Pulse Advisory
     if cur_hm >= (9, 1) and (not sent_9am or force):
         print("Time is >= 9:01 AM IST and 9:01 AM advisory not sent today. Dispatching 9:01 AM Advisory.")
-        return generate_and_send_9am_advisory(force=force)
+        generate_and_send_9am_advisory(force=force)
+
+    # 7. 9:15 AM IST or later (Market Hours) -> Check and trigger Daily Stock Investment (~₹30k Allocation)
+    if cur_hm >= (9, 15) and cur_hm < (15, 30):
+        try:
+            print("Checking Daily Stock Investment engine (NSE Market Hours)...")
+            from stock_investment_tracker import scan_and_execute_daily_stock_investment, update_live_stock_investments
+            scan_and_execute_daily_stock_investment()
+            update_live_stock_investments()
+        except Exception as e:
+            print(f"Error checking stock investment in advisory runner: {e}")
 
     print("No scheduled advisory is currently pending for today at this time.")
     return True

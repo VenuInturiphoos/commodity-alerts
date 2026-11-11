@@ -4,6 +4,8 @@ on:
   schedule:
     # 03:31 UTC = 09:01 (9:01 AM) IST, Monday to Friday (Morning Market Pulse & Opening Gap after MCX matching)
     - cron: '31 03 * * 1-5'
+    # 03:45 UTC = 09:15 (9:15 AM) IST, Monday to Friday (NSE Market Open - Stock Investment & Equity Open Execution)
+    - cron: '45 03 * * 1-5'
     # 08:00 UTC = 13:30 (1:30 PM) IST, Monday to Friday (London Breakout)
     - cron: '00 08 * * 1-5'
     # 12:30 UTC = 18:00 (6:00 PM) IST, Monday to Friday (US Pit Open Advisory)
@@ -98,7 +100,7 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add web/alerts_state.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json web/advisory_trades_tracker.json
+          git add web/alerts_state.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json web/advisory_trades_tracker.json web/stock_investments_tracker.json web/golden_cross_history.json web/nifty_crossover_oversold.json
           if ! git diff --staged --quiet; then
             git commit -m "Auto-record commodity advisory dispatch state"
             git pull --rebase origin main
