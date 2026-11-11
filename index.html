@@ -620,6 +620,7 @@
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('SAFETY', this)">🛡️ Capital Safety &gt;75% (<span id="nifty-cnt-safety">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('LARGE', this)">🏛️ Large Cap (<span id="nifty-cnt-large">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('MIDCAP', this)">🚀 Mid Cap (<span id="nifty-cnt-mid">0</span>)</button>
+                        <button class="circuit-filter-pill" id="nifty-filter-new-golden" onclick="filterNiftyCategory('NEW_GOLDEN', this)" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(234, 179, 8, 0.2)); border: 1px solid #fbbf24; color: #fef08a; font-weight: 700;"><i class="fa-solid fa-sparkles" style="color: #fbbf24; margin-right: 4px;"></i> Newly Added Golden Cross ✨ (<span id="nifty-cnt-new-golden">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('GOLDEN', this)">🌟 Golden Cross (<span id="nifty-cnt-golden">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('OVERSOLD', this)">📉 Deeply Oversold (<span id="nifty-cnt-oversold">0</span>)</button>
                         <button class="circuit-filter-pill" onclick="filterNiftyCategory('DISCOUNT', this)">🏷️ Deep Discount &gt;15% (<span id="nifty-cnt-discount">0</span>)</button>
@@ -634,6 +635,7 @@
 
                         <select id="nifty-sort-select" onchange="sortNiftyOpportunities(this.value)" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 7px 12px; border-radius: 20px; font-size: 0.85rem; outline: none; cursor: pointer;">
                             <option value="safety" selected>🛡️ Highest Capital Safety (Lowest Risk of Loss)</option>
+                            <option value="fresh_golden">✨ Newly Added Golden Cross (Freshest First)</option>
                             <option value="prob">🏆 Highest Win Probability</option>
                             <option value="discount">🏷️ Deepest 52W Discount</option>
                             <option value="rsi">📉 Lowest RSI (Most Oversold)</option>
@@ -2453,19 +2455,25 @@ async function fetchNiftyOpportunities(forceNetwork = false) {
     const kpiDiscount = document.getElementById('nifty-kpi-avg-discount');
     const updatedNote = document.getElementById('nifty-updated-note');
     
+    // Compute newly added golden crossover count
+    const stocks = loadedData.stocks || [];
+    const newGoldenCount = stocks.filter(x => x.is_new_golden || (x.is_golden && x.ema_spread_pct != null && x.ema_spread_pct <= 2.5)).length;
+
     if (kpiHigh) kpiHigh.textContent = `${s.high_win_prob_count || 0} Setups`;
-    if (kpiGolden) kpiGolden.textContent = `${s.golden_cross_count || 0} Stocks`;
+    if (kpiGolden) {
+        kpiGolden.innerHTML = `${s.golden_cross_count || 0} Stocks <span style="font-size:0.75rem; color:#fef08a; font-weight:700; background:rgba(245,158,11,0.25); border:1px solid #fbbf24; padding:2px 7px; border-radius:10px; margin-left:6px; display:inline-flex; align-items:center; gap:3px;"><i class="fa-solid fa-sparkles"></i> ${s.new_golden_cross_count || newGoldenCount} New</span>`;
+    }
     if (kpiOversold) kpiOversold.textContent = `${s.oversold_count || 0} Stocks`;
     if (kpiDiscount) kpiDiscount.textContent = `-${s.avg_discount_top_10 || 0}%`;
     if (updatedNote) updatedNote.textContent = `Updated: ${loadedData.last_updated || 'Live'}`;
     
     // Update Filter Button Count Labels
-    const stocks = loadedData.stocks || [];
     const cntAll = document.getElementById('nifty-cnt-all');
     const cntBull = document.getElementById('nifty-cnt-bull');
     const cntRange = document.getElementById('nifty-cnt-range');
     const cntLarge = document.getElementById('nifty-cnt-large');
     const cntMid = document.getElementById('nifty-cnt-mid');
+    const cntNewGolden = document.getElementById('nifty-cnt-new-golden');
     const cntGolden = document.getElementById('nifty-cnt-golden');
     const cntOversold = document.getElementById('nifty-cnt-oversold');
     const cntDiscount = document.getElementById('nifty-cnt-discount');
@@ -2482,6 +2490,7 @@ async function fetchNiftyOpportunities(forceNetwork = false) {
     if (cntSafety) cntSafety.textContent = stocks.filter(x => (x.capital_safety_score || 0) >= 75).length;
     if (cntLarge) cntLarge.textContent = stocks.filter(x => x.cap_category === 'Large Cap' || !x.is_midcap).length;
     if (cntMid) cntMid.textContent = stocks.filter(x => x.cap_category === 'Mid Cap' || x.is_midcap).length;
+    if (cntNewGolden) cntNewGolden.textContent = newGoldenCount;
     if (cntGolden) cntGolden.textContent = stocks.filter(x => x.is_golden).length;
     if (cntOversold) cntOversold.textContent = stocks.filter(x => x.rsi < 40).length;
     if (cntDiscount) cntDiscount.textContent = stocks.filter(x => x.discount_pct >= 15).length;
@@ -2546,6 +2555,10 @@ function renderNiftyOpportunities() {
         if (activeNiftyFilter === 'SAFETY' && (s.capital_safety_score || 0) < 75) return false;
         if (activeNiftyFilter === 'LARGE' && (s.cap_category !== 'Large Cap' && s.is_midcap)) return false;
         if (activeNiftyFilter === 'MIDCAP' && (s.cap_category !== 'Mid Cap' && !s.is_midcap)) return false;
+        if (activeNiftyFilter === 'NEW_GOLDEN') {
+            const isNew = s.is_new_golden || (s.is_golden && (s.ema_spread_pct != null ? s.ema_spread_pct <= 2.5 : false));
+            if (!isNew) return false;
+        }
         if (activeNiftyFilter === 'GOLDEN' && !s.is_golden) return false;
         if (activeNiftyFilter === 'OVERSOLD' && s.rsi >= 40) return false;
         if (activeNiftyFilter === 'DISCOUNT' && s.discount_pct < 15) return false;
@@ -2566,6 +2579,14 @@ function renderNiftyOpportunities() {
     
     // Sort
     filtered.sort((a, b) => {
+        if (activeNiftySort === 'fresh_golden') {
+            const newA = a.is_new_golden || (a.is_golden && a.ema_spread_pct != null && a.ema_spread_pct <= 2.5);
+            const newB = b.is_new_golden || (b.is_golden && b.ema_spread_pct != null && b.ema_spread_pct <= 2.5);
+            if (newB !== newA) return (newB ? 1 : 0) - (newA ? 1 : 0);
+            const spreadA = a.is_golden && a.ema_spread_pct != null ? a.ema_spread_pct : 999;
+            const spreadB = b.is_golden && b.ema_spread_pct != null ? b.ema_spread_pct : 999;
+            return spreadA - spreadB;
+        }
         if (activeNiftySort === 'safety') {
             const scoreA = a.capital_safety_score != null ? a.capital_safety_score : (a.win_probability * 0.8);
             const scoreB = b.capital_safety_score != null ? b.capital_safety_score : (b.win_probability * 0.8);
@@ -2600,13 +2621,14 @@ function renderNiftyOpportunities() {
                 const actionClass = (plan.action || '').toLowerCase().replace(/[^a-z]/g, '-');
                 const changeColor = item.change_pct >= 0 ? '#34d399' : '#fb7185';
                 const changeSign = item.change_pct >= 0 ? '+' : '';
+                const isNewlyAddedGolden = item.is_new_golden || (item.is_golden && item.ema_spread_pct != null && item.ema_spread_pct <= 2.5);
                 
                 return `
                     <div class="nifty-card ${isElite ? 'elite-setup' : ''}">
                         <div class="nifty-card-top">
                             <div class="nifty-asset-meta">
                                 <h3>${item.name} <small style="font-size:0.75rem; color:var(--text-secondary); font-weight:400;">(${item.symbol})</small></h3>
-                                <p>${item.full_name} • <span style="color:#a855f7;">${item.sector}</span> • <span style="font-size:0.7rem; color:${item.cap_category === 'Mid Cap' ? '#38bdf8' : '#a78bfa'}; background:${item.cap_category === 'Mid Cap' ? 'rgba(56,189,248,0.15)' : 'rgba(167,139,250,0.15)'}; border:1px solid ${item.cap_category === 'Mid Cap' ? 'rgba(56,189,248,0.3)' : 'rgba(167,139,250,0.3)'}; padding:1px 5px; border-radius:4px; font-weight:700;">${item.cap_category || 'Large Cap'}</span></p>
+                                <p>${item.full_name} • <span style="color:#a855f7;">${item.sector}</span> • <span style="font-size:0.7rem; color:${item.cap_category === 'Mid Cap' ? '#38bdf8' : '#a78bfa'}; background:${item.cap_category === 'Mid Cap' ? 'rgba(56,189,248,0.15)' : 'rgba(167,139,250,0.15)'}; border:1px solid ${item.cap_category === 'Mid Cap' ? 'rgba(56,189,248,0.3)' : 'rgba(167,139,250,0.3)'}; padding:1px 5px; border-radius:4px; font-weight:700;">${item.cap_category || 'Large Cap'}</span>${isNewlyAddedGolden ? ` • <span class="badge" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(234, 179, 8, 0.25)); border: 1px solid #fbbf24; color: #fef08a; font-weight: 700; padding: 2px 7px; border-radius: 6px; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);"><i class="fa-solid fa-sparkles"></i> Newly Added Golden Cross (+${item.ema_spread_pct || 0}%)</span>` : ''}</p>
                             </div>
                             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
                                 <div class="nifty-win-badge" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(5, 150, 105, 0.35)); border: 1px solid rgba(52, 211, 153, 0.55); color: #34d399; font-weight: 700; font-size: 0.78rem; padding: 3px 8px; border-radius: 6px; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);">
@@ -2645,7 +2667,7 @@ function renderNiftyOpportunities() {
                             <div class="nifty-metric-item">
                                 <span>Crossover Status</span>
                                 <strong style="color: ${item.is_golden ? '#fbbf24' : (item.near_golden ? '#38bdf8' : 'var(--text-primary)')}; font-size:0.78rem;">
-                                    ${item.crossover_label}
+                                    ${isNewlyAddedGolden ? '<i class="fa-solid fa-sparkles" style="color:#fbbf24; margin-right:3px;"></i> ' : ''}${item.crossover_label}
                                 </strong>
                                 <small style="font-size:0.65rem; color:var(--text-secondary);">50E: ₹${item.ema_50} | 200E: ₹${item.ema_200}</small>
                             </div>
@@ -2747,11 +2769,12 @@ function renderNiftyOpportunities() {
                 const actionClass = (plan.action || '').toLowerCase().replace(/[^a-z]/g, '-');
                 const changeColor = item.change_pct >= 0 ? '#34d399' : '#fb7185';
                 const changeSign = item.change_pct >= 0 ? '+' : '';
+                const isNewlyAddedGolden = item.is_new_golden || (item.is_golden && item.ema_spread_pct != null && item.ema_spread_pct <= 2.5);
                 
                 return `
                     <tr>
                         <td>
-                            <strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>
+                            <strong>${item.name}</strong> <small style="color:var(--text-secondary)">(${item.symbol})</small>${isNewlyAddedGolden ? ' <span class="badge" style="background:linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(234, 179, 8, 0.25)); border:1px solid #fbbf24; color:#fef08a; font-size:0.68rem; padding:1px 5px; border-radius:4px; font-weight:700; margin-left:4px; display:inline-flex; align-items:center; gap:3px;"><i class="fa-solid fa-sparkles"></i> NEW</span>' : ''}
                             <div style="font-size:0.72rem; color:#a855f7;">${item.sector} • <span style="color:${item.cap_category === 'Mid Cap' ? '#38bdf8' : '#a78bfa'}; font-weight:700;">${item.cap_category || 'Large Cap'}</span></div>
                         </td>
                         <td>
@@ -2770,7 +2793,7 @@ function renderNiftyOpportunities() {
                         </td>
                         <td>
                             <span style="color: ${item.is_golden ? '#fbbf24' : (item.near_golden ? '#38bdf8' : 'var(--text-secondary)')}; font-weight:600; font-size:0.8rem;">
-                                ${item.crossover_label}
+                                ${isNewlyAddedGolden ? '<i class="fa-solid fa-sparkles" style="color:#fbbf24; margin-right:3px;"></i> ' : ''}${item.crossover_label}
                             </span>
                             <div style="font-size:0.68rem; color:var(--text-secondary);">50E: ₹${item.ema_50} | 200E: ₹${item.ema_200}</div>
                             ${item.market_regime ? `
