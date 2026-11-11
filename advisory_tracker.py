@@ -3077,6 +3077,7 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
         
         s6 = trade.get('suggestion_6pm', {})
         target = float(s6.get('target')) if s6.get('target') is not None else (float(pt.get('target')) if pt.get('target') is not None else None)
+        original_target = float(s6.get('original_target')) if s6.get('original_target') is not None else (float(pt.get('original_target')) if pt.get('original_target') is not None else target)
         stop_loss = float(s6.get('stop_loss')) if s6.get('stop_loss') is not None else (float(pt.get('stop_loss')) if pt.get('stop_loss') is not None else None)
         entry_p = float(pt.get('entry_price')) if pt.get('entry_price') is not None else float(s6.get('reference_price', cur_p))
 
@@ -3136,8 +3137,9 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
             continue
 
         # 2. Check ACTIVE Trades: 4-Stage Dynamic Trailing Stop-Loss & Target Runner Engine
-        if trade_status == 'ACTIVE' and target is not None and stop_loss is not None:
-            target_dist = (target - entry_p) if action == 'BUY' else (entry_p - target)
+        calc_target = target if target is not None else original_target
+        if trade_status == 'ACTIVE' and calc_target is not None and stop_loss is not None:
+            target_dist = (calc_target - entry_p) if action == 'BUY' else (entry_p - calc_target)
             if target_dist > 0:
                 current_favorable_move = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
                 peak_favorable_move = (effective_high - entry_p) if action == 'BUY' else (entry_p - effective_low)
@@ -3168,7 +3170,7 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         f"• <b>Action</b>: {action} {lot_size} units\n"
                         f"• <b>Current Price</b>: ₹{cur_p:,.2f} ({pct_to_target:.1f}% to Target)\n"
                         f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
-                        f"• <b>Target</b>: ₹{target:,.2f}\n"
+                        f"• <b>Target</b>: ₹{calc_target:,.2f}\n"
                         f"• <b>New Stop-Loss</b>: <b>₹{entry_p:,.2f} (Risk-Free Breakeven)</b>\n\n"
                         f"Position is now completely risk-free! Winning trade cannot turn into a loss.\n\n"
                         f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
@@ -3190,6 +3192,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                             effective_high = cur_p
                         if s6:
                             s6['stop_loss'] = lock_price
+                    trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{lock_price:,.2f})"
+                    trade['eod_outcome']['summary'] = f"Trailing Profit Stop (+35% profit locked @ ₹{lock_price:,.2f}) active. Position running towards Target."
                     updated_any = True
 
                     subject = f"💰 [STAGE 2: PROFIT LOCKED (+35%)] {trade['name']} Reached +60% Target Milestone"
@@ -3201,16 +3205,24 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         f"• <b>Action</b>: {action} {lot_size} units\n"
                         f"• <b>Current Price</b>: ₹{cur_p:,.2f} ({pct_to_target:.1f}% to Target)\n"
                         f"• <b>Guaranteed Profit Floor</b>: <b>₹{lock_price:,.2f} (+35% Target Gains)</b>\n"
-                        f"• <b>Final Target</b>: ₹{target:,.2f}\n\n"
+                        f"• <b>Target</b>: ₹{calc_target:,.2f}\n\n"
                         f"Trade has locked in guaranteed profits! Even on a sudden reversal, gains are banked.\n\n"
                         f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
                     )
                     alerts_to_send.append({'subject': subject, 'body': body})
 
                 # Stage 3: Target Approaching Lock at +80% towards Target (Locks +65% of target profit ahead of target)
+                # When stop-loss moves to +65% profit lock, the fixed target is removed/scrapped to rely strictly on trailing stop-loss!
                 if pct_to_target >= 80.0 and not pt.get('stage_3_target_approaching'):
                     lock_price = round(entry_p + (target_dist * 0.65) if action == 'BUY' else entry_p - (target_dist * 0.65), 2)
                     pt['stage_3_target_approaching'] = True
+                    pt['target_scrapped'] = True
+                    pt['original_target'] = calc_target
+                    pt['target'] = None
+                    if s6:
+                        s6['original_target'] = calc_target
+                        s6['target'] = None
+
                     if (action == 'BUY' and lock_price > stop_loss) or (action == 'SELL' and lock_price < stop_loss):
                         pt['stop_loss'] = lock_price
                         stop_loss = lock_price
@@ -3222,35 +3234,45 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                             effective_high = cur_p
                         if s6:
                             s6['stop_loss'] = lock_price
+
+                    trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{lock_price:,.2f})"
+                    trade['eod_outcome']['summary'] = f"Target removed — Trailing Profit Stop (+65% profit locked @ ₹{lock_price:,.2f}) active. Relying entirely on trailing stoploss."
                     updated_any = True
 
-                    subject = f"🎯 [STAGE 3: TARGET APPROACHING (80%+)] {trade['name']} Trailing Stop Tightened"
+                    subject = f"🎯 [STAGE 3: TARGET REMOVED — TRAILING STOP LOCKED (+65%)] {trade['name']}"
                     body = (
-                        f"🎯 <b>STAGE 3: TARGET APPROACHING MILESTONE (80%+)</b>\n"
+                        f"🎯 <b>STAGE 3: TARGET APPROACHING (80%+) — TARGET REMOVED</b>\n"
                         f"📅 <i>{today_str}, {now_time_str}</i>\n"
                         f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
                         f"• <b>Asset</b>: {trade['name']} ({sym})\n"
                         f"• <b>Action</b>: {action} {lot_size} units\n"
-                        f"• <b>Current Price</b>: ₹{cur_p:,.2f} ({pct_to_target:.1f}% to Target)\n"
+                        f"• <b>Current Price</b>: ₹{cur_p:,.2f} ({pct_to_target:.1f}% to Reference Target)\n"
                         f"• <b>Tightened Trailing Stop</b>: <b>₹{lock_price:,.2f} (+65% Target Gains Locked)</b>\n"
-                        f"• <b>Target</b>: ₹{target:,.2f}\n\n"
-                        f"Stop-loss tightened aggressively as price nears target. Bulk of gains safeguarded against pullbacks.\n\n"
+                        f"• <b>Target Status</b>: <b>REMOVED / SCRAPPED</b> (Relying strictly on trailing stop-loss)\n\n"
+                        f"Fixed target has been scrapped to maximize trend upside! Position now rides the trend with guaranteed profit locked at ₹{lock_price:,.2f}.\n\n"
                         f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
                     )
                     alerts_to_send.append({'subject': subject, 'body': body})
 
                 # Stage 4: Target Reached & Dynamic Runner Engine (≥ 100% of Target)
                 # Instead of cutting winners short at fixed target, let the trend run with a trailing ratchet!
-                target_reached_now = (action == 'BUY' and (cur_p >= target or effective_high >= target)) or \
-                                     (action == 'SELL' and (cur_p <= target or effective_low <= target))
+                target_reached_now = (action == 'BUY' and (cur_p >= calc_target or effective_high >= calc_target)) or \
+                                     (action == 'SELL' and (cur_p <= calc_target or effective_low <= calc_target))
 
                 if target_reached_now:
-                    trail_buffer = round(max(target_dist * 0.15, 1.0), 2)
+                    trail_buffer = round(max(target_dist * 0.15, 0.25 if is_equity else 1.0), 2)
                     floor_lock = round(entry_p + (target_dist * 0.85) if action == 'BUY' else entry_p - (target_dist * 0.85), 2)
 
                     if not pt.get('target_runner_active'):
                         pt['target_runner_active'] = True
                         pt['target_runner_activated_at'] = now_time_str
+                        pt['target_scrapped'] = True
+                        pt['original_target'] = calc_target
+                        pt['target'] = None
+                        if s6:
+                            s6['original_target'] = calc_target
+                            s6['target'] = None
+
                         # Ensure floor stop is at least +85% of target
                         if (action == 'BUY' and floor_lock > stop_loss) or (action == 'SELL' and floor_lock < stop_loss):
                             stop_loss = floor_lock
@@ -3263,20 +3285,23 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                                 effective_high = cur_p
                             if s6:
                                 s6['stop_loss'] = floor_lock
+                        trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{stop_loss:,.2f} | Runner 🚀)"
+                        trade['eod_outcome']['summary'] = f"Target removed — Dynamic Runner Trailing Stop locked @ ₹{stop_loss:,.2f}. Relying entirely on trailing stoploss."
                         updated_any = True
 
-                        subject = f"🎯🚀 [TARGET REACHED — RUNNER MODE ACTIVATED] {trade['name']} Crossed Target ₹{target:,.2f}"
+                        subject = f"🎯🚀 [TARGET REACHED — RUNNER MODE ACTIVATED] {trade['name']}"
                         body = (
                             f"🎯🚀 <b>TARGET ACHIEVED — DYNAMIC RUNNER MODE ACTIVATED</b>\n"
                             f"📅 <i>{today_str}, {now_time_str}</i>\n"
                             f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
                             f"• <b>Asset</b>: {trade['name']} ({sym})\n"
                             f"• <b>Action</b>: {action} {lot_size} units\n"
-                            f"• <b>Target Price</b>: ₹{target:,.2f}\n"
+                            f"• <b>Reference Target Price</b>: ₹{calc_target:,.2f}\n"
+                            f"• <b>Target Status</b>: <b>REMOVED / SCRAPPED</b> (Relying strictly on trailing stop-loss)\n"
                             f"• <b>Current / Peak Price</b>: ₹{cur_p:,.2f} (Peak ₹{effective_high if action=='BUY' else effective_low:,.2f})\n"
                             f"• <b>Guaranteed Floor Stop</b>: <b>₹{stop_loss:,.2f} (+85% Profit Floor)</b>\n"
                             f"• <b>Trailing Buffer</b>: ₹{trail_buffer:,.2f} behind highest high/lowest low\n\n"
-                            f"Instead of taking premature exit at target, dynamic trailing stop is trailing by ₹{trail_buffer:,.2f} behind new price peaks to maximize trend profits!\n\n"
+                            f"Instead of taking premature exit at target, fixed target is removed and dynamic trailing stop is ratcheting behind new price peaks!\n\n"
                             f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
                         )
                         alerts_to_send.append({'subject': subject, 'body': body})
@@ -3291,6 +3316,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                             effective_low = cur_p
                             if s6:
                                 s6['stop_loss'] = ratchet_sl
+                            trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{ratchet_sl:,.2f} | Runner 🚀)"
+                            trade['eod_outcome']['summary'] = f"Dynamic Runner trailing stop ratcheted to ₹{ratchet_sl:,.2f} behind peak ₹{effective_high:,.2f}."
                             updated_any = True
                     elif action == 'SELL':
                         ratchet_sl = round(effective_low + trail_buffer, 2)
@@ -3301,10 +3328,16 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                             effective_high = cur_p
                             if s6:
                                 s6['stop_loss'] = ratchet_sl
+                            trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{ratchet_sl:,.2f} | Runner 🚀)"
+                            trade['eod_outcome']['summary'] = f"Dynamic Runner trailing stop ratcheted to ₹{ratchet_sl:,.2f} ahead of trough ₹{effective_low:,.2f}."
                             updated_any = True
 
         # Ensure paper_trade object has target and stop_loss stored
-        if target is not None:
+        if pt.get('target_scrapped'):
+            pt['target'] = None
+            if s6:
+                s6['target'] = None
+        elif target is not None:
             pt['target'] = target
         if stop_loss is not None:
             pt['stop_loss'] = stop_loss
