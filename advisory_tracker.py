@@ -4850,6 +4850,19 @@ def square_off_intraday_equity_trades(checker=None, alerter=None):
         pt = trade.setdefault('paper_trade', {})
         entry_p = float(pt.get('entry_price') or trade.get('suggestion_6pm', {}).get('reference_price') or 0.0)
         cur_p = nifty_prices.get(clean_sym) or float(pt.get('exit_price') or entry_p)
+        try:
+            import yfinance as yf
+            yf_sym = sym if sym.endswith('.NS') else f"{clean_sym}.NS"
+            t_obj = yf.Ticker(yf_sym)
+            fast_p = getattr(t_obj.fast_info, 'last_price', None)
+            if fast_p and float(fast_p) > 0:
+                cur_p = round(float(fast_p), 2)
+            else:
+                hist_1m = t_obj.history(period='1d', interval='1m')
+                if not hist_1m.empty:
+                    cur_p = round(float(hist_1m['Close'].iloc[-1]), 2)
+        except Exception as e:
+            print(f"Warning: Could not fetch live yfinance price for 03:20 square-off {sym}: {e}")
         
         action = pt.get('action', 'BUY')
         qty = pt.get('quantity') or trade.get('lot_size') or 1
@@ -4960,6 +4973,20 @@ def exit_and_evaluate_eod_trades(checker, alerter):
             close_p = float(c_item.get('current_price') or entry_p)
         elif is_eq:
             close_p = float(pt.get('exit_price') or entry_p)
+            try:
+                import yfinance as yf
+                clean_sym = sym.replace('-FUT', '').replace('.NS', '').upper()
+                yf_sym = sym if sym.endswith('.NS') else f"{clean_sym}.NS"
+                t_obj = yf.Ticker(yf_sym)
+                fast_p = getattr(t_obj.fast_info, 'last_price', None)
+                if fast_p and float(fast_p) > 0:
+                    close_p = round(float(fast_p), 2)
+                else:
+                    hist_1m = t_obj.history(period='1d', interval='1m')
+                    if not hist_1m.empty:
+                        close_p = round(float(hist_1m['Close'].iloc[-1]), 2)
+            except Exception:
+                pass
         else:
             close_p = float(pt.get('exit_price') or entry_p)
             

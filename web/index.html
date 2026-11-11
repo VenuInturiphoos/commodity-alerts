@@ -7912,7 +7912,7 @@ function renderAdvisoryTradesTable() {
                     ${tgtDisplayHtml}
                 </td>
                 <td>
-                    <strong style="font-size:0.9rem; color:#f8fafc;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : (pt.status === 'ACTIVE' ? 'Ticking...' : '--')}</strong>
+                    <strong style="font-size:0.9rem; color:#f8fafc;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : (isSlBreached ? '<span style="color:#fb7185; font-size:0.85rem; font-weight:700;">₹' + Number(curSl).toFixed(2) + ' (SL Hit)</span>' : (pt.status === 'ACTIVE' ? 'Ticking...' : '--'))}</strong>
                     ${exitDetailHtml}
                 </td>
                 <td style="font-weight:700; font-size:0.95rem; color:${pnlColor};">
@@ -8071,9 +8071,11 @@ function renderAdvisoryTradesTable() {
                 mobileExitVal = '<span style="color:#fbbf24;"><i class="fa-solid fa-bell"></i> Discretionary Alert Only</span>';
             } else if (pt.status === 'ACTIVE') {
                 mobileExitLabel = 'Position Status';
-                mobileExitVal = isSessionExpired
-                    ? `<span style="color:#4ade80; font-weight:700;"><i class="fa-solid fa-clock"></i> Session Close (${isEqTrade ? '03:20 PM' : '11:30 PM'})</span>`
-                    : '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</span>';
+                mobileExitVal = isSlBreached
+                    ? `<span style="color:#fb7185; font-weight:700;"><i class="fa-solid fa-arrows-rotate fa-spin"></i> SL Hit @ ₹${Number(curSl).toFixed(2)}</span>`
+                    : (isSessionExpired
+                        ? `<span style="color:#4ade80; font-weight:700;"><i class="fa-solid fa-clock"></i> Session Close (${isEqTrade ? '03:20 PM' : '11:30 PM'})</span>`
+                        : '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</span>');
             } else if (pt.status === 'PENDING_615') {
                 mobileExitLabel = 'Position Status';
                 mobileExitVal = isPast1815
