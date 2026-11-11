@@ -2733,8 +2733,8 @@ function renderNiftyOpportunities() {
                                     <strong style="color: #34d399;">₹${plan.target_1}</strong>
                                 </div>
                                 <div class="nifty-target-cell">
-                                    <small>Stop Loss (-${plan.risk_pct}%)</small>
-                                    <strong style="color: #fb7185;">₹${plan.stop_loss}</strong>
+                                    <small>Exit Strategy</small>
+                                    <strong style="color: #38bdf8;">Hold Target (No SL)</strong>
                                 </div>
                             </div>
                             
@@ -2834,7 +2834,7 @@ function renderNiftyOpportunities() {
                         <td>
                             <span class="nifty-action-badge ${actionClass}" style="font-size:0.68rem; padding:1px 6px;">${plan.action}</span>
                             <div style="font-size:0.72rem; color:#34d399; font-weight:600; margin-top:2px;">Target: ₹${plan.target_1} (+${plan.potential_upside_t1}%)</div>
-                            <div style="font-size:0.68rem; color:#fb7185;">SL: ₹${plan.stop_loss}</div>
+                            <div style="font-size:0.68rem; color:#38bdf8;">Delivery: Hold for Target (No SL)</div>
                             ${item.time_machine ? `<div style="font-size:0.65rem; color:#c4b5fd;">🎲 ${item.time_machine.p_target_1_pct || item.time_machine.p_target_pct}% T1 · ${item.time_machine.p_stop_pct}% SL (${(item.time_machine.expected_r >= 0 ? '+' : '') + item.time_machine.expected_r}R)</div>` : ''}
                         </td>
                         <td style="text-align: right;">
@@ -4608,7 +4608,7 @@ function renderPortfolio() {
 
             const targetSlBadge = `
                 <div style="display:flex; gap:6px; margin-top:4px; font-size:0.75rem; flex-wrap:wrap;">
-                    <span style="color:#38bdf8; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); padding:1px 6px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-hourglass-half"></i> Delivery SIP: Hold for Target</span>
+                    <span style="color:#38bdf8; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); padding:1px 6px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-infinity"></i> No Stop Loss (Hold for Target)</span>
                     <span style="color:#4ade80; background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.3); padding:1px 6px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-bullseye"></i> TGT: ₹${inv.target_1} (+${inv.potential_upside_t1 || 10}%)</span>
                 </div>
             `;
@@ -4663,8 +4663,8 @@ function renderPortfolio() {
 
                     <div class="mobile-card-grid-2" style="margin-top:-2px;">
                         <div class="mobile-cell-item" style="border-left: 3px solid #38bdf8;">
-                            <span class="mobile-cell-label"><i class="fa-solid fa-hourglass-half"></i> Delivery SIP</span>
-                            <span class="mobile-cell-val" style="color:#38bdf8; font-size:0.82rem;">Hold for Bounce</span>
+                            <span class="mobile-cell-label"><i class="fa-solid fa-infinity"></i> Exit Rule</span>
+                            <span class="mobile-cell-val" style="color:#38bdf8; font-size:0.82rem;">No SL · Wait for Target</span>
                         </div>
                         <div class="mobile-cell-item" style="border-left: 3px solid #4ade80;">
                             <span class="mobile-cell-label"><i class="fa-solid fa-bullseye"></i> Target 1</span>

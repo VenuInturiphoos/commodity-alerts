@@ -263,15 +263,17 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
             return None
 
     trade_plan = chosen_stock.get('trade_plan', {})
-    stop_loss = float(trade_plan.get('stop_loss', round(price * 0.955, 2)))
     target_1 = float(trade_plan.get('target_1', round(price * 1.10, 2)))
     target_2 = float(trade_plan.get('target_2', round(price * 1.18, 2)))
+    # Delivery Stock Investment: Zero Stop Loss, held unconditionally for Target
+    stop_loss = None
 
-    # Run Monte Carlo Time Machine simulation (3,000 empirical replays)
+    # Run Monte Carlo Time Machine simulation (3,000 empirical replays against reference volatility)
     sim_stock_sym = chosen_stock.get('name', chosen_stock.get('symbol', ''))
     if not sim_stock_sym.endswith('.NS') and not sim_stock_sym.endswith('.BO'):
         sim_stock_sym = f"{sim_stock_sym}.NS"
-    sim_metrics = MonteCarloTimeMachine.run_simulation(sim_stock_sym, price, stop_loss, target_1, action='buy', replays=3000)
+    sim_ref_floor = round(price * 0.85, 2)
+    sim_metrics = MonteCarloTimeMachine.run_simulation(sim_stock_sym, price, sim_ref_floor, target_1, action='buy', replays=3000)
 
     # 🤖 TradingAgents Multi-Agent Fundamental & Technical Deliberation
     ta_verdict = None
@@ -301,12 +303,13 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         'current_value': invested_val,
         'pnl_inr': 0.0,
         'pnl_pct': 0.0,
-        'stop_loss': stop_loss,
+        'stop_loss': None,
+        'stop_loss_note': 'No Stop Loss (100% Cash Delivery - Hold for Target)',
         'target_1': target_1,
         'target_2': target_2,
         'potential_upside_t1': trade_plan.get('potential_upside_t1', round(((target_1 - price) / price) * 100, 1)),
         'potential_upside_t2': trade_plan.get('potential_upside_t2', round(((target_2 - price) / price) * 100, 1)),
-        'risk_pct': trade_plan.get('risk_pct', round(((price - stop_loss) / price) * 100, 1)),
+        'risk_pct': None,
         'win_probability': chosen_stock.get('win_probability', 90),
         'time_machine': sim_metrics,
         'multi_agent_consensus': ta_verdict,
@@ -316,7 +319,7 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         'ema_200': chosen_stock.get('ema_200'),
         'crossover_status': 'Golden Cross Active 🌟',
         'action': 'STRONG BUY (Delivery SIP - Hold for Target)',
-        'rationale': trade_plan.get('rationale', '50 EMA > 200 EMA Golden Cross with deep value confluence. Held for Target 1 without stop-loss panic exits.'),
+        'rationale': trade_plan.get('rationale', '50 EMA > 200 EMA Golden Cross with deep value confluence. Held unconditionally for Target 1 without stop-loss exits.'),
         'status': 'ACTIVE',
         'exit_price': None,
         'exit_time': None,
@@ -340,7 +343,7 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
     print(f"   Shares: {shares} @ ₹{price:,.2f} = ₹{invested_val:,.2f} (Target: ₹30,000 | Variance: ₹{variance:+,.2f})")
     print(f"   Remaining Available Stock Cash: ₹{avail_cash - invested_val:,.2f}")
     print(f"   Win Prob: {new_investment['win_probability']}% | 52W Disc: {new_investment['discount_pct']}% | RSI: {new_investment['rsi']}")
-    print(f"   Stop-Loss: ₹{stop_loss:,.2f} | Target 1: ₹{target_1:,.2f} | Target 2: ₹{target_2:,.2f}")
+    print(f"   Target 1: ₹{target_1:,.2f} | Target 2: ₹{target_2:,.2f} | Stop-Loss: None (Wait for Target)")
 
     # Dispatch Email / Telegram Alert
     try:
@@ -364,8 +367,9 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
                 f"• 52-Week High Discount: {new_investment['discount_pct']}% Off Peak\n"
                 f"• RSI Indicator: {new_investment['rsi']} (Oversold Value Zone)\n"
                 f"• Moving Averages: 50 EMA (₹{new_investment['ema_50']}) > 200 EMA (₹{new_investment['ema_200']})\n\n"
-                f"🎯 TARGET & PROTECTIVE STOP-LOSS RULES:\n"
-                f"• Stop-Loss (Protective Floor): ₹{stop_loss:,.2f} (-{new_investment['risk_pct']}% risk)\n"
+                f"🎯 TARGET & EXIT STRATEGY (NO STOP-LOSS):\n"
+                f"• Model: 100% Cash Delivery in Demat (Zero forced leverage, zero expiry, NO Stop Loss)\n"
+                f"• Exit Plan: Unconditionally wait for Target 1 mean reversion / bounce\n"
                 f"• Target 1 (Mean Reversion): ₹{target_1:,.2f} (+{new_investment['potential_upside_t1']}% upside)\n"
                 f"• Target 2 (Swing High Retest): ₹{target_2:,.2f} (+{new_investment['potential_upside_t2']}% upside)\n\n"
                 f"💡 Rationale: {new_investment['rationale']}\n"
@@ -438,7 +442,7 @@ def update_live_stock_investments():
         shares = int(inv.get('shares', 1))
         t1 = float(inv.get('target_1', entry_p * 1.10))
         t2 = float(inv.get('target_2', entry_p * 1.18))
-        sl = float(inv.get('stop_loss', entry_p * 0.95))
+        # 100% Cash Delivery: No stop loss is used. Holdings remain active until Target 1 is achieved.
 
         inv['current_price'] = latest_price
         cur_val = round(shares * latest_price, 2)
@@ -448,7 +452,7 @@ def update_live_stock_investments():
         inv['pnl_inr'] = pnl
         inv['pnl_pct'] = pnl_pct
 
-        # Check for Target 1 or Stop Loss triggers
+        # Check for Target 1 triggers (NO stop-loss exits for delivery stock investments)
         if latest_price >= t1:
             inv['status'] = 'TARGET_HIT'
             inv['exit_price'] = latest_price
