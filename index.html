@@ -4137,33 +4137,6 @@ function loadGuestPaperTradingData() {
                 : 300000;
         }
         const storedTxs = JSON.parse(localStorage.getItem('guest_stock_transactions') || '[]');
-        let modified = false;
-        storedTxs.forEach(tx => {
-            if (!tx.created_at && !tx.timestamp) {
-                if (typeof tx.id === 'string' && tx.id.startsWith('local-')) {
-                    const epoch = parseInt(tx.id.replace('local-', ''), 10);
-                    if (!isNaN(epoch) && epoch > 1000000000000) {
-                        tx.created_at = new Date(epoch).toISOString();
-                        tx.timestamp = tx.created_at;
-                        modified = true;
-                    }
-                }
-                if (!tx.created_at && !tx.timestamp) {
-                    tx.created_at = '2026-11-05T11:20:00.000Z';
-                    tx.timestamp = tx.created_at;
-                    modified = true;
-                }
-            } else if (!tx.created_at && tx.timestamp) {
-                tx.created_at = tx.timestamp;
-                modified = true;
-            } else if (tx.created_at && !tx.timestamp) {
-                tx.timestamp = tx.created_at;
-                modified = true;
-            }
-        });
-        if (modified) {
-            try { localStorage.setItem('guest_stock_transactions', JSON.stringify(storedTxs)); } catch(e) {}
-        }
         userSupabaseTransactions = storedTxs;
         
         userPortfolio = {};
@@ -4391,27 +4364,6 @@ async function fetchPaperTradingData(user) {
     }
     
     userSupabaseTransactions = txData || [];
-    if (userSupabaseTransactions && Array.isArray(userSupabaseTransactions)) {
-        userSupabaseTransactions.forEach(tx => {
-            if (!tx.created_at && !tx.timestamp) {
-                if (typeof tx.id === 'string' && tx.id.startsWith('local-')) {
-                    const epoch = parseInt(tx.id.replace('local-', ''), 10);
-                    if (!isNaN(epoch) && epoch > 1000000000000) {
-                        tx.created_at = new Date(epoch).toISOString();
-                        tx.timestamp = tx.created_at;
-                    }
-                }
-                if (!tx.created_at && !tx.timestamp) {
-                    tx.created_at = '2026-11-05T11:20:00.000Z';
-                    tx.timestamp = tx.created_at;
-                }
-            } else if (!tx.created_at && tx.timestamp) {
-                tx.created_at = tx.timestamp;
-            } else if (tx.created_at && !tx.timestamp) {
-                tx.timestamp = tx.created_at;
-            }
-        });
-    }
     renderOrderHistory(userSupabaseTransactions);
     renderPendingOrders(pendingOrders);
     renderPortfolio();
@@ -4917,15 +4869,12 @@ window.exitStockInvestment = async function(invId, symbol, name, shares, current
 
     if (currentUser && typeof supabaseClient !== 'undefined') {
         try {
-            const nowIso = new Date().toISOString();
             await supabaseClient.from('transactions').insert([{
                 user_id: currentUser.id,
                 symbol: symbol,
                 transaction_type: 'SELL',
                 quantity: shares,
-                price: currentPrice,
-                timestamp: nowIso,
-                created_at: nowIso
+                price: currentPrice
             }]);
         } catch (e) {
             console.log("Logged sell transaction locally:", e.message);
@@ -5142,7 +5091,7 @@ function parseDateInfo(dStr, tStr) {
             }
         }
     }
-    if (!dt || isNaN(dt.getTime())) dt = new Date('2026-11-05T11:20:00');
+    if (!dt || isNaN(dt.getTime())) dt = new Date();
 
     const yyyy = dt.getFullYear();
     const mm = String(dt.getMonth() + 1).padStart(2, '0');
@@ -5162,7 +5111,7 @@ function parseDateInfo(dStr, tStr) {
         monthKey, 
         dayDisplay, 
         monthDisplay, 
-        timeDisplay: tStr || (dStr ? dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '11:20 am') 
+        timeDisplay: tStr || dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) 
     };
 }
 window.parseDateInfo = parseDateInfo;
@@ -5182,16 +5131,7 @@ function getAllTakenOrders(supabaseTxs = []) {
     // 1. User direct paper trades (Supabase transactions table)
     if (Array.isArray(supabaseTxs)) {
         for (const tx of supabaseTxs) {
-            let rawDate = tx.timestamp || tx.created_at || tx.date || '';
-            if (!rawDate && typeof tx.id === 'string' && tx.id.startsWith('local-')) {
-                const epoch = parseInt(tx.id.replace('local-', ''), 10);
-                if (!isNaN(epoch) && epoch > 1000000000000) {
-                    rawDate = new Date(epoch).toISOString();
-                }
-            }
-            if (!rawDate) {
-                rawDate = '2026-11-05T11:20:00';
-            }
+            const rawDate = tx.timestamp || tx.created_at || new Date().toISOString();
             const dateInfo = parseDateInfo(rawDate);
             const marketItem = (typeof marketData !== 'undefined' && Array.isArray(marketData))
                 ? marketData.find(m => m.symbol === tx.symbol)
@@ -5703,16 +5643,7 @@ function getAllStockInvestmentOrders() {
     if (typeof userSupabaseTransactions !== 'undefined' && Array.isArray(userSupabaseTransactions)) {
         for (const tx of userSupabaseTransactions) {
             if (typeof isCommoditySymbol === 'function' && isCommoditySymbol(tx.symbol)) continue;
-            let rawDate = tx.created_at || tx.timestamp || tx.date || tx.time || '';
-            if (!rawDate && typeof tx.id === 'string' && tx.id.startsWith('local-')) {
-                const epoch = parseInt(tx.id.replace('local-', ''), 10);
-                if (!isNaN(epoch) && epoch > 1000000000000) {
-                    rawDate = new Date(epoch).toISOString();
-                }
-            }
-            if (!rawDate) {
-                rawDate = '2026-11-05T11:20:00';
-            }
+            const rawDate = tx.created_at || tx.date || '';
             const dateInfo = parseDateInfo(rawDate);
             const qty = Number(tx.quantity) || 1;
             const price = Number(tx.price) || 0;
@@ -6457,15 +6388,12 @@ window.executeTrade = async function(symbol, type, qty, price, orderType = 'MARK
     }
     
     // 1. Insert Transaction (Market Order)
-    const nowIso = new Date().toISOString();
     const { error: txError } = await supabaseClient.from('transactions').insert([{
         user_id: currentUser.id,
         symbol: symbol,
         transaction_type: type,
         quantity: qty,
-        price: price,
-        timestamp: nowIso,
-        created_at: nowIso
+        price: price
     }]);
     
     if (txError) throw txError;
