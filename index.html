@@ -2733,8 +2733,8 @@ function renderNiftyOpportunities() {
                                     <strong style="color: #34d399;">₹${plan.target_1}</strong>
                                 </div>
                                 <div class="nifty-target-cell">
-                                    <small>Stop Loss (-${plan.risk_pct}%)</small>
-                                    <strong style="color: #fb7185;">₹${plan.stop_loss}</strong>
+                                    <small>Exit Strategy</small>
+                                    <strong style="color: #38bdf8;">Hold Target (No SL)</strong>
                                 </div>
                             </div>
                             
@@ -2834,7 +2834,7 @@ function renderNiftyOpportunities() {
                         <td>
                             <span class="nifty-action-badge ${actionClass}" style="font-size:0.68rem; padding:1px 6px;">${plan.action}</span>
                             <div style="font-size:0.72rem; color:#34d399; font-weight:600; margin-top:2px;">Target: ₹${plan.target_1} (+${plan.potential_upside_t1}%)</div>
-                            <div style="font-size:0.68rem; color:#fb7185;">SL: ₹${plan.stop_loss}</div>
+                            <div style="font-size:0.68rem; color:#38bdf8;">Delivery: Hold for Target (No SL)</div>
                             ${item.time_machine ? `<div style="font-size:0.65rem; color:#c4b5fd;">🎲 ${item.time_machine.p_target_1_pct || item.time_machine.p_target_pct}% T1 · ${item.time_machine.p_stop_pct}% SL (${(item.time_machine.expected_r >= 0 ? '+' : '') + item.time_machine.expected_r}R)</div>` : ''}
                         </td>
                         <td style="text-align: right;">
@@ -4137,6 +4137,33 @@ function loadGuestPaperTradingData() {
                 : 300000;
         }
         const storedTxs = JSON.parse(localStorage.getItem('guest_stock_transactions') || '[]');
+        let modified = false;
+        storedTxs.forEach(tx => {
+            if (!tx.created_at && !tx.timestamp) {
+                if (typeof tx.id === 'string' && tx.id.startsWith('local-')) {
+                    const epoch = parseInt(tx.id.replace('local-', ''), 10);
+                    if (!isNaN(epoch) && epoch > 1000000000000) {
+                        tx.created_at = new Date(epoch).toISOString();
+                        tx.timestamp = tx.created_at;
+                        modified = true;
+                    }
+                }
+                if (!tx.created_at && !tx.timestamp) {
+                    tx.created_at = '2026-11-05T11:20:00.000Z';
+                    tx.timestamp = tx.created_at;
+                    modified = true;
+                }
+            } else if (!tx.created_at && tx.timestamp) {
+                tx.created_at = tx.timestamp;
+                modified = true;
+            } else if (tx.created_at && !tx.timestamp) {
+                tx.timestamp = tx.created_at;
+                modified = true;
+            }
+        });
+        if (modified) {
+            try { localStorage.setItem('guest_stock_transactions', JSON.stringify(storedTxs)); } catch(e) {}
+        }
         userSupabaseTransactions = storedTxs;
         
         userPortfolio = {};
@@ -4364,6 +4391,27 @@ async function fetchPaperTradingData(user) {
     }
     
     userSupabaseTransactions = txData || [];
+    if (userSupabaseTransactions && Array.isArray(userSupabaseTransactions)) {
+        userSupabaseTransactions.forEach(tx => {
+            if (!tx.created_at && !tx.timestamp) {
+                if (typeof tx.id === 'string' && tx.id.startsWith('local-')) {
+                    const epoch = parseInt(tx.id.replace('local-', ''), 10);
+                    if (!isNaN(epoch) && epoch > 1000000000000) {
+                        tx.created_at = new Date(epoch).toISOString();
+                        tx.timestamp = tx.created_at;
+                    }
+                }
+                if (!tx.created_at && !tx.timestamp) {
+                    tx.created_at = '2026-11-05T11:20:00.000Z';
+                    tx.timestamp = tx.created_at;
+                }
+            } else if (!tx.created_at && tx.timestamp) {
+                tx.created_at = tx.timestamp;
+            } else if (tx.created_at && !tx.timestamp) {
+                tx.timestamp = tx.created_at;
+            }
+        });
+    }
     renderOrderHistory(userSupabaseTransactions);
     renderPendingOrders(pendingOrders);
     renderPortfolio();
@@ -4560,7 +4608,7 @@ function renderPortfolio() {
 
             const targetSlBadge = `
                 <div style="display:flex; gap:6px; margin-top:4px; font-size:0.75rem; flex-wrap:wrap;">
-                    <span style="color:#38bdf8; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); padding:1px 6px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-hourglass-half"></i> Delivery SIP: Hold for Target</span>
+                    <span style="color:#38bdf8; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); padding:1px 6px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-infinity"></i> No Stop Loss (Hold for Target)</span>
                     <span style="color:#4ade80; background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.3); padding:1px 6px; border-radius:4px; font-weight:700;"><i class="fa-solid fa-bullseye"></i> TGT: ₹${inv.target_1} (+${inv.potential_upside_t1 || 10}%)</span>
                 </div>
             `;
@@ -4615,8 +4663,8 @@ function renderPortfolio() {
 
                     <div class="mobile-card-grid-2" style="margin-top:-2px;">
                         <div class="mobile-cell-item" style="border-left: 3px solid #38bdf8;">
-                            <span class="mobile-cell-label"><i class="fa-solid fa-hourglass-half"></i> Delivery SIP</span>
-                            <span class="mobile-cell-val" style="color:#38bdf8; font-size:0.82rem;">Hold for Bounce</span>
+                            <span class="mobile-cell-label"><i class="fa-solid fa-infinity"></i> Exit Rule</span>
+                            <span class="mobile-cell-val" style="color:#38bdf8; font-size:0.82rem;">No SL · Wait for Target</span>
                         </div>
                         <div class="mobile-cell-item" style="border-left: 3px solid #4ade80;">
                             <span class="mobile-cell-label"><i class="fa-solid fa-bullseye"></i> Target 1</span>
@@ -4869,12 +4917,15 @@ window.exitStockInvestment = async function(invId, symbol, name, shares, current
 
     if (currentUser && typeof supabaseClient !== 'undefined') {
         try {
+            const nowIso = new Date().toISOString();
             await supabaseClient.from('transactions').insert([{
                 user_id: currentUser.id,
                 symbol: symbol,
                 transaction_type: 'SELL',
                 quantity: shares,
-                price: currentPrice
+                price: currentPrice,
+                timestamp: nowIso,
+                created_at: nowIso
             }]);
         } catch (e) {
             console.log("Logged sell transaction locally:", e.message);
@@ -5091,7 +5142,7 @@ function parseDateInfo(dStr, tStr) {
             }
         }
     }
-    if (!dt || isNaN(dt.getTime())) dt = new Date();
+    if (!dt || isNaN(dt.getTime())) dt = new Date('2026-11-05T11:20:00');
 
     const yyyy = dt.getFullYear();
     const mm = String(dt.getMonth() + 1).padStart(2, '0');
@@ -5111,7 +5162,7 @@ function parseDateInfo(dStr, tStr) {
         monthKey, 
         dayDisplay, 
         monthDisplay, 
-        timeDisplay: tStr || dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) 
+        timeDisplay: tStr || (dStr ? dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '11:20 am') 
     };
 }
 window.parseDateInfo = parseDateInfo;
@@ -5131,7 +5182,16 @@ function getAllTakenOrders(supabaseTxs = []) {
     // 1. User direct paper trades (Supabase transactions table)
     if (Array.isArray(supabaseTxs)) {
         for (const tx of supabaseTxs) {
-            const rawDate = tx.timestamp || tx.created_at || new Date().toISOString();
+            let rawDate = tx.timestamp || tx.created_at || tx.date || '';
+            if (!rawDate && typeof tx.id === 'string' && tx.id.startsWith('local-')) {
+                const epoch = parseInt(tx.id.replace('local-', ''), 10);
+                if (!isNaN(epoch) && epoch > 1000000000000) {
+                    rawDate = new Date(epoch).toISOString();
+                }
+            }
+            if (!rawDate) {
+                rawDate = '2026-11-05T11:20:00';
+            }
             const dateInfo = parseDateInfo(rawDate);
             const marketItem = (typeof marketData !== 'undefined' && Array.isArray(marketData))
                 ? marketData.find(m => m.symbol === tx.symbol)
@@ -5643,7 +5703,16 @@ function getAllStockInvestmentOrders() {
     if (typeof userSupabaseTransactions !== 'undefined' && Array.isArray(userSupabaseTransactions)) {
         for (const tx of userSupabaseTransactions) {
             if (typeof isCommoditySymbol === 'function' && isCommoditySymbol(tx.symbol)) continue;
-            const rawDate = tx.created_at || tx.date || '';
+            let rawDate = tx.created_at || tx.timestamp || tx.date || tx.time || '';
+            if (!rawDate && typeof tx.id === 'string' && tx.id.startsWith('local-')) {
+                const epoch = parseInt(tx.id.replace('local-', ''), 10);
+                if (!isNaN(epoch) && epoch > 1000000000000) {
+                    rawDate = new Date(epoch).toISOString();
+                }
+            }
+            if (!rawDate) {
+                rawDate = '2026-11-05T11:20:00';
+            }
             const dateInfo = parseDateInfo(rawDate);
             const qty = Number(tx.quantity) || 1;
             const price = Number(tx.price) || 0;
@@ -6388,12 +6457,15 @@ window.executeTrade = async function(symbol, type, qty, price, orderType = 'MARK
     }
     
     // 1. Insert Transaction (Market Order)
+    const nowIso = new Date().toISOString();
     const { error: txError } = await supabaseClient.from('transactions').insert([{
         user_id: currentUser.id,
         symbol: symbol,
         transaction_type: type,
         quantity: qty,
-        price: price
+        price: price,
+        timestamp: nowIso,
+        created_at: nowIso
     }]);
     
     if (txError) throw txError;
