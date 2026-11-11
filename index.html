@@ -7645,11 +7645,16 @@ function renderAdvisoryTradesTable() {
             }
             outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${badgeText}</span>`;
         } else if (pt.status === 'ACTIVE') {
+            const curSl = Number(pt.stop_loss || s6.stop_loss || 0);
             if (isSessionExpired) {
                 const isWin = (pt.pnl_inr || 0) > 0;
                 outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : '11:30 PM'})</span>`;
             } else if (pt.target_runner_active) {
-                outcomeBadge = `<span class="adv-badge-active" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🚀</span>`;
+                outcomeBadge = `<span class="adv-badge-active" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🚀 (SL @ ₹${curSl.toFixed(2)})</span>`;
+            } else if (pt.stage_3_target_approaching || pt.target_scrapped) {
+                outcomeBadge = `<span class="adv-badge-active" style="background:rgba(56,189,248,0.18); border:1px solid rgba(56,189,248,0.45); color:#38bdf8;"><i class="fa-solid fa-infinity"></i> Trailing Stop @ ₹${curSl.toFixed(2)} (+65% Locked)</span>`;
+            } else if (pt.stage_2_profit_locked) {
+                outcomeBadge = `<span class="adv-badge-active" style="background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.45); color:#fbbf24;"><i class="fa-solid fa-lock"></i> Trailing Stop @ ₹${curSl.toFixed(2)} (+35% Locked)</span>`;
             } else {
                 outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
             }
@@ -7824,12 +7829,13 @@ function renderAdvisoryTradesTable() {
             : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
 
         const displaySl = pt.stop_loss || s6.stop_loss;
+        const isTargetScrapped = Boolean(pt.target_scrapped || pt.stage_3_target_approaching || pt.target_runner_active || (!s6.target && (pt.original_target || s6.original_target)));
         let slBadge = '';
         let slColor = '#fb7185';
         if (pt.target_runner_active) {
             slBadge = '<span style="font-size:0.65rem; color:#4ade80; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Trailing 🚀</span>';
             slColor = '#4ade80';
-        } else if (pt.stage_3_target_approaching) {
+        } else if (pt.stage_3_target_approaching || isTargetScrapped) {
             slBadge = '<span style="font-size:0.65rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+65% Locked</span>';
             slColor = '#38bdf8';
         } else if (pt.stage_2_profit_locked) {
@@ -7838,6 +7844,21 @@ function renderAdvisoryTradesTable() {
         } else if (pt.trailing_sl_active) {
             slBadge = '<span style="font-size:0.65rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Breakeven</span>';
             slColor = '#a5b4fc';
+        }
+
+        let tgtDisplayHtml = '';
+        if (isTargetScrapped && (pt.status === 'ACTIVE' || pt.stage_3_target_approaching || pt.target_runner_active)) {
+            tgtDisplayHtml = `<div style="font-size:0.75rem; color:#38bdf8; font-weight:700;" title="Target scrapped to let profits run with trailing stop-loss"><i class="fa-solid fa-infinity"></i> Target Removed (Relying on SL)</div>`;
+        } else if (s6.target) {
+            tgtDisplayHtml = `<div style="font-size:0.8rem; color:#4ade80; font-weight:600;">TGT: ₹${Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2})}</div>`;
+        } else {
+            tgtDisplayHtml = `<div style="font-size:0.75rem; color:#94a3b8;">TGT: --</div>`;
+        }
+
+        let activeSummary = outcome.summary || '';
+        if (pt.status === 'ACTIVE' && isTargetScrapped) {
+            const curSl = Number(displaySl || 0);
+            activeSummary = `Target removed — Trailing Profit Stop (+65% locked @ ₹${curSl.toFixed(2)}) active. Relying entirely on trailing stoploss.`;
         }
 
         return `
@@ -7875,7 +7896,7 @@ function renderAdvisoryTradesTable() {
                 <td>${paperTradeCell}</td>
                 <td>
                     <div style="font-size:0.8rem; color:${slColor}; font-weight:600;">SL: ₹${displaySl ? Number(displaySl).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} ${slBadge}</div>
-                    <div style="font-size:0.8rem; color:#4ade80; font-weight:600;">TGT: ₹${s6.target ? Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
+                    ${tgtDisplayHtml}
                 </td>
                 <td>
                     <strong style="font-size:0.9rem; color:#f8fafc;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : (pt.status === 'ACTIVE' ? 'Ticking...' : '--')}</strong>
@@ -7887,7 +7908,7 @@ function renderAdvisoryTradesTable() {
                 </td>
                 <td>
                     ${outcomeBadge}
-                    <div style="font-size:0.72rem; color:#94a3b8; margin-top:4px; max-width:180px; line-height:1.3;">${((pt.status === 'PENDING_615' || outcome.summary?.toLowerCase().includes('awaiting 6:15')) && (isPast1815 || isStandAsideTrade)) ? '15-minute confirmation window elapsed. Stood aside to preserve capital.' : (outcome.summary || '')}</div>
+                    <div style="font-size:0.72rem; color:#94a3b8; margin-top:4px; max-width:180px; line-height:1.3;">${((pt.status === 'PENDING_615' || outcome.summary?.toLowerCase().includes('awaiting 6:15')) && (isPast1815 || isStandAsideTrade)) ? '15-minute confirmation window elapsed. Stood aside to preserve capital.' : activeSummary}</div>
                 </td>
             </tr>
         `;
@@ -8071,12 +8092,13 @@ function renderAdvisoryTradesTable() {
                 : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
 
             const mobDisplaySl = pt.stop_loss || s6.stop_loss;
+            const mobIsTargetScrapped = Boolean(pt.target_scrapped || pt.stage_3_target_approaching || pt.target_runner_active || (!s6.target && (pt.original_target || s6.original_target)));
             let mobSlBadge = '';
             let mobSlColor = '#fb7185';
             if (pt.target_runner_active) {
                 mobSlBadge = '<span style="font-size:0.6rem; color:#4ade80; background:rgba(34,197,94,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">Trailing 🚀</span>';
                 mobSlColor = '#4ade80';
-            } else if (pt.stage_3_target_approaching) {
+            } else if (pt.stage_3_target_approaching || mobIsTargetScrapped) {
                 mobSlBadge = '<span style="font-size:0.6rem; color:#38bdf8; background:rgba(56,189,248,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">+65%</span>';
                 mobSlColor = '#38bdf8';
             } else if (pt.stage_2_profit_locked) {
@@ -8140,7 +8162,10 @@ function renderAdvisoryTradesTable() {
                         </div>
                         <div class="mobile-cell-item">
                             <span class="mobile-cell-label">Target</span>
-                            <span class="mobile-cell-val" style="color:#4ade80; font-weight:600;">₹${s6.target ? Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</span>
+                            ${mobIsTargetScrapped && (pt.status === 'ACTIVE' || pt.stage_3_target_approaching || pt.target_runner_active)
+                                ? `<span class="mobile-cell-val" style="color:#38bdf8; font-size:0.72rem; font-weight:700;"><i class="fa-solid fa-infinity"></i> Relying on SL</span>`
+                                : `<span class="mobile-cell-val" style="color:#4ade80; font-weight:600;">₹${s6.target ? Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</span>`
+                            }
                         </div>
                     </div>
 
@@ -8157,7 +8182,7 @@ function renderAdvisoryTradesTable() {
 
                     <div class="mobile-card-bottom">
                         <div style="font-size:0.74rem; color:#94a3b8; max-width:60%; line-height:1.3;">
-                            ${((pt.status === 'PENDING_615' || outcome.summary?.toLowerCase().includes('awaiting 6:15')) && (isPast1815 || isStandAsideTrade)) ? '15-minute confirmation window elapsed. Stood aside to preserve capital.' : (outcome.summary || '')}
+                            ${((pt.status === 'PENDING_615' || outcome.summary?.toLowerCase().includes('awaiting 6:15')) && (isPast1815 || isStandAsideTrade)) ? '15-minute confirmation window elapsed. Stood aside to preserve capital.' : (activeSummary || outcome.summary || '')}
                         </div>
                         <div style="text-align:right;">
                             <div style="font-size:0.68rem; color:#94a3b8; text-transform:uppercase; font-weight:600;">Net P&L</div>
