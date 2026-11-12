@@ -402,21 +402,21 @@ class ORBTimer:
         # Check Bullish Breakout
         if action_upper == 'BUY':
             # Did price pierce day_high but close back below it? (Wick fakeout / rejection)
-            if current_price >= day_high and bar_close < (day_high * 0.9992):
+            if current_price >= day_high and bar_close < (day_high * 0.994):
                 return {
                     "passed": False,
                     "status": "WICK_TRAP_AVOIDED",
                     "reason": f"Wick trap rejected: price wicked to ₹{current_price:,.2f} (above Day High ₹{day_high:,.2f}) but bar closed inside range at ₹{bar_close:,.2f}."
                 }
             # Low volume fakeout check
-            if volume_ratio is not None and volume_ratio < 0.80:
+            if volume_ratio is not None and volume_ratio < 0.30:
                 return {
                     "passed": False,
                     "status": "LOW_VOLUME_FAKE_AVOIDED",
-                    "reason": f"Low volume breakout: Volume ratio ({volume_ratio:.2f}x) is below 0.80x average OR volume threshold."
+                    "reason": f"Low volume breakout: Volume ratio ({volume_ratio:.2f}x) is below 0.30x average OR volume threshold."
                 }
             # Solid close above range
-            if bar_close >= day_high * 0.9995:
+            if bar_close >= day_high * 0.996:
                 return {
                     "passed": True,
                     "status": "ORB_BREAKOUT_CONFIRMED",
@@ -432,21 +432,21 @@ class ORBTimer:
         # Check Bearish Breakdown
         elif action_upper == 'SELL':
             # Did price pierce day_low but close back above it? (Liquidity sweep / bounce)
-            if current_price <= day_low and bar_close > (day_low * 1.0008):
+            if current_price <= day_low and bar_close > (day_low * 1.006):
                 return {
                     "passed": False,
                     "status": "WICK_TRAP_AVOIDED",
                     "reason": f"Liquidity sweep rejected: price wicked to ₹{current_price:,.2f} (below Day Low ₹{day_low:,.2f}) but bar closed inside range at ₹{bar_close:,.2f}."
                 }
             # Low volume fakeout check
-            if volume_ratio is not None and volume_ratio < 0.80:
+            if volume_ratio is not None and volume_ratio < 0.30:
                 return {
                     "passed": False,
                     "status": "LOW_VOLUME_FAKE_AVOIDED",
-                    "reason": f"Low volume breakdown: Volume ratio ({volume_ratio:.2f}x) is below 0.80x average OR volume threshold."
+                    "reason": f"Low volume breakdown: Volume ratio ({volume_ratio:.2f}x) is below 0.30x average OR volume threshold."
                 }
             # Solid close below range
-            if bar_close <= day_low * 1.0005:
+            if bar_close <= day_low * 1.004:
                 return {
                     "passed": True,
                     "status": "ORB_BREAKDOWN_CONFIRMED",
@@ -664,7 +664,36 @@ class PositionSizer:
                 if affordable_lots >= 1:
                     resolved_lot = affordable_lots * base_unit
                 else:
-                    resolved_lot = base_unit if (available_margin_inr is None or available_margin_inr >= single_lot_margin) else 0
+                    # Cascading contract routing:
+                    # If Mini contract risk exceeds max_risk_inr (e.g. ₹8,500), cascade gracefully to Micro contracts:
+                    # GOLD / GOLDM (lot 10) -> GOLDTEN (lot 1)
+                    # SILVER / SILVERM (lot 5) -> SILVERMIC (lot 1)
+                    if resolved_sym in ['GOLD', 'GOLDM'] or base_sym in ['GOLD']:
+                        micro_sym = 'GOLDTEN'
+                        micro_name = 'Gold (1g Micro)'
+                        micro_unit = 1
+                        micro_risk = risk_pts * micro_unit
+                        if micro_risk <= max_risk_inr and micro_risk > 0:
+                            affordable_micro = max(1, min(10, int(max_risk_inr // micro_risk)))
+                            resolved_sym = micro_sym
+                            resolved_name = micro_name
+                            resolved_lot = affordable_micro * micro_unit
+                        else:
+                            resolved_lot = 0
+                    elif resolved_sym in ['SILVER', 'SILVERM'] or base_sym in ['SILVER']:
+                        micro_sym = 'SILVERMIC'
+                        micro_name = 'Silver Micro'
+                        micro_unit = 1
+                        micro_risk = risk_pts * micro_unit
+                        if micro_risk <= max_risk_inr and micro_risk > 0:
+                            affordable_micro = max(1, min(10, int(max_risk_inr // micro_risk)))
+                            resolved_sym = micro_sym
+                            resolved_name = micro_name
+                            resolved_lot = affordable_micro * micro_unit
+                        else:
+                            resolved_lot = 0
+                    else:
+                        resolved_lot = base_unit if (available_margin_inr is None or available_margin_inr >= single_lot_margin) else 0
 
         return resolved_sym, resolved_name, resolved_lot
 
@@ -993,7 +1022,7 @@ class MarketRegimeDetector:
             blocked = ["TREND_BREAKOUT_BUY", "HIGH_BETA_FUTURES", "GOLDEN_CROSS"]
             regime_icon = "fa-solid fa-arrows-left-right"
 
-        elif is_volatile_expansion and not (has_trend_strength and is_bull_structure):
+        elif is_volatile_expansion and not (has_trend_strength and (is_bull_structure or is_bear_structure)):
             regime = "VOLATILE_EXPANSION"
             badge = "⚡ Volatile Expansion"
             short_tag = "High Volatility"
