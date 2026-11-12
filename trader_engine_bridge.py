@@ -31,6 +31,11 @@ try:
 except ImportError:
     TradingAgentsOrchestrator = None
 
+try:
+    from pre_move_detector import PreMoveDetector, PreMoveSignal
+except ImportError:
+    PreMoveDetector, PreMoveSignal = None, None
+
 # Benchmark Yahoo symbols for MCX commodities
 COMMODITY_YF_MAP = {
     'CRUDEOIL': 'CL=F',

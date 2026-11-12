@@ -3,6 +3,7 @@ import json
 import pytz
 from datetime import datetime
 from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer, MarketRegimeDetector, TradingAgentsOrchestrator, InstitutionalDirectionEngine
+from pre_move_detector import PreMoveDetector, PreMoveSignal
 
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'advisory_trades_tracker.json')
 NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'nifty_crossover_oversold.json')
@@ -3823,9 +3824,23 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
         sl = None
         tgt = None
 
+        # --- SETUP 0: Pre-Ignition Volatility Coil (Early Big Move Detector) ---
+        pm_signal = PreMoveDetector.evaluate_live_snapshot(
+            sym, cur_p, day_h, day_l, p_close, chg_pct, adx=adx, rsi=rsi,
+            atr=atr_val, ema20=ema20, ema50=ema50, volume=vol, avg_volume=avg_vol
+        )
+        if pm_signal.status in ["PRE_MOVE_BUY_TRIGGER", "PRE_MOVE_SELL_TRIGGER"]:
+            triggered = True
+            action = pm_signal.action
+            setup_name = "Pre-Ignition Volatility Coil"
+            sl = pm_signal.stop_loss
+            tgt = pm_signal.target_1
+            rationale = (f"Pre-Move Readiness Index: {pm_signal.pmri_score:.1f}/100. "
+                         f"{' | '.join(pm_signal.reasons[:3])}. Early coil entry prior to breakout expansion.")
+
         # --- SETUP 1: Circuit Boundary Rebound / Mean Reversion ---
         # A. Bullish Reversal at Lower Band / Deep Oversold
-        if (dist_lc <= 1.0 or (rsi is not None and rsi <= 26.0)) and (cur_p >= day_l * 1.0025):
+        elif (dist_lc <= 1.0 or (rsi is not None and rsi <= 26.0)) and (cur_p >= day_l * 1.0025):
             triggered = True
             action = "BUY"
             setup_name = "Circuit Floor Rebound (Mean Reversion)"
@@ -3924,7 +3939,8 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 continue
 
             # 📐 Structural Technical Bracket: Stop placed beyond Day High/Low to eliminate noise stop-outs
-            sl, tgt = calculate_technical_bracket(action, cur_p, day_h, day_l, ema20=ema20, ema50=ema50, atr=atr_val, min_rrr=1.2, is_intraday=True)
+            if setup_name != "Pre-Ignition Volatility Coil" or not sl or not tgt:
+                sl, tgt = calculate_technical_bracket(action, cur_p, day_h, day_l, ema20=ema20, ema50=ema50, atr=atr_val, min_rrr=1.2, is_intraday=True)
 
             trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{sym}"
             if any(t.get('id') == trade_id for t in trades):
