@@ -775,6 +775,7 @@ class PriceChecker:
                 
                 # Combine standard commodities with Mini/Micro contracts
                 MINI_COMMODITY_CONFIG = {
+                    'COPPERM': {'name': 'Copper Mini', 'tv_root': 'COPPERM', 'default_ticker': 'MCX:COPPERM1!', 'parent': 'COPPER'},
                     'CRUDEOILM': {'name': 'Crude Oil Mini', 'tv_root': 'CRUDEOILM', 'default_ticker': 'MCX:CRUDEOILM1!', 'parent': 'CRUDEOIL'},
                     'NATURALGASM': {'name': 'Natural Gas Mini', 'tv_root': 'NATGASMINI', 'default_ticker': 'MCX:NATGASMINI1!', 'parent': 'NATURALGAS'},
                     'SILVERMIC': {'name': 'Silver Micro', 'tv_root': 'SILVERMIC', 'default_ticker': 'MCX:SILVERMIC1!', 'parent': 'SILVER'},
@@ -1598,6 +1599,7 @@ class PriceChecker:
         
         # Parent mapping for Mini / Micro commodities to guarantee identical price and limit sync
         PARENT_MAP = {
+            'COPPERM': 'COPPER',
             'CRUDEOILM': 'CRUDEOIL',
             'NATURALGASM': 'NATURALGAS',
             'SILVERMIC': 'SILVER',
@@ -1607,6 +1609,7 @@ class PriceChecker:
         }
         
         MINI_COMMODITIES = {
+            'COPPERM': {'name': 'Copper Mini', 'parent': 'COPPER', 'unit': '1 kg'},
             'CRUDEOILM': {'name': 'Crude Oil Mini', 'parent': 'CRUDEOIL', 'unit': '1 bbl'},
             'NATURALGASM': {'name': 'Natural Gas Mini', 'parent': 'NATURALGAS', 'unit': '1 mmBtu'},
             'SILVERMIC': {'name': 'Silver Micro', 'parent': 'SILVER', 'unit': '1 kg'},

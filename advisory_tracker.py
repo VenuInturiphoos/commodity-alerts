@@ -3101,6 +3101,16 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
 
         if c_item and not is_stock_future:
             cur_p = float(c_item['current_price'])
+            if checker and getattr(checker, 'angel_active', False):
+                try:
+                    base_c = 'COPPER' if clean_sym in ['COPPER', 'COPPERM'] else ('CRUDEOIL' if clean_sym in ['CRUDEOIL', 'CRUDEOILM'] else ('NATURALGAS' if clean_sym in ['NATURALGAS', 'NATURALGASM'] else ('SILVER' if 'SILVER' in clean_sym else ('GOLD' if 'GOLD' in clean_sym else clean_sym))))
+                    sec_id = checker.get_angel_mcx_near_month(base_c)
+                    if sec_id:
+                        live_mcx = checker.get_angel_current_price(sec_id, exchange_segment="MCX")
+                        if live_mcx and live_mcx > 0:
+                            cur_p = round(float(live_mcx), 2)
+                except Exception:
+                    pass
             day_h = float(c_item.get('day_high', cur_p))
             day_l = float(c_item.get('day_low', cur_p))
             recent_low = cur_p
@@ -3744,9 +3754,12 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
             continue
 
         # Check symbol trade count and cooldown today (only for actual executed BUY/SELL trades, not STAND_ASIDE)
+        # Match both parent and Mini contracts (e.g. COPPER and COPPERM) to avoid cooldown bypass
+        clean_base = sym.replace('MIC', '').rstrip('M')
         sym_today_trades = [
             t for t in trades 
-            if t.get('date') == today_str and t.get('symbol') == sym 
+            if t.get('date') == today_str 
+            and (t.get('symbol') == sym or t.get('symbol') == f"{sym}M" or t.get('symbol', '').replace('MIC', '').rstrip('M') == clean_base)
             and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
             and t.get('paper_trade', {}).get('quantity', 0) > 0
         ]
@@ -3768,6 +3781,17 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     pass
 
         cur_p = float(item.get('current_price') or 0)
+        # Fetch authoritative live execution price if broker API is connected
+        if checker and getattr(checker, 'angel_active', False):
+            try:
+                base_c_sym = 'COPPER' if sym in ['COPPER', 'COPPERM'] else ('CRUDEOIL' if sym in ['CRUDEOIL', 'CRUDEOILM'] else ('NATURALGAS' if sym in ['NATURALGAS', 'NATURALGASM'] else ('SILVER' if 'SILVER' in sym else ('GOLD' if 'GOLD' in sym else sym))))
+                sec_id = checker.get_angel_mcx_near_month(base_c_sym)
+                if sec_id:
+                    live_mcx = checker.get_angel_current_price(sec_id, exchange_segment="MCX")
+                    if live_mcx and live_mcx > 0:
+                        cur_p = round(float(live_mcx), 2)
+            except Exception:
+                pass
         day_h = float(item.get('day_high') or cur_p)
         day_l = float(item.get('day_low') or cur_p)
         p_close = float(item.get('prev_close') or cur_p)
@@ -4192,6 +4216,33 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
 
                 name = s.get('full_name') or s.get('name', clean_sym)
                 cur_p = float(s.get('close') or 0)
+                # Fetch authoritative real-time execution price at this exact moment
+                live_eq_p = None
+                if checker and getattr(checker, 'angel_active', False):
+                    try:
+                        sec_id = checker.get_angel_token(sym)
+                        if sec_id:
+                            p_angel = checker.get_angel_current_price(sec_id)
+                            if p_angel and p_angel > 0:
+                                live_eq_p = round(float(p_angel), 2)
+                    except Exception:
+                        pass
+                
+                if not live_eq_p:
+                    try:
+                        import yfinance as yf
+                        yf_sym = sym if sym.endswith('.NS') else f"{clean_sym}.NS"
+                        t_obj = yf.Ticker(yf_sym)
+                        hist_1m = t_obj.history(period='1d', interval='1m')
+                        if not hist_1m.empty:
+                            c_last = float(hist_1m['Close'].iloc[-1])
+                            if c_last > 0:
+                                live_eq_p = round(c_last, 2)
+                    except Exception:
+                        pass
+                
+                if live_eq_p and live_eq_p > 0:
+                    cur_p = live_eq_p
                 if cur_p <= 0:
                     continue
 
