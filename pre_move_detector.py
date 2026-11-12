@@ -496,3 +496,4 @@ class PreMoveDetector:
             reasons=reasons,
             setup_name="Pre-Ignition Volatility Coil"
         )
+

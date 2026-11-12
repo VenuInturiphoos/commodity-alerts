@@ -181,7 +181,8 @@ def generate_and_send_6pm_advisory(force=False):
                         contract_sym, act_dir, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else 1,
                         max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.1
                     )
-                    if bracket_eval.get('passed') and adaptive_lot > 0:
+                    adaptive_lot = max(1, adaptive_lot)
+                    if bracket_eval.get('passed'):
                         has_active_setups = True
                         icon = "🟢" if act_dir == "BUY" else "🔴"
                         trend_type = "Trend Long" if act_dir == "BUY" else "Trend Short"

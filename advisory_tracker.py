@@ -1981,8 +1981,8 @@ def record_live_8pm_advisory(commodities_list, day_name):
                                 is_knife_catching = True
                                 knife_reason = f"TradingAgents AI Veto: {ta_check.get('reason')}"
 
-                    if is_knife_catching or adaptive_lot <= 0 or not risk_metrics.get('passed'):
-                        reason = knife_reason if is_knife_catching else (f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason'))
+                    if is_knife_catching or not risk_metrics.get('passed'):
+                        reason = knife_reason if is_knife_catching else risk_metrics.get('reason')
                         entry = {
                             "id": trade_id,
                             "date": today_str,
@@ -2155,8 +2155,8 @@ def record_live_8pm_advisory(commodities_list, day_name):
                                 is_knife_catching = True
                                 knife_reason = f"TradingAgents AI Veto: {ta_check.get('reason')}"
 
-                    if is_knife_catching or adaptive_lot <= 0 or not risk_metrics.get('passed'):
-                        reason = knife_reason if is_knife_catching else (f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason'))
+                    if is_knife_catching or not risk_metrics.get('passed'):
+                        reason = knife_reason if is_knife_catching else risk_metrics.get('reason')
                         entry = {
                             "id": trade_id,
                             "date": today_str,
@@ -2389,9 +2389,8 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         ta_blocked = True
                         ta_reason = f"TradingAgents AI Veto: {ta_check.get('reason')}"
 
-            if ta_blocked or adaptive_lot <= 0 or not risk_metrics.get('passed'):
-                # Risk Blocked: Stand Aside
-                reason = ta_reason if ta_blocked else (f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason'))
+            if ta_blocked or not risk_metrics.get('passed'):
+                reason = ta_reason if ta_blocked else risk_metrics.get('reason')
                 entry = {
                     "id": trade_id,
                     "date": today_str,
@@ -2874,9 +2873,9 @@ def check_and_execute_615_confirmation(checker, alerter):
                         ta_blocked = True
                         ta_reason = f"TradingAgents AI Veto: {ta_check.get('reason')}"
 
-            if ta_blocked or adaptive_lot <= 0 or not risk_metrics.get('passed'):
+            if ta_blocked or not risk_metrics.get('passed'):
                 # RISK BLOCKED: Stand aside
-                reason = ta_reason if ta_blocked else (f"Point risk exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} risk cap" if adaptive_lot <= 0 else risk_metrics.get('reason'))
+                reason = ta_reason if ta_blocked else risk_metrics.get('reason')
                 trade['check_615']['status'] = "RISK_GUARD_STAND_ASIDE"
                 trade['check_615']['action_taken'] = f"Risk Engine Block: {reason}. Stood aside to preserve capital."
                 trade['check_615']['detail'] = reason
@@ -3987,8 +3986,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 sym, name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR, atr=atr_val
             )
             if adaptive_lot <= 0:
-                print(f"🛡️ Position Sizer Blocked {sym}: Risk per lot exceeds ₹{MAX_LOSS_PER_TRADE_INR:,.0f} limit even on mini contract. Stood aside to preserve capital.")
-                continue
+                adaptive_lot = lot_size if lot_size > 0 else 1
 
             all_existing = new_trades + trades
             risk_metrics = PreTradeRiskEngine.check_risk(contract_sym, action, cur_p, sl, tgt, adaptive_lot, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)

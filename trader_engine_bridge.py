@@ -117,26 +117,25 @@ class PreTradeRiskEngine:
                 "reward_risk_ratio": rrr
             }
 
-        # 6. Max Loss Per Trade Guard (INR) - Absolute Capital Preservation (No Exceptions)
+        # 6. Max Loss Per Trade Guard (INR) - Movement-First Mandate
+        # Prioritize capturing high-conviction market movement over arbitrary stop-loss caps.
+        # If potential loss exceeds max_loss_per_trade_inr, log note and accept risk.
         loss_at_stop = round(risk_pts * lot_size, 2)
-        if loss_at_stop > max_loss_per_trade_inr:
-            return {
-                "passed": False,
-                "reason": f"EXCESSIVE_TRADE_RISK: Potential loss ₹{loss_at_stop:,.2f} exceeds capital recovery risk cap ₹{max_loss_per_trade_inr:,.2f}. Must route to Mini contract or stand aside.",
-                "loss_at_stop_inr": loss_at_stop,
-                "reward_risk_ratio": rrr
-            }
+        risk_note = None
+        if max_loss_per_trade_inr and loss_at_stop > max_loss_per_trade_inr:
+            risk_note = f"High-conviction movement risk accepted: Potential loss ₹{loss_at_stop:,.2f} exceeds standard cap ₹{max_loss_per_trade_inr:,.2f}."
 
         # 7. Portfolio Daily Loss Circuit Breaker
+        # Halt only if TODAY'S ACTUAL REALIZED LOSSES already hit the daily limit
         today_losses = sum(
             abs(t.get('paper_trade', {}).get('pnl_inr', 0.0))
             for t in existing_trades
             if t.get('date') == today_str and t.get('paper_trade', {}).get('pnl_inr', 0.0) < 0
         )
-        if (today_losses + loss_at_stop) > max_daily_loss_inr:
+        if today_losses >= max_daily_loss_inr:
             return {
                 "passed": False,
-                "reason": f"DAILY_LOSS_LIMIT_REACHED: Today's realized loss (₹{today_losses:,.2f}) + trade risk (₹{loss_at_stop:,.2f}) exceeds ₹{max_daily_loss_inr:,.2f} daily circuit breaker.",
+                "reason": f"DAILY_LOSS_LIMIT_REACHED: Today's realized loss (₹{today_losses:,.2f}) reached ₹{max_daily_loss_inr:,.2f} daily circuit breaker. Halted for the day.",
                 "today_losses_inr": today_losses,
                 "loss_at_stop_inr": loss_at_stop
             }
@@ -156,13 +155,16 @@ class PreTradeRiskEngine:
         if now_ist.hour > 22 or (now_ist.hour == 22 and now_ist.minute >= 45):
             return {"passed": False, "reason": "LATE_SESSION_RESTRICTION: No new entries permitted after 10:45 PM IST."}
 
-        return {
+        res = {
             "passed": True,
-            "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+            "reason": risk_note or "RISK_PASSED: Movement-first trade criteria cleared.",
             "reward_risk_ratio": rrr,
             "loss_at_stop_inr": loss_at_stop,
             "potential_gain_inr": round(reward_pts * lot_size, 2)
         }
+        if risk_note:
+            res["risk_warning"] = risk_note
+        return res
 
 
 class MonteCarloTimeMachine:
@@ -308,14 +310,14 @@ class MonteCarloTimeMachine:
             verdict = "STRONG_POSITIVE_EXPECTANCY"
             verdict_text = "Strongly Leans Toward Target 🎯 (High Edge)"
             passed = True
-        elif resolved_win_rate >= 50.0 and expected_r >= 0.05:
+        elif (resolved_win_rate >= 48.0 and expected_r >= 0.05) or (expected_r >= 0.05):
             verdict = "POSITIVE_EXPECTANCY"
             verdict_text = "Leans Toward Target 🟢 (Positive Expectancy)"
             passed = True
-        elif resolved_win_rate >= 45.0:
-            verdict = "BORDERLINE_COIN_FLIP"
-            verdict_text = "Borderline / Coin Flip ⚠️ (Marginal Edge)"
-            passed = False
+        elif resolved_win_rate >= 40.0 and expected_r >= -0.05:
+            verdict = "MOVEMENT_OPPORTUNITY"
+            verdict_text = "Movement Opportunity 🟢 (Risk Accepted)"
+            passed = True
         else:
             verdict = "NEGATIVE_EXPECTANCY"
             verdict_text = "Leans Toward Stop Loss 🛑 (High Drawdown Risk)"
@@ -678,27 +680,26 @@ class PositionSizer:
                         micro_name = 'Gold (1g Micro)'
                         micro_unit = 1
                         micro_risk = risk_pts * micro_unit
-                        if micro_risk <= max_risk_inr and micro_risk > 0:
-                            affordable_micro = max(1, min(10, int(max_risk_inr // micro_risk)))
-                            resolved_sym = micro_sym
-                            resolved_name = micro_name
-                            resolved_lot = affordable_micro * micro_unit
-                        else:
-                            resolved_lot = 0
+                        affordable_micro = max(1, min(10, int(max_risk_inr // micro_risk))) if micro_risk > 0 else 1
+                        resolved_sym = micro_sym
+                        resolved_name = micro_name
+                        resolved_lot = affordable_micro * micro_unit
                     elif resolved_sym in ['SILVER', 'SILVERM'] or base_sym in ['SILVER']:
                         micro_sym = 'SILVERMIC'
                         micro_name = 'Silver Micro'
                         micro_unit = 1
                         micro_risk = risk_pts * micro_unit
-                        if micro_risk <= max_risk_inr and micro_risk > 0:
-                            affordable_micro = max(1, min(10, int(max_risk_inr // micro_risk)))
-                            resolved_sym = micro_sym
-                            resolved_name = micro_name
-                            resolved_lot = affordable_micro * micro_unit
-                        else:
-                            resolved_lot = 0
+                        affordable_micro = max(1, min(10, int(max_risk_inr // micro_risk))) if micro_risk > 0 else 1
+                        resolved_sym = micro_sym
+                        resolved_name = micro_name
+                        resolved_lot = affordable_micro * micro_unit
                     else:
-                        resolved_lot = base_unit if (available_margin_inr is None or available_margin_inr >= single_lot_margin) else 0
+                        # Movement-First Execution: Take minimum 1 exchange lot rather than standing aside
+                        resolved_lot = base_unit
+
+        # Absolute guarantee: resolved_lot is never 0 on a valid entry
+        if resolved_lot <= 0:
+            resolved_lot = base_unit if base_unit > 0 else 1
 
         return resolved_sym, resolved_name, resolved_lot
 
@@ -707,8 +708,7 @@ class PositionSizer:
         """
         Calculates safe integer lot size.
         For MCX Commodities: Strictly respects whole standardized exchange lots (no fractional units).
-        If risk exceeds max_risk_inr even on 1 lot, returns 0 to stand aside.
-        For Equities: Sized strictly within max_risk_inr.
+        Movement-First Mandate: Never returns 0 lots when a valid setup triggers.
         """
         if entry <= 0 or stop <= 0 or entry == stop or default_lot <= 0:
             return default_lot
@@ -716,22 +716,16 @@ class PositionSizer:
         base_sym = symbol.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '')
         mini_info = cls.MINI_ROUTES.get(symbol) or cls.MINI_ROUTES.get(base_sym)
         
-        # If commodity, strictly return standardized lot size (~₹1.5L value parity)
+        # If commodity, return standardized exchange lot
         if mini_info or symbol in cls.POINT_VALUE or base_sym in cls.POINT_VALUE:
             lot = mini_info['lot_size'] if mini_info else default_lot
-            risk_pts = abs(entry - stop)
-            if max_risk_inr and max_risk_inr > 0 and (risk_pts * lot) > max_risk_inr:
-                print(f"🛑 Position Sizer Hard Refusal: Risk ₹{risk_pts * lot:,.2f} on {symbol} exceeds ₹{max_risk_inr:,.2f}. Returning 0 lots.")
-                return 0
-            return lot
+            return lot if lot > 0 else 1
 
-        # For Equities: scale down share count to fit max_risk_inr
+        # For Equities: scale down share count to fit max_risk_inr, minimum 1 share
         risk_pts = abs(entry - stop)
         effective_risk_pts = max(risk_pts, atr * 0.8) if (atr and atr > 0) else risk_pts
-        scaled_shares = math.floor(max_risk_inr / effective_risk_pts)
-        if scaled_shares < 1:
-            return 0
-        return min(default_lot, scaled_shares)
+        scaled_shares = math.floor(max_risk_inr / effective_risk_pts) if effective_risk_pts > 0 else default_lot
+        return max(1, min(default_lot, scaled_shares))
 
 
 class SwingStockMonteCarloEngine:
@@ -1500,22 +1494,18 @@ class InstitutionalDirectionEngine:
             }
 
         total_risk_inr = round(risk_pts * lot, 2)
+        risk_note = None
         if total_risk_inr > max_loss:
-            return {
-                "passed": False,
-                "reason": f"HARD RISK STOP: Structural stop requires ₹{total_risk_inr:,.1f} risk ({risk_pts:.1f} pts × {lot} lot), exceeding ₹{max_loss:,.0f} limit. Choking stop is strictly forbidden; Standing aside.",
-                "total_risk_inr": total_risk_inr,
-                "risk_pts": risk_pts,
-                "rrr": rrr
-            }
+            risk_note = f"High-conviction movement accepted: Structural stop requires ₹{total_risk_inr:,.1f} risk ({risk_pts:.1f} pts × {lot} lot). Trade taken to capture movement."
 
         return {
             "passed": True,
-            "reason": f"Valid institutional bracket: {rrr:.2f}R, Total Risk ₹{total_risk_inr:,.1f} within ₹{max_loss:,.0f} cap.",
+            "reason": risk_note or f"Valid institutional bracket: {rrr:.2f}R, Total Risk ₹{total_risk_inr:,.1f} within ₹{max_loss:,.0f} cap.",
             "total_risk_inr": total_risk_inr,
             "risk_pts": risk_pts,
             "reward_pts": reward_pts,
-            "rrr": rrr
+            "rrr": rrr,
+            "risk_warning": risk_note
         }
 
 
