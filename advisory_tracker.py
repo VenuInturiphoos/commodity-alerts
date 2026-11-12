@@ -320,24 +320,72 @@ def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=Non
         
     return sl, tgt
 
+def get_intraday_margin_pool(tracker_data):
+    """
+    Computes the daily Intraday MIS Margin Pool balance.
+    Base daily allocation: ₹30,000 (refreshed every day even if there was a loss).
+    When profit is booked from intraday trades, that profit is added to the ₹30,000 balance.
+    If intraday realized P&L is negative (loss), it does not reduce the baseline daily balance
+    below ₹30,000 (it refreshes back to ₹30,000 every day).
+    """
+    trades = tracker_data.get('trades', [])
+    intraday_closed_trades = [
+        t for t in trades
+        if t.get('paper_trade', {}).get('status') == 'CLOSED'
+        and (t.get('asset_type') == 'INTRADAY_STOCK' or t.get('paper_trade', {}).get('product_type') == 'MIS_INTRADAY')
+    ]
+    intraday_realized_pnl = sum(t.get('paper_trade', {}).get('pnl_inr', 0.0) for t in intraday_closed_trades)
+    intraday_booked_profit = max(0.0, intraday_realized_pnl)
+    base_pool = MAX_INTRADAY_STOCK_MARGIN_INR + intraday_booked_profit
+
+    active_stock_trades = [
+        t for t in trades 
+        if t.get('paper_trade', {}).get('status') == 'ACTIVE' and 
+        (t.get('asset_type') == 'INTRADAY_STOCK' or t.get('paper_trade', {}).get('product_type') == 'MIS_INTRADAY')
+    ]
+    used_stock_margin = sum(
+        float(t.get('paper_trade', {}).get('margin_required_inr') or 
+              (float(t.get('paper_trade', {}).get('entry_price', 0)) * float(t.get('paper_trade', {}).get('quantity', 0)) * 0.20)) 
+        for t in active_stock_trades
+    )
+    avail_stock_margin = max(0.0, base_pool - used_stock_margin)
+
+    return {
+        'base_pool': round(base_pool, 2),
+        'base_daily_margin': round(MAX_INTRADAY_STOCK_MARGIN_INR, 2),
+        'booked_profit': round(intraday_booked_profit, 2),
+        'intraday_realized_pnl': round(intraday_realized_pnl, 2),
+        'used_margin': round(used_stock_margin, 2),
+        'available_margin': round(avail_stock_margin, 2)
+    }
+
 def get_cash_and_margin(tracker_data):
     """
     Computes available cash, currently blocked margin, and total account net worth.
     Margin is deducted from available cash when a trade is ACTIVE.
     When a trade is CLOSED, margin is released and realized P&L is settled into cash.
+    Commodity futures realized P&L is settled into cash.
+    When intraday profit is booked, that profit is also settled into the overall trade balance.
+    If intraday incurred a loss, the daily intraday balance is refreshed back to ₹30,000 every day.
     """
     starting_cash = tracker_data.get('starting_cash_inr', DEFAULT_STARTING_CASH)
     trades = tracker_data.get('trades', [])
     
-    # Realized P&L from closed commodity trades (excluding intraday stock MIS which has dedicated 30k pool)
-    closed_pnl = sum(
+    # Realized P&L from closed commodity trades
+    commodity_pnl = sum(
         t.get('paper_trade', {}).get('pnl_inr', 0.0) 
         for t in trades 
         if t.get('paper_trade', {}).get('status') == 'CLOSED' 
         and t.get('asset_type') != 'INTRADAY_STOCK' 
         and t.get('paper_trade', {}).get('product_type') != 'MIS_INTRADAY'
     )
-    current_cash = starting_cash + closed_pnl
+    
+    # Intraday margin pool calculations (base 30k + booked profits)
+    intraday_pool = get_intraday_margin_pool(tracker_data)
+    intraday_booked_profit = intraday_pool['booked_profit']
+    
+    # Overall trade balance reflects starting cash + commodity P&L + booked intraday profits
+    current_cash = starting_cash + commodity_pnl + intraday_booked_profit
     
     # Used margin from currently active commodity futures trades
     active_trades = [
@@ -366,7 +414,9 @@ def get_cash_and_margin(tracker_data):
         'current_cash': round(current_cash, 2),
         'used_margin': round(used_margin, 2),
         'available_cash': round(available_cash, 2),
-        'net_worth': round(net_worth, 2)
+        'net_worth': round(net_worth, 2),
+        'commodity_realized_pnl': round(commodity_pnl, 2),
+        'intraday_pool': intraday_pool
     }
 
 def check_margin_availability(tracker_data, sym, cur_p, lot_size, is_equity=False, sl=None):
@@ -378,18 +428,8 @@ def check_margin_availability(tracker_data, sym, cur_p, lot_size, is_equity=Fals
         (has_margin: bool, req_margin: float, avail_margin: float, adapted_lot: int)
     """
     if is_equity:
-        trades = tracker_data.get('trades', [])
-        active_stock_trades = [
-            t for t in trades 
-            if t.get('paper_trade', {}).get('status') == 'ACTIVE' and 
-            (t.get('asset_type') == 'INTRADAY_STOCK' or t.get('paper_trade', {}).get('product_type') == 'MIS_INTRADAY')
-        ]
-        used_stock_margin = sum(
-            float(t.get('paper_trade', {}).get('margin_required_inr') or 
-                  (float(t.get('paper_trade', {}).get('entry_price', 0)) * float(t.get('paper_trade', {}).get('quantity', 0)) * 0.20)) 
-            for t in active_stock_trades
-        )
-        stock_avail = max(0.0, MAX_INTRADAY_STOCK_MARGIN_INR - used_stock_margin)
+        intraday_info = get_intraday_margin_pool(tracker_data)
+        stock_avail = intraday_info['available_margin']
         unit_margin = round(cur_p * 0.20, 2)
         req = round(cur_p * lot_size * 0.20, 2)
 
@@ -557,6 +597,10 @@ def save_tracker(tracker_data):
         'protected_count': protected_count,
         'win_rate_pct': win_rate,
         'total_pnl_inr': round(total_pnl, 2),
+        'commodity_pnl_inr': round(cash_info.get('commodity_realized_pnl', 0.0), 2),
+        'intraday_pnl_inr': round(cash_info.get('intraday_pool', {}).get('intraday_realized_pnl', 0.0), 2),
+        'intraday_booked_profit_inr': round(cash_info.get('intraday_pool', {}).get('booked_profit', 0.0), 2),
+        'intraday_pool_balance_inr': round(cash_info.get('intraday_pool', {}).get('base_pool', MAX_INTRADAY_STOCK_MARGIN_INR), 2),
         'avg_trade_pnl_inr': round(total_pnl / total_executed, 2) if total_executed > 0 else 0.0,
         'active_trades_count': active_count,
         'starting_cash_inr': cash_info['starting_cash'],
@@ -3124,23 +3168,16 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
         stop_loss = float(s6.get('stop_loss')) if s6.get('stop_loss') is not None else (float(pt.get('stop_loss')) if pt.get('stop_loss') is not None else None)
         entry_p = float(pt.get('entry_price')) if pt.get('entry_price') is not None else float(s6.get('reference_price', cur_p))
 
-        # Track session boundaries at entry & cumulative high/low watermarks to catch intra-interval breaches
-        if pt.get('entry_day_high') is None and day_h > 0:
-            pt['entry_day_high'] = day_h
-        if pt.get('entry_day_low') is None and day_l > 0:
-            pt['entry_day_low'] = day_l
+        # Strictly track prices visited AFTER trade entry to prevent pre-entry day extremes from corrupting trailing logic
+        if pt.get('initial_stop_loss') is None and stop_loss is not None:
+            pt['initial_stop_loss'] = stop_loss
 
-        entry_h_base = float(pt.get('entry_day_high', entry_p))
-        entry_l_base = float(pt.get('entry_day_low', entry_p))
+        # Post-entry peak and trough tracking: initialized at entry price, updated only on post-entry ticks
+        effective_high = round(max(float(pt.get('peak_high', cur_p)), cur_p), 2)
+        effective_low = round(min(float(pt.get('trough_low', cur_p)), cur_p), 2)
 
-        session_h_post_entry = day_h if (day_h > entry_h_base and day_h >= cur_p) else cur_p
-        session_l_post_entry = day_l if (day_l < entry_l_base and day_l <= cur_p) else cur_p
-
-        effective_high = max(cur_p, float(pt.get('peak_high', cur_p)), session_h_post_entry)
-        effective_low = min(cur_p, float(pt.get('trough_low', cur_p)), session_l_post_entry)
-
-        pt['peak_high'] = round(effective_high, 2)
-        pt['trough_low'] = round(effective_low, 2)
+        pt['peak_high'] = effective_high
+        pt['trough_low'] = effective_low
 
         # 1. Check PENDING_LIMIT orders (Support / Resistance Retests)
         if trade_status == 'PENDING_LIMIT':
@@ -3188,10 +3225,10 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 peak_favorable_move = (effective_high - entry_p) if action == 'BUY' else (entry_p - effective_low)
                 pct_to_target = max((current_favorable_move / target_dist) * 100, (peak_favorable_move / target_dist) * 100)
 
-                # Stage 1: Breakeven Lock at +30% towards Target (+0.5R lock guarantees zero-risk position)
-                if pct_to_target >= 30.0 and not pt.get('trailing_sl_active'):
+                # Stage 1: Breakeven Lock at +50% towards Target (Guarantees zero-risk position with genuine cushion)
+                if pct_to_target >= 50.0 and not pt.get('trailing_sl_active'):
                     pt['trailing_sl_active'] = True
-                    pt['original_sl'] = stop_loss
+                    pt['original_sl'] = pt.get('original_sl') or pt.get('initial_stop_loss') or stop_loss
                     pt['stop_loss'] = entry_p
                     stop_loss = entry_p
                     if action == 'BUY':
@@ -3200,13 +3237,12 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                     else:
                         pt['peak_high'] = cur_p
                         effective_high = cur_p
-                    if s6:
-                        s6['stop_loss'] = entry_p
+                    # NOTE: Do NOT mutate s6['stop_loss']! Initial strategy advisory must remain immutable.
                     updated_any = True
                     
-                    subject = f"🛡️ [STAGE 1: BREAKEVEN LOCK (+0.5R)] {trade['name']} Reached +30% Target Milestone"
+                    subject = f"🛡️ [STAGE 1: BREAKEVEN LOCK (+1.0R)] {trade['name']} Reached +50% Target Milestone"
                     body = (
-                        f"🛡️ <b>TRAILING STOP TO BREAKEVEN ACTIVATED (+0.5R)</b>\n"
+                        f"🛡️ <b>TRAILING STOP TO BREAKEVEN ACTIVATED (+1.0R)</b>\n"
                         f"📅 <i>{today_str}, {now_time_str}</i>\n"
                         f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
                         f"• <b>Asset</b>: {trade['name']} ({sym})\n"
@@ -3214,14 +3250,15 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         f"• <b>Current Price</b>: ₹{cur_p:,.2f} ({pct_to_target:.1f}% to Target)\n"
                         f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
                         f"• <b>Target</b>: ₹{calc_target:,.2f}\n"
-                        f"• <b>New Stop-Loss</b>: <b>₹{entry_p:,.2f} (Risk-Free Breakeven)</b>\n\n"
+                        f"• <b>New Stop-Loss</b>: <b>₹{entry_p:,.2f} (Risk-Free Breakeven)</b>\n"
+                        f"• <b>Initial Stop-Loss</b>: ₹{pt.get('original_sl', entry_p):,.2f}\n\n"
                         f"Position is now completely risk-free! Winning trade cannot turn into a loss.\n\n"
                         f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
                     )
                     alerts_to_send.append({'subject': subject, 'body': body})
 
-                # Stage 2: Initial Profit Lock at +60% towards Target (Locks +35% of target profit)
-                if pct_to_target >= 60.0 and not pt.get('stage_2_profit_locked'):
+                # Stage 2: Initial Profit Lock at +70% towards Target (Locks +35% of target profit)
+                if pct_to_target >= 70.0 and not pt.get('stage_2_profit_locked'):
                     lock_price = round(entry_p + (target_dist * 0.35) if action == 'BUY' else entry_p - (target_dist * 0.35), 2)
                     pt['stage_2_profit_locked'] = True
                     if (action == 'BUY' and lock_price > stop_loss) or (action == 'SELL' and lock_price < stop_loss):
@@ -3233,13 +3270,11 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         else:
                             pt['peak_high'] = cur_p
                             effective_high = cur_p
-                        if s6:
-                            s6['stop_loss'] = lock_price
                     trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{lock_price:,.2f})"
                     trade['eod_outcome']['summary'] = f"Trailing Profit Stop (+35% profit locked @ ₹{lock_price:,.2f}) active. Position running towards Target."
                     updated_any = True
 
-                    subject = f"💰 [STAGE 2: PROFIT LOCKED (+35%)] {trade['name']} Reached +60% Target Milestone"
+                    subject = f"💰 [STAGE 2: PROFIT LOCKED (+35%)] {trade['name']} Reached +70% Target Milestone"
                     body = (
                         f"💰 <b>STAGE 2 PROFIT LOCK ACTIVATED</b>\n"
                         f"📅 <i>{today_str}, {now_time_str}</i>\n"
@@ -3254,17 +3289,14 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                     )
                     alerts_to_send.append({'subject': subject, 'body': body})
 
-                # Stage 3: Target Approaching Lock at +80% towards Target (Locks +65% of target profit ahead of target)
+                # Stage 3: Target Approaching Lock at +85% towards Target (Locks +65% of target profit ahead of target)
                 # When stop-loss moves to +65% profit lock, the fixed target is removed/scrapped to rely strictly on trailing stop-loss!
-                if pct_to_target >= 80.0 and not pt.get('stage_3_target_approaching'):
+                if pct_to_target >= 85.0 and not pt.get('stage_3_target_approaching'):
                     lock_price = round(entry_p + (target_dist * 0.65) if action == 'BUY' else entry_p - (target_dist * 0.65), 2)
                     pt['stage_3_target_approaching'] = True
                     pt['target_scrapped'] = True
                     pt['original_target'] = calc_target
                     pt['target'] = None
-                    if s6:
-                        s6['original_target'] = calc_target
-                        s6['target'] = None
 
                     if (action == 'BUY' and lock_price > stop_loss) or (action == 'SELL' and lock_price < stop_loss):
                         pt['stop_loss'] = lock_price
@@ -3275,8 +3307,6 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         else:
                             pt['peak_high'] = cur_p
                             effective_high = cur_p
-                        if s6:
-                            s6['stop_loss'] = lock_price
 
                     trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{lock_price:,.2f})"
                     trade['eod_outcome']['summary'] = f"Target removed — Trailing Profit Stop (+65% profit locked @ ₹{lock_price:,.2f}) active. Relying entirely on trailing stoploss."
@@ -3284,7 +3314,7 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
 
                     subject = f"🎯 [STAGE 3: TARGET REMOVED — TRAILING STOP LOCKED (+65%)] {trade['name']}"
                     body = (
-                        f"🎯 <b>STAGE 3: TARGET APPROACHING (80%+) — TARGET REMOVED</b>\n"
+                        f"🎯 <b>STAGE 3: TARGET APPROACHING (85%+) — TARGET REMOVED</b>\n"
                         f"📅 <i>{today_str}, {now_time_str}</i>\n"
                         f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
                         f"• <b>Asset</b>: {trade['name']} ({sym})\n"
@@ -3312,9 +3342,6 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         pt['target_scrapped'] = True
                         pt['original_target'] = calc_target
                         pt['target'] = None
-                        if s6:
-                            s6['original_target'] = calc_target
-                            s6['target'] = None
 
                         # Ensure floor stop is at least +85% of target
                         if (action == 'BUY' and floor_lock > stop_loss) or (action == 'SELL' and floor_lock < stop_loss):
@@ -3326,8 +3353,6 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                             else:
                                 pt['peak_high'] = cur_p
                                 effective_high = cur_p
-                            if s6:
-                                s6['stop_loss'] = floor_lock
                         trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{stop_loss:,.2f} | Runner 🚀)"
                         trade['eod_outcome']['summary'] = f"Target removed — Dynamic Runner Trailing Stop locked @ ₹{stop_loss:,.2f}. Relying entirely on trailing stoploss."
                         updated_any = True
@@ -3362,8 +3387,6 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                     pt['stop_loss'] = ratchet_sl
                     pt['trough_low'] = cur_p
                     effective_low = cur_p
-                    if s6:
-                        s6['stop_loss'] = ratchet_sl
                     trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{ratchet_sl:,.2f} | 65% Locked 🚀)"
                     trade['eod_outcome']['summary'] = f"Dynamic Trailing Stop active: 65% peak profit locked @ ₹{ratchet_sl:,.2f} (Max 35% pullback from peak ₹{effective_high:,.2f})."
                     updated_any = True
@@ -3375,8 +3398,6 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                     pt['stop_loss'] = ratchet_sl
                     pt['peak_high'] = cur_p
                     effective_high = cur_p
-                    if s6:
-                        s6['stop_loss'] = ratchet_sl
                     trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{ratchet_sl:,.2f} | 65% Locked 🚀)"
                     trade['eod_outcome']['summary'] = f"Dynamic Trailing Stop active: 65% peak profit locked @ ₹{ratchet_sl:,.2f} (Max 35% pullback from trough ₹{effective_low:,.2f})."
                     updated_any = True
@@ -3398,10 +3419,9 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 if not pt.get('event_protection_active'):
                     pt['event_protection_active'] = True
                     if action == 'BUY' and cur_p > entry_p and (stop_loss is None or stop_loss < entry_p):
+                        pt['original_sl'] = pt.get('original_sl') or pt.get('initial_stop_loss') or stop_loss
                         pt['stop_loss'] = entry_p
                         stop_loss = entry_p
-                        if s6:
-                            s6['stop_loss'] = entry_p
                         updated_any = True
                         subject = f"📰 [EVENT RISK PROTECTION] {trade['name']} Stop Tightened to Breakeven Ahead of Inventory Release"
                         body = (
@@ -3416,10 +3436,9 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         )
                         alerts_to_send.append({'subject': subject, 'body': body})
                     elif action == 'SELL' and cur_p < entry_p and (stop_loss is None or stop_loss > entry_p):
+                        pt['original_sl'] = pt.get('original_sl') or pt.get('initial_stop_loss') or stop_loss
                         pt['stop_loss'] = entry_p
                         stop_loss = entry_p
-                        if s6:
-                            s6['stop_loss'] = entry_p
                         updated_any = True
                         subject = f"📰 [EVENT RISK PROTECTION] {trade['name']} Stop Tightened to Breakeven Ahead of Inventory Release"
                         body = (
@@ -3474,10 +3493,10 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
 
         if action == 'BUY':
             if is_trailing:
-                # For trailing stops (Breakeven / Profit Lock / Runner), check both current price and recent 1m candle lows
-                reached_sl = bool(stop_loss and (cur_p <= stop_loss or recent_low <= stop_loss))
+                # For trailing stops (Breakeven / Profit Lock / Runner), trigger strictly when price drops BELOW stop_loss
+                reached_sl = bool(stop_loss and (cur_p < stop_loss or (recent_low and recent_low < stop_loss)))
             else:
-                reached_sl = bool(stop_loss and (cur_p <= stop_loss or effective_low <= stop_loss))
+                reached_sl = bool(stop_loss and (cur_p <= stop_loss or (effective_low and effective_low <= stop_loss)))
 
             if reached_sl:
                 hit_exit = True
@@ -3507,10 +3526,10 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
 
         elif action == 'SELL':
             if is_trailing:
-                # For trailing stops (Breakeven / Profit Lock / Runner), check both current price and recent 1m candle highs
-                reached_sl = bool(stop_loss and (cur_p >= stop_loss or recent_high >= stop_loss))
+                # For trailing stops (Breakeven / Profit Lock / Runner), trigger strictly when price rises ABOVE stop_loss
+                reached_sl = bool(stop_loss and (cur_p > stop_loss or (recent_high and recent_high > stop_loss)))
             else:
-                reached_sl = bool(stop_loss and (cur_p >= stop_loss or effective_high >= stop_loss))
+                reached_sl = bool(stop_loss and (cur_p >= stop_loss or (effective_high and effective_high >= stop_loss)))
 
             if reached_sl:
                 hit_exit = True
@@ -4026,7 +4045,9 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     "rationale": f"{rationale} {sim_metrics.get('summary', '')}",
                     "reference_price": cur_p,
                     "stop_loss": sl,
-                    "target": tgt
+                    "target": tgt,
+                    "original_stop_loss": sl,
+                    "original_target": tgt
                 },
                 "check_615": {
                     "checked": True,
@@ -4048,7 +4069,13 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     "status": "ACTIVE",
                     "margin_required_inr": req_margin,
                     "target": tgt,
-                    "stop_loss": sl
+                    "stop_loss": sl,
+                    "initial_stop_loss": sl,
+                    "original_sl": sl,
+                    "peak_high": cur_p,
+                    "trough_low": cur_p,
+                    "entry_day_high": cur_p,
+                    "entry_day_low": cur_p
                 },
                 "eod_outcome": {
                     "session_close": None,
@@ -4521,6 +4548,10 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                                                     "status": "ACTIVE",
                                                     "target": fut_tgt,
                                                     "stop_loss": fut_sl,
+                                                    "initial_stop_loss": fut_sl,
+                                                    "original_sl": fut_sl,
+                                                    "peak_high": cur_p,
+                                                    "trough_low": cur_p,
                                                     "margin_required_inr": fut_margin_req,
                                                     "product_type": "NRML_FUTURES"
                                                 },
@@ -4573,9 +4604,9 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             t.get('paper_trade', {}).get('margin_required_inr', 0.0)
                             for t in active_intraday_trades
                         )
-                        avail_intraday_margin = max(0.0, MAX_INTRADAY_STOCK_MARGIN_INR - used_intraday_margin)
-                        
-                        target_margin_per_stock = round(MAX_INTRADAY_STOCK_MARGIN_INR / MAX_CONCURRENT_EQUITIES, 2)
+                        intraday_pool_info = get_intraday_margin_pool(tracker)
+                        avail_intraday_margin = max(0.0, intraday_pool_info['base_pool'] - used_intraday_margin)
+                        target_margin_per_stock = round(intraday_pool_info['base_pool'] / MAX_CONCURRENT_EQUITIES, 2)
                         margin_per_share = cur_p * 0.20  # 20% SEBI MIS intraday margin requirement (5x leverage)
                         if margin_per_share <= 0:
                             continue
@@ -4754,6 +4785,10 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                                 "status": "ACTIVE",
                                 "target": eq_tgt,
                                 "stop_loss": eq_sl,
+                                "initial_stop_loss": eq_sl,
+                                "original_sl": eq_sl,
+                                "peak_high": cur_p,
+                                "trough_low": cur_p,
                                 "margin_required_inr": req_margin_equity,
                                 "product_type": "MIS_INTRADAY"
                             },
