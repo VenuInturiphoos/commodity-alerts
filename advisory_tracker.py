@@ -87,8 +87,9 @@ MAX_EQUITY_POSITION_INR = MAX_INTRADAY_STOCK_POSITION_INR # Backward compatibili
 MAX_INTRADAY_STOCK_RISK_INR = 3000.0 # Full portfolio risk ceiling - no arbitrary micro-cap restriction per user instruction
 MAX_INTRADAY_STOCK_DAILY_LOSS_INR = 6000.0 # Full daily portfolio risk circuit breaker
 MAX_CONCURRENT_COMMODITIES = 2    # Allows 2 concurrent active commodity trades
+MAX_CONCURRENT_STOCK_FUTURES = 2  # Allows 2 concurrent active stock futures trades (e.g. RELIANCE-FUT, INFY-FUT)
 MAX_CONCURRENT_EQUITIES = 3       # Diversify into 3 distinct intraday stocks (₹10,000 margin each within ₹30,000 margin)
-MAX_CONCURRENT_TOTAL = 5          # Max 5 concurrent active trades across portfolio (2 commodities + 3 intraday equities)
+MAX_CONCURRENT_TOTAL = 6          # Max concurrent active trades across portfolio (2 commodities + 2 stock futures + 2-3 intraday equities)
 MAX_TRADES_PER_SYMBOL_DAY = 3     # Allows up to 3 trades per symbol per day (expanded from 2)
 COOLDOWN_MINUTES_BETWEEN_TRADES = 60 # 60-min spacing between trades on the same symbol (streamlined from 120m)
 INTRADAY_STAGNATION_MINUTES = 120.0  # Extended to 120 minutes (2.0 hours) to give intraday trades ample room to reach profitability
@@ -3681,20 +3682,28 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
         print(f"🛑 PORTFOLIO CIRCUIT BREAKER: Today's realized loss (₹{today_realized_loss:,.2f}) reached daily limit (₹{MAX_DAILY_LOSS_INR:,.2f}). Trading halted for the day.")
         return False
 
-    # 2. Maximum Concurrent Open Positions Cap (Max 2 Futures, Max 1 Intraday Stock, Max 3 Total)
+    # 2. Maximum Concurrent Open Positions Cap (Max 2 Commodities, Max 2 Stock Futures, Max 3 Intraday Stocks)
     active_commodity_trades = [
         t for t in trades 
         if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
-        and (t.get('asset_type') in ['FUTURES', 'COMMODITY'] or t.get('symbol') in LOT_SIZES or '-FUT' in str(t.get('symbol', '')))
+        and (t.get('symbol') in LOT_SIZES and not str(t.get('symbol', '')).endswith('-FUT'))
+    ]
+    active_stock_futures = [
+        t for t in trades
+        if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
+        and ('-FUT' in str(t.get('symbol', '')) or t.get('asset_type') == 'STOCK_FUTURES')
     ]
     active_equity_trades = [
         t for t in trades 
         if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
-        and (t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'] or (t.get('symbol') not in LOT_SIZES and not str(t.get('symbol', '')).endswith('-FUT')))
+        and (t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'] and not str(t.get('symbol', '')).endswith('-FUT'))
     ]
-    if len(active_commodity_trades) >= MAX_CONCURRENT_COMMODITIES and len(active_equity_trades) >= MAX_CONCURRENT_EQUITIES:
+    total_active = len(active_commodity_trades) + len(active_stock_futures) + len(active_equity_trades)
+    if (len(active_commodity_trades) >= MAX_CONCURRENT_COMMODITIES and 
+        len(active_stock_futures) >= MAX_CONCURRENT_STOCK_FUTURES and 
+        len(active_equity_trades) >= MAX_CONCURRENT_EQUITIES):
         return False
-    if (len(active_commodity_trades) + len(active_equity_trades)) >= MAX_CONCURRENT_TOTAL:
+    if total_active >= MAX_CONCURRENT_TOTAL:
         return False
 
     new_trades = []
@@ -4230,10 +4239,10 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 # Guard C: Market Regime Strategy Restrictions
                 regime_data = s.get('market_regime') or {}
                 blocked_strategies = regime_data.get('blocked_strategies') or []
-                cur_active_futures = len(active_commodity_trades) + sum(1 for t in new_trades if (t.get('asset_type') in ['FUTURES', 'COMMODITY'] or t.get('symbol') in LOT_SIZES or '-FUT' in str(t.get('symbol', ''))))
+                cur_active_stock_futures = len(active_stock_futures) + sum(1 for t in new_trades if ('-FUT' in str(t.get('symbol', '')) or t.get('asset_type') == 'STOCK_FUTURES'))
                 cur_active_equity = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'])
 
-                can_enter_futures = (cur_active_futures < MAX_CONCURRENT_COMMODITIES)
+                can_enter_futures = (cur_active_stock_futures < MAX_CONCURRENT_STOCK_FUTURES)
                 can_enter_equity = (cur_active_equity < MAX_CONCURRENT_EQUITIES)
 
                 if not can_enter_futures and not can_enter_equity:
