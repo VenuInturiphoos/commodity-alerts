@@ -1,24 +1,121 @@
 {
-  "last_updated": "12 Nov 2026, 08:59 AM IST",
+  "last_updated": "12 Nov 2026, 09:05 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 38,
-    "executed_count": 10,
+    "total_signals": 39,
+    "executed_count": 11,
     "correct_count": 2,
     "wrong_count": 1,
     "protected_count": 28,
     "win_rate_pct": 66.7,
     "total_pnl_inr": 6650.17,
-    "avg_trade_pnl_inr": 665.02,
-    "active_trades_count": 0,
+    "avg_trade_pnl_inr": 604.56,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 305840.0,
-    "used_margin_inr": 0,
-    "available_cash_inr": 305840.0,
+    "used_margin_inr": 106936.0,
+    "available_cash_inr": 198904.0,
     "net_worth_inr": 305840.0
   },
   "trades": [
+    {
+      "id": "ADV-12Nov2026-0905-COPPER",
+      "date": "12 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (EMA 20/50 Bearish Trend Confluence)",
+      "time_trigger": "09:05 AM IST",
+      "time_6pm": "09:05 AM IST",
+      "time_validation": "09:05 AM IST",
+      "time_615": "09:05 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPERM",
+      "name": "Copper Mini",
+      "lot_size": 1000,
+      "event_context": "Indicator Confluence: EMA 20/50 Bearish Trend Confluence",
+      "regime": {
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 45.9, RSI: 35.9). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "SHORT_FUTURES"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 45.9,
+        "rsi": 35.9,
+        "bb_width_pct": 8.03,
+        "daily_vol_pct": 1.44
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 40.6,
+        "p_stop_pct": 38.8,
+        "p_neither_pct": 20.5,
+        "resolved_win_rate_pct": 51.1,
+        "expected_r": 0.099,
+        "target_r": 1.2,
+        "sample_bars": 2245,
+        "summary": "3,000 Replays: 40.6% Target | 38.8% Stop | Expected: +0.10R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 6100.0,
+        "potential_gain_inr": 7320.0
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b91,336.70",
+        "rationale": "20 EMA (\u20b91,367.66) < 50 EMA (\u20b91,383.37) with ADX 45.9 >= 20 and healthy RSI 35.9. Downward trend continuation in effect. 3,000 Replays: 40.6% Target | 38.8% Stop | Expected: +0.10R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 1336.7,
+        "stop_loss": 1342.8,
+        "target": 1329.38
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 1336.7,
+        "action_taken": "Entered SELL 1000 units @ \u20b91,336.70",
+        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (\u20b91,367.66) < 50 EMA (\u20b91,383.37) with ADX 45.9 >= 20 and healthy RSI 35.9. Downward trend continuation in effect. | 3,000 Replays: 40.6% Target | 38.8% Stop | Expected: +0.10R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1000,
+        "entry_price": 1336.7,
+        "entry_time": "09:05 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "margin_required_inr": 106936.0,
+        "target": 1329.38,
+        "stop_loss": 1342.8
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "EMA 20/50 Bearish Trend Confluence active: SELL @ \u20b91,336.70 (Target: \u20b91,329.38, SL: \u20b91,342.80) | 3,000 Replays: 40.6% Target | 38.8% Stop | Expected: +0.10R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
     {
       "id": "ADV-11Nov2026-1800-GOLD",
       "date": "11 Nov 2026",
