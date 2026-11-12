@@ -13,14 +13,10 @@
     "avg_trade_pnl_inr": 475.01,
     "active_trades_count": 3,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 306650.17,
+    "current_cash_inr": 305840.0,
     "used_margin_inr": 106984.0,
-    "available_cash_inr": 199666.17,
-    "net_worth_inr": 306650.17,
-    "commodity_pnl_inr": 5840.0,
-    "intraday_pnl_inr": 810.17,
-    "intraday_booked_profit_inr": 810.17,
-    "intraday_pool_balance_inr": 30810.17
+    "available_cash_inr": 198856.0,
+    "net_worth_inr": 305840.0
   },
   "trades": [
     {
@@ -98,8 +94,7 @@
         "rationale": "High-Beta breakout momentum (Chg: +0.91%) with healthy RSI (61.7) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 22.5% Target | 12.4% Stop | Expected: +0.15R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 80.96,
         "stop_loss": 81.54,
-        "target": 82.63,
-        "original_stop_loss": 79.57
+        "target": 82.63
       },
       "check_615": {
         "checked": true,
@@ -129,8 +124,7 @@
         "trough_low": 81.99,
         "trailing_sl_active": true,
         "original_sl": 79.57,
-        "stage_2_profit_locked": true,
-        "initial_stop_loss": 79.57
+        "stage_2_profit_locked": true
       },
       "eod_outcome": {
         "session_close": null,
@@ -216,8 +210,7 @@
         "rationale": "High-Beta breakout momentum (Chg: +0.99%) with healthy RSI (60.7) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 33.6% Target | 12.9% Stop | Expected: +0.27R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))",
         "reference_price": 978.75,
         "stop_loss": 985.84,
-        "target": 999.01,
-        "original_stop_loss": 961.87
+        "target": 999.01
       },
       "check_615": {
         "checked": true,
@@ -247,8 +240,7 @@
         "trough_low": 991.8,
         "trailing_sl_active": true,
         "original_sl": 961.87,
-        "stage_2_profit_locked": true,
-        "initial_stop_loss": 961.87
+        "stage_2_profit_locked": true
       },
       "eod_outcome": {
         "session_close": null,
@@ -322,9 +314,8 @@
         "action_text": "SELL @ \u20b91,337.30",
         "rationale": "20 EMA (\u20b91,367.72) < 50 EMA (\u20b91,383.39) with ADX 45.9 >= 20 and healthy RSI 36.0. Downward trend continuation in effect. 3,000 Replays: 44.0% Target | 41.9% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 1337.3,
-        "stop_loss": 1342.8,
-        "target": 1330.7,
-        "original_stop_loss": 1342.8
+        "stop_loss": 1337.3,
+        "target": 1330.7
       },
       "check_615": {
         "checked": true,
@@ -346,14 +337,13 @@
         "status": "ACTIVE",
         "margin_required_inr": 106984.0,
         "target": 1330.7,
-        "stop_loss": 1342.8,
+        "stop_loss": 1337.3,
         "entry_day_high": 1339.9,
         "entry_day_low": 1332.7,
         "peak_high": 1335.15,
         "trough_low": 1334.2,
-        "trailing_sl_active": false,
-        "original_sl": 1342.8,
-        "initial_stop_loss": 1342.8
+        "trailing_sl_active": true,
+        "original_sl": 1342.8
       },
       "eod_outcome": {
         "session_close": null,
@@ -427,9 +417,8 @@
         "action_text": "SELL @ \u20b91,336.70",
         "rationale": "20 EMA (\u20b91,367.66) < 50 EMA (\u20b91,383.37) with ADX 45.9 >= 20 and healthy RSI 35.9. Downward trend continuation in effect. 3,000 Replays: 40.6% Target | 38.8% Stop | Expected: +0.10R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 1336.7,
-        "stop_loss": 1342.8,
-        "target": 1329.38,
-        "original_stop_loss": 1342.8
+        "stop_loss": 1336.7,
+        "target": 1329.38
       },
       "check_615": {
         "checked": true,
@@ -458,8 +447,7 @@
         "trough_low": 1334.4,
         "trailing_sl_active": true,
         "original_sl": 1342.8,
-        "exit_trigger": "TRAILING_BREAKEVEN_HIT",
-        "initial_stop_loss": 1342.8
+        "exit_trigger": "TRAILING_BREAKEVEN_HIT"
       },
       "eod_outcome": {
         "session_close": 1336.7,
@@ -1111,8 +1099,7 @@
         "reference_price": 78.96,
         "stop_loss": 80.9,
         "target": null,
-        "original_target": 80.59,
-        "original_stop_loss": 77.6
+        "original_target": 80.59
       },
       "check_615": {
         "checked": true,
@@ -1148,8 +1135,7 @@
         "target_scrapped": true,
         "original_target": 80.59,
         "target_runner_active": true,
-        "target_runner_activated_at": "11:39 AM IST",
-        "initial_stop_loss": 77.6
+        "target_runner_activated_at": "11:39 AM IST"
       },
       "eod_outcome": {
         "session_close": 80.95,
@@ -1236,9 +1222,8 @@
         "action_text": "BUY @ \u20b97,747.50",
         "rationale": "High-Beta breakout momentum (Chg: +1.55%) with healthy RSI (65.9) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 16.8% Target | 8.5% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 7747.5,
-        "stop_loss": 7613.86,
-        "target": 7907.87,
-        "original_stop_loss": 7613.86
+        "stop_loss": 7747.5,
+        "target": 7907.87
       },
       "check_615": {
         "checked": true,
@@ -1268,8 +1253,7 @@
         "trough_low": 7713.5,
         "trailing_sl_active": true,
         "original_sl": 7613.86,
-        "exit_trigger": "TRAILING_BREAKEVEN_HIT",
-        "initial_stop_loss": 7613.86
+        "exit_trigger": "TRAILING_BREAKEVEN_HIT"
       },
       "eod_outcome": {
         "session_close": 7747.5,
@@ -1356,9 +1340,8 @@
         "action_text": "BUY @ \u20b9975.45",
         "rationale": "High-Beta breakout momentum (Chg: +1.08%) with healthy RSI (60.1) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 32.0% Target | 13.2% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))",
         "reference_price": 975.45,
-        "stop_loss": 958.63,
-        "target": 995.63,
-        "original_stop_loss": 958.63
+        "stop_loss": 975.45,
+        "target": 995.63
       },
       "check_615": {
         "checked": true,
@@ -1388,8 +1371,7 @@
         "trough_low": 968.2,
         "trailing_sl_active": true,
         "original_sl": 958.63,
-        "exit_trigger": "TRAILING_BREAKEVEN_HIT",
-        "initial_stop_loss": 958.63
+        "exit_trigger": "TRAILING_BREAKEVEN_HIT"
       },
       "eod_outcome": {
         "session_close": 975.45,
@@ -1976,8 +1958,7 @@
         "rationale": "20 EMA (\u20b91,374.75) < 50 EMA (\u20b91,387.36) with ADX 44.1 >= 20 and healthy RSI 37.2. Downward trend continuation in effect. 3,000 Replays: 47.6% Target | 46.5% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 1345.4,
         "stop_loss": 1343.06,
-        "target": 1339.56,
-        "original_stop_loss": 1350.27
+        "target": 1339.56
       },
       "check_615": {
         "checked": true,
@@ -2003,8 +1984,7 @@
         "trailing_sl_active": true,
         "original_sl": 1350.27,
         "stage_2_profit_locked": true,
-        "exit_trigger": "TARGET_HIT",
-        "initial_stop_loss": 1350.27
+        "exit_trigger": "TARGET_HIT"
       },
       "eod_outcome": {
         "session_close": 1339.56,
@@ -2080,9 +2060,8 @@
         "action_text": "SELL @ \u20b91,344.60",
         "rationale": "20 EMA (\u20b91,374.68) < 50 EMA (\u20b91,387.33) with ADX 44.1 >= 20 and healthy RSI 37.0. Downward trend continuation in effect. 3,000 Replays: 49.5% Target | 47.3% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 1344.6,
-        "stop_loss": 1348.96,
-        "target": 1339.37,
-        "original_stop_loss": 1348.96
+        "stop_loss": 1344.6,
+        "target": 1339.37
       },
       "check_615": {
         "checked": true,
@@ -2107,8 +2086,7 @@
         "stop_loss": 1344.6,
         "trailing_sl_active": true,
         "original_sl": 1348.96,
-        "exit_trigger": "TRAILING_BREAKEVEN_HIT",
-        "initial_stop_loss": 1348.96
+        "exit_trigger": "TRAILING_BREAKEVEN_HIT"
       },
       "eod_outcome": {
         "session_close": 1344.6,

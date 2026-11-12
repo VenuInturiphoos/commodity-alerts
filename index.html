@@ -6828,9 +6828,9 @@ function switchTradingSubTab(subtab) {
         if (descEl) descEl.innerHTML = 'Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions active till 11:30 PM IST.';
         if (sessionFilterContainer) sessionFilterContainer.style.display = 'block';
     } else {
-        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday MIS Allocation: Base ₹30,000 Margin (+ Booked Profits) | 5x Buying Power';
+        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday MIS Allocation: Max ₹30,000 Margin (Split across 3 Stocks × ₹10,000 | 5x Buying Power: ₹1,50,000)';
         if (titleEl) titleEl.innerHTML = '⚡ Intraday Stock Trading Tracker (MIS Margin Benefit)';
-        if (descEl) descEl.innerHTML = 'Autonomous Nifty 50 intraday stock day-trades with 5x MIS margin benefit (Base ₹30,000 daily refreshed margin + booked profits). Mandatory 03:20 PM IST EOD square-off (Zero overnight risk).';
+        if (descEl) descEl.innerHTML = 'Autonomous Nifty 50 intraday stock day-trades with 5x MIS margin benefit from your capital (Max ₹30,000 margin deployed across 3 diversified stocks = ₹10,000 margin / ₹50,000 buying power each). Mandatory 03:25 PM IST EOD square-off (Zero overnight risk).';
         if (sessionFilterContainer) sessionFilterContainer.style.display = 'none';
     }
 
@@ -7423,16 +7423,10 @@ function applyAdvisoryMonthFilter(monthValue) {
     const marginSubEl = document.getElementById('kpi-adv-margin-sub');
     const cashTitleEl = cashEl ? cashEl.closest('.circuit-kpi-card')?.querySelector('.circuit-kpi-header span') : null;
 
-    // Calculate Intraday Realized P&L and Booked Profit across allDatasetTrades
-    const intradayClosedTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'CLOSED');
-    const intradayRealizedPnl = intradayClosedTrades.reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
-    const intradayBookedProfit = Math.max(0, intradayRealizedPnl);
-    const intradayBasePool = 30000 + intradayBookedProfit;
-
-    const activeStockTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'ACTIVE');
+    const activeStockTrades = trades.filter(t => t.paper_trade && t.paper_trade.status === 'ACTIVE' && (t.asset_type === 'INTRADAY_STOCK' || t.paper_trade.product_type === 'MIS_INTRADAY'));
     const activeStockVal = activeStockTrades.reduce((sum, t) => sum + ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0)), 0);
     const activeMarginVal = activeStockTrades.reduce((sum, t) => sum + (t.paper_trade.margin_required_inr || ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0) * 0.20)), 0);
-    const intradayAvailMargin = Math.max(0, intradayBasePool - activeMarginVal);
+    const intradayAvailMargin = Math.max(0, 30000 - activeMarginVal);
 
     const COMMODITY_MARGIN_RATES = {
         'CRUDEOIL': 0.25, 'CRUDEOILM': 0.25,
@@ -7458,7 +7452,7 @@ function applyAdvisoryMonthFilter(monthValue) {
         return p * q * rate;
     };
 
-    const activeFuturesTrades = allDatasetTrades.filter(t => {
+    const activeFuturesTrades = trades.filter(t => {
         if (isIntradayStockTrade(t)) return false;
         const pt = t.paper_trade || {};
         if (pt.status !== 'ACTIVE') return false;
@@ -7468,11 +7462,10 @@ function applyAdvisoryMonthFilter(monthValue) {
 
     const activeFuturesMarginVal = activeFuturesTrades.reduce((sum, t) => sum + getFuturesTradeMargin(t), 0);
     const futuresStartingCash = Number(summary.starting_cash_inr || 300000.0);
-    const futuresRealizedPnl = allDatasetTrades.filter(t => !isIntradayStockTrade(t) && t.paper_trade?.status === 'CLOSED').reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
-    // Overall trade balance reflects starting capital + commodity PnL + intraday booked profits
-    const overallNetCash = futuresStartingCash + futuresRealizedPnl + intradayBookedProfit;
+    const futuresRealizedPnl = trades.filter(t => !isIntradayStockTrade(t)).reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
+    const futuresNetCash = futuresStartingCash + futuresRealizedPnl;
     const futuresUsedMargin = activeFuturesMarginVal || summary.used_margin_inr || 0;
-    const futuresAvailMargin = Math.max(0, overallNetCash - futuresUsedMargin);
+    const futuresAvailMargin = Math.max(0, futuresNetCash - futuresUsedMargin);
 
     if (cashEl) {
         if (isIntradayActive) {
@@ -7487,17 +7480,9 @@ function applyAdvisoryMonthFilter(monthValue) {
     }
     if (marginSubEl) {
         if (isIntradayActive) {
-            if (intradayBookedProfit > 0) {
-                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Pool: <strong>₹${intradayBasePool.toLocaleString('en-IN', {minimumFractionDigits: 0})}</strong> (₹30k Base + ₹${intradayBookedProfit.toFixed(0)} Profit) | Flat 03:25 PM`;
-            } else {
-                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Base ₹30,000 (Refreshed Daily) | Flat 03:25 PM`;
-            }
+            marginSubEl.textContent = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Max ₹30k (3 Stocks × ₹10k) | Flat 03:25 PM`;
         } else {
-            if (intradayBookedProfit > 0) {
-                marginSubEl.innerHTML = `Used Margin: ₹${Number(futuresUsedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | Total Trade Balance: <strong>₹${overallNetCash.toLocaleString('en-IN', {minimumFractionDigits: 0})}</strong> (incl. +₹${intradayBookedProfit.toFixed(0)} Intraday Profit)`;
-            } else {
-                marginSubEl.innerHTML = `Used Margin: ₹${Number(futuresUsedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | Dedicated Pool: ₹${overallNetCash.toLocaleString('en-IN', {minimumFractionDigits: 0})}`;
-            }
+            marginSubEl.textContent = `Used Margin: ₹${Number(futuresUsedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | Dedicated Pool: ₹${futuresNetCash.toLocaleString('en-IN', {minimumFractionDigits: 0})}`;
         }
     }
     
@@ -7617,17 +7602,7 @@ function renderAdvisoryTradesTable() {
         // Find live market data from authoritative exchange / scanner feed
         const liveSource = getAdvisoryTradeLivePriceData(t);
         const curSl = Number(pt.stop_loss || s6.stop_loss || 0);
-        const initialSl = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
-        let isSlBreached = false;
-        if (curSl > 0 && liveSource && liveSource.current_price) {
-            const cp = Number(liveSource.current_price);
-            const isBE = Boolean(pt.trailing_sl_active && Math.abs(curSl - (pt.entry_price || 0)) < 0.05);
-            if (pt.action === 'BUY') {
-                isSlBreached = isBE ? (cp < curSl - 0.05) : (cp <= curSl);
-            } else if (pt.action === 'SELL') {
-                isSlBreached = isBE ? (cp > curSl + 0.05) : (cp >= curSl);
-            }
-        }
+        const isSlBreached = Boolean(curSl > 0 && liveSource && liveSource.current_price && ((pt.action === 'BUY' && Number(liveSource.current_price) <= curSl) || (pt.action === 'SELL' && Number(liveSource.current_price) >= curSl)));
 
         // Current Price column computation
         let curPriceHtml = '<span style="color:#64748b; font-size:0.8rem;">--</span>';
@@ -7886,9 +7861,7 @@ function renderAdvisoryTradesTable() {
             ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-bolt"></i> MIS INTRADAY (5x)</span>`
             : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
 
-        const initialSlVal = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
         const displaySl = pt.stop_loss || s6.stop_loss;
-        const isTrailed = Boolean(pt.trailing_sl_active || pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active || (initialSlVal > 0 && Math.abs(Number(displaySl) - initialSlVal) > 0.01));
         const isTargetScrapped = Boolean(pt.target_scrapped || pt.stage_3_target_approaching || pt.target_runner_active || (!s6.target && (pt.original_target || s6.original_target)));
         let slBadge = '';
         let slColor = '#fb7185';
@@ -7959,7 +7932,6 @@ function renderAdvisoryTradesTable() {
                 <td>${paperTradeCell}</td>
                 <td>
                     <div style="font-size:0.8rem; color:${slColor}; font-weight:600;">SL: ₹${displaySl ? Number(displaySl).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} ${slBadge}</div>
-                    ${isTrailed && initialSlVal > 0 && Math.abs(Number(displaySl) - initialSlVal) > 0.01 ? `<div style="font-size:0.68rem; color:#94a3b8; margin-top:1px;">(Initial SL: ₹${Number(initialSlVal).toLocaleString('en-IN', {minimumFractionDigits:2})})</div>` : ''}
                     ${tgtDisplayHtml}
                 </td>
                 <td>
@@ -8176,9 +8148,7 @@ function renderAdvisoryTradesTable() {
                 ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-bolt"></i> MIS INTRADAY (5x)</span>`
                 : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
 
-            const mobInitialSlVal = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
             const mobDisplaySl = pt.stop_loss || s6.stop_loss;
-            const mobIsTrailed = Boolean(pt.trailing_sl_active || pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active || (mobInitialSlVal > 0 && Math.abs(Number(mobDisplaySl) - mobInitialSlVal) > 0.01));
             const mobIsTargetScrapped = Boolean(pt.target_scrapped || pt.stage_3_target_approaching || pt.target_runner_active || (!s6.target && (pt.original_target || s6.original_target)));
             let mobSlBadge = '';
             let mobSlColor = '#fb7185';
@@ -8255,7 +8225,6 @@ function renderAdvisoryTradesTable() {
                         <div class="mobile-cell-item">
                             <span class="mobile-cell-label">Stop Loss</span>
                             <span class="mobile-cell-val" style="color:${mobSlColor}; font-weight:600;">₹${mobDisplaySl ? Number(mobDisplaySl).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} ${mobSlBadge}</span>
-                            ${mobIsTrailed && mobInitialSlVal > 0 && Math.abs(Number(mobDisplaySl) - mobInitialSlVal) > 0.01 ? `<span style="font-size:0.65rem; color:#94a3b8; display:block;">(Initial: ₹${Number(mobInitialSlVal).toLocaleString('en-IN', {minimumFractionDigits:2})})</span>` : ''}
                         </div>
                         <div class="mobile-cell-item">
                             <span class="mobile-cell-label">Target</span>
