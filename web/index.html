@@ -2482,9 +2482,10 @@ async function fetchNiftyOpportunities(forceNetwork = false) {
     const kpiDiscount = document.getElementById('nifty-kpi-avg-discount');
     const updatedNote = document.getElementById('nifty-updated-note');
     
-    // Compute newly added golden crossover count
+    // Compute newly added golden crossover count (strictly trades/stocks crossed over today)
     const stocks = loadedData.stocks || [];
-    const newGoldenCount = stocks.filter(x => x.is_new_golden || (x.is_golden && x.ema_spread_pct != null && x.ema_spread_pct <= 2.5)).length;
+    const todayIso = new Date().toISOString().split('T')[0];
+    const newGoldenCount = stocks.filter(x => Boolean(x.is_crossover_today || (x.is_new_golden && (x.cross_detected_date === todayIso || x.golden_cross_date === todayIso || x.days_since_golden_cross === 0)))).length;
 
     if (kpiHigh) kpiHigh.textContent = `${s.high_win_prob_count || 0} Setups`;
     if (kpiGolden) {
@@ -2582,9 +2583,10 @@ function renderNiftyOpportunities() {
         if (activeNiftyFilter === 'SAFETY' && (s.capital_safety_score || 0) < 75) return false;
         if (activeNiftyFilter === 'LARGE' && (s.cap_category !== 'Large Cap' && s.is_midcap)) return false;
         if (activeNiftyFilter === 'MIDCAP' && (s.cap_category !== 'Mid Cap' && !s.is_midcap)) return false;
+        const todayIso = new Date().toISOString().split('T')[0];
         if (activeNiftyFilter === 'NEW_GOLDEN') {
-            const isNew = s.is_new_golden || (s.is_golden && (s.ema_spread_pct != null ? s.ema_spread_pct <= 2.5 : false));
-            if (!isNew) return false;
+            const isAddedToday = Boolean(s.is_crossover_today || (s.is_new_golden && (s.cross_detected_date === todayIso || s.golden_cross_date === todayIso || s.days_since_golden_cross === 0)));
+            if (!isAddedToday) return false;
         }
         if (activeNiftyFilter === 'GOLDEN' && !s.is_golden) return false;
         if (activeNiftyFilter === 'OVERSOLD' && s.rsi >= 40) return false;
@@ -2605,11 +2607,15 @@ function renderNiftyOpportunities() {
     });
     
     // Sort
+    const todayIso = new Date().toISOString().split('T')[0];
     filtered.sort((a, b) => {
         if (activeNiftySort === 'fresh_golden') {
-            const newA = a.is_new_golden || (a.is_golden && a.ema_spread_pct != null && a.ema_spread_pct <= 2.5);
-            const newB = b.is_new_golden || (b.is_golden && b.ema_spread_pct != null && b.ema_spread_pct <= 2.5);
+            const newA = Boolean(a.is_crossover_today || (a.is_new_golden && (a.cross_detected_date === todayIso || a.golden_cross_date === todayIso || a.days_since_golden_cross === 0)));
+            const newB = Boolean(b.is_crossover_today || (b.is_new_golden && (b.cross_detected_date === todayIso || b.golden_cross_date === todayIso || b.days_since_golden_cross === 0)));
             if (newB !== newA) return (newB ? 1 : 0) - (newA ? 1 : 0);
+            const daysA = a.days_since_golden_cross != null ? a.days_since_golden_cross : 999;
+            const daysB = b.days_since_golden_cross != null ? b.days_since_golden_cross : 999;
+            if (daysA !== daysB) return daysA - daysB;
             const spreadA = a.is_golden && a.ema_spread_pct != null ? a.ema_spread_pct : 999;
             const spreadB = b.is_golden && b.ema_spread_pct != null ? b.ema_spread_pct : 999;
             return spreadA - spreadB;
@@ -2648,7 +2654,7 @@ function renderNiftyOpportunities() {
                 const actionClass = (plan.action || '').toLowerCase().replace(/[^a-z]/g, '-');
                 const changeColor = item.change_pct >= 0 ? '#34d399' : '#fb7185';
                 const changeSign = item.change_pct >= 0 ? '+' : '';
-                const isNewlyAddedGolden = item.is_new_golden || (item.is_golden && item.ema_spread_pct != null && item.ema_spread_pct <= 2.5);
+                const isNewlyAddedGolden = Boolean(item.is_crossover_today || (item.is_new_golden && (item.cross_detected_date === todayIso || item.golden_cross_date === todayIso || item.days_since_golden_cross === 0)));
                 
                 return `
                     <div class="nifty-card ${isElite ? 'elite-setup' : ''}">
@@ -2796,7 +2802,7 @@ function renderNiftyOpportunities() {
                 const actionClass = (plan.action || '').toLowerCase().replace(/[^a-z]/g, '-');
                 const changeColor = item.change_pct >= 0 ? '#34d399' : '#fb7185';
                 const changeSign = item.change_pct >= 0 ? '+' : '';
-                const isNewlyAddedGolden = item.is_new_golden || (item.is_golden && item.ema_spread_pct != null && item.ema_spread_pct <= 2.5);
+                const isNewlyAddedGolden = Boolean(item.is_crossover_today || (item.is_new_golden && (item.cross_detected_date === todayIso || item.golden_cross_date === todayIso || item.days_since_golden_cross === 0)));
                 
                 return `
                     <tr>

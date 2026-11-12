@@ -96,7 +96,8 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
     cols = [
         'name', 'description', 'close', 'change', 'change_abs', 'volume',
         'price_52_week_high', 'price_52_week_low',
-        'EMA50', 'EMA200', 'SMA50', 'SMA200',
+        'EMA50', 'EMA200', 'EMA50[1]', 'EMA200[1]',
+        'SMA50', 'SMA200', 'SMA50[1]', 'SMA200[1]',
         'RSI', 'RSI[1]', 'MACD.macd', 'MACD.signal',
         'BB.lower', 'BB.upper', 'Recommend.All', 'sector',
         'Volatility.D', 'ATR', 'ADX'
@@ -159,8 +160,12 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         l52 = float(d.get('price_52_week_low') or close)
         ema50 = float(d.get('EMA50') or close)
         ema200 = float(d.get('EMA200') or close)
+        ema50_prev = float(d.get('EMA50[1]') or ema50)
+        ema200_prev = float(d.get('EMA200[1]') or ema200)
         sma50 = float(d.get('SMA50') or close)
         sma200 = float(d.get('SMA200') or close)
+        sma50_prev = float(d.get('SMA50[1]') or sma50)
+        sma200_prev = float(d.get('SMA200[1]') or sma200)
         rsi = float(d.get('RSI') or 50.0)
         rsi_prev = float(d.get('RSI[1]') or rsi)
         bb_low = float(d.get('BB.lower') or (close * 0.95))
@@ -183,23 +188,44 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         sma_golden = sma50 >= sma200
         ema_spread_pct = round(((ema50 - ema200) / ema200) * 100, 2)
 
-        is_fresh_cross = is_golden and (ema_spread_pct <= 2.5)
+        # Check genuine crossover occurred today (bar 0 is golden, bar 1 was not golden)
+        is_crossover_today = bool(
+            (ema50 >= ema200 and ema50_prev > 0 and ema200_prev > 0 and ema50_prev < ema200_prev) or
+            (sma50 >= sma200 and sma50_prev > 0 and sma200_prev > 0 and sma50_prev < sma200_prev)
+        )
+
         is_new_golden = False
         cross_detected_date = today_iso
+        days_active = 0
 
         if is_golden:
             if orig_sym not in golden_history:
-                # Newly added crossover detected!
-                golden_history[orig_sym] = {
-                    'symbol': orig_sym,
-                    'name': name,
-                    'first_detected_date': today_iso,
-                    'first_detected_time': timestamp_str,
-                    'initial_close': close,
-                    'initial_spread_pct': ema_spread_pct
-                }
-                is_new_golden = True
-                cross_detected_date = today_iso
+                # Newly detected in scanner
+                if is_crossover_today:
+                    golden_history[orig_sym] = {
+                        'symbol': orig_sym,
+                        'name': name,
+                        'first_detected_date': today_iso,
+                        'first_detected_time': timestamp_str,
+                        'initial_close': close,
+                        'initial_spread_pct': ema_spread_pct
+                    }
+                    is_new_golden = True
+                    cross_detected_date = today_iso
+                    days_active = 0
+                else:
+                    # Pre-existing golden cross; do not mark as new today
+                    golden_history[orig_sym] = {
+                        'symbol': orig_sym,
+                        'name': name,
+                        'first_detected_date': '2026-01-01',
+                        'first_detected_time': 'Pre-existing historical trend',
+                        'initial_close': close,
+                        'initial_spread_pct': ema_spread_pct
+                    }
+                    is_new_golden = False
+                    cross_detected_date = 'Pre-existing'
+                    days_active = 30
             else:
                 hist_date = golden_history[orig_sym].get('first_detected_date', today_iso)
                 cross_detected_date = hist_date
@@ -208,17 +234,21 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
                     days_active = (now_ist.date() - d0).days
                 except Exception:
                     days_active = 0
-                # Newly added if within last 7 calendar days or fresh EMA convergence
-                if days_active <= 7 or is_fresh_cross:
+
+                # Strictly marked NEW GOLDEN if crossover happened today or first added today
+                if is_crossover_today or (hist_date == today_iso and days_active == 0):
                     is_new_golden = True
+                else:
+                    is_new_golden = False
 
             if is_new_golden:
                 crossover_status = 'NEW_GOLDEN'
-                crossover_label = f'Fresh Golden Cross 🌟 (New +{ema_spread_pct}%)'
+                crossover_label = f'Crossed Over Today 🌟 (+{ema_spread_pct}%)'
                 crossover_badge = 'NEW_GOLDEN'
             else:
                 crossover_status = 'GOLDEN'
-                crossover_label = f'Golden Cross Active 🌟 (+{ema_spread_pct}%)'
+                since_txt = f" (Since {cross_detected_date})" if cross_detected_date and cross_detected_date != 'Pre-existing' else ""
+                crossover_label = f'Golden Cross Active 🌟 (+{ema_spread_pct}%{since_txt})'
                 crossover_badge = 'GOLDEN'
         else:
             if orig_sym in golden_history:
@@ -500,7 +530,10 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
             'crossover_badge': crossover_badge,
             'is_golden': is_golden,
             'is_new_golden': is_new_golden,
-            'is_fresh_cross': is_fresh_cross,
+            'is_crossover_today': is_crossover_today,
+            'cross_detected_date': cross_detected_date,
+            'days_since_golden_cross': days_active if is_golden else None,
+            'is_fresh_cross': is_new_golden,
             'golden_cross_date': cross_detected_date,
             'near_golden': near_golden,
             'rsi': round(rsi, 1),
