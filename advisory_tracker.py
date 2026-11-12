@@ -4233,11 +4233,15 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                         import yfinance as yf
                         yf_sym = sym if sym.endswith('.NS') else f"{clean_sym}.NS"
                         t_obj = yf.Ticker(yf_sym)
-                        hist_1m = t_obj.history(period='1d', interval='1m')
-                        if not hist_1m.empty:
-                            c_last = float(hist_1m['Close'].iloc[-1])
-                            if c_last > 0:
-                                live_eq_p = round(c_last, 2)
+                        fast_p = getattr(t_obj.fast_info, 'last_price', None)
+                        if fast_p and float(fast_p) > 0:
+                            live_eq_p = round(float(fast_p), 2)
+                        else:
+                            hist_1m = t_obj.history(period='1d', interval='1m')
+                            if not hist_1m.empty:
+                                c_last = float(hist_1m['Close'].iloc[-1])
+                                if c_last > 0:
+                                    live_eq_p = round(c_last, 2)
                     except Exception:
                         pass
                 
