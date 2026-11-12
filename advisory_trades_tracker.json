@@ -1,10 +1,10 @@
 {
-  "last_updated": "12 Nov 2026, 11:37 AM IST",
+  "last_updated": "12 Nov 2026, 01:08 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 43,
-    "executed_count": 15,
+    "total_signals": 44,
+    "executed_count": 16,
     "correct_count": 3,
     "wrong_count": 2,
     "protected_count": 28,
@@ -14,8 +14,8 @@
     "intraday_pnl_inr": 1146.72,
     "intraday_booked_profit_inr": 1146.72,
     "intraday_pool_balance_inr": 31146.72,
-    "avg_trade_pnl_inr": 465.78,
-    "active_trades_count": 1,
+    "avg_trade_pnl_inr": 436.67,
+    "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 306986.72,
     "used_margin_inr": 106800.0,
@@ -23,6 +23,119 @@
     "net_worth_inr": 306986.72
   },
   "trades": [
+    {
+      "id": "ADV-12Nov2026-1308-HINDALCO",
+      "date": "12 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "01:08 PM IST",
+      "time_6pm": "01:08 PM IST",
+      "time_validation": "01:08 PM IST",
+      "time_615": "01:08 PM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "HINDALCO.NS",
+      "name": "Hindalco Industries Limited",
+      "lot_size": 53,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 64.3). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 64.3,
+        "bb_width_pct": 12.81,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 24.1,
+        "p_stop_pct": 16.8,
+        "p_neither_pct": 59.1,
+        "resolved_win_rate_pct": 58.8,
+        "expected_r": 0.121,
+        "target_r": 1.2,
+        "sample_bars": 702,
+        "summary": "3,000 Replays: 24.1% Target | 16.8% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: All 14-point pre-trade risk criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 885.63,
+        "potential_gain_inr": 1062.65
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b9968.95 breaking above range high \u20b9968.95."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b9968.95",
+        "rationale": "High-Beta breakout momentum (Chg: +0.75%) with healthy RSI (64.3) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 24.1% Target | 16.8% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 968.95,
+        "stop_loss": 952.24,
+        "target": 989.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 968.95,
+        "action_taken": "Entered BUY 53 shares @ \u20b9968.95",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.75%) with healthy RSI (64.3) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 24.1% Target | 16.8% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 53,
+        "entry_price": 968.95,
+        "entry_time": "01:08 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 989.0,
+        "stop_loss": 952.24,
+        "initial_stop_loss": 952.24,
+        "original_sl": 952.24,
+        "peak_high": 968.95,
+        "trough_low": 968.95,
+        "margin_required_inr": 10270.87,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b9968.95 (Target: \u20b9989.00, SL: \u20b9952.24) | 3,000 Replays: 24.1% Target | 16.8% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
     {
       "id": "ADV-12Nov2026-1104-COPPER",
       "date": "12 Nov 2026",
