@@ -1,5 +1,5 @@
 {
-  "last_updated": "13 Nov 2026, 07:36 PM IST",
+  "last_updated": "13 Nov 2026, 07:47 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -214,25 +214,26 @@
         "pnl_inr": 0.0,
         "status": "ACTIVE",
         "target": 300.29,
-        "stop_loss": 310.2,
+        "stop_loss": 307.23,
         "margin_required_inr": 111672.0,
         "initial_stop_loss": 318.06,
-        "peak_high": 307.1,
-        "trough_low": 307.1,
+        "peak_high": 305.2,
+        "trough_low": 305.2,
         "trailing_sl_active": true,
-        "original_sl": 318.06
+        "original_sl": 318.06,
+        "stage_2_profit_locked": true
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": 318.06,
         "outcome": "ACTIVE",
-        "badge": "Active Trade \u26a1",
+        "badge": "Active (Trailing Stop @ \u20b9307.23)",
         "pnl_display": "Ticking Live...",
-        "summary": "Confirmed SELL position (2000 units) active for venu.photos1@gmail.com. Auto-exit at 11:55 PM IST."
+        "summary": "Trailing Profit Stop (+35% profit locked @ \u20b9307.23) active. Position running towards Target."
       },
       "live_price_data": {
-        "current_price": 307.1,
-        "change_pct": -1.0
+        "current_price": 305.2,
+        "change_pct": -1.61
       }
     },
     {
@@ -1550,8 +1551,8 @@
         "summary": "Trailing Stop to Breakeven activated (+1.0R achieved): Stop loss moved to \u20b9180,800.00 (Risk-Free). Position riding trend to Target \u20b9175,986.72."
       },
       "live_price_data": {
-        "current_price": 179433.0,
-        "change_pct": -0.76
+        "current_price": 179475.0,
+        "change_pct": -0.73
       }
     },
     {
