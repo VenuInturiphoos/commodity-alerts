@@ -739,7 +739,7 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                             <span id="tracker-last-updated" style="font-size: 0.8rem; color: var(--text-secondary);">Syncing...</span>
-                            <button onclick="loadAdvisoryTracker(true)" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #c7d2fe; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                            <button onclick="if (typeof fetchCircuitsData === 'function') fetchCircuitsData(true); loadAdvisoryTracker(true);" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #c7d2fe; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
                                 <i class="fa-solid fa-arrows-rotate"></i> Refresh Tracker
                             </button>
                         </div>
@@ -1824,6 +1824,9 @@ function switchTab(btn, targetId, updateUrl = true) {
     }
     
     if (targetId === 'trading-tab') {
+        if (typeof fetchCircuitsData === 'function' && (!rawCircuitsData || rawCircuitsData.length === 0)) {
+            fetchCircuitsData();
+        }
         if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker();
     }
     
@@ -1954,6 +1957,7 @@ function initApp() {
         const niftyTab = document.getElementById('nifty-tab');
 
         if (tradingTab && tradingTab.classList.contains('active')) {
+            if (typeof fetchCircuitsData === 'function') fetchCircuitsData();
             if (typeof loadAdvisoryTracker === 'function') loadAdvisoryTracker(true);
         }
         if (investingTab && investingTab.classList.contains('active')) {
@@ -1986,7 +1990,10 @@ async function fetchCircuitsData(forceNetwork = false) {
         // 1. Fetch latest precomputed exchange circuit data with cache busting
         const candidateUrls = [
             'circuits_data.json?t=' + Date.now(),
-            'https://venuinturiphoos.github.io/commodity-alerts/circuits_data.json?t=' + Date.now()
+            'web/circuits_data.json?t=' + Date.now(),
+            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/circuits_data.json?t=' + Date.now(),
+            'https://venuinturiphoos.github.io/commodity-alerts/circuits_data.json?t=' + Date.now(),
+            'https://venuinturiphoos.github.io/commodity-alerts/web/circuits_data.json?t=' + Date.now()
         ];
         
         for (const url of candidateUrls) {
@@ -2213,7 +2220,7 @@ async function fetchCircuitsData(forceNetwork = false) {
                 }
             }
             renderCircuitsTable();
-            if (typeof activePaperTradingSubView !== 'undefined' && activePaperTradingSubView === 'advisory' && typeof renderAdvisoryTradesTable === 'function') {
+            if (typeof renderAdvisoryTradesTable === 'function') {
                 renderAdvisoryTradesTable();
             }
             if (typeof renderTradeMarket === 'function') {
@@ -2452,7 +2459,10 @@ async function fetchNiftyOpportunities(forceNetwork = false) {
     
     const candidateUrls = [
         'nifty_crossover_oversold.json?t=' + Date.now(),
-        'https://venuinturiphoos.github.io/commodity-alerts/nifty_crossover_oversold.json?t=' + Date.now()
+        'web/nifty_crossover_oversold.json?t=' + Date.now(),
+        'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/nifty_crossover_oversold.json?t=' + Date.now(),
+        'https://venuinturiphoos.github.io/commodity-alerts/nifty_crossover_oversold.json?t=' + Date.now(),
+        'https://venuinturiphoos.github.io/commodity-alerts/web/nifty_crossover_oversold.json?t=' + Date.now()
     ];
     
     let loadedData = null;
@@ -7080,7 +7090,10 @@ function getAdvisoryTradeLivePriceData(t) {
     if (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) {
         const item = rawCircuitsData.find(c => {
             const cs = (c.symbol || '').toUpperCase();
-            return cs === cleanSym || cs === (t.symbol || '').toUpperCase();
+            if (cs === cleanSym || cs === (t.symbol || '').toUpperCase()) return true;
+            if ((cleanSym === 'ZINCMINI' && cs === 'ZINCM') || (cleanSym === 'ZINCM' && cs === 'ZINCMINI')) return true;
+            if ((cleanSym === 'ALUMINI' && cs === 'ALUMINIUMM') || (cleanSym === 'ALUMINIUMM' && cs === 'ALUMINI')) return true;
+            return false;
         });
         if (item && item.current_price !== undefined && item.current_price !== null && !isNaN(Number(item.current_price))) {
             return { current_price: Number(item.current_price), change_pct: Number(item.change_pct || 0) };
@@ -7090,7 +7103,10 @@ function getAdvisoryTradeLivePriceData(t) {
     if (typeof marketData !== 'undefined' && Array.isArray(marketData)) {
         const item = marketData.find(m => {
             const ms = (m.symbol || '').toUpperCase();
-            return ms === (t.symbol || '').toUpperCase() || ms === cleanSym;
+            if (ms === (t.symbol || '').toUpperCase() || ms === cleanSym) return true;
+            if ((cleanSym === 'ZINCMINI' && ms === 'ZINCM') || (cleanSym === 'ZINCM' && ms === 'ZINCMINI')) return true;
+            if ((cleanSym === 'ALUMINI' && ms === 'ALUMINIUMM') || (cleanSym === 'ALUMINIUMM' && ms === 'ALUMINI')) return true;
+            return false;
         });
         if (item && item.current_price !== undefined && item.current_price !== null && !isNaN(Number(item.current_price))) {
             return { current_price: Number(item.current_price), change_pct: Number(item.change_pct || 0) };
@@ -7227,6 +7243,15 @@ let isAdvisoryTrackerLoading = false;
 async function loadAdvisoryTracker(forceNetwork = false) {
     const timeEl = document.getElementById('tracker-last-updated');
     const now = Date.now();
+
+    // Ensure authoritative MCX circuit limits and live commodity prices are loaded
+    if (typeof fetchCircuitsData === 'function' && (!rawCircuitsData || rawCircuitsData.length === 0 || forceNetwork)) {
+        try {
+            await fetchCircuitsData(forceNetwork);
+        } catch (err) {
+            console.warn("Could not pre-fetch circuits data for advisory tracker:", err);
+        }
+    }
 
     // Fast-path: If freshly loaded within last 25s and not forced, render from in-memory cache instantly
     if (!forceNetwork && activeTrackerCache && (now - lastAdvisoryFetchTime < 25000)) {
@@ -8383,6 +8408,7 @@ window.setMobileViewMode = function(mode) {
 // Initialize App after all modules, functions, and state are defined
 function startApp() {
     try { initApp(); } catch(e) { console.error("Init Error:", e); }
+    try { if (typeof fetchCircuitsData === 'function') fetchCircuitsData(); } catch(e) {}
     try { if (typeof loadGuestPaperTradingData === 'function') loadGuestPaperTradingData(); } catch(e) {}
     try { if (typeof switchTradingSubTab === 'function') switchTradingSubTab(currentTradingSubTab); } catch(e) {}
 
