@@ -7089,14 +7089,6 @@ function getAdvisoryTradeLivePriceData(t) {
     if (!t) return null;
     const cleanSym = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
 
-    // Priority 1: Real-time 1-second tick data from TradingView WebStream
-    if (t.live_price_data && t.live_price_data.current_price !== undefined && t.live_price_data.current_price !== null && !isNaN(Number(t.live_price_data.current_price))) {
-        return {
-            current_price: Number(t.live_price_data.current_price),
-            change_pct: Number(t.live_price_data.change_pct || 0)
-        };
-    }
-
     // Strict contract isolation: NEVER fallback to a parent/different contract expiry or standard commodity!
     // A Silver Micro position MUST evaluate against Silver Micro quotes only.
     if (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) {
@@ -8608,40 +8600,22 @@ class TradingViewWebStreamManager {
 
             let changed = false;
 
-            if (futRes && Array.isArray(futRes.data)) {
+            if (futRes && Array.isArray(futRes.data) && Array.isArray(rawCircuitsData)) {
                 const futMap = {};
                 futRes.data.forEach(row => {
                     futMap[row.s] = { close: Number(row.d[0]), chg_pct: Number(row.d[4] || 0), vol: Number(row.d[6] || 0) };
                 });
 
-                if (typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) {
-                    advisoryTrackerData.trades.forEach(t => {
-                        const clean = (t.symbol || '').replace('-FUT', '').toUpperCase();
-                        let match = futMap[`MCX:${clean}1!`];
-                        if (!match && clean === 'SILVERMIC') match = futMap['MCX:SILVERMIC1!'] || futMap['MCX:SILVER1!'];
-                        if (!match && (clean === 'ZINCMINI' || clean === 'ZINCM')) match = futMap['MCX:ZINCMINI1!'] || futMap['MCX:ZINC1!'];
-                        if (!match && clean === 'GOLDM') match = futMap['MCX:GOLDM1!'] || futMap['MCX:GOLD1!'];
-                        if (!match && clean === 'CRUDEOILM') match = futMap['MCX:CRUDEOILM1!'] || futMap['MCX:CRUDEOIL1!'];
-                        if (!match && clean === 'NATURALGASM') match = futMap['MCX:NATURALGASM1!'] || futMap['MCX:NATURALGAS1!'];
-
-                        if (match && match.close > 0) {
-                            t.live_price_data = t.live_price_data || {};
-                            t.live_price_data.current_price = match.close;
-                            t.live_price_data.change_pct = match.chg_pct;
-                            changed = true;
-                        }
-                    });
-                }
-
-                if (Array.isArray(rawCircuitsData)) {
-                    rawCircuitsData.forEach(item => {
-                        const match = futMap[item.tv_chart_symbol] || futMap[item.ticker] || futMap[`MCX:${item.symbol}1!`];
-                        if (match && match.close > 0) {
+                rawCircuitsData.forEach(item => {
+                    const match = futMap[item.tv_chart_symbol] || futMap[item.ticker] || futMap[`MCX:${item.symbol}1!`];
+                    if (match && match.close > 0) {
+                        if (item.current_price !== match.close) {
                             item.current_price = match.close;
                             item.change_pct = match.chg_pct;
+                            changed = true;
                         }
-                    });
-                }
+                    }
+                });
             }
 
             if (eqRes && Array.isArray(eqRes.data) && typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) {
@@ -8655,15 +8629,18 @@ class TradingViewWebStreamManager {
                     const match = eqMap[`NSE:${sym}`];
                     if (match && match.close > 0) {
                         t.live_price_data = t.live_price_data || {};
-                        t.live_price_data.current_price = match.close;
-                        t.live_price_data.change_pct = match.chg_pct;
-                        changed = true;
+                        if (t.live_price_data.current_price !== match.close) {
+                            t.live_price_data.current_price = match.close;
+                            t.live_price_data.change_pct = match.chg_pct;
+                            changed = true;
+                        }
                     }
                 });
             }
 
-            // Always update UI on each pulse to tick the seconds clock and live MTM
-            this.updateUI();
+            if (changed) {
+                this.updateUI();
+            }
         } catch (e) {
             // Non-blocking pulse
         }
@@ -8679,9 +8656,11 @@ class TradingViewWebStreamManager {
                 const tSym = (t.symbol || '').replace('.NS', '').toUpperCase();
                 if (tSym === sym) {
                     t.live_price_data = t.live_price_data || {};
-                    t.live_price_data.current_price = price;
-                    t.live_price_data.change_pct = chg;
-                    changed = true;
+                    if (t.live_price_data.current_price !== price) {
+                        t.live_price_data.current_price = price;
+                        t.live_price_data.change_pct = chg;
+                        changed = true;
+                    }
                 }
             });
         }
@@ -8692,31 +8671,16 @@ class TradingViewWebStreamManager {
     }
 
     updateUI() {
-        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        
-        // 1. Tick the live clock timestamp every second
-        const lastUpdatedEl = document.getElementById('tracker-last-updated');
-        if (lastUpdatedEl) {
-            lastUpdatedEl.innerHTML = `<span style="color:#38bdf8;"><i class="fa-solid fa-arrows-spin"></i> Live Ticking</span> • ${timeStr}`;
-        }
-        
-        // 2. Pulse the status badge with exact second
-        this.updateBadgeStatus(`Live Stream: ${timeStr}`);
-
-        // 3. Re-calculate Live Realized & Floating Unrealized (MTM) P&L
-        if (typeof renderAdvisorySummaryCards === 'function') {
-            try { renderAdvisorySummaryCards(); } catch(e){}
-        }
-
-        // 4. Update the live table rows
         if (typeof renderAdvisoryTradesTable === 'function') {
-            try { renderAdvisoryTradesTable(); } catch(e){}
+            const tradingTab = document.getElementById('trading-tab');
+            if (tradingTab && tradingTab.classList.contains('active')) {
+                renderAdvisoryTradesTable();
+            }
         }
-
         if (typeof renderCircuitsTable === 'function') {
             const circuitsTab = document.getElementById('market-hub-tab');
             if (circuitsTab && circuitsTab.classList.contains('active')) {
-                try { renderCircuitsTable(); } catch(e){}
+                renderCircuitsTable();
             }
         }
     }
@@ -8724,9 +8688,6 @@ class TradingViewWebStreamManager {
     updateBadgeStatus(statusText) {
         const badge = document.getElementById('tv-stream-badge');
         if (badge) {
-            badge.innerHTML = `<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px #22c55e; animation:pulse 1s infinite;"></span> <i class="fa-solid fa-bolt"></i> ${statusText}`;
-        }
-    }
             badge.innerHTML = `<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px #22c55e; animation:pulse 1.5s infinite;"></span> <i class="fa-solid fa-bolt"></i> ${statusText}`;
         }
     }
