@@ -1991,11 +1991,11 @@ async function fetchCircuitsData(forceNetwork = false) {
     try {
         let loaded = false;
         
-        // 1. Fetch latest precomputed exchange circuit data with cache busting (raw GitHub first for instantaneous updates)
+        // 1. Fetch latest precomputed exchange circuit data with cache busting
         const candidateUrls = [
-            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/circuits_data.json?t=' + Date.now(),
             'circuits_data.json?t=' + Date.now(),
             'web/circuits_data.json?t=' + Date.now(),
+            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/circuits_data.json?t=' + Date.now(),
             'https://venuinturiphoos.github.io/commodity-alerts/circuits_data.json?t=' + Date.now(),
             'https://venuinturiphoos.github.io/commodity-alerts/web/circuits_data.json?t=' + Date.now()
         ];
@@ -7348,9 +7348,9 @@ async function loadAdvisoryTracker(forceNetwork = false) {
         };
         const cacheBuster = '?v=' + Date.now();
         const liveCandidates = [
-            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_tracker.json' + cacheBuster,
             'advisory_trades_tracker.json' + cacheBuster,
-            'web/advisory_trades_tracker.json' + cacheBuster
+            'web/advisory_trades_tracker.json' + cacheBuster,
+            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_tracker.json' + cacheBuster
         ];
 
         // 1. Fetch live active tracker (Current Month)
