@@ -92,8 +92,10 @@ MAX_CONCURRENT_EQUITIES = 3       # Diversify into 3 distinct intraday stocks (�
 MAX_CONCURRENT_TOTAL = 6          # Max concurrent active trades across portfolio (2 commodities + 2 stock futures + 2-3 intraday equities)
 MAX_TRADES_PER_SYMBOL_DAY = 3     # Allows up to 3 trades per symbol per day (expanded from 2)
 COOLDOWN_MINUTES_BETWEEN_TRADES = 60 # 60-min spacing between trades on the same symbol (streamlined from 120m)
-INTRADAY_STAGNATION_MINUTES = 120.0  # Extended to 120 minutes (2.0 hours) to give intraday trades ample room to reach profitability
-COMMODITY_STAGNATION_MINUTES = 90.0  # 90 minutes for commodities
+INTRADAY_STAGNATION_MINUTES = 210.0  # Extended to 210 minutes (3.5 hours) to give intraday trades ample room into afternoon trend
+STOCK_FUTURES_STAGNATION_MINUTES = 240.0 # 240 minutes (4.0 hours) for stock futures - never prematurely abort high-conviction futures
+COMMODITY_STAGNATION_MINUTES = 360.0  # 360 minutes (6.0 hours) for commodities; protected prior to US evening session
+STAGNATION_MIN_ADVERSE_PCT = 0.005   # Minimum 0.5% adverse move required; hovering near breakeven is protected consolidation
 ENFORCE_MINI_ONLY_COMMODITIES = False # Reverted to ₹1.2L - ₹1.5L commodity position sizing per user requirement
 
 # Direct mapping to low-margin, micro/mini contracts for capital defense
@@ -3475,10 +3477,28 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
         exit_p = cur_p
         reason = ""
 
-        # ⏱️ Extended Stagnation Guard (Adjusted for Intraday Profitability):
-        # 1. Minimum holding window extended to 120 minutes (2 Hours) for equities (90m for commodities).
-        # 2. Profitable trades (f_move > 0) are strictly EXEMPT from stagnation exits - let winners run to target!
-        # 3. Only exits if trade is stalled in the red (below entry price) after 120+ minutes.
+        # ⏱️ Smart Dynamic Stagnation Engine (Movement-First & Session Aware):
+        # 1. Extended Holding Windows:
+        #    - Stock Futures: 240 mins (4.0 hrs) - never prematurely abort high-conviction futures
+        #    - Intraday Equities: 210 mins (3.5 hrs) - give room for afternoon trend development
+        #    - MCX Commodities: 360 mins (6.0 hrs) - commodities require patience into US session
+        # 2. Session Lull Protections:
+        #    - Equities Midday Freeze (11:00 AM - 01:30 PM IST): Stagnation exits are completely FROZEN.
+        #      Midday lunch lull consolidation is normal; must allow room for 01:30 PM+ afternoon trend.
+        #    - Commodities Daytime Freeze (09:00 AM - 05:30 PM IST): Stagnation exits are completely FROZEN.
+        #      Daytime Asian hours have low volatility; real moves happen after 5:30 PM with US open.
+        # 3. Profitable Trades & Breakeven Hovering Immunity:
+        #    - If trade is in profit (f_move > 0), strictly EXEMPT from stagnation exit.
+        #    - If trade is hovering near entry (within ±0.4% or < 30% of stop-loss distance), strictly EXEMPT.
+        #      Support consolidation is NOT failure!
+        # 4. Institutional Technical Defense (Session VWAP & Range Support):
+        #    - BUY: If holding at/above Session VWAP (cur_p >= vwap * 0.997), buyers are in control -> EXEMPT.
+        #    - SELL: If holding at/below Session VWAP (cur_p <= vwap * 1.003), sellers are in control -> EXEMPT.
+        # 5. True Stagnation Exit Trigger:
+        #    - Only exits if ALL conditions met:
+        #      a) Time threshold elapsed outside session freeze.
+        #      b) Trade is in genuine adverse territory (adverse_pct >= 0.5% AND >= 40% toward stop loss).
+        #      c) Technical structure broken (lost session VWAP support).
         entry_time_str = pt.get('entry_time')
         trade_date_str = trade.get('date', today_str)
         if trade_status == 'ACTIVE' and entry_time_str:
@@ -3488,15 +3508,51 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 entry_dt = pytz.timezone('Asia/Kolkata').localize(entry_dt_naive)
                 mins_open = (now_dt - entry_dt).total_seconds() / 60.0
                 
-                stagnation_cutoff = INTRADAY_STAGNATION_MINUTES if is_equity else COMMODITY_STAGNATION_MINUTES
-                
-                if mins_open >= stagnation_cutoff:
-                    f_move = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
-                    # If trade is in profit (green), NEVER trigger stagnation exit - allow it to run to target!
-                    if f_move <= 0:
+                if is_stock_future:
+                    stagnation_cutoff = STOCK_FUTURES_STAGNATION_MINUTES
+                elif is_equity:
+                    stagnation_cutoff = INTRADAY_STAGNATION_MINUTES
+                else:
+                    stagnation_cutoff = COMMODITY_STAGNATION_MINUTES
+
+                # Session Lull Protections:
+                is_session_freeze = False
+                if is_equity or is_stock_future:
+                    # Midday Lull Freeze for NSE (11:00 AM - 01:30 PM IST)
+                    if (now_dt.hour == 11 and now_dt.minute >= 0) or (now_dt.hour == 12) or (now_dt.hour == 13 and now_dt.minute < 30):
+                        is_session_freeze = True
+                else:
+                    # Daytime Freeze for MCX Commodities (09:00 AM - 05:30 PM IST)
+                    if now_dt.hour < 17 or (now_dt.hour == 17 and now_dt.minute < 30):
+                        is_session_freeze = True
+
+                f_move = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
+                adverse_pct = abs(f_move) / entry_p if entry_p > 0 else 0.0
+
+                # Check conditions: Must be past time cutoff, not in profit, not in session freeze, and not hovering near breakeven
+                if mins_open >= stagnation_cutoff and f_move < 0 and not is_session_freeze and adverse_pct >= STAGNATION_MIN_ADVERSE_PCT:
+                    # Rule 4: Technical Defense Check (Session VWAP & Range Support)
+                    open_p = float(c_item.get('open_price', cur_p) if c_item else (eq_item.get('open', cur_p) if eq_item else cur_p))
+                    vwap = InstitutionalDirectionEngine.calculate_session_vwap(open_p, day_h, day_l, cur_p)
+
+                    is_holding_structure = False
+                    if action == 'BUY':
+                        if vwap > 0 and cur_p >= (vwap * 0.997):
+                            is_holding_structure = True
+                    elif action == 'SELL':
+                        if vwap > 0 and cur_p <= (vwap * 1.003):
+                            is_holding_structure = True
+
+                    # Rule 5: Distance to Stop-Loss Check
+                    # Trade must have travelled at least 40% of the distance to stop loss before declaring stagnation failure
+                    sl_dist = abs(entry_p - stop_loss) if stop_loss else (entry_p * 0.015)
+                    moved_toward_sl_pct = abs(f_move) / sl_dist if sl_dist > 0 else 1.0
+
+                    if not is_holding_structure and moved_toward_sl_pct >= 0.40:
                         hit_stagnation = True
                         exit_p = cur_p
-                        reason = f"{int(stagnation_cutoff)}-Minute Stagnation Exit ⏱️ (Below entry for {int(mins_open)}m; capital protection)"
+                        reason = (f"Smart Stagnation Exit ⏱️ ({int(stagnation_cutoff)}m cutoff: {int(mins_open)}m open | "
+                                  f"Down {adverse_pct*100:.2f}% | Lost VWAP ₹{vwap:,.1f} | Thesis Decayed)")
             except Exception:
                 pass
 
