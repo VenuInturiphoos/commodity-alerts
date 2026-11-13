@@ -192,10 +192,10 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
     # Verify Available Stock Investing Capital
     cash_stats = get_cash_and_holdings(tracker_data)
     avail_cash = cash_stats['available_cash_inr']
-    min_capital_required = TARGET_INVESTMENT_AMOUNT - TOLERANCE_BAND  # ₹29,000
 
-    if avail_cash < min_capital_required:
-        print(f"⚠️ Insufficient Available Stock Investing Capital: ₹{avail_cash:,.2f} available. Required: ~₹{TARGET_INVESTMENT_AMOUNT:,.2f}. Skipping new purchase.")
+    # Must have enough cash to afford at least 1 share of an investment
+    if avail_cash <= 0:
+        print(f"⚠️ Zero Available Stock Investing Capital: ₹{avail_cash:,.2f} available. Skipping new purchase.")
         return None
 
     # Load Golden Crossover Scanner data
@@ -258,16 +258,22 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         print(f"Invalid price {price} for {chosen_stock.get('name')}")
         return None
 
-    shares, invested_val, variance = calculate_shares_for_capital(price, TARGET_INVESTMENT_AMOUNT)
+    # Sizing is strictly capped by the real unencumbered available cash
+    allocatable_cash = min(TARGET_INVESTMENT_AMOUNT, avail_cash)
+    if allocatable_cash < price or avail_cash < price:
+        print(f"⚠️ Cannot afford even 1 share of {chosen_stock.get('name')} at ₹{price:,.2f}. Available cash: ₹{avail_cash:,.2f}. Skipping purchase.")
+        return None
 
-    # Re-check that the exact purchase value does not exceed available cash
-    if invested_val > avail_cash:
-        shares = max(1, math.floor(avail_cash / price))
+    # Size shares strictly within available cash balance (e.g. ₹7,000 budget buys floor(7000/price))
+    max_shares = math.floor(avail_cash / price)
+    target_shares = math.floor(allocatable_cash / price)
+    shares = max_shares if target_shares < 1 else min(target_shares, max_shares)
+    invested_val = round(shares * price, 2)
+    while shares > 1 and invested_val > avail_cash:
+        shares -= 1
         invested_val = round(shares * price, 2)
-        variance = round(invested_val - TARGET_INVESTMENT_AMOUNT, 2)
-        if invested_val > avail_cash:
-            print(f"Cannot afford even 1 share of {chosen_stock.get('name')} at ₹{price}. Available cash: ₹{avail_cash}")
-            return None
+
+    variance = round(invested_val - TARGET_INVESTMENT_AMOUNT, 2)
 
     trade_plan = chosen_stock.get('trade_plan', {})
     target_1 = float(trade_plan.get('target_1', round(price * 1.10, 2)))
