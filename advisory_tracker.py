@@ -4847,29 +4847,28 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             t.get('paper_trade', {}).get('margin_required_inr', 0.0)
                             for t in active_intraday_trades
                         )
-                        cash_info = get_cash_and_margin(tracker)
-                        overall_avail_cash = cash_info['available_cash']
                         intraday_pool_info = get_intraday_margin_pool(tracker)
-                        # Real liquid margin is strictly bounded by actual overall available cash in portfolio
-                        avail_intraday_margin = max(0.0, min(overall_avail_cash, intraday_pool_info['base_pool'] - used_intraday_margin))
-                        allocatable_margin = min(overall_avail_cash, avail_intraday_margin)
-                        target_margin_per_stock = round(min(allocatable_margin, intraday_pool_info['base_pool'] / MAX_CONCURRENT_EQUITIES), 2)
+                        # Dedicated ₹30,000 daily MIS margin pool (~₹10,000 margin / ₹50,000 buying power per stock)
+                        avail_intraday_margin = max(0.0, intraday_pool_info['base_pool'] - used_intraday_margin)
+                        target_margin_per_stock = round(min(avail_intraday_margin, intraday_pool_info['base_pool'] / MAX_CONCURRENT_EQUITIES), 2)
+                        if target_margin_per_stock < 9500.0 and avail_intraday_margin >= 9500.0:
+                            target_margin_per_stock = min(avail_intraday_margin, 10000.0)
                         margin_per_share = cur_p * 0.20  # 20% SEBI MIS intraday margin requirement (5x leverage)
                         if margin_per_share <= 0:
                             continue
 
-                        # Strict Balance Check Before Buying: Must have sufficient cash to afford at least 1 whole share!
-                        if overall_avail_cash < margin_per_share or allocatable_margin < margin_per_share:
-                            print(f"🛡️ Margin Deficit Guard: Blocked {clean_sym} Stock Purchase. Available Cash (₹{overall_avail_cash:,.2f}) < Required 1-Share Margin (₹{margin_per_share:,.2f}).")
+                        # Strict Balance Check Before Buying: Must have sufficient MIS margin pool
+                        if avail_intraday_margin < margin_per_share:
+                            print(f"🛡️ Margin Deficit Guard: Blocked {clean_sym} Stock Purchase. Available MIS Margin (₹{avail_intraday_margin:,.2f}) < Required 1-Share Margin (₹{margin_per_share:,.2f}).")
                             has_equity_margin = False
                             eq_shares = 0
                             req_margin_equity = margin_per_share
                         else:
-                            # Sizing is strictly bounded by available liquid balance (e.g. ~₹7,000) rather than a rigid ₹30k pool
-                            max_shares = math.floor(allocatable_margin / margin_per_share)
-                            target_shares = math.floor(target_margin_per_stock / margin_per_share)
-                            eq_shares = max_shares if target_shares < 1 else min(target_shares, max_shares)
-                            while eq_shares > 1 and (cur_p * eq_shares * 0.20) > allocatable_margin:
+                            # Sized to approximately ₹10,000 margin per trade (5x leverage = ~₹50,000 position)
+                            target_shares = round(target_margin_per_stock / margin_per_share)
+                            max_shares = math.floor(avail_intraday_margin / margin_per_share)
+                            eq_shares = max(1, min(target_shares, max_shares))
+                            while eq_shares > 1 and (cur_p * eq_shares * 0.20) > avail_intraday_margin:
                                 eq_shares -= 1
 
                             if eq_shares < 1:
@@ -4878,7 +4877,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                                 req_margin_equity = margin_per_share
                             else:
                                 req_margin_equity = round(cur_p * eq_shares * 0.20, 2)
-                                has_equity_margin = (eq_shares >= 1 and req_margin_equity <= allocatable_margin and req_margin_equity <= overall_avail_cash)
+                                has_equity_margin = (eq_shares >= 1 and req_margin_equity <= avail_intraday_margin)
 
                         risk_per_share = abs(cur_p - eq_sl)
 
