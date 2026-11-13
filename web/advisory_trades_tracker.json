@@ -1,26 +1,26 @@
 {
-  "last_updated": "13 Nov 2026, 09:32 PM IST",
+  "last_updated": "13 Nov 2026, 09:58 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 99,
     "executed_count": 22,
-    "correct_count": 6,
+    "correct_count": 7,
     "wrong_count": 6,
     "protected_count": 77,
-    "win_rate_pct": 50.0,
-    "total_pnl_inr": 32835.62,
-    "commodity_pnl_inr": 31730.0,
+    "win_rate_pct": 53.8,
+    "total_pnl_inr": 46560.67,
+    "commodity_pnl_inr": 45455.05,
     "intraday_pnl_inr": 1105.62,
     "intraday_booked_profit_inr": 1105.62,
     "intraday_pool_balance_inr": 31105.62,
-    "avg_trade_pnl_inr": 1492.53,
-    "active_trades_count": 1,
+    "avg_trade_pnl_inr": 2116.39,
+    "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 332835.62,
-    "used_margin_inr": 135600.0,
-    "available_cash_inr": 197235.62,
-    "net_worth_inr": 332835.62
+    "current_cash_inr": 346560.67,
+    "used_margin_inr": 0,
+    "available_cash_inr": 346560.67,
+    "net_worth_inr": 346560.67
   },
   "trades": [
     {
@@ -1456,7 +1456,7 @@
       "time_6pm": "09:45 AM IST",
       "time_validation": "09:45 AM IST",
       "time_615": "09:45 AM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "09:58 PM IST",
       "symbol": "SILVERMIC",
       "name": "Silver Micro",
       "lot_size": 5,
@@ -1529,17 +1529,17 @@
         "quantity": 5,
         "entry_price": 180800.0,
         "entry_time": "09:45 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 178054.99,
+        "exit_time": "09:58 PM IST",
+        "pnl_points": 2745.01,
+        "pnl_inr": 13725.05,
+        "status": "CLOSED",
         "margin_required_inr": 135600.0,
         "target": null,
         "stop_loss": 178054.99,
         "initial_stop_loss": 183206.64,
         "original_sl": 183206.64,
-        "peak_high": 177333.0,
+        "peak_high": 178149.0,
         "trough_low": 177333.0,
         "entry_day_high": 180800.0,
         "entry_day_low": 180800.0,
@@ -1547,19 +1547,22 @@
         "stage_2_profit_locked": true,
         "stage_3_target_approaching": true,
         "target_scrapped": true,
-        "original_target": 175986.72
+        "original_target": 175986.72,
+        "exit_trigger": "TRAILING_PROFIT_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 178054.99,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active (Trailing Stop @ \u20b9178,054.99 | 65% Locked \ud83d\ude80)",
-        "pnl_display": "Ticking Live...",
-        "summary": "Dynamic Trailing Stop active: 65% peak profit locked @ \u20b9178,054.99 (Max 35% pullback from trough \u20b9177,333.00)."
+        "outcome": "CORRECT",
+        "badge": "Trailing Profit \ud83d\udcb0 (09:58 PM IST)",
+        "pnl_display": "+\u20b913,725.05",
+        "summary": "Trailing Profit Stop Triggered \ud83d\udcb0 (Exit \u20b9178,054.99 | +65% Target Gains Secured) at 09:58 PM IST. Entry: \u20b9180,800.00 -> Exit: \u20b9178,054.99 (+\u20b913,725.05).",
+        "exit_time": "09:58 PM IST",
+        "exit_trigger": "TRAILING_PROFIT_HIT"
       },
       "live_price_data": {
-        "current_price": 177333.0,
-        "change_pct": -1.92
+        "current_price": 178149.0,
+        "change_pct": -1.47
       }
     },
     {
