@@ -78,15 +78,15 @@ for sfc_sym, sfc_cfg in STOCK_FUTURES_CONFIG.items():
 # =========================================================================
 # 🛡️ CAPITAL DEFENSE & RECOVERY PROTOCOL (CALIBRATED FOR ₹2.9L TRADING CAPITAL)
 # =========================================================================
-MAX_LOSS_PER_TRADE_INR = 8500.0   # Calibrated for ~₹1.2L-₹1.5L commodity margin allocation (5.5% of margin)
-MAX_DAILY_LOSS_INR = 17000.0      # Portfolio daily risk circuit breaker (approx 5.5% of ₹3 Lakhs capital)
+MAX_LOSS_PER_TRADE_INR = 18000.0   # Calibrated for ~₹1.5L commodity margin allocation (10-12% of margin / 1.2-1.5% technical stop)
+MAX_DAILY_LOSS_INR = 36000.0      # Portfolio daily risk circuit breaker (approx 12% of ₹3 Lakhs capital)
 MAX_INTRADAY_STOCK_MARGIN_INR = 30000.0 # Dedicated ₹30,000 margin allocated per day for Intraday Stock Trading (split across 3 stocks = ₹10,000 margin / ₹50,000 buying power each)
 INTRADAY_STOCK_MIS_LEVERAGE = 5.0 # 5x leverage for MIS intraday equity (20% margin requirement)
 MAX_INTRADAY_STOCK_POSITION_INR = MAX_INTRADAY_STOCK_MARGIN_INR * INTRADAY_STOCK_MIS_LEVERAGE # ₹1,50,000 buying power across 3 stocks
 MAX_EQUITY_POSITION_INR = MAX_INTRADAY_STOCK_POSITION_INR # Backward compatibility alias
 MAX_INTRADAY_STOCK_RISK_INR = 3000.0 # Full portfolio risk ceiling - no arbitrary micro-cap restriction per user instruction
 MAX_INTRADAY_STOCK_DAILY_LOSS_INR = 6000.0 # Full daily portfolio risk circuit breaker
-MAX_CONCURRENT_COMMODITIES = 2    # Allows 2 concurrent active commodity trades
+MAX_CONCURRENT_COMMODITIES = 2    # Allows 2 concurrent active commodity trades (2 x ~₹1.5L margin = ₹3.0L total portfolio capacity)
 MAX_CONCURRENT_STOCK_FUTURES = 2  # Allows 2 concurrent active stock futures trades (e.g. RELIANCE-FUT, INFY-FUT)
 MAX_CONCURRENT_EQUITIES = 3       # Diversify into 3 distinct intraday stocks (₹10,000 margin each within ₹30,000 margin)
 MAX_CONCURRENT_TOTAL = 6          # Max concurrent active trades across portfolio (2 commodities + 2 stock futures + 2-3 intraday equities)
@@ -96,7 +96,28 @@ INTRADAY_STAGNATION_MINUTES = 210.0  # Extended to 210 minutes (3.5 hours) to gi
 STOCK_FUTURES_STAGNATION_MINUTES = 240.0 # 240 minutes (4.0 hours) for stock futures - never prematurely abort high-conviction futures
 COMMODITY_STAGNATION_MINUTES = 360.0  # 360 minutes (6.0 hours) for commodities; protected prior to US evening session
 STAGNATION_MIN_ADVERSE_PCT = 0.005   # Minimum 0.5% adverse move required; hovering near breakeven is protected consolidation
-ENFORCE_MINI_ONLY_COMMODITIES = False # Reverted to ₹1.2L - ₹1.5L commodity position sizing per user requirement
+ENFORCE_MINI_ONLY_COMMODITIES = False # Calibrated to ~₹1.5 Lakhs commodity margin per position per user instruction
+
+# Canonical specification mapping for trading futures around ~₹1.5 Lakhs margin per trade
+COMMODITY_SPECS_150K = {
+    'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
+    'SILVERM': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
+    'SILVERMIC': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
+    'GOLD': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 20},
+    'GOLDM': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 20},
+    'GOLDTEN': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 20},
+    'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
+    'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
+    'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
+    'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 2000},
+    'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 2000},
+    'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 100},
+    'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 100},
+    'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 3000},
+    'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 3000},
+    'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 6000},
+    'ALUMINI': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 6000}
+}
 
 # Direct mapping to low-margin, micro/mini contracts for capital defense
 MINI_COMMODITY_MAP = {
@@ -104,8 +125,11 @@ MINI_COMMODITY_MAP = {
     'CRUDEOIL': 'CRUDEOILM',
     'NATURALGAS': 'NATURALGASM',
     'SILVER': 'SILVERMIC',
+    'SILVERM': 'SILVERMIC',
     'GOLD': 'GOLDM',
-    'ZINC': 'ZINCM',
+    'GOLDTEN': 'GOLDM',
+    'ZINC': 'ZINCMINI',
+    'ZINCM': 'ZINCMINI',
     'COPPER': 'COPPERM'
 }
 
@@ -131,9 +155,19 @@ COMMODITY_DISPLAY_NAMES = {
 
 def get_defense_contract_and_lot(sym, default_name=None):
     """
-    Returns (exec_sym, exec_name, lot_size) calibrated for ~₹1.2L to ₹1.5L purchase/margin value.
+    Returns (exec_sym, exec_name, lot_size) calibrated strictly for ~₹1.5 Lakhs target margin per trade:
+    - Silver: Silver Micro (SILVERMIC) 5 units (~₹1.36L margin)
+    - Gold: Gold Mini (GOLDM) 2 lots / 20 units (~₹1.56L margin)
+    - Zinc: Zinc Mini (ZINCMINI) 4 lots / 4000 units (~₹1.54L margin)
+    - Copper: Copper Mini (COPPERM) 2 lots / 2000 units (~₹1.36L margin)
+    - Crude Oil: Crude Oil Mini (CRUDEOILM) 10 lots / 100 units (~₹1.50L margin)
+    - Natural Gas: Natural Gas Mini (NATURALGASM) 12 lots / 3000 units (~₹1.51L margin)
+    - Aluminium: Aluminium Mini (ALUMINI) 6 lots / 6000 units (~₹1.32L margin)
     """
-    clean = sym.replace('MIC', '').rstrip('M')
+    clean = sym.replace('MIC', '').replace('MINI', '').rstrip('M')
+    spec = COMMODITY_SPECS_150K.get(sym) or COMMODITY_SPECS_150K.get(clean)
+    if spec:
+        return spec['symbol'], spec['name'], spec['lot']
     name = COMMODITY_DISPLAY_NAMES.get(sym, default_name or sym)
     lot = LOT_SIZES.get(sym, LOT_SIZES.get(clean, 1))
     return sym, name, lot

@@ -619,7 +619,7 @@ class PositionSizer:
     }
 
     @classmethod
-    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=8500.0, atr=None, target_margin_inr=150000.0, available_margin_inr=None):
+    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=18000.0, atr=None, target_margin_inr=150000.0, available_margin_inr=None):
         """
         Resolves the appropriate contract and scales lots to match ~₹1,50,000 deployed margin per position.
         If available margin is constrained (available_margin_inr < ₹1,50,000), it ignores the ₹1,50,000
