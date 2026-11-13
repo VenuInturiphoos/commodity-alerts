@@ -7425,16 +7425,6 @@ function applyAdvisoryMonthFilter(monthValue) {
         };
     }
 
-    if (timeEl && advisoryTrackerData?.last_updated) {
-        timeEl.textContent = 'Updated: ' + advisoryTrackerData.last_updated;
-    }
-
-    // Render KPI cards and table
-    renderAdvisorySummaryCards();
-    renderAdvisoryTradesTable();
-}
-
-function renderAdvisorySummaryCards() {
     if (!advisoryTrackerData) {
         advisoryTrackerData = { trades: [], summary: {} };
     }
@@ -7473,10 +7463,8 @@ function renderAdvisorySummaryCards() {
         } else if (pt.status === 'ACTIVE' && pt.entry_price && Number(pt.entry_price) > 0) {
             activeTradesCount++;
             const liveData = getAdvisoryTradeLivePriceData(t);
-            const curPrice = (liveData && liveData.current_price) 
-                ? Number(liveData.current_price) 
-                : (Number(t.live_price_data?.current_price) || Number(pt.entry_price));
-            if (curPrice && !isNaN(curPrice)) {
+            if (liveData && liveData.current_price) {
+                const curPrice = Number(liveData.current_price);
                 const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
                 const lot = pt.quantity || t.lot_size || 1;
                 unrealizedPnl += pts * lot;
@@ -7503,11 +7491,7 @@ function renderAdvisorySummaryCards() {
         correctSubEl.textContent = `${countCorrect} Won / ${countWrong} Lost (${countProtected} Filtered)`;
     }
     if (pnlTitleEl) {
-        if (activeTradesCount > 0) {
-            pnlTitleEl.innerHTML = `LIVE P&L (MTM) <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#22c55e; box-shadow:0 0 6px #22c55e; animation:pulse 1s infinite; vertical-align:middle; margin-left:4px;" title="Real-Time Streaming Ticks Active"></span>`;
-        } else {
-            pnlTitleEl.textContent = 'Live Realized P&L';
-        }
+        pnlTitleEl.textContent = activeTradesCount > 0 ? 'Live P&L (MTM)' : 'Live Realized P&L';
     }
     if (pnlEl) {
         pnlEl.textContent = (totalLivePnl >= 0 ? '+₹' : '-₹') + Math.abs(totalLivePnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -7579,7 +7563,6 @@ function renderAdvisorySummaryCards() {
     const overallNetCash = futuresStartingCash + futuresRealizedPnl + intradayBookedProfit;
     const futuresUsedMargin = activeFuturesMarginVal || summary.used_margin_inr || 0;
     const futuresAvailMargin = Math.max(0, overallNetCash - futuresUsedMargin);
-    const liveNetBalance = overallNetCash + unrealizedPnl;
 
     if (cashEl) {
         if (isIntradayActive) {
@@ -7601,12 +7584,14 @@ function renderAdvisorySummaryCards() {
             }
         } else {
             if (intradayBookedProfit > 0) {
-                marginSubEl.innerHTML = `Used Margin: ₹${Number(futuresUsedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | Total Trade Balance: <strong>₹${liveNetBalance.toLocaleString('en-IN', {minimumFractionDigits: 0})}</strong> (incl. +₹${intradayBookedProfit.toFixed(0)} Intraday Profit)`;
+                marginSubEl.innerHTML = `Used Margin: ₹${Number(futuresUsedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | Total Trade Balance: <strong>₹${overallNetCash.toLocaleString('en-IN', {minimumFractionDigits: 0})}</strong> (incl. +₹${intradayBookedProfit.toFixed(0)} Intraday Profit)`;
             } else {
-                marginSubEl.innerHTML = `Used Margin: ₹${Number(futuresUsedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | Dedicated Pool: ₹${liveNetBalance.toLocaleString('en-IN', {minimumFractionDigits: 0})}`;
+                marginSubEl.innerHTML = `Used Margin: ₹${Number(futuresUsedMargin).toLocaleString('en-IN', {minimumFractionDigits: 0})} | Dedicated Pool: ₹${overallNetCash.toLocaleString('en-IN', {minimumFractionDigits: 0})}`;
             }
         }
     }
+    
+    if (timeEl) timeEl.textContent = 'Updated: ' + (advisoryTrackerData.last_updated || 'Just now');
 
     // Update counts in filter pills
     const countCalledEl = document.getElementById('adv-count-called');
@@ -7626,11 +7611,10 @@ function renderAdvisorySummaryCards() {
     if (subnavBadgeEl) subnavBadgeEl.textContent = `${countCalled} Called Trades`;
 
     // Update session win probability badges and banner
-    if (typeof updateSessionStatsBadges === 'function') {
-        updateSessionStatsBadges(trades);
-    }
+    updateSessionStatsBadges(trades);
+
+    renderAdvisoryTradesTable();
 }
-window.renderAdvisorySummaryCards = renderAdvisorySummaryCards;
 
 function filterAdvisoryTrades(filterType, btnEl) {
     activeAdvFilter = filterType;
@@ -8502,19 +8486,8 @@ class TradingViewWebStreamManager {
         this.isRunning = true;
         this.connectWebSocket();
         this.startPulseLoop();
-        this.startClockLoop();
         this.updateBadgeStatus('TV WebStream (1s Live) 🟢');
         console.log("⚡ TradingView WebStream Engine Activated (1-Second Real-Time Ticks, 0 Cron Jobs)");
-        this.pulse(); // Instant initial price fetch
-    }
-
-    startClockLoop() {
-        if (this.clockTimer) clearInterval(this.clockTimer);
-        this.clockTimer = setInterval(() => {
-            if (this.isRunning && this.isTabActive) {
-                this.updateUI();
-            }
-        }, 1000);
     }
 
     connectWebSocket() {
@@ -8531,18 +8504,8 @@ class TradingViewWebStreamManager {
                 sendFrame('quote_create_session', [this.sessionId]);
                 sendFrame('quote_set_fields', [this.sessionId, 'lp', 'ch', 'chp', 'volume', 'high_price', 'low_price']);
                 
-                // Add active stock and commodity continuous feeds
-                const baseSymbols = [
-                    'MCX:SILVER1!', 'MCX:SILVERM1!', 'MCX:SILVERMIC1!',
-                    'MCX:ZINC1!', 'MCX:ZINCMINI1!',
-                    'MCX:GOLD1!', 'MCX:GOLDM1!',
-                    'MCX:CRUDEOIL1!', 'MCX:CRUDEOILM1!',
-                    'MCX:NATURALGAS1!', 'MCX:NATURALGASM1!',
-                    'MCX:COPPER1!', 'MCX:COPPERM1!',
-                    'MCX:ALUMINIUM1!', 'MCX:ALUMINI1!',
-                    'NSE:AUROPHARMA', 'NSE:GRASIM',
-                    'COMEX:SI1!', 'COMEX:GC1!', 'NYMEX:CL1!', 'NYMEX:NG1!'
-                ];
+                // Add active stock and global commodity continuous feeds
+                const baseSymbols = ['NSE:AUROPHARMA', 'COMEX:SI1!', 'COMEX:GC1!', 'NYMEX:CL1!', 'NYMEX:NG1!'];
                 sendFrame('quote_add_symbols', [this.sessionId, ...baseSymbols]);
             };
 
@@ -8605,26 +8568,20 @@ class TradingViewWebStreamManager {
             'MCX:GOLD1!', 'MCX:GOLDM1!',
             'MCX:CRUDEOIL1!', 'MCX:CRUDEOILM1!',
             'MCX:NATURALGAS1!', 'MCX:NATURALGASM1!',
-            'MCX:COPPER1!', 'MCX:COPPERM1!',
-            'MCX:ALUMINIUM1!', 'MCX:ALUMINI1!'
+            'MCX:COPPER1!', 'MCX:COPPERM1!'
         ];
 
         const equityTickers = [];
-        const checkTradeForEq = (t) => {
-            if (t.symbol && (t.symbol.includes('.NS') || t.asset_type === 'INTRADAY_STOCK')) {
-                const clean = t.symbol.replace('.NS', '').toUpperCase();
-                const tk = `NSE:${clean}`;
-                if (!equityTickers.includes(tk)) equityTickers.push(tk);
-            }
-        };
-        if (typeof advisoryTrackerData !== 'undefined' && Array.isArray(advisoryTrackerData?.trades)) {
-            advisoryTrackerData.trades.forEach(checkTradeForEq);
-        }
-        if (typeof activeTrackerCache !== 'undefined' && Array.isArray(activeTrackerCache?.trades)) {
-            activeTrackerCache.trades.forEach(checkTradeForEq);
+        if (typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) {
+            advisoryTrackerData.trades.forEach(t => {
+                if (t.symbol && (t.symbol.includes('.NS') || t.asset_type === 'INTRADAY_STOCK')) {
+                    const clean = t.symbol.replace('.NS', '').toUpperCase();
+                    const tk = `NSE:${clean}`;
+                    if (!equityTickers.includes(tk)) equityTickers.push(tk);
+                }
+            });
         }
         if (!equityTickers.includes('NSE:AUROPHARMA')) equityTickers.push('NSE:AUROPHARMA');
-        if (!equityTickers.includes('NSE:GRASIM')) equityTickers.push('NSE:GRASIM');
 
         try {
             // High-frequency TradingView Futures Scanner (MCX)
@@ -8651,31 +8608,21 @@ class TradingViewWebStreamManager {
 
             let changed = false;
 
-            const targetTradeLists = [];
-            if (typeof advisoryTrackerData !== 'undefined' && Array.isArray(advisoryTrackerData?.trades)) {
-                targetTradeLists.push(advisoryTrackerData.trades);
-            }
-            if (typeof activeTrackerCache !== 'undefined' && Array.isArray(activeTrackerCache?.trades) && activeTrackerCache.trades !== advisoryTrackerData?.trades) {
-                targetTradeLists.push(activeTrackerCache.trades);
-            }
-
             if (futRes && Array.isArray(futRes.data)) {
                 const futMap = {};
                 futRes.data.forEach(row => {
                     futMap[row.s] = { close: Number(row.d[0]), chg_pct: Number(row.d[4] || 0), vol: Number(row.d[6] || 0) };
                 });
 
-                targetTradeLists.forEach(trades => {
-                    trades.forEach(t => {
-                        const clean = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
+                if (typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) {
+                    advisoryTrackerData.trades.forEach(t => {
+                        const clean = (t.symbol || '').replace('-FUT', '').toUpperCase();
                         let match = futMap[`MCX:${clean}1!`];
                         if (!match && clean === 'SILVERMIC') match = futMap['MCX:SILVERMIC1!'] || futMap['MCX:SILVER1!'];
                         if (!match && (clean === 'ZINCMINI' || clean === 'ZINCM')) match = futMap['MCX:ZINCMINI1!'] || futMap['MCX:ZINC1!'];
                         if (!match && clean === 'GOLDM') match = futMap['MCX:GOLDM1!'] || futMap['MCX:GOLD1!'];
                         if (!match && clean === 'CRUDEOILM') match = futMap['MCX:CRUDEOILM1!'] || futMap['MCX:CRUDEOIL1!'];
                         if (!match && clean === 'NATURALGASM') match = futMap['MCX:NATURALGASM1!'] || futMap['MCX:NATURALGAS1!'];
-                        if (!match && (clean === 'ALUMINI' || clean === 'ALUMINIUMM')) match = futMap['MCX:ALUMINI1!'] || futMap['MCX:ALUMINIUM1!'];
-                        if (!match && clean === 'COPPERM') match = futMap['MCX:COPPERM1!'] || futMap['MCX:COPPER1!'];
 
                         if (match && match.close > 0) {
                             t.live_price_data = t.live_price_data || {};
@@ -8684,7 +8631,7 @@ class TradingViewWebStreamManager {
                             changed = true;
                         }
                     });
-                });
+                }
 
                 if (Array.isArray(rawCircuitsData)) {
                     rawCircuitsData.forEach(item => {
@@ -8697,23 +8644,21 @@ class TradingViewWebStreamManager {
                 }
             }
 
-            if (eqRes && Array.isArray(eqRes.data)) {
+            if (eqRes && Array.isArray(eqRes.data) && typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) {
                 const eqMap = {};
                 eqRes.data.forEach(row => {
                     eqMap[row.s] = { close: Number(row.d[0]), chg_pct: Number(row.d[4] || 0) };
                 });
 
-                targetTradeLists.forEach(trades => {
-                    trades.forEach(t => {
-                        const sym = (t.symbol || '').replace('.NS', '').toUpperCase();
-                        const match = eqMap[`NSE:${sym}`];
-                        if (match && match.close > 0) {
-                            t.live_price_data = t.live_price_data || {};
-                            t.live_price_data.current_price = match.close;
-                            t.live_price_data.change_pct = match.chg_pct;
-                            changed = true;
-                        }
-                    });
+                advisoryTrackerData.trades.forEach(t => {
+                    const sym = (t.symbol || '').replace('.NS', '').toUpperCase();
+                    const match = eqMap[`NSE:${sym}`];
+                    if (match && match.close > 0) {
+                        t.live_price_data = t.live_price_data || {};
+                        t.live_price_data.current_price = match.close;
+                        t.live_price_data.change_pct = match.chg_pct;
+                        changed = true;
+                    }
                 });
             }
 
@@ -8727,43 +8672,15 @@ class TradingViewWebStreamManager {
     onPriceTick(ticker, price, chg) {
         if (!price || price <= 0) return;
         let changed = false;
-
-        const cleanTicker = ticker.replace('NSE:', '').replace('MCX:', '').replace('COMEX:', '').replace('NYMEX:', '').replace('1!', '').toUpperCase();
-
-        const updateTradeList = (list) => {
-            if (!Array.isArray(list)) return;
-            list.forEach(t => {
-                const tSym = (t.symbol || '').replace('.NS', '').replace('-FUT', '').toUpperCase();
-                let matches = (tSym === cleanTicker);
-                if (!matches && (cleanTicker === 'SILVERMIC' && tSym === 'SILVERMIC')) matches = true;
-                if (!matches && (cleanTicker === 'ZINCMINI' || cleanTicker === 'ZINCM') && (tSym === 'ZINCMINI' || tSym === 'ZINCM')) matches = true;
-                if (!matches && (cleanTicker === 'ALUMINI' || cleanTicker === 'ALUMINIUMM') && (tSym === 'ALUMINI' || tSym === 'ALUMINIUMM')) matches = true;
-                if (!matches && (cleanTicker === 'GOLDM' && tSym === 'GOLDM')) matches = true;
-                if (!matches && (cleanTicker === 'CRUDEOILM' && tSym === 'CRUDEOILM')) matches = true;
-                if (!matches && (cleanTicker === 'NATURALGASM' && tSym === 'NATURALGASM')) matches = true;
-
-                if (matches) {
+        
+        if (ticker.startsWith('NSE:') && typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) {
+            const sym = ticker.replace('NSE:', '').toUpperCase();
+            advisoryTrackerData.trades.forEach(t => {
+                const tSym = (t.symbol || '').replace('.NS', '').toUpperCase();
+                if (tSym === sym) {
                     t.live_price_data = t.live_price_data || {};
                     t.live_price_data.current_price = price;
                     t.live_price_data.change_pct = chg;
-                    changed = true;
-                }
-            });
-        };
-
-        if (typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) {
-            updateTradeList(advisoryTrackerData.trades);
-        }
-        if (typeof activeTrackerCache !== 'undefined' && activeTrackerCache?.trades && activeTrackerCache.trades !== advisoryTrackerData?.trades) {
-            updateTradeList(activeTrackerCache.trades);
-        }
-
-        if (Array.isArray(rawCircuitsData)) {
-            rawCircuitsData.forEach(item => {
-                const iSym = (item.symbol || '').toUpperCase();
-                if (iSym === cleanTicker || item.ticker === ticker || item.tv_chart_symbol === ticker) {
-                    item.current_price = price;
-                    item.change_pct = chg;
                     changed = true;
                 }
             });
