@@ -193,7 +193,7 @@ def generate_and_send_6pm_advisory(force=False):
                             f"{icon} <b>{contract_name.upper()} (US Pit Open {trend_type})</b>\n"
                             f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}% | VWAP: ₹{inst_dir.get('vwap', cur_p):,.1f})\n"
                             f"  • Strategy: <b>NYMEX/COMEX Institutional Trend Momentum</b> ({inst_dir.get('reason')})\n"
-                            f"  • Recommended Action: <b>{act_dir} {adaptive_lot} Lot ({contract_sym})</b> (Wait for {val_time_str} candle confirmation)\n"
+                            f"  • Recommended Action: <b>{act_dir} {adaptive_lot} units ({contract_sym})</b> (Wait for {val_time_str} candle confirmation)\n"
                             f"  • Invalidation Stop-Loss: ₹{sl:,.2f} (Structural chart support/resistance)\n"
                             f"  • Target: ₹{tgt:,.2f} (1.2R Target calibrated to intraday ATR)"
                         )

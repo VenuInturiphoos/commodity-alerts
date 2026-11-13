@@ -605,6 +605,27 @@ class PositionSizer:
         'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1000},
     }
 
+    # Canonical ~₹1.5 Lakhs Margin Specification Mapping for MCX Commodities
+    COMMODITY_SPECS_150K = {
+        'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
+        'SILVERM': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
+        'SILVERMIC': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
+        'GOLD': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 20},
+        'GOLDM': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 20},
+        'GOLDTEN': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 20},
+        'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
+        'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
+        'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
+        'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 2000},
+        'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 2000},
+        'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 100},
+        'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 100},
+        'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 3000},
+        'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 3000},
+        'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 6000},
+        'ALUMINI': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 6000}
+    }
+
     TARGET_COMMODITY_MARGIN_INR = 150000.0  # ₹1.5 Lakhs target margin per commodity position
 
     # MCX Standard Initial Margin Rates for Sizing
@@ -619,83 +640,68 @@ class PositionSizer:
     }
 
     @classmethod
-    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=18000.0, atr=None, target_margin_inr=150000.0, available_margin_inr=None):
+    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=28000.0, atr=None, target_margin_inr=150000.0, available_margin_inr=None):
         """
         Resolves the appropriate contract and scales lots to match ~₹1,50,000 deployed margin per position.
-        If available margin is constrained (available_margin_inr < ₹1,50,000), it ignores the ₹1,50,000
-        target and sizes the maximum whole exchange lots that fit inside the available balance.
-        Commodities strictly trade in standardized whole exchange lots:
-        - CRUDEOILM: 7-10 lots (70-100 bbl)
-        - SILVERMIC: 5-11 lots (5-11 kg)
-        - NATURALGASM: 10-12 lots (2500-3000 mmBtu)
-        - COPPERM: 1 lot (1000 kg)
-        - ZINCMINI: 2 lots (2000 kg)
-        - ALUMINI: 3 lots (3000 kg)
-        - GOLDM: 1 lot (100g)
+        Commodities strictly trade in standardized whole exchange lots calibrated to ~₹1.5 Lakhs:
+        - NATURALGASM: 12 lots / 3000 units (~₹1.5L - ₹1.67L margin)
+        - CRUDEOILM: 10 lots / 100 units (~₹1.50L margin)
+        - SILVERMIC: 5 lots / 5 units (~₹1.36L margin)
+        - GOLDM: 2 lots / 20 units (~₹1.54L margin)
+        - COPPERM: 2 lots / 2000 units (~₹1.41L margin)
+        - ZINCMINI: 4 lots / 4000 units (~₹1.44L margin)
+        - ALUMINI: 6 lots / 6000 units (~₹1.35L margin)
         """
         if entry <= 0 or stop <= 0 or entry == stop:
             return symbol, name, default_lot
 
-        # 1. Route to Mini / Micro contract
+        # 1. Route to canonical ~₹1.5L Mini/Micro contract
+        clean = symbol.replace('MIC', '').replace('MINI', '').replace('INI', '').rstrip('M')
         base_sym = symbol.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '')
+        
+        spec_150k = cls.COMMODITY_SPECS_150K.get(symbol) or cls.COMMODITY_SPECS_150K.get(clean) or cls.COMMODITY_SPECS_150K.get(base_sym)
         mini_info = cls.MINI_ROUTES.get(symbol) or cls.MINI_ROUTES.get(base_sym)
-        resolved_sym = mini_info['symbol'] if mini_info else symbol
-        resolved_name = mini_info['name'] if mini_info else name
+
+        resolved_sym = spec_150k['symbol'] if spec_150k else (mini_info['symbol'] if mini_info else symbol)
+        resolved_name = spec_150k['name'] if spec_150k else (mini_info['name'] if mini_info else name)
         base_unit = mini_info['lot_size'] if mini_info else (default_lot if default_lot > 0 else 1)
 
-        # 2. Sizing by ~₹1,50,000 Target Margin OR Available Balance if constrained
+        # 2. Sizing by ~₹1,50,000 Target Margin
         m_rate = cls.MARGIN_RATES.get(resolved_sym, cls.MARGIN_RATES.get(base_sym, 0.20))
         single_lot_margin = (base_unit * entry) * m_rate
-        
-        effective_margin_cap = target_margin_inr
-        if available_margin_inr is not None and available_margin_inr < target_margin_inr:
+
+        # Preferred canonical lot for ~₹1.5L target
+        canonical_lot = spec_150k['lot'] if spec_150k else (default_lot if default_lot > 0 else base_unit)
+        canonical_margin = (canonical_lot * entry) * m_rate
+
+        # If available margin is constrained, size maximum whole lots that fit available cash
+        if available_margin_inr is not None and available_margin_inr < canonical_margin:
             effective_margin_cap = max(0.0, available_margin_inr)
-
-        if single_lot_margin > 0:
-            if available_margin_inr is not None and available_margin_inr < target_margin_inr:
-                # With limited balance, strictly fit whole lots inside available margin
-                target_lots = int(effective_margin_cap // single_lot_margin)
+            if single_lot_margin > 0:
+                target_lots = max(1, int(effective_margin_cap // single_lot_margin))
+                resolved_lot = target_lots * base_unit
             else:
-                target_lots = max(1, round(effective_margin_cap / single_lot_margin))
-            resolved_lot = target_lots * base_unit
+                resolved_lot = base_unit
         else:
-            resolved_lot = base_unit
+            # Ample margin: deploy canonical lot reaching ~₹1.5L margin
+            resolved_lot = canonical_lot
 
-        # 3. Risk Check against structural stop: scale down gracefully if needed
-        risk_pts = abs(entry - stop)
-        total_trade_risk = risk_pts * resolved_lot
-        if max_risk_inr and max_risk_inr > 0 and total_trade_risk > max_risk_inr:
-            single_risk = risk_pts * base_unit
-            if single_risk > 0:
-                affordable_lots = int(max_risk_inr // single_risk)
-                if affordable_lots >= 1:
-                    resolved_lot = affordable_lots * base_unit
-                else:
-                    # Cascading contract routing:
-                    # If Mini contract risk exceeds max_risk_inr (e.g. ₹8,500), cascade gracefully to Micro contracts:
-                    # GOLD / GOLDM (lot 10) -> GOLDTEN (lot 1)
-                    # SILVER / SILVERM (lot 5) -> SILVERMIC (lot 1)
-                    if resolved_sym in ['GOLD', 'GOLDM'] or base_sym in ['GOLD']:
-                        micro_sym = 'GOLDTEN'
-                        micro_name = 'Gold (1g Micro)'
-                        micro_unit = 1
-                        micro_risk = risk_pts * micro_unit
-                        affordable_micro = max(1, min(10, int(max_risk_inr // micro_risk))) if micro_risk > 0 else 1
-                        resolved_sym = micro_sym
-                        resolved_name = micro_name
-                        resolved_lot = affordable_micro * micro_unit
-                    elif resolved_sym in ['SILVER', 'SILVERM'] or base_sym in ['SILVER']:
-                        micro_sym = 'SILVERMIC'
-                        micro_name = 'Silver Micro'
-                        micro_unit = 1
-                        micro_risk = risk_pts * micro_unit
-                        affordable_micro = max(1, min(10, int(max_risk_inr // micro_risk))) if micro_risk > 0 else 1
-                        resolved_sym = micro_sym
-                        resolved_name = micro_name
-                        resolved_lot = affordable_micro * micro_unit
-                    else:
-                        # Movement-First Execution: Take minimum 1 exchange lot rather than standing aside
-                        resolved_lot = base_unit
+        # 3. Commodity Margin Integrity Mandate:
+        # For MCX Commodities, each position is calibrated to ~₹1.5L margin.
+        # Do NOT artificially downscale whole commodity contracts below ~₹1.5L target margin
+        # just because structural stop-loss distance exceeds an arbitrary cap.
+        # Both PreTradeRiskEngine and InstitutionalDirectionEngine follow the Movement-First Mandate
+        # and accept the high-conviction risk.
+        is_commodity = bool(spec_150k or mini_info or resolved_sym in cls.MARGIN_RATES or base_sym in cls.MARGIN_RATES)
+        if not is_commodity:
+            # Non-commodity / Equities: apply risk cap scaling
+            risk_pts = abs(entry - stop)
+            total_trade_risk = risk_pts * resolved_lot
+            if max_risk_inr and max_risk_inr > 0 and total_trade_risk > max_risk_inr:
+                single_risk = risk_pts * base_unit
+                if single_risk > 0:
+                    affordable_lots = int(max_risk_inr // single_risk)
+                    resolved_lot = max(1, affordable_lots) * base_unit
 
         # Absolute guarantee: resolved_lot is never 0 on a valid entry
         if resolved_lot <= 0:
