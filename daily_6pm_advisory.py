@@ -536,6 +536,10 @@ def generate_and_send_8pm_advisory(force=False):
         return False
 
     action_items = []
+    timing_8pm = get_us_aligned_session_times(now_dt)
+    eia_time = timing_8pm["evening_str"]
+    eia_stabilize = f"{timing_8pm['evening_str'].split(':')[0]}:10 PM IST"
+    eia_val_time = f"{timing_8pm['evening_str'].split(':')[0]}:15 PM IST"
 
     # Wednesday: Crude Oil EIA Special
     # Thursday: Natural Gas EIA Special
@@ -549,11 +553,11 @@ def generate_and_send_8pm_advisory(force=False):
             uc = crude['upper_circuit']
             
             action_items.append(
-                f"🛢️ <b>CRUDE OIL EIA PETROLEUM INVENTORY SPECIAL (Wednesday 8:00 PM IST)</b>\n"
+                f"🛢️ <b>CRUDE OIL EIA PETROLEUM INVENTORY SPECIAL (Wednesday {eia_time})</b>\n"
                 f"  • Live: ₹{c_p:,.2f} ({chg:+.2f}% | UC: ₹{uc:,.2f} | LC: ₹{lc:,.2f})\n"
-                f"  • Event: Weekly US EIA Crude & Gasoline Inventories released at 8:00 PM IST.\n"
+                f"  • Event: Weekly US EIA Crude & Gasoline Inventories released at {eia_time}.\n"
                 f"  • Strategy: <b>10-Minute Spike Retracement / Fade Filter</b>\n"
-                f"  • Rule: Wait for the 8:00 PM - 8:10 PM knee-jerk reaction to settle. If price tests circuit limit or moves > 1.5% without locking, fade back towards pre-report anchor (₹{p_close:,.2f})."
+                f"  • Rule: Wait for the {eia_time} - {eia_stabilize} knee-jerk reaction to settle. If price tests circuit limit or moves > 1.5% without locking, fade back towards pre-report anchor (₹{p_close:,.2f})."
             )
     elif day_name == 'Thursday':
         natgas = next((c for c in commodities_list if c['symbol'] == 'NATURALGAS'), None)
@@ -565,11 +569,11 @@ def generate_and_send_8pm_advisory(force=False):
             uc = natgas['upper_circuit']
             
             action_items.append(
-                f"🔥 <b>NATURAL GAS EIA STORAGE SPECIAL (Thursday 8:00 PM IST)</b>\n"
+                f"🔥 <b>NATURAL GAS EIA STORAGE SPECIAL (Thursday {eia_time})</b>\n"
                 f"  • Live: ₹{ng_p:,.2f} ({chg:+.2f}% | UC: ₹{uc:,.2f} | LC: ₹{lc:,.2f})\n"
-                f"  • Event: Weekly US EIA Underground Storage Report released at 8:00 PM IST.\n"
+                f"  • Event: Weekly US EIA Underground Storage Report released at {eia_time}.\n"
                 f"  • Strategy: <b>Deviation Fade or Extended Momentum Ride</b>\n"
-                f"  • Rule: Watch the 8:00 PM - 8:15 PM candle close. If inventory surprise pushes into limit slab, ride momentum; if spike rejects at band, fade to anchor (₹{p_close:,.2f})."
+                f"  • Rule: Watch the {eia_time} - {eia_val_time} candle close. If inventory surprise pushes into limit slab, ride momentum; if spike rejects at band, fade to anchor (₹{p_close:,.2f})."
             )
 
     # General US Evening Action for other commodities
