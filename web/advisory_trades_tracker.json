@@ -1,13 +1,13 @@
 {
-  "last_updated": "13 Nov 2026, 08:58 AM IST",
+  "last_updated": "13 Nov 2026, 09:01 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 64,
+    "total_signals": 73,
     "executed_count": 16,
     "correct_count": 3,
     "wrong_count": 4,
-    "protected_count": 48,
+    "protected_count": 57,
     "win_rate_pct": 42.9,
     "total_pnl_inr": 6261.12,
     "commodity_pnl_inr": 5390.0,
@@ -23,6 +23,447 @@
     "net_worth_inr": 306261.12
   },
   "trades": [
+    {
+      "id": "ADV-13Nov2026-0901-GOLD",
+      "date": "13 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "GOLD",
+      "name": "Gold",
+      "lot_size": 100,
+      "event_context": "Normal Open (+0.72%) | CPR: 0.35%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (+0.72%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 137204.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 137204.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-13Nov2026-0901-SILVER",
+      "date": "13 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "SILVER",
+      "name": "Silver",
+      "lot_size": 30,
+      "event_context": "Normal Open (+0.57%) | CPR: 0.41%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (+0.57%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 179746.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 179746.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-13Nov2026-0901-CRUDEOIL",
+      "date": "13 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "CRUDEOIL",
+      "name": "Crude Oil",
+      "lot_size": 100,
+      "event_context": "Normal Open (-0.04%) | CPR: 0.03%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (-0.04%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 8297.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 8297.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-13Nov2026-0901-NATURALGAS",
+      "date": "13 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "NATURALGAS",
+      "name": "Natural Gas",
+      "lot_size": 1250,
+      "event_context": "Normal Open (+0.51%) | CPR: 0.51%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (+0.51%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 314.7,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 314.7,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-13Nov2026-0901-COPPER",
+      "date": "13 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "COPPER",
+      "name": "Copper",
+      "lot_size": 2500,
+      "event_context": "Normal Open (+0.09%) | CPR: 0.01%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (+0.09%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 1329.35,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 1329.35,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-13Nov2026-0901-ZINC",
+      "date": "13 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ZINC",
+      "name": "Zinc",
+      "lot_size": 5000,
+      "event_context": "Normal Open (+0.07%) | CPR: 0.03%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (+0.07%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 408.65,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 408.65,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-13Nov2026-0901-ALUMINIUM",
+      "date": "13 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ALUMINIUM",
+      "name": "Aluminium",
+      "lot_size": 5000,
+      "event_context": "Normal Open (-0.17%) | CPR: 0.10%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (-0.17%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 328.55,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 328.55,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-13Nov2026-0901-ZINCMINI",
+      "date": "13 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 1000,
+      "event_context": "Normal Open (+0.11%) | CPR: 0.08%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (+0.11%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 408.7,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 408.7,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-13Nov2026-0901-ALUMINI",
+      "date": "13 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:30 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 1000,
+      "event_context": "Normal Open (-0.08%) | CPR: 0.18%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (-0.08%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 329.8,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 329.8,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
     {
       "id": "ADV-12Nov2026-2000-GOLD",
       "date": "12 Nov 2026",
