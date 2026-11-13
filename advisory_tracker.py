@@ -403,26 +403,26 @@ def get_cash_and_margin(tracker_data):
     # Overall trade balance reflects starting cash + commodity P&L + booked intraday profits
     current_cash = starting_cash + commodity_pnl + intraday_booked_profit
     
-    # Used margin from currently active commodity futures trades
+    # Used margin from all currently active trades (commodities + intraday equities)
     active_trades = [
         t for t in trades 
         if t.get('paper_trade', {}).get('status') == 'ACTIVE'
-        and t.get('asset_type') != 'INTRADAY_STOCK'
-        and t.get('paper_trade', {}).get('product_type') != 'MIS_INTRADAY'
     ]
 
-    def calc_commodity_margin(t):
+    def calc_trade_margin(t):
         pt = t.get('paper_trade', {})
         if pt.get('margin_required_inr') and float(pt.get('margin_required_inr')) > 0:
             return float(pt.get('margin_required_inr'))
         p = float(pt.get('entry_price') or t.get('suggestion_6pm', {}).get('reference_price') or 0.0)
         q = float(pt.get('quantity') or t.get('lot_size') or 1)
+        if t.get('asset_type') == 'INTRADAY_STOCK' or pt.get('product_type') == 'MIS_INTRADAY':
+            return round(p * q * 0.20, 2)
         sym = t.get('symbol', '')
         base_sym = sym.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '').replace('-FUT', '')
         rate = MARGIN_RATES.get(sym, MARGIN_RATES.get(base_sym, 0.10))
         return round(p * q * rate, 2)
 
-    used_margin = sum(calc_commodity_margin(t) for t in active_trades)
+    used_margin = sum(calc_trade_margin(t) for t in active_trades)
     available_cash = max(0.0, current_cash - used_margin)
     net_worth = current_cash
     
@@ -4810,27 +4810,33 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                         intraday_pool_info = get_intraday_margin_pool(tracker)
                         # Real liquid margin is strictly bounded by actual overall available cash in portfolio
                         avail_intraday_margin = max(0.0, min(overall_avail_cash, intraday_pool_info['base_pool'] - used_intraday_margin))
-                        target_margin_per_stock = round(min(avail_intraday_margin, intraday_pool_info['base_pool'] / MAX_CONCURRENT_EQUITIES), 2)
+                        allocatable_margin = min(overall_avail_cash, avail_intraday_margin)
+                        target_margin_per_stock = round(min(allocatable_margin, intraday_pool_info['base_pool'] / MAX_CONCURRENT_EQUITIES), 2)
                         margin_per_share = cur_p * 0.20  # 20% SEBI MIS intraday margin requirement (5x leverage)
                         if margin_per_share <= 0:
                             continue
 
                         # Strict Balance Check Before Buying: Must have sufficient cash to afford at least 1 whole share!
-                        if overall_avail_cash < margin_per_share or avail_intraday_margin < margin_per_share:
+                        if overall_avail_cash < margin_per_share or allocatable_margin < margin_per_share:
                             print(f"🛡️ Margin Deficit Guard: Blocked {clean_sym} Stock Purchase. Available Cash (₹{overall_avail_cash:,.2f}) < Required 1-Share Margin (₹{margin_per_share:,.2f}).")
                             has_equity_margin = False
                             eq_shares = 0
                             req_margin_equity = margin_per_share
                         else:
-                            affordable_shares = math.floor(target_margin_per_stock / margin_per_share)
-                            if affordable_shares < 1:
+                            # Sizing is strictly bounded by available liquid balance (e.g. ~₹7,000) rather than a rigid ₹30k pool
+                            max_shares = math.floor(allocatable_margin / margin_per_share)
+                            target_shares = math.floor(target_margin_per_stock / margin_per_share)
+                            eq_shares = max_shares if target_shares < 1 else min(target_shares, max_shares)
+                            while eq_shares > 1 and (cur_p * eq_shares * 0.20) > allocatable_margin:
+                                eq_shares -= 1
+
+                            if eq_shares < 1:
                                 has_equity_margin = False
                                 eq_shares = 0
                                 req_margin_equity = margin_per_share
                             else:
-                                eq_shares = affordable_shares
                                 req_margin_equity = round(cur_p * eq_shares * 0.20, 2)
-                                has_equity_margin = (req_margin_equity <= avail_intraday_margin and req_margin_equity <= overall_avail_cash)
+                                has_equity_margin = (eq_shares >= 1 and req_margin_equity <= allocatable_margin and req_margin_equity <= overall_avail_cash)
 
                         risk_per_share = abs(cur_p - eq_sl)
 
