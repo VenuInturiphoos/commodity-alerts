@@ -886,8 +886,8 @@
                         <div class="glass-card full-width" style="margin-bottom: 2rem;">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
                                 <div>
-                                    <h3 style="margin: 0; font-size: 1.05rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
-                                        <i class="fa-solid fa-seedling" style="color: #4ade80;"></i> Stock Wealth Investment Net Worth (Dedicated ₹3,00,000 Pool)
+                                    <h3 id="stock-wealth-title" style="margin: 0; font-size: 1.05rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                                        <i class="fa-solid fa-seedling" style="color: #4ade80;"></i> Stock Wealth Investment Net Worth
                                     </h3>
                                     <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;">
                                         <h1 id="virtual-net-worth" style="margin: 0.35rem 0 0 0; font-size: 2.2rem; color: #4ade80;">₹...</h1>
@@ -3006,13 +3006,20 @@ function renderNiftyDailyPickHeroCard(pick) {
 
     const varianceVal = Number(effectivePick.variance_from_30k || 0);
     const varianceText = varianceVal >= 0 ? `+₹${varianceVal.toFixed(2)}` : `-₹${Math.abs(varianceVal).toFixed(2)}`;
+    const isSizedToBalance = Number(effectivePick.invested_value || 0) < 25000;
+    const badgeText = isSizedToBalance 
+        ? "Today's Daily Golden Cross Investment (Sized to Available Cash)"
+        : "Today's Daily Golden Cross Investment (~₹30,000 Sizing)";
+    const targetTagText = isSizedToBalance
+        ? `Sized to Available Cash (${effectivePick.shares} Shares)`
+        : `Target: ₹30k (${varianceText})`;
 
     const cardHtml = `
         <div class="glass-card full-width" style="border: 1px solid rgba(245, 158, 11, 0.45); background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border-radius: 14px; padding: 1.25rem 1.5rem; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1rem;">
                 <div>
                     <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; text-transform: uppercase;">
-                        <i class="fa-solid fa-crown"></i> Today's Daily Golden Cross Investment (~₹30,000 Sizing)
+                        <i class="fa-solid fa-crown"></i> ${badgeText}
                     </div>
                     <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
                         <h2 style="margin: 0; font-size: 1.45rem; color: #f8fafc; font-weight: 800;">${effectivePick.full_name || effectivePick.name}</h2>
@@ -3028,7 +3035,7 @@ function renderNiftyDailyPickHeroCard(pick) {
                     <div style="font-size: 1.5rem; font-weight: 800; color: #4ade80; margin: 2px 0;">₹${Number(effectivePick.invested_value).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                     <div style="font-size: 0.78rem; color: #cbd5e1;">
                         <strong style="color: #f8fafc;">${effectivePick.shares} Shares</strong> @ ₹${Number(effectivePick.entry_price).toFixed(2)} 
-                        <span style="color: #a5b4fc; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); padding: 1px 6px; border-radius: 4px; margin-left: 4px;">Target: ₹30k (${varianceText})</span>
+                        <span style="color: #a5b4fc; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); padding: 1px 6px; border-radius: 4px; margin-left: 4px;">${targetTagText}</span>
                     </div>
                 </div>
             </div>
@@ -4804,6 +4811,8 @@ function renderPortfolio() {
 
     const netWorthEl = document.getElementById('virtual-net-worth');
     if (netWorthEl) netWorthEl.textContent = `₹${netWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    const stockTitleEl = document.getElementById('stock-wealth-title');
+    if (stockTitleEl) stockTitleEl.innerHTML = `<i class="fa-solid fa-seedling" style="color: #4ade80;"></i> Stock Wealth Investment Net Worth (Dedicated ₹${baseCash.toLocaleString('en-IN', {maximumFractionDigits:0})} Pool)`;
     const subBreakdownEl = document.getElementById('virtual-breakdown-sub');
     if (subBreakdownEl) subBreakdownEl.textContent = `(₹${availableMargin.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Cash + ₹${currentPortfolioValue.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})} Holdings · Net Profit: ${totalCombinedPl >= 0 ? '+' : '-'}₹${Math.abs(totalCombinedPl).toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})})`;
     const availEl = document.getElementById('virtual-available-margin');
