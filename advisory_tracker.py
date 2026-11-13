@@ -4320,9 +4320,9 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
             print(f"⚡ Technical Trigger Fired: {name} {action} @ ₹{cur_p:,.2f} ({setup_name}) | Replay: {mc_badge}")
 
     # =========================================================================
-    # PART 2: REAL-TIME NIFTY F&O HIGH-BETA CONTINUOUS SCANNER (Phase 1 & Phase 2)
+    # PART 2: REAL-TIME NIFTY 100 (NIFTY 50 + MIDCAP 50) CONTINUOUS SCANNER (Phase 1 & Phase 2)
     # Active Window: Mon-Fri, 09:15 AM to 03:20 PM IST
-    # Scans valid Nifty 50 F&O stocks (excluding corporate demergers like TATAMOTORS)
+    # Scans all 100 Nifty 50 and premier liquid Midcap F&O stocks (excluding corporate demergers like TATAMOTORS)
     # Strictly sized <= ₹3,000 risk (1% of ₹3L Trading pool) with 03:25 PM EOD square-off
     # =========================================================================
     ENABLE_EQUITY_DERIVATIVES_SCANNER = True
@@ -4363,7 +4363,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
             equity_stocks = curated_intraday_stocks
             if equity_stocks:
                 top_syms = [s.get('symbol', '').replace('.NS', '') for s in equity_stocks[:5]]
-                print(f"🎯 Intraday Stock Selection Engine Curated {len(equity_stocks)} Institutional Candidates: {', '.join(top_syms)}")
+                print(f"🎯 Intraday Stock Selection Engine Curated {len(equity_stocks)} Institutional Candidates across 100-Stock Universe (Nifty 50 + Midcap 50): {', '.join(top_syms)}")
 
             for s in equity_stocks:
                 # Guard A: Hard False Signal Invalidation Guard
