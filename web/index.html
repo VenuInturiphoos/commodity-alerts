@@ -7810,17 +7810,15 @@ function renderAdvisoryTradesTable() {
             pnlColor = '#94a3b8';
             pnlText = '₹0.00 <span style="font-size:0.7rem; color:#60a5fa; display:block; font-weight:400;">(Protected)</span>';
         } else if (pt.status === 'ACTIVE' && !isSessionExpired && pt.entry_price) {
-            if (liveSource && liveSource.current_price) {
-                const curPrice = Number(liveSource.current_price);
-                const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
-                const lot = pt.quantity || t.lot_size || 1;
-                const liveMtm = Math.round(pts * lot * 100) / 100;
-                pnlColor = liveMtm >= 0 ? '#4ade80' : '#fb7185';
-                pnlText = `${liveMtm >= 0 ? '+' : ''}₹${liveMtm.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(Live MTM)</span>`;
-                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(${pts >= 0 ? '+' : ''}${pts.toFixed(2)} pts × ₹${lot})</span>`;
-            } else {
-                pnlText = '<span style="color:#fbbf24; font-size:0.8rem;">Ticking...</span>';
-            }
+            const curP = (liveSource && liveSource.current_price) 
+                ? Number(liveSource.current_price) 
+                : Number(t.live_price_data?.current_price || pt.entry_price);
+            const pts = pt.action === 'BUY' ? (curP - pt.entry_price) : (pt.entry_price - curP);
+            const lot = pt.quantity || t.lot_size || 1;
+            const liveMtm = Math.round(pts * lot * 100) / 100;
+            pnlColor = liveMtm >= 0 ? '#4ade80' : '#fb7185';
+            pnlText = `${liveMtm >= 0 ? '+' : ''}₹${liveMtm.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(Live MTM)</span>`;
+            ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(${pts >= 0 ? '+' : ''}${pts.toFixed(2)} pts × ₹${lot})</span>`;
         } else if (pt.pnl_inr !== undefined && pt.pnl_inr !== null) {
             const pVal = Number(pt.pnl_inr);
             const lot = pt.quantity || t.lot_size || 1;
@@ -7965,23 +7963,65 @@ function renderAdvisoryTradesTable() {
             : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
 
         const initialSlVal = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
-        const displaySl = pt.stop_loss || s6.stop_loss;
-        const isTrailed = Boolean(pt.trailing_sl_active || pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active || (initialSlVal > 0 && Math.abs(Number(displaySl) - initialSlVal) > 0.01));
+        let displaySl = Number(pt.stop_loss || s6.stop_loss || 0);
+        let isTrailed = Boolean(pt.trailing_sl_active || pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active || (initialSlVal > 0 && Math.abs(Number(displaySl) - initialSlVal) > 0.01));
         const isTargetScrapped = Boolean(pt.target_scrapped || pt.stage_3_target_approaching || pt.target_runner_active || (!s6.target && (pt.original_target || s6.original_target)));
         let slBadge = '';
         let slColor = '#fb7185';
-        if (pt.target_runner_active) {
-            slBadge = '<span style="font-size:0.65rem; color:#4ade80; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Trailing 🚀</span>';
-            slColor = '#4ade80';
-        } else if (pt.stage_3_target_approaching || isTargetScrapped) {
-            slBadge = '<span style="font-size:0.65rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+65% Locked</span>';
-            slColor = '#38bdf8';
-        } else if (pt.stage_2_profit_locked) {
-            slBadge = '<span style="font-size:0.65rem; color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+35% Locked</span>';
-            slColor = '#fbbf24';
-        } else if (pt.trailing_sl_active) {
-            slBadge = '<span style="font-size:0.65rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Breakeven</span>';
-            slColor = '#a5b4fc';
+
+        // Real-Time Dynamic Trailing Stop-Loss Engine (Live calculation for Futures & Equities)
+        const entryPriceVal = Number(pt.entry_price || s6.reference_price || 0);
+        const targetPriceVal = Number(s6.target || pt.target || pt.original_target || s6.original_target || 0);
+        const liveCMP = (liveSource && liveSource.current_price) 
+            ? Number(liveSource.current_price) 
+            : Number(t.live_price_data?.current_price || entryPriceVal);
+
+        if (pt.status === 'ACTIVE' && entryPriceVal > 0 && targetPriceVal > 0 && liveCMP > 0) {
+            const tgtDist = pt.action === 'BUY' ? (targetPriceVal - entryPriceVal) : (entryPriceVal - targetPriceVal);
+            const favMove = pt.action === 'BUY' ? (liveCMP - entryPriceVal) : (entryPriceVal - liveCMP);
+            if (tgtDist > 0 && favMove > 0) {
+                const pctTgt = (favMove / tgtDist) * 100;
+                if (pctTgt >= 85.0 || pt.target_runner_active) {
+                    const runnerFloor = Math.round((pt.action === 'BUY' ? (entryPriceVal + (tgtDist * 0.75)) : (entryPriceVal - (tgtDist * 0.75))) * 100) / 100;
+                    displaySl = runnerFloor;
+                    isTrailed = true;
+                    slBadge = '<span style="font-size:0.65rem; color:#4ade80; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Trailing 🚀</span>';
+                    slColor = '#4ade80';
+                } else if (pctTgt >= 70.0 || pt.stage_3_target_approaching) {
+                    const lock55 = Math.round((pt.action === 'BUY' ? (entryPriceVal + (tgtDist * 0.55)) : (entryPriceVal - (tgtDist * 0.55))) * 100) / 100;
+                    displaySl = lock55;
+                    isTrailed = true;
+                    slBadge = '<span style="font-size:0.65rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+55% Locked 💰</span>';
+                    slColor = '#38bdf8';
+                } else if (pctTgt >= 50.0 || pt.stage_2_profit_locked) {
+                    const lock30 = Math.round((pt.action === 'BUY' ? (entryPriceVal + (tgtDist * 0.30)) : (entryPriceVal - (tgtDist * 0.30))) * 100) / 100;
+                    displaySl = lock30;
+                    isTrailed = true;
+                    slBadge = '<span style="font-size:0.65rem; color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+30% Locked 💰</span>';
+                    slColor = '#fbbf24';
+                } else if (pctTgt >= 25.0 || pt.trailing_sl_active) {
+                    displaySl = entryPriceVal;
+                    isTrailed = true;
+                    slBadge = '<span style="font-size:0.65rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Breakeven 🛡️</span>';
+                    slColor = '#a5b4fc';
+                }
+            }
+        }
+
+        if (!slBadge) {
+            if (pt.target_runner_active) {
+                slBadge = '<span style="font-size:0.65rem; color:#4ade80; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Trailing 🚀</span>';
+                slColor = '#4ade80';
+            } else if (pt.stage_3_target_approaching || isTargetScrapped) {
+                slBadge = '<span style="font-size:0.65rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+55% Locked</span>';
+                slColor = '#38bdf8';
+            } else if (pt.stage_2_profit_locked) {
+                slBadge = '<span style="font-size:0.65rem; color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+30% Locked</span>';
+                slColor = '#fbbf24';
+            } else if (pt.trailing_sl_active) {
+                slBadge = '<span style="font-size:0.65rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Breakeven</span>';
+                slColor = '#a5b4fc';
+            }
         }
 
         let tgtDisplayHtml = '';
@@ -8041,7 +8081,7 @@ function renderAdvisoryTradesTable() {
                     ${tgtDisplayHtml}
                 </td>
                 <td>
-                    <strong style="font-size:0.9rem; color:#f8fafc;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : (isSlBreached ? '<span style="color:#fb7185; font-size:0.85rem; font-weight:700;">₹' + Number(curSl).toFixed(2) + ' (SL Hit)</span>' : (pt.status === 'ACTIVE' ? 'Ticking...' : '--'))}</strong>
+                    <strong style="font-size:0.9rem; color:#f8fafc;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : (isSlBreached ? '<span style="color:#fb7185; font-size:0.85rem; font-weight:700;">₹' + Number(curSl).toFixed(2) + ' (SL Hit)</span>' : (pt.status === 'ACTIVE' ? '<span style="color:#38bdf8; font-size:0.85rem;"><i class="fa-solid fa-arrows-spin"></i> Open Position</span>' : '--'))}</strong>
                     ${exitDetailHtml}
                 </td>
                 <td style="font-weight:700; font-size:0.95rem; color:${pnlColor};">

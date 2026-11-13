@@ -3312,8 +3312,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 peak_favorable_move = (effective_high - entry_p) if action == 'BUY' else (entry_p - effective_low)
                 pct_to_target = max((current_favorable_move / target_dist) * 100, (peak_favorable_move / target_dist) * 100)
 
-                # Stage 1: Breakeven Lock at +50% towards Target (Guarantees zero-risk position with genuine cushion)
-                if pct_to_target >= 50.0 and not pt.get('trailing_sl_active'):
+                # Stage 1: Breakeven Lock at +25% towards Target (Guarantees zero-risk position with genuine cushion)
+                if (pct_to_target >= 25.0 or current_favorable_move >= target_dist * 0.25) and not pt.get('trailing_sl_active'):
                     pt['trailing_sl_active'] = True
                     pt['original_sl'] = pt.get('original_sl') or pt.get('initial_stop_loss') or stop_loss
                     pt['stop_loss'] = entry_p
@@ -3344,9 +3344,9 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                     )
                     alerts_to_send.append({'subject': subject, 'body': body})
 
-                # Stage 2: Initial Profit Lock at +70% towards Target (Locks +35% of target profit)
-                if pct_to_target >= 70.0 and not pt.get('stage_2_profit_locked'):
-                    lock_price = round(entry_p + (target_dist * 0.35) if action == 'BUY' else entry_p - (target_dist * 0.35), 2)
+                # Stage 2: Initial Profit Lock at +50% towards Target (Locks +30% of target profit)
+                if pct_to_target >= 50.0 and not pt.get('stage_2_profit_locked'):
+                    lock_price = round(entry_p + (target_dist * 0.30) if action == 'BUY' else entry_p - (target_dist * 0.30), 2)
                     pt['stage_2_profit_locked'] = True
                     if (action == 'BUY' and lock_price > stop_loss) or (action == 'SELL' and lock_price < stop_loss):
                         pt['stop_loss'] = lock_price
@@ -3376,10 +3376,10 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                     )
                     alerts_to_send.append({'subject': subject, 'body': body})
 
-                # Stage 3: Target Approaching Lock at +85% towards Target (Locks +65% of target profit ahead of target)
-                # When stop-loss moves to +65% profit lock, the fixed target is removed/scrapped to rely strictly on trailing stop-loss!
-                if pct_to_target >= 85.0 and not pt.get('stage_3_target_approaching'):
-                    lock_price = round(entry_p + (target_dist * 0.65) if action == 'BUY' else entry_p - (target_dist * 0.65), 2)
+                # Stage 3: Advanced Profit Lock at +70% towards Target (Locks +55% of target profit)
+                # When stop-loss moves to +55% profit lock, the fixed target is removed/scrapped to rely strictly on trailing stop-loss!
+                if pct_to_target >= 70.0 and not pt.get('stage_3_target_approaching'):
+                    lock_price = round(entry_p + (target_dist * 0.55) if action == 'BUY' else entry_p - (target_dist * 0.55), 2)
                     pt['stage_3_target_approaching'] = True
                     pt['target_scrapped'] = True
                     pt['original_target'] = calc_target
