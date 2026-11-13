@@ -1544,29 +1544,23 @@ function getSynchronizedCommodityPrice(symbol, defaultPrice = 0) {
     const cleanSym = String(symbol).replace('-FUT', '').toUpperCase();
     const baseSym = COMMODITY_BASE_MAP[cleanSym] || cleanSym;
     
-    // 1. Authoritative: Live Exchange quote from rawCircuitsData (Strict exact-match first)
+    // 1. Authoritative: Live Exchange quote from rawCircuitsData
     if (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData) && rawCircuitsData.length > 0) {
-        let cItem = rawCircuitsData.find(c => {
+        const cItem = rawCircuitsData.find(c => {
             const cs = (c.symbol || '').toUpperCase();
-            return cs === cleanSym || cs === String(symbol).toUpperCase();
+            return cs === cleanSym || cs === baseSym || cs === String(symbol).toUpperCase();
         });
-        if (!cItem && baseSym !== cleanSym) {
-            cItem = rawCircuitsData.find(c => (c.symbol || '').toUpperCase() === baseSym);
-        }
         if (cItem && cItem.current_price !== undefined && cItem.current_price !== null && !isNaN(Number(cItem.current_price))) {
             return Number(cItem.current_price);
         }
     }
     
-    // 2. Fallback: Supabase marketData (Strict exact-match first)
+    // 2. Fallback: Supabase marketData
     if (typeof marketData !== 'undefined' && Array.isArray(marketData) && marketData.length > 0) {
-        let mItem = marketData.find(m => {
+        const mItem = marketData.find(m => {
             const ms = (m.symbol || '').toUpperCase();
-            return ms === String(symbol).toUpperCase() || ms === cleanSym;
+            return ms === String(symbol).toUpperCase() || ms === cleanSym || ms === baseSym;
         });
-        if (!mItem && baseSym !== cleanSym) {
-            mItem = marketData.find(m => (m.symbol || '').toUpperCase() === baseSym);
-        }
         if (mItem && mItem.current_price !== undefined && mItem.current_price !== null && !isNaN(Number(mItem.current_price))) {
             return Number(mItem.current_price);
         }
@@ -7046,26 +7040,20 @@ function getAdvisoryTradeLivePriceData(t) {
     const baseSym = (typeof COMMODITY_BASE_MAP !== 'undefined' && COMMODITY_BASE_MAP[cleanSym]) ? COMMODITY_BASE_MAP[cleanSym] : cleanSym;
 
     if (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) {
-        let item = rawCircuitsData.find(c => {
+        const item = rawCircuitsData.find(c => {
             const cs = (c.symbol || '').toUpperCase();
-            return cs === cleanSym || cs === (t.symbol || '').toUpperCase();
+            return cs === cleanSym || cs === baseSym || cs === (t.symbol || '').toUpperCase();
         });
-        if (!item && baseSym !== cleanSym) {
-            item = rawCircuitsData.find(c => (c.symbol || '').toUpperCase() === baseSym);
-        }
         if (item && item.current_price) {
             return { current_price: Number(item.current_price), change_pct: Number(item.change_pct || 0) };
         }
     }
 
     if (typeof marketData !== 'undefined' && Array.isArray(marketData)) {
-        let item = marketData.find(m => {
+        const item = marketData.find(m => {
             const ms = (m.symbol || '').toUpperCase();
-            return ms === (t.symbol || '').toUpperCase() || ms === cleanSym;
+            return ms === (t.symbol || '').toUpperCase() || ms === cleanSym || ms === baseSym;
         });
-        if (!item && baseSym !== cleanSym) {
-            item = marketData.find(m => (m.symbol || '').toUpperCase() === baseSym);
-        }
         if (item && item.current_price) {
             return { current_price: Number(item.current_price), change_pct: Number(item.change_pct || 0) };
         }
