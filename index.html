@@ -6986,10 +6986,10 @@ function getTradeExitCutoff(t) {
     const exitStr = t.time_exit || '';
     const trigStr = t.time_trigger || '';
     const idStr = t.id || '';
-    if (exitStr.includes('11:45') || exitStr.includes('23:45') || exitStr.includes('11:55') || exitStr.includes('23:55') || trigStr.includes('07:00') || trigStr.includes('7:00') || idStr.includes('-1900-') || idStr.includes('-2213-')) {
+    if (exitStr.includes('11:45') || exitStr.includes('23:45') || exitStr.includes('11:55') || exitStr.includes('23:55') || trigStr.includes('07:00') || trigStr.includes('7:00') || idStr.includes('-1900-')) {
         return { hour: 23, min: 45 };
     }
-    if (exitStr.includes('11:20') || exitStr.includes('23:20') || trigStr.includes('06:00') || trigStr.includes('6:00') || idStr.includes('-1800-')) {
+    if (exitStr.includes('11:20') || exitStr.includes('23:20') || exitStr.includes('11:30') || exitStr.includes('23:30') || trigStr.includes('06:00') || trigStr.includes('6:00') || idStr.includes('-1800-')) {
         return { hour: 23, min: 20 };
     }
     if (t.date && typeof parseDateStrToParts === 'function') {
@@ -7268,19 +7268,6 @@ function isPastISTWindow(dateStr, targetHour, targetMin) {
     } catch (e) {
         return false;
     }
-}
-
-function isTodayISTTrade(t) {
-    if (!t || !t.date) return false;
-    try {
-        const nowP = getNowISTParts();
-        const tradeP = parseDateStrToParts(t.date);
-        if (tradeP) {
-            return nowP.year === tradeP.year && nowP.month === tradeP.month && nowP.day === tradeP.day;
-        }
-    } catch (e) {}
-    const todayStrRef = advisoryTrackerData?.last_updated ? advisoryTrackerData.last_updated.split(',')[0].trim() : '';
-    return Boolean(todayStrRef && t.date.trim() === todayStrRef);
 }
 
 function populateAdvisoryMonthDropdown() {
@@ -7641,9 +7628,8 @@ function renderAdvisorySummaryCards() {
         if (isIntradayStockTrade(t)) return false;
         const pt = t.paper_trade || {};
         if (pt.status !== 'ACTIVE') return false;
-        const isTodayTrade = isTodayISTTrade(t);
         const exitCutoff = getTradeExitCutoff(t);
-        const isPastExit = isPastISTWindow(t.date, exitCutoff.hour, exitCutoff.min) && !isTodayTrade;
+        const isPastExit = isPastISTWindow(t.date, exitCutoff.hour, exitCutoff.min);
         return !isPastExit;
     });
 
@@ -7794,8 +7780,7 @@ function renderAdvisoryTradesTable() {
         const valCutoff = getTradeValidationCutoff(t);
         const isPastVal = isPastISTWindow(t.date, valCutoff.hour, valCutoff.min);
         const exitCutoff = getTradeExitCutoff(t);
-        const isTodayTrade = isTodayISTTrade(t);
-        const isSessionExpired = isPastISTWindow(t.date, exitCutoff.hour, exitCutoff.min) && (pt.status !== 'ACTIVE' || !isTodayTrade);
+        const isSessionExpired = isPastISTWindow(t.date, exitCutoff.hour, exitCutoff.min);
 
         // Find live market data from authoritative exchange / scanner feed
         const liveSource = getAdvisoryTradeLivePriceData(t);
@@ -7819,7 +7804,7 @@ function renderAdvisoryTradesTable() {
             const chg = Number(liveSource.change_pct || 0);
             const chgColor = chg >= 0 ? '#4ade80' : '#fb7185';
             const chgIcon = chg >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
-            const isLiveActive = (pt.status === 'ACTIVE' && (!isSessionExpired || isTodayTrade)) || (pt.status === 'PENDING_615' && !isPastVal);
+            const isLiveActive = (pt.status === 'ACTIVE' && !isSessionExpired) || (pt.status === 'PENDING_615' && !isPastVal);
 
             curPriceHtml = `
                 <div>
@@ -7922,7 +7907,7 @@ function renderAdvisoryTradesTable() {
         } else if (isStandAsideTrade) {
             pnlColor = '#94a3b8';
             pnlText = '₹0.00 <span style="font-size:0.7rem; color:#60a5fa; display:block; font-weight:400;">(Protected)</span>';
-        } else if (pt.status === 'ACTIVE' && (!isSessionExpired || isTodayTrade) && pt.entry_price) {
+        } else if (pt.status === 'ACTIVE' && !isSessionExpired && pt.entry_price) {
             const curP = (liveSource && liveSource.current_price) 
                 ? Number(liveSource.current_price) 
                 : Number(t.live_price_data?.current_price || pt.entry_price);
@@ -8222,8 +8207,7 @@ function renderAdvisoryTradesTable() {
             const valCutoff = getTradeValidationCutoff(t);
             const isPastVal = isPastISTWindow(t.date, valCutoff.hour, valCutoff.min);
             const exitCutoff = getTradeExitCutoff(t);
-            const isTodayTrade = isTodayISTTrade(t);
-            const isSessionExpired = isPastISTWindow(t.date, exitCutoff.hour, exitCutoff.min) && (pt.status !== 'ACTIVE' || !isTodayTrade);
+            const isSessionExpired = isPastISTWindow(t.date, exitCutoff.hour, exitCutoff.min);
 
             // Find live market data from authoritative exchange / scanner feed
             const liveSource = getAdvisoryTradeLivePriceData(t);
@@ -8305,7 +8289,7 @@ function renderAdvisoryTradesTable() {
             } else if (isStandAsideTrade) {
                 pnlColor = '#94a3b8';
                 pnlText = '₹0.00 <small style="font-size:0.68rem; color:#60a5fa; display:block; font-weight:400;">(Protected)</small>';
-            } else if (pt.status === 'ACTIVE' && (!isSessionExpired || isTodayTrade) && pt.entry_price) {
+            } else if (pt.status === 'ACTIVE' && !isSessionExpired && pt.entry_price) {
                 if (liveSource && liveSource.current_price) {
                     const curPrice = Number(liveSource.current_price);
                     const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
