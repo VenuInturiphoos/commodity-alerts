@@ -39,7 +39,7 @@
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
         "regime": "BULL_TREND",
-        "badge": "🚀 Bull Trend",
+        "badge": "\ud83d\ude80 Bull Trend",
         "short_tag": "Bull Trend",
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
@@ -64,7 +64,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 24.9,
         "p_stop_pct": 14.3,
         "p_neither_pct": 60.8,
@@ -72,7 +72,7 @@
         "expected_r": 0.156,
         "target_r": 1.2,
         "sample_bars": 667,
-        "summary": "3,000 Replays: 24.9% Target | 14.3% Stop | Expected: +0.16R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 24.9% Target | 14.3% Stop | Expected: +0.16R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -84,7 +84,7 @@
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close ₹1,818.00 breaking above range high ₹1,818.00."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b91,818.00 breaking above range high \u20b91,818.00."
       },
       "event_check": {
         "passed": true,
@@ -94,8 +94,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ ₹1,818.00",
-        "rationale": "High-Beta breakout momentum (Chg: +0.80%) with healthy RSI (65.9) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 24.9% Target | 14.3% Stop | Expected: +0.16R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "BUY @ \u20b91,818.00",
+        "rationale": "High-Beta breakout momentum (Chg: +0.80%) with healthy RSI (65.9) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 24.9% Target | 14.3% Stop | Expected: +0.16R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 1818.0,
         "stop_loss": 1786.64,
         "target": 1855.63
@@ -104,8 +104,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 1818.0,
-        "action_taken": "Entered BUY 19 shares @ ₹1,818.00 (Sized strictly to available balance ₹7,000)",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.80%) with healthy RSI (65.9) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 24.9% Target | 14.3% Stop | Expected: +0.16R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered BUY 19 shares @ \u20b91,818.00 (Sized strictly to available balance \u20b97,000)",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.80%) with healthy RSI (65.9) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 24.9% Target | 14.3% Stop | Expected: +0.16R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -131,13 +131,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PENDING",
-        "badge": "Active Trigger ⚡",
+        "badge": "Active Trigger \u26a1",
         "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY 19 shares @ ₹1,818.00 (Target: ₹1,855.63, SL: ₹1,786.64) | Sized to available balance ₹7,000"
-      },
-      "live_price_data": {
-        "current_price": 1815.4,
-        "change_pct": 0.45
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY 19 shares @ \u20b91,818.00 (Target: \u20b91,855.63, SL: \u20b91,786.64) | Sized to available balance \u20b97,000"
       }
     },
     {
@@ -243,10 +239,6 @@
         "badge": "Active Trigger ⚡",
         "pnl_display": "Ticking Live...",
         "summary": "Pre-Ignition Volatility Coil active: SELL 5 units @ ₹180,800.00 (Target: ₹175,986.72, SL: ₹183,206.64) | Calibrated for ~₹1.36L-₹1.5L margin | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
-      },
-      "live_price_data": {
-        "current_price": 179623.0,
-        "change_pct": -0.65
       }
     },
     {
@@ -353,10 +345,6 @@
         "badge": "Active Trigger ⚡",
         "pnl_display": "Ticking Live...",
         "summary": "Pre-Ignition Volatility Coil active: SELL 4000 units @ ₹408.50 (Target: ₹403.44, SL: ₹410.73) | Calibrated for ~₹1.54L margin (4 lots Zinc Mini) | Parametric Model: 42.6% Target | 43.1% Stop | Expected: +0.54R"
-      },
-      "live_price_data": {
-        "current_price": 407.2,
-        "change_pct": -0.32
       }
     },
     {
@@ -403,8 +391,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -452,8 +440,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -501,8 +489,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -550,8 +538,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -599,8 +587,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -648,8 +636,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -697,8 +685,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -746,8 +734,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -795,8 +783,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Chop 🛡️",
-        "pnl_display": "₹0.00",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
         "summary": "Stood aside during morning open chop. 100% capital protected."
       }
     },
@@ -816,7 +804,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / TREND GUARD",
-        "rationale": "Dumping into Lower Circuit (-2.04%): Aligned with HTF Bear Trend (50E: ₹146,578.1) & trading below Session VWAP (₹137,762.0).. Knife-catching prohibited.",
+        "rationale": "Dumping into Lower Circuit (-2.04%): Aligned with HTF Bear Trend (50E: \u20b9146,578.1) & trading below Session VWAP (\u20b9137,762.0).. Knife-catching prohibited.",
         "reference_price": 136866.0,
         "stop_loss": null,
         "target": null
@@ -826,7 +814,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 136866.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Dumping into Lower Circuit (-2.04%): Aligned with HTF Bear Trend (50E: ₹146,578.1) & trading below Session VWAP (₹137,762.0).. Knife-catching prohibited."
+        "detail": "Dumping into Lower Circuit (-2.04%): Aligned with HTF Bear Trend (50E: \u20b9146,578.1) & trading below Session VWAP (\u20b9137,762.0).. Knife-catching prohibited."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -845,8 +833,8 @@
         "session_close": null,
         "circuit_limit": 135524.52,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -866,7 +854,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / TREND GUARD",
-        "rationale": "Dumping into Lower Circuit (-2.69%): Aligned with HTF Bear Trend (50E: ₹208,135.5) & trading below Session VWAP (₹180,766.6).. Knife-catching prohibited.",
+        "rationale": "Dumping into Lower Circuit (-2.69%): Aligned with HTF Bear Trend (50E: \u20b9208,135.5) & trading below Session VWAP (\u20b9180,766.6).. Knife-catching prohibited.",
         "reference_price": 179555.0,
         "stop_loss": null,
         "target": null
@@ -876,7 +864,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 179555.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Dumping into Lower Circuit (-2.69%): Aligned with HTF Bear Trend (50E: ₹208,135.5) & trading below Session VWAP (₹180,766.6).. Knife-catching prohibited."
+        "detail": "Dumping into Lower Circuit (-2.69%): Aligned with HTF Bear Trend (50E: \u20b9208,135.5) & trading below Session VWAP (\u20b9180,766.6).. Knife-catching prohibited."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -895,8 +883,8 @@
         "session_close": null,
         "circuit_limit": 177144.0,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -916,7 +904,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (-1.29%). Aligned with HTF Bear Trend (50E: ₹146,619.1) & trading below Session VWAP (₹138,374.2).. Capital preserved in cash.",
+        "rationale": "Asset within tight range (-1.29%). Aligned with HTF Bear Trend (50E: \u20b9146,619.1) & trading below Session VWAP (\u20b9138,374.2).. Capital preserved in cash.",
         "reference_price": 137911.0,
         "stop_loss": 135524.52,
         "target": 139716.0
@@ -926,7 +914,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 137890.0,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹137,890.00 (-1.31%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9137,890.00 (-1.31%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -944,8 +932,8 @@
         "session_close": null,
         "circuit_limit": 135524.52,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -965,7 +953,7 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL SILVERMIC",
-        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: ₹208,193.0) & trading below Session VWAP (₹181,715.2). Target 1.2R calibrated to ATR.",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9208,193.0) & trading below Session VWAP (\u20b9181,715.2). Target 1.2R calibrated to ATR.",
         "reference_price": 181020.0,
         "stop_loss": 184060.22,
         "target": 177675.76
@@ -975,7 +963,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 182950.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹182,950.00 (-1.73%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9182,950.00 (-1.73%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -996,8 +984,8 @@
         "session_close": null,
         "circuit_limit": 184060.22,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1017,7 +1005,7 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering BUY CRUDEOILM",
-        "rationale": "US Pit Open Momentum: Intraday Bullish Session Momentum: Price (₹8,078.0) holding above VWAP (₹8,081.0) and Day Open (₹8,038.0) with positive momentum (-1.30%). Target 1.2R calibrated to ATR.",
+        "rationale": "US Pit Open Momentum: Intraday Bullish Session Momentum: Price (\u20b98,078.0) holding above VWAP (\u20b98,081.0) and Day Open (\u20b98,038.0) with positive momentum (-1.30%). Target 1.2R calibrated to ATR.",
         "reference_price": 8078.0,
         "stop_loss": 7927.94,
         "target": 8243.07
@@ -1027,7 +1015,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 8084.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹8,084.00 (-1.19%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b98,084.00 (-1.19%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1048,8 +1036,8 @@
         "session_close": null,
         "circuit_limit": 7927.94,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1069,7 +1057,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (+1.21%). Conflict: HTF is Bearish but price (₹309.6) is trading above Session VWAP (₹308.8). Counter-trend short blocked.. Capital preserved in cash.",
+        "rationale": "Asset within tight range (+1.21%). Conflict: HTF is Bearish but price (\u20b9309.6) is trading above Session VWAP (\u20b9308.8). Counter-trend short blocked.. Capital preserved in cash.",
         "reference_price": 309.6,
         "stop_loss": 287.55,
         "target": 305.9
@@ -1079,7 +1067,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 309.3,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹309.30 (+1.11%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9309.30 (+1.11%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1097,8 +1085,8 @@
         "session_close": null,
         "circuit_limit": 287.55,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -1118,7 +1106,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (-0.99%). Aligned with HTF Bear Trend (50E: ₹1,383.0) & trading below Session VWAP (₹1,332.3).. Capital preserved in cash.",
+        "rationale": "Asset within tight range (-0.99%). Aligned with HTF Bear Trend (50E: \u20b91,383.0) & trading below Session VWAP (\u20b91,332.3).. Capital preserved in cash.",
         "reference_price": 1328.5,
         "stop_loss": 1288.18,
         "target": 1341.85
@@ -1128,7 +1116,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 1329.45,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹1,329.45 (-0.92%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b91,329.45 (-0.92%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1146,8 +1134,8 @@
         "session_close": null,
         "circuit_limit": 1288.18,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -1167,7 +1155,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (-0.77%). Conflict: HTF is Bullish but price (₹408.3) is trading below Session VWAP (₹409.2). Awaiting reclaim of VWAP.. Capital preserved in cash.",
+        "rationale": "Asset within tight range (-0.77%). Conflict: HTF is Bullish but price (\u20b9408.3) is trading below Session VWAP (\u20b9409.2). Awaiting reclaim of VWAP.. Capital preserved in cash.",
         "reference_price": 408.3,
         "stop_loss": 394.99,
         "target": 411.45
@@ -1177,7 +1165,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 408.05,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹408.05 (-0.83%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9408.05 (-0.83%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1195,8 +1183,8 @@
         "session_close": null,
         "circuit_limit": 394.99,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -1216,7 +1204,7 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL ALUMINI",
-        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: ₹333.7) & trading below Session VWAP (₹331.1). Target 1.2R calibrated to ATR.",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9333.7) & trading below Session VWAP (\u20b9331.1). Target 1.2R calibrated to ATR.",
         "reference_price": 331.2,
         "stop_loss": 333.53,
         "target": 328.64
@@ -1226,7 +1214,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 330.6,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹330.60 (-0.35%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9330.60 (-0.35%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1247,8 +1235,8 @@
         "session_close": null,
         "circuit_limit": 333.53,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1268,7 +1256,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (-0.77%). Conflict: HTF is Bullish but price (₹408.2) is trading below Session VWAP (₹409.1). Awaiting reclaim of VWAP.. Capital preserved in cash.",
+        "rationale": "Asset within tight range (-0.77%). Conflict: HTF is Bullish but price (\u20b9408.2) is trading below Session VWAP (\u20b9409.1). Awaiting reclaim of VWAP.. Capital preserved in cash.",
         "reference_price": 408.2,
         "stop_loss": 394.9,
         "target": 411.35
@@ -1278,7 +1266,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 408.0,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹408.00 (-0.81%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9408.00 (-0.81%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1296,8 +1284,8 @@
         "session_close": null,
         "circuit_limit": 394.9,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -1317,7 +1305,7 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL ALUMINI",
-        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: ₹334.6) & trading below Session VWAP (₹331.8). Target 1.2R calibrated to ATR.",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9334.6) & trading below Session VWAP (\u20b9331.8). Target 1.2R calibrated to ATR.",
         "reference_price": 332.1,
         "stop_loss": 334.49,
         "target": 329.47
@@ -1327,7 +1315,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 330.6,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹330.60 (-0.35%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9330.60 (-0.35%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1348,8 +1336,8 @@
         "session_close": null,
         "circuit_limit": 334.49,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1365,11 +1353,11 @@
       "symbol": "GOLD",
       "name": "Gold",
       "lot_size": 100,
-      "event_context": "Range-Bound Asian Range [₹138,366.00 – ₹139,315.00]",
+      "event_context": "Range-Bound Asian Range [\u20b9138,366.00 \u2013 \u20b9139,315.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹138,366.00 – ₹139,315.00]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9138,366.00 \u2013 \u20b9139,315.00]. Standing aside awaiting range breakout.",
         "reference_price": 138799.0,
         "stop_loss": null,
         "target": null
@@ -1379,7 +1367,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 137890.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹137,890.00 (-1.31%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9137,890.00 (-1.31%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1398,8 +1386,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1415,11 +1403,11 @@
       "symbol": "SILVER",
       "name": "Silver",
       "lot_size": 30,
-      "event_context": "Range-Bound Asian Range [₹181,723.00 – ₹183,251.00]",
+      "event_context": "Range-Bound Asian Range [\u20b9181,723.00 \u2013 \u20b9183,251.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹181,723.00 – ₹183,251.00]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9181,723.00 \u2013 \u20b9183,251.00]. Standing aside awaiting range breakout.",
         "reference_price": 182799.0,
         "stop_loss": null,
         "target": null
@@ -1429,7 +1417,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 181313.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹181,313.00 (-1.74%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9181,313.00 (-1.74%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1448,8 +1436,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1469,7 +1457,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / COUNTER-TREND TRAP",
-        "rationale": "Macro trend is Bearish (below CPR ₹8,081.50 | -0.17%). High Asian range breakout is a classic Bull Trap. Avoided.",
+        "rationale": "Macro trend is Bearish (below CPR \u20b98,081.50 | -0.17%). High Asian range breakout is a classic Bull Trap. Avoided.",
         "reference_price": 8170.0,
         "stop_loss": null,
         "target": null
@@ -1479,7 +1467,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 8085.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹8,085.00 (-1.21%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b98,085.00 (-1.21%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1498,8 +1486,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1515,11 +1503,11 @@
       "symbol": "NATURALGAS",
       "name": "Natural Gas",
       "lot_size": 1250,
-      "event_context": "Range-Bound Asian Range [₹303.70 – ₹309.40]",
+      "event_context": "Range-Bound Asian Range [\u20b9303.70 \u2013 \u20b9309.40]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹303.70 – ₹309.40]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9303.70 \u2013 \u20b9309.40]. Standing aside awaiting range breakout.",
         "reference_price": 306.1,
         "stop_loss": null,
         "target": null
@@ -1529,7 +1517,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 309.3,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹309.30 (+1.11%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9309.30 (+1.11%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1548,8 +1536,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1565,11 +1553,11 @@
       "symbol": "COPPER",
       "name": "Copper",
       "lot_size": 2500,
-      "event_context": "Range-Bound Asian Range [₹1,330.60 – ₹1,339.90]",
+      "event_context": "Range-Bound Asian Range [\u20b91,330.60 \u2013 \u20b91,339.90]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹1,330.60 – ₹1,339.90]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b91,330.60 \u2013 \u20b91,339.90]. Standing aside awaiting range breakout.",
         "reference_price": 1333.75,
         "stop_loss": null,
         "target": null
@@ -1579,7 +1567,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 1329.45,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹1,329.45 (-0.92%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b91,329.45 (-0.92%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1598,8 +1586,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1615,11 +1603,11 @@
       "symbol": "ZINC",
       "name": "Zinc",
       "lot_size": 5000,
-      "event_context": "Range-Bound Asian Range [₹407.20 – ₹411.40]",
+      "event_context": "Range-Bound Asian Range [\u20b9407.20 \u2013 \u20b9411.40]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹407.20 – ₹411.40]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9407.20 \u2013 \u20b9411.40]. Standing aside awaiting range breakout.",
         "reference_price": 409.0,
         "stop_loss": null,
         "target": null
@@ -1629,7 +1617,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 408.05,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹408.05 (-0.83%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9408.05 (-0.83%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1648,8 +1636,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1665,11 +1653,11 @@
       "symbol": "ALUMINIUM",
       "name": "Aluminium",
       "lot_size": 5000,
-      "event_context": "Range-Bound Asian Range [₹329.75 – ₹331.70]",
+      "event_context": "Range-Bound Asian Range [\u20b9329.75 \u2013 \u20b9331.70]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹329.75 – ₹331.70]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9329.75 \u2013 \u20b9331.70]. Standing aside awaiting range breakout.",
         "reference_price": 331.1,
         "stop_loss": null,
         "target": null
@@ -1679,7 +1667,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 329.3,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹329.30 (-0.47%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9329.30 (-0.47%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1698,8 +1686,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1715,11 +1703,11 @@
       "symbol": "ZINCMINI",
       "name": "Zinc Mini",
       "lot_size": 1000,
-      "event_context": "Range-Bound Asian Range [₹407.10 – ₹411.20]",
+      "event_context": "Range-Bound Asian Range [\u20b9407.10 \u2013 \u20b9411.20]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹407.10 – ₹411.20]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9407.10 \u2013 \u20b9411.20]. Standing aside awaiting range breakout.",
         "reference_price": 408.9,
         "stop_loss": null,
         "target": null
@@ -1729,7 +1717,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 408.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹408.00 (-0.81%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9408.00 (-0.81%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1748,8 +1736,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1765,11 +1753,11 @@
       "symbol": "ALUMINI",
       "name": "Aluminium Mini",
       "lot_size": 1000,
-      "event_context": "Range-Bound Asian Range [₹330.45 – ₹332.75]",
+      "event_context": "Range-Bound Asian Range [\u20b9330.45 \u2013 \u20b9332.75]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹330.45 – ₹332.75]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9330.45 \u2013 \u20b9332.75]. Standing aside awaiting range breakout.",
         "reference_price": 331.9,
         "stop_loss": null,
         "target": null
@@ -1779,7 +1767,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 330.6,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹330.60 (-0.35%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9330.60 (-0.35%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1798,8 +1786,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -1819,7 +1807,7 @@
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
         "regime": "BULL_TREND",
-        "badge": "🚀 Bull Trend",
+        "badge": "\ud83d\ude80 Bull Trend",
         "short_tag": "Bull Trend",
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
@@ -1844,7 +1832,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 24.1,
         "p_stop_pct": 16.8,
         "p_neither_pct": 59.1,
@@ -1852,7 +1840,7 @@
         "expected_r": 0.121,
         "target_r": 1.2,
         "sample_bars": 702,
-        "summary": "3,000 Replays: 24.1% Target | 16.8% Stop | Expected: +0.12R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 24.1% Target | 16.8% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -1864,7 +1852,7 @@
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close ₹968.95 breaking above range high ₹968.95."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b9968.95 breaking above range high \u20b9968.95."
       },
       "event_check": {
         "passed": true,
@@ -1874,8 +1862,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ ₹968.95",
-        "rationale": "High-Beta breakout momentum (Chg: +0.75%) with healthy RSI (64.3) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 24.1% Target | 16.8% Stop | Expected: +0.12R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "BUY @ \u20b9968.95",
+        "rationale": "High-Beta breakout momentum (Chg: +0.75%) with healthy RSI (64.3) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 24.1% Target | 16.8% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 968.95,
         "stop_loss": 952.24,
         "target": 989.0
@@ -1884,8 +1872,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 968.95,
-        "action_taken": "Entered BUY 53 shares @ ₹968.95",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.75%) with healthy RSI (64.3) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 24.1% Target | 16.8% Stop | Expected: +0.12R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered BUY 53 shares @ \u20b9968.95",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.75%) with healthy RSI (64.3) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 24.1% Target | 16.8% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1912,9 +1900,9 @@
         "session_close": 963.75,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Stagnation Exit ⏱️ (03:08 PM IST)",
-        "pnl_display": "₹-275.60",
-        "summary": "120-Minute Stagnation Exit ⏱️ (Below entry for 120m; capital protection) at 03:08 PM IST. Entry: ₹968.95 -> Exit: ₹963.75 (₹-275.60).",
+        "badge": "Stagnation Exit \u23f1\ufe0f (03:08 PM IST)",
+        "pnl_display": "\u20b9-275.60",
+        "summary": "120-Minute Stagnation Exit \u23f1\ufe0f (Below entry for 120m; capital protection) at 03:08 PM IST. Entry: \u20b9968.95 -> Exit: \u20b9963.75 (\u20b9-275.60).",
         "exit_time": "03:08 PM IST",
         "exit_trigger": "STAGNATION_EXIT"
       }
@@ -1934,7 +1922,7 @@
       "event_context": "Indicator Confluence: EMA 20/50 Bearish Trend Confluence",
       "regime": {
         "regime": "BREAKDOWN",
-        "badge": "🔻 Breakdown / Bear Trend",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
         "short_tag": "Breakdown",
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
@@ -1960,7 +1948,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 30.6,
         "p_stop_pct": 28.9,
         "p_neither_pct": 40.6,
@@ -1968,7 +1956,7 @@
         "expected_r": 0.078,
         "target_r": 1.2,
         "sample_bars": 2152,
-        "summary": "3,000 Replays: 30.6% Target | 28.9% Stop | Expected: +0.08R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 30.6% Target | 28.9% Stop | Expected: +0.08R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -1979,8 +1967,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "SELL @ ₹1,335.00",
-        "rationale": "20 EMA (₹1,367.50) < 50 EMA (₹1,383.30) with ADX 45.9 >= 20 and healthy RSI 35.5. Downward trend continuation in effect. 3,000 Replays: 30.6% Target | 28.9% Stop | Expected: +0.08R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "SELL @ \u20b91,335.00",
+        "rationale": "20 EMA (\u20b91,367.50) < 50 EMA (\u20b91,383.30) with ADX 45.9 >= 20 and healthy RSI 35.5. Downward trend continuation in effect. 3,000 Replays: 30.6% Target | 28.9% Stop | Expected: +0.08R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 1335.0,
         "stop_loss": 1342.8,
         "target": 1325.64,
@@ -1991,8 +1979,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 1335.0,
-        "action_taken": "Entered SELL 1000 units @ ₹1,335.00",
-        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (₹1,367.50) < 50 EMA (₹1,383.30) with ADX 45.9 >= 20 and healthy RSI 35.5. Downward trend continuation in effect. | 3,000 Replays: 30.6% Target | 28.9% Stop | Expected: +0.08R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered SELL 1000 units @ \u20b91,335.00",
+        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (\u20b91,367.50) < 50 EMA (\u20b91,383.30) with ADX 45.9 >= 20 and healthy RSI 35.5. Downward trend continuation in effect. | 3,000 Replays: 30.6% Target | 28.9% Stop | Expected: +0.08R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2020,9 +2008,9 @@
         "session_close": 1335.45,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Stagnation Exit ⏱️ (01:34 PM IST)",
-        "pnl_display": "₹-450.00",
-        "summary": "90-Minute Stagnation Exit ⏱️ (Below entry for 150m; capital protection) at 01:34 PM IST. Entry: ₹1,335.00 -> Exit: ₹1,335.45 (₹-450.00).",
+        "badge": "Stagnation Exit \u23f1\ufe0f (01:34 PM IST)",
+        "pnl_display": "\u20b9-450.00",
+        "summary": "90-Minute Stagnation Exit \u23f1\ufe0f (Below entry for 150m; capital protection) at 01:34 PM IST. Entry: \u20b91,335.00 -> Exit: \u20b91,335.45 (\u20b9-450.00).",
         "exit_time": "01:34 PM IST",
         "exit_trigger": "STAGNATION_EXIT"
       }
@@ -2043,7 +2031,7 @@
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
         "regime": "BULL_TREND",
-        "badge": "🚀 Bull Trend",
+        "badge": "\ud83d\ude80 Bull Trend",
         "short_tag": "Bull Trend",
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
@@ -2068,7 +2056,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 22.5,
         "p_stop_pct": 12.4,
         "p_neither_pct": 65.1,
@@ -2076,7 +2064,7 @@
         "expected_r": 0.146,
         "target_r": 1.2,
         "sample_bars": 658,
-        "summary": "3,000 Replays: 22.5% Target | 12.4% Stop | Expected: +0.15R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 22.5% Target | 12.4% Stop | Expected: +0.15R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -2088,7 +2076,7 @@
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close ₹80.96 breaking above range high ₹80.96."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b980.96 breaking above range high \u20b980.96."
       },
       "event_check": {
         "passed": true,
@@ -2098,8 +2086,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ ₹81.90",
-        "rationale": "High-Beta breakout momentum (Chg: +0.91%) with healthy RSI (61.7) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 22.5% Target | 12.4% Stop | Expected: +0.15R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "BUY @ \u20b981.90",
+        "rationale": "High-Beta breakout momentum (Chg: +0.91%) with healthy RSI (61.7) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 22.5% Target | 12.4% Stop | Expected: +0.15R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 81.9,
         "stop_loss": 80.32,
         "target": 83.8,
@@ -2109,8 +2097,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 81.9,
-        "action_taken": "Entered BUY 617 units @ ₹81.90",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.91%) with healthy RSI (61.7) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 22.5% Target | 12.4% Stop | Expected: +0.15R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered BUY 617 units @ \u20b981.90",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.91%) with healthy RSI (61.7) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 22.5% Target | 12.4% Stop | Expected: +0.15R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2142,9 +2130,9 @@
         "session_close": 81.38,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Stagnation Exit ⏱️ (11:37 AM IST)",
-        "pnl_display": "₹-320.84",
-        "summary": "120-Minute Stagnation Exit ⏱️ (Below entry for 120m; capital protection) at 11:37 AM IST. Entry: ₹81.90 -> Exit: ₹81.38 (₹-320.84).",
+        "badge": "Stagnation Exit \u23f1\ufe0f (11:37 AM IST)",
+        "pnl_display": "\u20b9-320.84",
+        "summary": "120-Minute Stagnation Exit \u23f1\ufe0f (Below entry for 120m; capital protection) at 11:37 AM IST. Entry: \u20b981.90 -> Exit: \u20b981.38 (\u20b9-320.84).",
         "exit_time": "11:37 AM IST",
         "exit_trigger": "STAGNATION_EXIT"
       }
@@ -2165,7 +2153,7 @@
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
         "regime": "BULL_TREND",
-        "badge": "🚀 Bull Trend",
+        "badge": "\ud83d\ude80 Bull Trend",
         "short_tag": "Bull Trend",
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
@@ -2190,7 +2178,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "STRONG_POSITIVE_EXPECTANCY",
-        "verdict_text": "Strongly Leans Toward Target 🎯 (High Edge)",
+        "verdict_text": "Strongly Leans Toward Target \ud83c\udfaf (High Edge)",
         "p_target_pct": 33.6,
         "p_stop_pct": 12.9,
         "p_neither_pct": 53.5,
@@ -2198,7 +2186,7 @@
         "expected_r": 0.274,
         "target_r": 1.2,
         "sample_bars": 661,
-        "summary": "3,000 Replays: 33.6% Target | 12.9% Stop | Expected: +0.27R (Strongly Leans Toward Target 🎯 (High Edge))"
+        "summary": "3,000 Replays: 33.6% Target | 12.9% Stop | Expected: +0.27R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
       },
       "risk_check": {
         "passed": true,
@@ -2210,7 +2198,7 @@
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close ₹978.75 breaking above range high ₹978.75."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b9978.75 breaking above range high \u20b9978.75."
       },
       "event_check": {
         "passed": true,
@@ -2220,8 +2208,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ ₹989.50",
-        "rationale": "High-Beta breakout momentum (Chg: +0.99%) with healthy RSI (60.7) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 33.6% Target | 12.9% Stop | Expected: +0.27R (Strongly Leans Toward Target 🎯 (High Edge))",
+        "action_text": "BUY @ \u20b9989.50",
+        "rationale": "High-Beta breakout momentum (Chg: +0.99%) with healthy RSI (60.7) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 33.6% Target | 12.9% Stop | Expected: +0.27R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))",
         "reference_price": 989.5,
         "stop_loss": 977.77,
         "target": null,
@@ -2231,8 +2219,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 989.5,
-        "action_taken": "Entered BUY 51 units @ ₹989.50",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.99%) with healthy RSI (60.7) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 33.6% Target | 12.9% Stop | Expected: +0.27R (Strongly Leans Toward Target 🎯 (High Edge))"
+        "action_taken": "Entered BUY 51 units @ \u20b9989.50",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.99%) with healthy RSI (60.7) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 33.6% Target | 12.9% Stop | Expected: +0.27R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2268,9 +2256,9 @@
         "session_close": 1002.39,
         "circuit_limit": null,
         "outcome": "CORRECT",
-        "badge": "Target Runner 🎯🚀 (11:32 AM IST)",
-        "pnl_display": "+₹657.39",
-        "summary": "Target Runner Trailing Stop Triggered 🎯🚀 (Exit ₹1,002.39 vs ₹1,003.58 | Peak ₹1,004.50) at 11:32 AM IST. Entry: ₹989.50 -> Exit: ₹1,002.39 (+₹657.39).",
+        "badge": "Target Runner \ud83c\udfaf\ud83d\ude80 (11:32 AM IST)",
+        "pnl_display": "+\u20b9657.39",
+        "summary": "Target Runner Trailing Stop Triggered \ud83c\udfaf\ud83d\ude80 (Exit \u20b91,002.39 vs \u20b91,003.58 | Peak \u20b91,004.50) at 11:32 AM IST. Entry: \u20b9989.50 -> Exit: \u20b91,002.39 (+\u20b9657.39).",
         "exit_time": "11:32 AM IST",
         "exit_trigger": "TARGET_RUNNER_EXIT"
       }
@@ -2290,7 +2278,7 @@
       "event_context": "Indicator Confluence: EMA 20/50 Bearish Trend Confluence",
       "regime": {
         "regime": "BREAKDOWN",
-        "badge": "🔻 Breakdown / Bear Trend",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
         "short_tag": "Breakdown",
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
@@ -2316,7 +2304,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 44.0,
         "p_stop_pct": 41.9,
         "p_neither_pct": 14.1,
@@ -2324,7 +2312,7 @@
         "expected_r": 0.109,
         "target_r": 1.2,
         "sample_bars": 2251,
-        "summary": "3,000 Replays: 44.0% Target | 41.9% Stop | Expected: +0.11R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 44.0% Target | 41.9% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -2335,8 +2323,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "SELL @ ₹1,335.00",
-        "rationale": "20 EMA (₹1,367.72) < 50 EMA (₹1,383.39) with ADX 45.9 >= 20 and healthy RSI 36.0. Downward trend continuation in effect. 3,000 Replays: 44.0% Target | 41.9% Stop | Expected: +0.11R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "SELL @ \u20b91,335.00",
+        "rationale": "20 EMA (\u20b91,367.72) < 50 EMA (\u20b91,383.39) with ADX 45.9 >= 20 and healthy RSI 36.0. Downward trend continuation in effect. 3,000 Replays: 44.0% Target | 41.9% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 1335.0,
         "stop_loss": 1342.8,
         "target": 1325.64,
@@ -2346,8 +2334,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 1335.0,
-        "action_taken": "Entered SELL 1000 units @ ₹1,335.00",
-        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (₹1,367.72) < 50 EMA (₹1,383.39) with ADX 45.9 >= 20 and healthy RSI 36.0. Downward trend continuation in effect. | 3,000 Replays: 44.0% Target | 41.9% Stop | Expected: +0.11R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered SELL 1000 units @ \u20b91,335.00",
+        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (\u20b91,367.72) < 50 EMA (\u20b91,383.39) with ADX 45.9 >= 20 and healthy RSI 36.0. Downward trend continuation in effect. | 3,000 Replays: 44.0% Target | 41.9% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2378,9 +2366,9 @@
         "session_close": 1335.0,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Stagnation Exit ⏱️ (11:04 AM IST)",
-        "pnl_display": "+₹0.00",
-        "summary": "90-Minute Stagnation Exit ⏱️ (Below entry for 100m; capital protection) at 11:04 AM IST. Entry: ₹1,335.00 -> Exit: ₹1,335.00 (+₹0.00).",
+        "badge": "Stagnation Exit \u23f1\ufe0f (11:04 AM IST)",
+        "pnl_display": "+\u20b90.00",
+        "summary": "90-Minute Stagnation Exit \u23f1\ufe0f (Below entry for 100m; capital protection) at 11:04 AM IST. Entry: \u20b91,335.00 -> Exit: \u20b91,335.00 (+\u20b90.00).",
         "exit_time": "11:04 AM IST",
         "exit_trigger": "STAGNATION_EXIT"
       }
@@ -2400,7 +2388,7 @@
       "event_context": "Indicator Confluence: EMA 20/50 Bearish Trend Confluence",
       "regime": {
         "regime": "BREAKDOWN",
-        "badge": "🔻 Breakdown / Bear Trend",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
         "short_tag": "Breakdown",
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
@@ -2426,7 +2414,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 40.6,
         "p_stop_pct": 38.8,
         "p_neither_pct": 20.5,
@@ -2434,7 +2422,7 @@
         "expected_r": 0.099,
         "target_r": 1.2,
         "sample_bars": 2245,
-        "summary": "3,000 Replays: 40.6% Target | 38.8% Stop | Expected: +0.10R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 40.6% Target | 38.8% Stop | Expected: +0.10R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -2445,8 +2433,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "SELL @ ₹1,336.70",
-        "rationale": "20 EMA (₹1,367.66) < 50 EMA (₹1,383.37) with ADX 45.9 >= 20 and healthy RSI 35.9. Downward trend continuation in effect. 3,000 Replays: 40.6% Target | 38.8% Stop | Expected: +0.10R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "SELL @ \u20b91,336.70",
+        "rationale": "20 EMA (\u20b91,367.66) < 50 EMA (\u20b91,383.37) with ADX 45.9 >= 20 and healthy RSI 35.9. Downward trend continuation in effect. 3,000 Replays: 40.6% Target | 38.8% Stop | Expected: +0.10R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 1336.7,
         "stop_loss": 1342.8,
         "target": 1329.38,
@@ -2456,8 +2444,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 1336.7,
-        "action_taken": "Entered SELL 1000 units @ ₹1,336.70",
-        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (₹1,367.66) < 50 EMA (₹1,383.37) with ADX 45.9 >= 20 and healthy RSI 35.9. Downward trend continuation in effect. | 3,000 Replays: 40.6% Target | 38.8% Stop | Expected: +0.10R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered SELL 1000 units @ \u20b91,336.70",
+        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (\u20b91,367.66) < 50 EMA (\u20b91,383.37) with ADX 45.9 >= 20 and healthy RSI 35.9. Downward trend continuation in effect. | 3,000 Replays: 40.6% Target | 38.8% Stop | Expected: +0.10R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2486,9 +2474,9 @@
         "session_close": 1336.7,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Breakeven Exit 🛡️ (09:23 AM IST)",
-        "pnl_display": "+₹0.00",
-        "summary": "Trailing Breakeven Stop Triggered 🛡️ (Exit ₹1,336.70 | Capital Protected) at 09:23 AM IST. Entry: ₹1,336.70 -> Exit: ₹1,336.70 (+₹0.00).",
+        "badge": "Breakeven Exit \ud83d\udee1\ufe0f (09:23 AM IST)",
+        "pnl_display": "+\u20b90.00",
+        "summary": "Trailing Breakeven Stop Triggered \ud83d\udee1\ufe0f (Exit \u20b91,336.70 | Capital Protected) at 09:23 AM IST. Entry: \u20b91,336.70 -> Exit: \u20b91,336.70 (+\u20b90.00).",
         "exit_time": "09:23 AM IST",
         "exit_trigger": "TRAILING_BREAKEVEN_HIT"
       }
@@ -2509,7 +2497,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (+0.41%). Aligned with HTF Bear Trend (50E: ₹147,028.8) & trading below Session VWAP (₹141,305.4).. Capital preserved in cash.",
+        "rationale": "Asset within tight range (+0.41%). Aligned with HTF Bear Trend (50E: \u20b9147,028.8) & trading below Session VWAP (\u20b9141,305.4).. Capital preserved in cash.",
         "reference_price": 141101.0,
         "stop_loss": 136309.25,
         "target": 140525.0
@@ -2519,7 +2507,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 141029.0,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹141,029.00 (+0.36%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9141,029.00 (+0.36%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2537,8 +2525,8 @@
         "session_close": null,
         "circuit_limit": 136309.25,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -2558,7 +2546,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (+2.28%). Conflict: HTF is Bearish but price (₹186,745.0) is trading above Session VWAP (₹186,434.6). Counter-trend short blocked.. Capital preserved in cash.",
+        "rationale": "Asset within tight range (+2.28%). Conflict: HTF is Bearish but price (\u20b9186,745.0) is trading above Session VWAP (\u20b9186,434.6). Counter-trend short blocked.. Capital preserved in cash.",
         "reference_price": 186745.0,
         "stop_loss": 175272.96,
         "target": 182576.0
@@ -2568,7 +2556,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 186350.0,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹186,350.00 (+2.07%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9186,350.00 (+2.07%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2586,8 +2574,8 @@
         "session_close": null,
         "circuit_limit": 175272.96,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -2607,7 +2595,7 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering BUY CRUDEOILM",
-        "rationale": "US Pit Open Momentum: Intraday Bullish Session Momentum: Price (₹8,191.0) holding above VWAP (₹8,152.2) and Day Open (₹8,132.0) with positive momentum (+1.17%). Target 1.2R calibrated to ATR.",
+        "rationale": "US Pit Open Momentum: Intraday Bullish Session Momentum: Price (\u20b98,191.0) holding above VWAP (\u20b98,152.2) and Day Open (\u20b98,132.0) with positive momentum (+1.17%). Target 1.2R calibrated to ATR.",
         "reference_price": 8191.0,
         "stop_loss": 7985.7,
         "target": 8416.83
@@ -2617,7 +2605,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 8178.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹8,178.00 (+0.99%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b98,178.00 (+0.99%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2638,8 +2626,8 @@
         "session_close": null,
         "circuit_limit": 7985.7,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -2659,7 +2647,7 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL NATURALGASM",
-        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: ₹313.1) & trading below Session VWAP (₹310.9). Target 1.2R calibrated to ATR.",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9313.1) & trading below Session VWAP (\u20b9310.9). Target 1.2R calibrated to ATR.",
         "reference_price": 310.7,
         "stop_loss": 315.97,
         "target": 304.9
@@ -2669,7 +2657,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 314.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹314.00 (+1.72%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9314.00 (+1.72%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2690,8 +2678,8 @@
         "session_close": null,
         "circuit_limit": 315.97,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -2711,7 +2699,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (+0.29%). Aligned with HTF Bear Trend (50E: ₹1,385.2) & trading below Session VWAP (₹1,343.1).. Capital preserved in cash.",
+        "rationale": "Asset within tight range (+0.29%). Aligned with HTF Bear Trend (50E: \u20b91,385.2) & trading below Session VWAP (\u20b91,343.1).. Capital preserved in cash.",
         "reference_price": 1341.2,
         "stop_loss": 1283.81,
         "target": 1337.3
@@ -2721,7 +2709,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 1342.05,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹1,342.05 (+0.36%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b91,342.05 (+0.36%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2739,8 +2727,8 @@
         "session_close": null,
         "circuit_limit": 1283.81,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -2760,7 +2748,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (+0.28%). Conflict: HTF is Bullish but price (₹411.5) is trading below Session VWAP (₹412.3). Awaiting reclaim of VWAP.. Capital preserved in cash.",
+        "rationale": "Asset within tight range (+0.28%). Conflict: HTF is Bullish but price (\u20b9411.5) is trading below Session VWAP (\u20b9412.3). Awaiting reclaim of VWAP.. Capital preserved in cash.",
         "reference_price": 411.5,
         "stop_loss": 393.94,
         "target": 410.35
@@ -2770,7 +2758,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 411.25,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹411.25 (+0.22%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9411.25 (+0.22%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2788,8 +2776,8 @@
         "session_close": null,
         "circuit_limit": 393.94,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -2809,7 +2797,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (+0.83%). Conflict: HTF is Bearish but price (₹328.1) is trading above Session VWAP (₹327.6). Counter-trend short blocked.. Capital preserved in cash.",
+        "rationale": "Asset within tight range (+0.83%). Conflict: HTF is Bearish but price (\u20b9328.1) is trading above Session VWAP (\u20b9327.6). Counter-trend short blocked.. Capital preserved in cash.",
         "reference_price": 328.1,
         "stop_loss": 312.38,
         "target": 325.4
@@ -2819,7 +2807,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 329.3,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹329.30 (+1.20%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9329.30 (+1.20%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2837,8 +2825,8 @@
         "session_close": null,
         "circuit_limit": 312.38,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -2858,7 +2846,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (+0.22%). Conflict: HTF is Bullish but price (₹411.4) is trading below Session VWAP (₹412.0). Awaiting reclaim of VWAP.. Capital preserved in cash.",
+        "rationale": "Asset within tight range (+0.22%). Conflict: HTF is Bullish but price (\u20b9411.4) is trading below Session VWAP (\u20b9412.0). Awaiting reclaim of VWAP.. Capital preserved in cash.",
         "reference_price": 411.35,
         "stop_loss": 394.03,
         "target": 410.45
@@ -2868,7 +2856,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 411.1,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹411.10 (+0.16%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9411.10 (+0.16%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2886,8 +2874,8 @@
         "session_close": null,
         "circuit_limit": 394.03,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -2907,7 +2895,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (+0.81%). Conflict: HTF is Bearish but price (₹329.1) is trading above Session VWAP (₹328.4). Counter-trend short blocked.. Capital preserved in cash.",
+        "rationale": "Asset within tight range (+0.81%). Conflict: HTF is Bearish but price (\u20b9329.1) is trading above Session VWAP (\u20b9328.4). Counter-trend short blocked.. Capital preserved in cash.",
         "reference_price": 329.05,
         "stop_loss": 313.34,
         "target": 326.4
@@ -2917,7 +2905,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 330.25,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹330.25 (+1.18%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9330.25 (+1.18%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -2935,8 +2923,8 @@
         "session_close": null,
         "circuit_limit": 313.34,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -2956,7 +2944,7 @@
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
         "regime": "BULL_TREND",
-        "badge": "🚀 Bull Trend",
+        "badge": "\ud83d\ude80 Bull Trend",
         "short_tag": "Bull Trend",
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
@@ -2981,7 +2969,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "STRONG_POSITIVE_EXPECTANCY",
-        "verdict_text": "Strongly Leans Toward Target 🎯 (High Edge)",
+        "verdict_text": "Strongly Leans Toward Target \ud83c\udfaf (High Edge)",
         "p_target_pct": 34.6,
         "p_stop_pct": 16.1,
         "p_neither_pct": 49.3,
@@ -2989,7 +2977,7 @@
         "expected_r": 0.254,
         "target_r": 1.2,
         "sample_bars": 669,
-        "summary": "3,000 Replays: 34.6% Target | 16.1% Stop | Expected: +0.25R (Strongly Leans Toward Target 🎯 (High Edge))"
+        "summary": "3,000 Replays: 34.6% Target | 16.1% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
       },
       "risk_check": {
         "passed": true,
@@ -3001,7 +2989,7 @@
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close ₹1,612.90 breaking above range high ₹1,612.90."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b91,612.90 breaking above range high \u20b91,612.90."
       },
       "event_check": {
         "passed": true,
@@ -3011,8 +2999,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ ₹1,612.90",
-        "rationale": "High-Beta breakout momentum (Chg: +0.96%) with healthy RSI (64.0) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 34.6% Target | 16.1% Stop | Expected: +0.25R (Strongly Leans Toward Target 🎯 (High Edge))",
+        "action_text": "BUY @ \u20b91,612.90",
+        "rationale": "High-Beta breakout momentum (Chg: +0.96%) with healthy RSI (64.0) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 34.6% Target | 16.1% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))",
         "reference_price": 1612.9,
         "stop_loss": 1585.08,
         "target": 1646.28
@@ -3021,8 +3009,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 1612.9,
-        "action_taken": "Entered BUY 31 shares @ ₹1,612.90",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.96%) with healthy RSI (64.0) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 34.6% Target | 16.1% Stop | Expected: +0.25R (Strongly Leans Toward Target 🎯 (High Edge))"
+        "action_taken": "Entered BUY 31 shares @ \u20b91,612.90",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.96%) with healthy RSI (64.0) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 34.6% Target | 16.1% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3049,9 +3037,9 @@
         "session_close": 1598.4,
         "circuit_limit": null,
         "outcome": "WRONG",
-        "badge": "Stagnation Exit ⏱️ (12:16 PM IST)",
-        "pnl_display": "₹-449.50",
-        "summary": "120-Minute Stagnation Exit ⏱️ (Below entry for 120m; capital protection) at 12:16 PM IST. Entry: ₹1,612.90 -> Exit: ₹1,598.40 (₹-449.50).",
+        "badge": "Stagnation Exit \u23f1\ufe0f (12:16 PM IST)",
+        "pnl_display": "\u20b9-449.50",
+        "summary": "120-Minute Stagnation Exit \u23f1\ufe0f (Below entry for 120m; capital protection) at 12:16 PM IST. Entry: \u20b91,612.90 -> Exit: \u20b91,598.40 (\u20b9-449.50).",
         "exit_time": "12:16 PM IST",
         "exit_trigger": "STAGNATION_EXIT"
       }
@@ -3072,7 +3060,7 @@
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
         "regime": "BULL_TREND",
-        "badge": "🚀 Bull Trend",
+        "badge": "\ud83d\ude80 Bull Trend",
         "short_tag": "Bull Trend",
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
@@ -3097,7 +3085,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 20.5,
         "p_stop_pct": 13.6,
         "p_neither_pct": 66.0,
@@ -3105,7 +3093,7 @@
         "expected_r": 0.11,
         "target_r": 1.2,
         "sample_bars": 659,
-        "summary": "3,000 Replays: 20.5% Target | 13.6% Stop | Expected: +0.11R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 20.5% Target | 13.6% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -3117,7 +3105,7 @@
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close ₹78.96 breaking above range high ₹78.96."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b978.96 breaking above range high \u20b978.96."
       },
       "event_check": {
         "passed": true,
@@ -3127,8 +3115,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ ₹78.96",
-        "rationale": "High-Beta breakout momentum (Chg: +1.40%) with healthy RSI (56.5) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 20.5% Target | 13.6% Stop | Expected: +0.11R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "BUY @ \u20b978.96",
+        "rationale": "High-Beta breakout momentum (Chg: +1.40%) with healthy RSI (56.5) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 20.5% Target | 13.6% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 78.96,
         "stop_loss": 80.9,
         "target": null,
@@ -3139,8 +3127,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 78.96,
-        "action_taken": "Entered BUY 633 shares @ ₹78.96",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.40%) with healthy RSI (56.5) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 20.5% Target | 13.6% Stop | Expected: +0.11R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered BUY 633 shares @ \u20b978.96",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.40%) with healthy RSI (56.5) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 20.5% Target | 13.6% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3176,9 +3164,9 @@
         "session_close": 80.95,
         "circuit_limit": null,
         "outcome": "CORRECT",
-        "badge": "Target Runner 🎯🚀 (12:51 PM IST)",
-        "pnl_display": "+₹1,259.67",
-        "summary": "Target Runner Trailing Stop Triggered 🎯🚀 (Exit ₹80.95 vs ₹80.59 (Target Reached & Trailed) | Peak ₹81.20) at 12:51 PM IST. Entry: ₹78.96 -> Exit: ₹80.95 (+₹1,259.67).",
+        "badge": "Target Runner \ud83c\udfaf\ud83d\ude80 (12:51 PM IST)",
+        "pnl_display": "+\u20b91,259.67",
+        "summary": "Target Runner Trailing Stop Triggered \ud83c\udfaf\ud83d\ude80 (Exit \u20b980.95 vs \u20b980.59 (Target Reached & Trailed) | Peak \u20b981.20) at 12:51 PM IST. Entry: \u20b978.96 -> Exit: \u20b980.95 (+\u20b91,259.67).",
         "exit_time": "12:51 PM IST",
         "exit_trigger": "TARGET_RUNNER_EXIT"
       }
@@ -3199,7 +3187,7 @@
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
         "regime": "BULL_TREND",
-        "badge": "🚀 Bull Trend",
+        "badge": "\ud83d\ude80 Bull Trend",
         "short_tag": "Bull Trend",
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
@@ -3224,7 +3212,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 16.8,
         "p_stop_pct": 8.5,
         "p_neither_pct": 74.7,
@@ -3232,7 +3220,7 @@
         "expected_r": 0.117,
         "target_r": 1.2,
         "sample_bars": 659,
-        "summary": "3,000 Replays: 16.8% Target | 8.5% Stop | Expected: +0.12R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 16.8% Target | 8.5% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -3244,7 +3232,7 @@
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close ₹7,747.50 breaking above range high ₹7,747.50."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b97,747.50 breaking above range high \u20b97,747.50."
       },
       "event_check": {
         "passed": true,
@@ -3254,8 +3242,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ ₹7,747.50",
-        "rationale": "High-Beta breakout momentum (Chg: +1.55%) with healthy RSI (65.9) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 16.8% Target | 8.5% Stop | Expected: +0.12R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "BUY @ \u20b97,747.50",
+        "rationale": "High-Beta breakout momentum (Chg: +1.55%) with healthy RSI (65.9) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 16.8% Target | 8.5% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 7747.5,
         "stop_loss": 7613.86,
         "target": 7907.87,
@@ -3265,8 +3253,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 7747.5,
-        "action_taken": "Entered BUY 6 shares @ ₹7,747.50",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.55%) with healthy RSI (65.9) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 16.8% Target | 8.5% Stop | Expected: +0.12R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered BUY 6 shares @ \u20b97,747.50",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.55%) with healthy RSI (65.9) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 16.8% Target | 8.5% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3296,9 +3284,9 @@
         "session_close": 7747.5,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Breakeven Exit 🛡️ (02:13 PM IST)",
-        "pnl_display": "+₹0.00",
-        "summary": "Trailing Breakeven Stop Triggered 🛡️ (Exit ₹7,747.50 | Capital Protected) at 02:13 PM IST. Entry: ₹7,747.50 -> Exit: ₹7,747.50 (+₹0.00).",
+        "badge": "Breakeven Exit \ud83d\udee1\ufe0f (02:13 PM IST)",
+        "pnl_display": "+\u20b90.00",
+        "summary": "Trailing Breakeven Stop Triggered \ud83d\udee1\ufe0f (Exit \u20b97,747.50 | Capital Protected) at 02:13 PM IST. Entry: \u20b97,747.50 -> Exit: \u20b97,747.50 (+\u20b90.00).",
         "exit_time": "02:13 PM IST",
         "exit_trigger": "TRAILING_BREAKEVEN_HIT"
       }
@@ -3319,7 +3307,7 @@
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
         "regime": "BULL_TREND",
-        "badge": "🚀 Bull Trend",
+        "badge": "\ud83d\ude80 Bull Trend",
         "short_tag": "Bull Trend",
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
@@ -3344,7 +3332,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "STRONG_POSITIVE_EXPECTANCY",
-        "verdict_text": "Strongly Leans Toward Target 🎯 (High Edge)",
+        "verdict_text": "Strongly Leans Toward Target \ud83c\udfaf (High Edge)",
         "p_target_pct": 32.0,
         "p_stop_pct": 13.2,
         "p_neither_pct": 54.8,
@@ -3352,7 +3340,7 @@
         "expected_r": 0.252,
         "target_r": 1.2,
         "sample_bars": 658,
-        "summary": "3,000 Replays: 32.0% Target | 13.2% Stop | Expected: +0.25R (Strongly Leans Toward Target 🎯 (High Edge))"
+        "summary": "3,000 Replays: 32.0% Target | 13.2% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
       },
       "risk_check": {
         "passed": true,
@@ -3364,7 +3352,7 @@
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close ₹975.45 breaking above range high ₹975.45."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b9975.45 breaking above range high \u20b9975.45."
       },
       "event_check": {
         "passed": true,
@@ -3374,8 +3362,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ ₹975.45",
-        "rationale": "High-Beta breakout momentum (Chg: +1.08%) with healthy RSI (60.1) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 32.0% Target | 13.2% Stop | Expected: +0.25R (Strongly Leans Toward Target 🎯 (High Edge))",
+        "action_text": "BUY @ \u20b9975.45",
+        "rationale": "High-Beta breakout momentum (Chg: +1.08%) with healthy RSI (60.1) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 32.0% Target | 13.2% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))",
         "reference_price": 975.45,
         "stop_loss": 958.63,
         "target": 995.63,
@@ -3385,8 +3373,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 975.45,
-        "action_taken": "Entered BUY 51 shares @ ₹975.45",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.08%) with healthy RSI (60.1) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 32.0% Target | 13.2% Stop | Expected: +0.25R (Strongly Leans Toward Target 🎯 (High Edge))"
+        "action_taken": "Entered BUY 51 shares @ \u20b9975.45",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.08%) with healthy RSI (60.1) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 32.0% Target | 13.2% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3416,9 +3404,9 @@
         "session_close": 975.45,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Breakeven Exit 🛡️ (12:51 PM IST)",
-        "pnl_display": "+₹0.00",
-        "summary": "Trailing Breakeven Stop Triggered 🛡️ (Exit ₹975.45 | Capital Protected) at 12:51 PM IST. Entry: ₹975.45 -> Exit: ₹975.45 (+₹0.00).",
+        "badge": "Breakeven Exit \ud83d\udee1\ufe0f (12:51 PM IST)",
+        "pnl_display": "+\u20b90.00",
+        "summary": "Trailing Breakeven Stop Triggered \ud83d\udee1\ufe0f (Exit \u20b9975.45 | Capital Protected) at 12:51 PM IST. Entry: \u20b9975.45 -> Exit: \u20b9975.45 (+\u20b90.00).",
         "exit_time": "12:51 PM IST",
         "exit_trigger": "TRAILING_BREAKEVEN_HIT"
       }
@@ -3439,7 +3427,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / TREND GUARD",
-        "rationale": "Dumping into Lower Circuit (-3.80%): Intraday Bearish Session Momentum: Price (₹7,916.0) trading below VWAP (₹7,960.8) and Day Open (₹8,033.0) with downward expansion (-3.80%).. Knife-catching prohibited.",
+        "rationale": "Dumping into Lower Circuit (-3.80%): Intraday Bearish Session Momentum: Price (\u20b97,916.0) trading below VWAP (\u20b97,960.8) and Day Open (\u20b98,033.0) with downward expansion (-3.80%).. Knife-catching prohibited.",
         "reference_price": 7916.0,
         "stop_loss": null,
         "target": null
@@ -3449,7 +3437,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 7916.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Dumping into Lower Circuit (-3.80%): Intraday Bearish Session Momentum: Price (₹7,916.0) trading below VWAP (₹7,960.8) and Day Open (₹8,033.0) with downward expansion (-3.80%).. Knife-catching prohibited."
+        "detail": "Dumping into Lower Circuit (-3.80%): Intraday Bearish Session Momentum: Price (\u20b97,916.0) trading below VWAP (\u20b97,960.8) and Day Open (\u20b98,033.0) with downward expansion (-3.80%).. Knife-catching prohibited."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3468,8 +3456,8 @@
         "session_close": null,
         "circuit_limit": 7899.84,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -3489,7 +3477,7 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL GOLDM",
-        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: ₹147,327.9) & trading below Session VWAP (₹142,029.0). Target 1.2R calibrated to ATR.",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9147,327.9) & trading below Session VWAP (\u20b9142,029.0). Target 1.2R calibrated to ATR.",
         "reference_price": 141980.0,
         "stop_loss": 142827.24,
         "target": 141048.04
@@ -3499,7 +3487,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 142059.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹142,059.00 (-0.75%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9142,059.00 (-0.75%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3520,8 +3508,8 @@
         "session_close": null,
         "circuit_limit": 142827.24,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -3541,7 +3529,7 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL SILVERMIC",
-        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: ₹210,415.9) & trading below Session VWAP (₹185,622.0). Target 1.2R calibrated to ATR.",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9210,415.9) & trading below Session VWAP (\u20b9185,622.0). Target 1.2R calibrated to ATR.",
         "reference_price": 185191.0,
         "stop_loss": 187121.05,
         "target": 183067.95
@@ -3551,7 +3539,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 186997.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹186,997.00 (-0.97%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9186,997.00 (-0.97%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3572,8 +3560,8 @@
         "session_close": null,
         "circuit_limit": 187121.05,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -3593,7 +3581,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / DIRECTION ENGINE",
-        "rationale": "Pre-6 PM Lower Circuit fade blocked: Intraday Bearish Session Momentum: Price (₹7,972.0) trading below VWAP (₹8,002.2) and Day Open (₹8,033.0) with downward expansion (-3.12%).. Knife-catching prohibited.",
+        "rationale": "Pre-6 PM Lower Circuit fade blocked: Intraday Bearish Session Momentum: Price (\u20b97,972.0) trading below VWAP (\u20b98,002.2) and Day Open (\u20b98,033.0) with downward expansion (-3.12%).. Knife-catching prohibited.",
         "reference_price": 7972.0,
         "stop_loss": null,
         "target": null
@@ -3603,7 +3591,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 7941.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹7,941.00 (-3.50%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b97,941.00 (-3.50%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3622,8 +3610,8 @@
         "session_close": null,
         "circuit_limit": 7899.84,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -3643,7 +3631,7 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL NATURALGASM",
-        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: ₹313.1) & trading below Session VWAP (₹306.4). Target 1.2R calibrated to ATR.",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9313.1) & trading below Session VWAP (\u20b9306.4). Target 1.2R calibrated to ATR.",
         "reference_price": 306.4,
         "stop_loss": 309.49,
         "target": 303.0
@@ -3653,7 +3641,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 305.5,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹305.50 (+1.66%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9305.50 (+1.66%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3674,8 +3662,8 @@
         "session_close": null,
         "circuit_limit": 309.49,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -3695,7 +3683,7 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL COPPERM",
-        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: ₹1,387.3) & trading below Session VWAP (₹1,344.0). Target 1.2R calibrated to ATR.",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b91,387.3) & trading below Session VWAP (\u20b91,344.0). Target 1.2R calibrated to ATR.",
         "reference_price": 1342.8,
         "stop_loss": 1350.27,
         "target": 1334.58
@@ -3705,7 +3693,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 1343.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹1,343.00 (-0.62%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b91,343.00 (-0.62%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3726,8 +3714,8 @@
         "session_close": null,
         "circuit_limit": 1350.27,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -3747,7 +3735,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (-0.68%). Conflict: HTF is Bullish but price (₹410.7) is trading below Session VWAP (₹411.8). Awaiting reclaim of VWAP.. Capital preserved in cash.",
+        "rationale": "Asset within tight range (-0.68%). Conflict: HTF is Bullish but price (\u20b9410.7) is trading below Session VWAP (\u20b9411.8). Awaiting reclaim of VWAP.. Capital preserved in cash.",
         "reference_price": 410.7,
         "stop_loss": 396.96,
         "target": 413.5
@@ -3757,7 +3745,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 410.5,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹410.50 (-0.73%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9410.50 (-0.73%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3775,8 +3763,8 @@
         "session_close": null,
         "circuit_limit": 396.96,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -3796,7 +3784,7 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL ALUMINI",
-        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: ₹334.0) & trading below Session VWAP (₹327.4). Target 1.2R calibrated to ATR.",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9334.0) & trading below Session VWAP (\u20b9327.4). Target 1.2R calibrated to ATR.",
         "reference_price": 326.25,
         "stop_loss": 330.31,
         "target": 321.78
@@ -3806,7 +3794,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 327.6,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹327.60 (-1.28%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9327.60 (-1.28%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3827,8 +3815,8 @@
         "session_close": null,
         "circuit_limit": 330.31,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -3848,7 +3836,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (-0.69%). Conflict: HTF is Bullish but price (₹410.6) is trading below Session VWAP (₹411.6). Awaiting reclaim of VWAP.. Capital preserved in cash.",
+        "rationale": "Asset within tight range (-0.69%). Conflict: HTF is Bullish but price (\u20b9410.6) is trading below Session VWAP (\u20b9411.6). Awaiting reclaim of VWAP.. Capital preserved in cash.",
         "reference_price": 410.6,
         "stop_loss": 396.91,
         "target": 413.45
@@ -3858,7 +3846,7 @@
         "status": "CONFIRMED_STAND_ASIDE",
         "price_615": 410.2,
         "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
-        "detail": "Price at 6:15 PM ₹410.20 (-0.79%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9410.20 (-0.79%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3876,8 +3864,8 @@
         "session_close": null,
         "circuit_limit": 396.91,
         "outcome": "PROTECTED",
-        "badge": "Capital Protected 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
@@ -3897,7 +3885,7 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 6:15 PM CANDLE CLOSE before entering SELL ALUMINI",
-        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: ₹334.9) & trading below Session VWAP (₹328.2). Target 1.2R calibrated to ATR.",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9334.9) & trading below Session VWAP (\u20b9328.2). Target 1.2R calibrated to ATR.",
         "reference_price": 327.45,
         "stop_loss": 330.69,
         "target": 323.89
@@ -3907,7 +3895,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 327.6,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹327.60 (-1.28%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9327.60 (-1.28%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -3928,8 +3916,8 @@
         "session_close": null,
         "circuit_limit": 330.69,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -3948,7 +3936,7 @@
       "event_context": "Indicator Confluence: EMA 20/50 Bearish Trend Confluence",
       "regime": {
         "regime": "BREAKDOWN",
-        "badge": "🔻 Breakdown / Bear Trend",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
         "short_tag": "Breakdown",
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
@@ -3974,7 +3962,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 47.6,
         "p_stop_pct": 46.5,
         "p_neither_pct": 5.8,
@@ -3982,7 +3970,7 @@
         "expected_r": 0.106,
         "target_r": 1.2,
         "sample_bars": 2004,
-        "summary": "3,000 Replays: 47.6% Target | 46.5% Stop | Expected: +0.11R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 47.6% Target | 46.5% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -3993,8 +3981,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "SELL @ ₹1,345.40",
-        "rationale": "20 EMA (₹1,374.75) < 50 EMA (₹1,387.36) with ADX 44.1 >= 20 and healthy RSI 37.2. Downward trend continuation in effect. 3,000 Replays: 47.6% Target | 46.5% Stop | Expected: +0.11R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "SELL @ \u20b91,345.40",
+        "rationale": "20 EMA (\u20b91,374.75) < 50 EMA (\u20b91,387.36) with ADX 44.1 >= 20 and healthy RSI 37.2. Downward trend continuation in effect. 3,000 Replays: 47.6% Target | 46.5% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 1345.4,
         "stop_loss": 1343.06,
         "target": 1339.56,
@@ -4004,8 +3992,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 1345.4,
-        "action_taken": "Entered SELL 1000 units @ ₹1,345.40",
-        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (₹1,374.75) < 50 EMA (₹1,387.36) with ADX 44.1 >= 20 and healthy RSI 37.2. Downward trend continuation in effect. | 3,000 Replays: 47.6% Target | 46.5% Stop | Expected: +0.11R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered SELL 1000 units @ \u20b91,345.40",
+        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (\u20b91,374.75) < 50 EMA (\u20b91,387.36) with ADX 44.1 >= 20 and healthy RSI 37.2. Downward trend continuation in effect. | 3,000 Replays: 47.6% Target | 46.5% Stop | Expected: +0.11R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4031,9 +4019,9 @@
         "session_close": 1339.56,
         "circuit_limit": null,
         "outcome": "CORRECT",
-        "badge": "Target Achieved 🎯 (07:01 PM IST)",
-        "pnl_display": "+₹5,840.00",
-        "summary": "Target Achieved 🎯 at 07:01 PM IST. Entry: ₹1,345.40 -> Exit: ₹1,339.56 (+₹5,840.00).",
+        "badge": "Target Achieved \ud83c\udfaf (07:01 PM IST)",
+        "pnl_display": "+\u20b95,840.00",
+        "summary": "Target Achieved \ud83c\udfaf at 07:01 PM IST. Entry: \u20b91,345.40 -> Exit: \u20b91,339.56 (+\u20b95,840.00).",
         "exit_time": "07:01 PM IST",
         "exit_trigger": "TARGET_HIT"
       }
@@ -4053,7 +4041,7 @@
       "event_context": "Indicator Confluence: EMA 20/50 Bearish Trend Confluence",
       "regime": {
         "regime": "BREAKDOWN",
-        "badge": "🔻 Breakdown / Bear Trend",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
         "short_tag": "Breakdown",
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
@@ -4079,7 +4067,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 49.5,
         "p_stop_pct": 47.3,
         "p_neither_pct": 3.2,
@@ -4087,7 +4075,7 @@
         "expected_r": 0.121,
         "target_r": 1.2,
         "sample_bars": 1992,
-        "summary": "3,000 Replays: 49.5% Target | 47.3% Stop | Expected: +0.12R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 49.5% Target | 47.3% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -4098,8 +4086,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "SELL @ ₹1,344.60",
-        "rationale": "20 EMA (₹1,374.68) < 50 EMA (₹1,387.33) with ADX 44.1 >= 20 and healthy RSI 37.0. Downward trend continuation in effect. 3,000 Replays: 49.5% Target | 47.3% Stop | Expected: +0.12R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "SELL @ \u20b91,344.60",
+        "rationale": "20 EMA (\u20b91,374.68) < 50 EMA (\u20b91,387.33) with ADX 44.1 >= 20 and healthy RSI 37.0. Downward trend continuation in effect. 3,000 Replays: 49.5% Target | 47.3% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 1344.6,
         "stop_loss": 1348.96,
         "target": 1339.37,
@@ -4109,8 +4097,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 1344.6,
-        "action_taken": "Entered SELL 1000 units @ ₹1,344.60",
-        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (₹1,374.68) < 50 EMA (₹1,387.33) with ADX 44.1 >= 20 and healthy RSI 37.0. Downward trend continuation in effect. | 3,000 Replays: 49.5% Target | 47.3% Stop | Expected: +0.12R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered SELL 1000 units @ \u20b91,344.60",
+        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (\u20b91,374.68) < 50 EMA (\u20b91,387.33) with ADX 44.1 >= 20 and healthy RSI 37.0. Downward trend continuation in effect. | 3,000 Replays: 49.5% Target | 47.3% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4135,9 +4123,9 @@
         "session_close": 1344.6,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Breakeven Exit 🛡️ (05:41 PM IST)",
-        "pnl_display": "+₹0.00",
-        "summary": "Trailing Stop Triggered (Breakeven) 🛡️ at 05:41 PM IST. Entry: ₹1,344.60 -> Exit: ₹1,344.60 (+₹0.00).",
+        "badge": "Breakeven Exit \ud83d\udee1\ufe0f (05:41 PM IST)",
+        "pnl_display": "+\u20b90.00",
+        "summary": "Trailing Stop Triggered (Breakeven) \ud83d\udee1\ufe0f at 05:41 PM IST. Entry: \u20b91,344.60 -> Exit: \u20b91,344.60 (+\u20b90.00).",
         "exit_time": "05:41 PM IST",
         "exit_trigger": "TRAILING_BREAKEVEN_HIT"
       }
@@ -4158,7 +4146,7 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / LIQUIDITY SWEEP TRAP",
-        "rationale": "Macro trend is Bullish (above CPR ₹143,715.50 | +0.43%). Low Asian range breakdown is a classic institutional Liquidity Sweep. Avoided.",
+        "rationale": "Macro trend is Bullish (above CPR \u20b9143,715.50 | +0.43%). Low Asian range breakdown is a classic institutional Liquidity Sweep. Avoided.",
         "reference_price": 143166.0,
         "stop_loss": null,
         "target": null
@@ -4168,7 +4156,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 142087.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹142,087.00 (-0.75%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9142,087.00 (-0.75%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4187,8 +4175,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -4204,11 +4192,11 @@
       "symbol": "SILVER",
       "name": "Silver",
       "lot_size": 30,
-      "event_context": "Range-Bound Asian Range [₹185,919.00 – ₹189,399.00]",
+      "event_context": "Range-Bound Asian Range [\u20b9185,919.00 \u2013 \u20b9189,399.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹185,919.00 – ₹189,399.00]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9185,919.00 \u2013 \u20b9189,399.00]. Standing aside awaiting range breakout.",
         "reference_price": 187127.0,
         "stop_loss": null,
         "target": null
@@ -4218,7 +4206,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 185200.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹185,200.00 (-1.03%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9185,200.00 (-1.03%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4237,8 +4225,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -4254,11 +4242,11 @@
       "symbol": "CRUDEOIL",
       "name": "Crude Oil",
       "lot_size": 100,
-      "event_context": "Range-Bound Asian Range [₹8,088.00 – ₹8,593.00]",
+      "event_context": "Range-Bound Asian Range [\u20b98,088.00 \u2013 \u20b98,593.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹8,088.00 – ₹8,593.00]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b98,088.00 \u2013 \u20b98,593.00]. Standing aside awaiting range breakout.",
         "reference_price": 8229.0,
         "stop_loss": null,
         "target": null
@@ -4268,7 +4256,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 7941.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹7,941.00 (-3.50%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b97,941.00 (-3.50%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4287,8 +4275,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -4304,11 +4292,11 @@
       "symbol": "NATURALGAS",
       "name": "Natural Gas",
       "lot_size": 1250,
-      "event_context": "Range-Bound Asian Range [₹282.50 – ₹301.80]",
+      "event_context": "Range-Bound Asian Range [\u20b9282.50 \u2013 \u20b9301.80]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹282.50 – ₹301.80]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9282.50 \u2013 \u20b9301.80]. Standing aside awaiting range breakout.",
         "reference_price": 300.5,
         "stop_loss": null,
         "target": null
@@ -4318,7 +4306,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 305.1,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹305.10 (+1.53%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9305.10 (+1.53%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4337,8 +4325,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -4354,11 +4342,11 @@
       "symbol": "COPPER",
       "name": "Copper",
       "lot_size": 2500,
-      "event_context": "Range-Bound Asian Range [₹1,345.00 – ₹1,355.05]",
+      "event_context": "Range-Bound Asian Range [\u20b91,345.00 \u2013 \u20b91,355.05]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹1,345.00 – ₹1,355.05]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b91,345.00 \u2013 \u20b91,355.05]. Standing aside awaiting range breakout.",
         "reference_price": 1351.4,
         "stop_loss": null,
         "target": null
@@ -4368,7 +4356,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 1343.0,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹1,343.00 (-0.62%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b91,343.00 (-0.62%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4387,8 +4375,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -4404,11 +4392,11 @@
       "symbol": "ZINC",
       "name": "Zinc",
       "lot_size": 5000,
-      "event_context": "Range-Bound Asian Range [₹412.00 – ₹416.00]",
+      "event_context": "Range-Bound Asian Range [\u20b9412.00 \u2013 \u20b9416.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹412.00 – ₹416.00]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9412.00 \u2013 \u20b9416.00]. Standing aside awaiting range breakout.",
         "reference_price": 413.5,
         "stop_loss": null,
         "target": null
@@ -4418,7 +4406,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 410.5,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹410.50 (-0.73%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9410.50 (-0.73%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4437,8 +4425,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -4454,11 +4442,11 @@
       "symbol": "ALUMINIUM",
       "name": "Aluminium",
       "lot_size": 5000,
-      "event_context": "Range-Bound Asian Range [₹329.70 – ₹332.00]",
+      "event_context": "Range-Bound Asian Range [\u20b9329.70 \u2013 \u20b9332.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹329.70 – ₹332.00]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9329.70 \u2013 \u20b9332.00]. Standing aside awaiting range breakout.",
         "reference_price": 330.8,
         "stop_loss": null,
         "target": null
@@ -4468,7 +4456,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 326.4,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹326.40 (-1.33%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9326.40 (-1.33%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4487,8 +4475,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -4504,11 +4492,11 @@
       "symbol": "ZINCMINI",
       "name": "Zinc Mini",
       "lot_size": 1000,
-      "event_context": "Range-Bound Asian Range [₹412.00 – ₹415.95]",
+      "event_context": "Range-Bound Asian Range [\u20b9412.00 \u2013 \u20b9415.95]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹412.00 – ₹415.95]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9412.00 \u2013 \u20b9415.95]. Standing aside awaiting range breakout.",
         "reference_price": 413.45,
         "stop_loss": null,
         "target": null
@@ -4518,7 +4506,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 410.2,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹410.20 (-0.79%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9410.20 (-0.79%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4537,8 +4525,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -4554,11 +4542,11 @@
       "symbol": "ALUMINI",
       "name": "Aluminium Mini",
       "lot_size": 1000,
-      "event_context": "Range-Bound Asian Range [₹331.00 – ₹332.90]",
+      "event_context": "Range-Bound Asian Range [\u20b9331.00 \u2013 \u20b9332.90]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [₹331.00 – ₹332.90]. Standing aside awaiting range breakout.",
+        "rationale": "Trading within morning Asian range [\u20b9331.00 \u2013 \u20b9332.90]. Standing aside awaiting range breakout.",
         "reference_price": 331.85,
         "stop_loss": null,
         "target": null
@@ -4568,7 +4556,7 @@
         "status": "CONFIRMATION_EXPIRED",
         "price_615": 327.6,
         "action_taken": "15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.",
-        "detail": "Price at 6:15 PM ₹327.60 (-1.28%) confirmed no extreme circuit imbalance."
+        "detail": "Price at 6:15 PM \u20b9327.60 (-1.28%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4587,8 +4575,8 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Trap 🛡️",
-        "pnl_display": "₹0.00 (Protected)",
+        "badge": "Avoided Trap \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
         "summary": "15-minute confirmation check elapsed without executed entry. 100% capital protected in cash."
       }
     },
@@ -4608,7 +4596,7 @@
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
         "regime": "BULL_TREND",
-        "badge": "🚀 Bull Trend",
+        "badge": "\ud83d\ude80 Bull Trend",
         "short_tag": "Bull Trend",
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
@@ -4633,7 +4621,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 22.2,
         "p_stop_pct": 17.8,
         "p_neither_pct": 60.0,
@@ -4641,7 +4629,7 @@
         "expected_r": 0.088,
         "target_r": 1.2,
         "sample_bars": 727,
-        "summary": "3,000 Replays: 22.2% Target | 17.8% Stop | Expected: +0.09R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 22.2% Target | 17.8% Stop | Expected: +0.09R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -4653,7 +4641,7 @@
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close ₹960.00 breaking above range high ₹960.00."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b9960.00 breaking above range high \u20b9960.00."
       },
       "event_check": {
         "passed": true,
@@ -4663,8 +4651,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ ₹960.00",
-        "rationale": "High-Beta breakout momentum (Chg: +0.63%) with healthy RSI (61.9) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 22.2% Target | 17.8% Stop | Expected: +0.09R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "BUY @ \u20b9960.00",
+        "rationale": "High-Beta breakout momentum (Chg: +0.63%) with healthy RSI (61.9) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 22.2% Target | 17.8% Stop | Expected: +0.09R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 960.0,
         "stop_loss": 943.44,
         "target": 979.87
@@ -4673,8 +4661,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 960.0,
-        "action_taken": "Entered BUY 52 shares @ ₹960.00",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.63%) with healthy RSI (61.9) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 22.2% Target | 17.8% Stop | Expected: +0.09R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered BUY 52 shares @ \u20b9960.00",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.63%) with healthy RSI (61.9) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 22.2% Target | 17.8% Stop | Expected: +0.09R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4697,9 +4685,9 @@
         "session_close": 960.0,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Stagnation Exit ⏱️ (01:32 PM IST)",
-        "pnl_display": "+₹0.00",
-        "summary": "120-Minute Stagnation Exit ⏱️ (Below entry for 120m; capital protection) at 01:32 PM IST. Entry: ₹960.00 -> Exit: ₹960.00 (+₹0.00).",
+        "badge": "Stagnation Exit \u23f1\ufe0f (01:32 PM IST)",
+        "pnl_display": "+\u20b90.00",
+        "summary": "120-Minute Stagnation Exit \u23f1\ufe0f (Below entry for 120m; capital protection) at 01:32 PM IST. Entry: \u20b9960.00 -> Exit: \u20b9960.00 (+\u20b90.00).",
         "exit_time": "01:32 PM IST",
         "exit_trigger": "STAGNATION_EXIT"
       }
@@ -4720,7 +4708,7 @@
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
         "regime": "BULL_TREND",
-        "badge": "🚀 Bull Trend",
+        "badge": "\ud83d\ude80 Bull Trend",
         "short_tag": "Bull Trend",
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
@@ -4745,7 +4733,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 16.6,
         "p_stop_pct": 12.9,
         "p_neither_pct": 70.5,
@@ -4753,7 +4741,7 @@
         "expected_r": 0.07,
         "target_r": 1.2,
         "sample_bars": 727,
-        "summary": "3,000 Replays: 16.6% Target | 12.9% Stop | Expected: +0.07R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 16.6% Target | 12.9% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -4765,7 +4753,7 @@
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close ₹8,549.50 breaking above range high ₹8,549.50."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b98,549.50 breaking above range high \u20b98,549.50."
       },
       "event_check": {
         "passed": true,
@@ -4775,8 +4763,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ ₹8,549.50",
-        "rationale": "High-Beta breakout momentum (Chg: +1.20%) with healthy RSI (59.7) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 16.6% Target | 12.9% Stop | Expected: +0.07R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "BUY @ \u20b98,549.50",
+        "rationale": "High-Beta breakout momentum (Chg: +1.20%) with healthy RSI (59.7) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 16.6% Target | 12.9% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 8549.5,
         "stop_loss": 8402.02,
         "target": 8726.48
@@ -4785,8 +4773,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 8549.5,
-        "action_taken": "Entered BUY 5 shares @ ₹8,549.50",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.20%) with healthy RSI (59.7) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 16.6% Target | 12.9% Stop | Expected: +0.07R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered BUY 5 shares @ \u20b98,549.50",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.20%) with healthy RSI (59.7) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 16.6% Target | 12.9% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4809,9 +4797,9 @@
         "session_close": 8549.5,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Stagnation Exit ⏱️ (11:31 AM IST)",
-        "pnl_display": "+₹0.00",
-        "summary": "120-Minute Stagnation Exit ⏱️ (Below entry for 121m; capital protection) at 11:31 AM IST. Entry: ₹8,549.50 -> Exit: ₹8,549.50 (+₹0.00).",
+        "badge": "Stagnation Exit \u23f1\ufe0f (11:31 AM IST)",
+        "pnl_display": "+\u20b90.00",
+        "summary": "120-Minute Stagnation Exit \u23f1\ufe0f (Below entry for 121m; capital protection) at 11:31 AM IST. Entry: \u20b98,549.50 -> Exit: \u20b98,549.50 (+\u20b90.00).",
         "exit_time": "11:31 AM IST",
         "exit_trigger": "STAGNATION_EXIT"
       }
@@ -4832,7 +4820,7 @@
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
         "regime": "BULL_TREND",
-        "badge": "🚀 Bull Trend",
+        "badge": "\ud83d\ude80 Bull Trend",
         "short_tag": "Bull Trend",
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
@@ -4857,7 +4845,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 33.4,
         "p_stop_pct": 16.9,
         "p_neither_pct": 49.7,
@@ -4865,7 +4853,7 @@
         "expected_r": 0.232,
         "target_r": 1.2,
         "sample_bars": 727,
-        "summary": "3,000 Replays: 33.4% Target | 16.9% Stop | Expected: +0.23R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 33.4% Target | 16.9% Stop | Expected: +0.23R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -4877,7 +4865,7 @@
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close ₹401.65 breaking above range high ₹401.65."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b9401.65 breaking above range high \u20b9401.65."
       },
       "event_check": {
         "passed": true,
@@ -4887,8 +4875,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ ₹401.65",
-        "rationale": "High-Beta breakout momentum (Chg: +1.13%) with healthy RSI (65.1) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 33.4% Target | 16.9% Stop | Expected: +0.23R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "BUY @ \u20b9401.65",
+        "rationale": "High-Beta breakout momentum (Chg: +1.13%) with healthy RSI (65.1) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 33.4% Target | 16.9% Stop | Expected: +0.23R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 401.65,
         "stop_loss": 394.73,
         "target": 409.95
@@ -4897,8 +4885,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 401.65,
-        "action_taken": "Entered BUY 124 shares @ ₹401.65",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.13%) with healthy RSI (65.1) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 33.4% Target | 16.9% Stop | Expected: +0.23R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered BUY 124 shares @ \u20b9401.65",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.13%) with healthy RSI (65.1) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 33.4% Target | 16.9% Stop | Expected: +0.23R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -4921,9 +4909,9 @@
         "session_close": 401.65,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Stagnation Exit ⏱️ (11:31 AM IST)",
-        "pnl_display": "+₹0.00",
-        "summary": "120-Minute Stagnation Exit ⏱️ (Below entry for 121m; capital protection) at 11:31 AM IST. Entry: ₹401.65 -> Exit: ₹401.65 (+₹0.00).",
+        "badge": "Stagnation Exit \u23f1\ufe0f (11:31 AM IST)",
+        "pnl_display": "+\u20b90.00",
+        "summary": "120-Minute Stagnation Exit \u23f1\ufe0f (Below entry for 121m; capital protection) at 11:31 AM IST. Entry: \u20b9401.65 -> Exit: \u20b9401.65 (+\u20b90.00).",
         "exit_time": "11:31 AM IST",
         "exit_trigger": "STAGNATION_EXIT"
       }
@@ -4944,7 +4932,7 @@
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
         "regime": "BULL_TREND",
-        "badge": "🚀 Bull Trend",
+        "badge": "\ud83d\ude80 Bull Trend",
         "short_tag": "Bull Trend",
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
@@ -4969,7 +4957,7 @@
         "replays": 3000,
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target 🟢 (Positive Expectancy)",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
         "p_target_pct": 21.0,
         "p_stop_pct": 13.0,
         "p_neither_pct": 66.0,
@@ -4977,7 +4965,7 @@
         "expected_r": 0.122,
         "target_r": 1.2,
         "sample_bars": 727,
-        "summary": "3,000 Replays: 21.0% Target | 13.0% Stop | Expected: +0.12R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "summary": "3,000 Replays: 21.0% Target | 13.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
@@ -4989,7 +4977,7 @@
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close ₹10,979.00 breaking above range high ₹10,979.00."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b910,979.00 breaking above range high \u20b910,979.00."
       },
       "event_check": {
         "passed": true,
@@ -4999,8 +4987,8 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ ₹10,979.00",
-        "rationale": "High-Beta breakout momentum (Chg: +0.63%) with healthy RSI (62.8) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 21.0% Target | 13.0% Stop | Expected: +0.12R (Leans Toward Target 🟢 (Positive Expectancy))",
+        "action_text": "BUY @ \u20b910,979.00",
+        "rationale": "High-Beta breakout momentum (Chg: +0.63%) with healthy RSI (62.8) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 21.0% Target | 13.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 10979.0,
         "stop_loss": 10789.61,
         "target": 11206.27
@@ -5009,8 +4997,8 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 10979.0,
-        "action_taken": "Entered BUY 4 shares @ ₹10,979.00",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.63%) with healthy RSI (62.8) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 21.0% Target | 13.0% Stop | Expected: +0.12R (Leans Toward Target 🟢 (Positive Expectancy))"
+        "action_taken": "Entered BUY 4 shares @ \u20b910,979.00",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.63%) with healthy RSI (62.8) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 21.0% Target | 13.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -5033,9 +5021,9 @@
         "session_close": 10979.0,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Stagnation Exit ⏱️ (11:31 AM IST)",
-        "pnl_display": "+₹0.00",
-        "summary": "120-Minute Stagnation Exit ⏱️ (Below entry for 121m; capital protection) at 11:31 AM IST. Entry: ₹10,979.00 -> Exit: ₹10,979.00 (+₹0.00).",
+        "badge": "Stagnation Exit \u23f1\ufe0f (11:31 AM IST)",
+        "pnl_display": "+\u20b90.00",
+        "summary": "120-Minute Stagnation Exit \u23f1\ufe0f (Below entry for 121m; capital protection) at 11:31 AM IST. Entry: \u20b910,979.00 -> Exit: \u20b910,979.00 (+\u20b90.00).",
         "exit_time": "11:31 AM IST",
         "exit_trigger": "STAGNATION_EXIT"
       }
