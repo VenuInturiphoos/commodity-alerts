@@ -479,16 +479,14 @@ def check_margin_availability(tracker_data, sym, cur_p, lot_size, is_equity=Fals
         (has_margin: bool, req_margin: float, avail_margin: float, adapted_lot: int)
     """
     if is_equity:
-        cash_info = get_cash_and_margin(tracker_data)
-        overall_avail_cash = cash_info['available_cash']
         intraday_info = get_intraday_margin_pool(tracker_data)
-        # Liquid margin is strictly bounded by REAL overall available cash in portfolio
-        stock_avail = max(0.0, min(overall_avail_cash, intraday_info['available_margin']))
+        # Dedicated ₹30,000 daily MIS intraday margin pool
+        stock_avail = max(0.0, float(intraday_info.get('available_margin', 0.0)))
         unit_margin = round(cur_p * 0.20, 2)
         req = round(cur_p * lot_size * 0.20, 2)
 
-        if unit_margin <= 0 or stock_avail < unit_margin or overall_avail_cash < unit_margin:
-            # Cannot afford even 1 whole share from actual liquid cash! Strictly reject purchase
+        if unit_margin <= 0 or stock_avail < unit_margin:
+            # Cannot afford even 1 whole share from available intraday margin pool! Reject purchase
             return False, req, stock_avail, 0
 
         if req <= stock_avail and req > 0:
