@@ -321,6 +321,18 @@ def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=Non
             tgt = round(cur_p + tgt_dist, 2)
         else:
             tgt = round(cur_p + (min_rrr * risk_pts), 2)
+
+    # Directional Invariant Validation: Guarantee SL and Target are NEVER inverted relative to entry price
+    if action.upper() == 'BUY':
+        if sl >= cur_p:
+            sl = round(cur_p - max(atr * 0.8 if atr else cur_p * 0.01, cur_p * 0.005), 2)
+        if tgt <= cur_p:
+            tgt = round(cur_p + (min_rrr * abs(cur_p - sl)), 2)
+    else:
+        if sl <= cur_p:
+            sl = round(cur_p + max(atr * 0.8 if atr else cur_p * 0.01, cur_p * 0.005), 2)
+        if tgt >= cur_p:
+            tgt = round(cur_p - (min_rrr * abs(sl - cur_p)), 2)
         
     return sl, tgt
 
@@ -433,18 +445,25 @@ def check_margin_availability(tracker_data, sym, cur_p, lot_size, is_equity=Fals
         (has_margin: bool, req_margin: float, avail_margin: float, adapted_lot: int)
     """
     if is_equity:
+        cash_info = get_cash_and_margin(tracker_data)
+        overall_avail_cash = cash_info['available_cash']
         intraday_info = get_intraday_margin_pool(tracker_data)
-        stock_avail = intraday_info['available_margin']
+        # Liquid margin is strictly bounded by REAL overall available cash in portfolio
+        stock_avail = max(0.0, min(overall_avail_cash, intraday_info['available_margin']))
         unit_margin = round(cur_p * 0.20, 2)
         req = round(cur_p * lot_size * 0.20, 2)
+
+        if unit_margin <= 0 or stock_avail < unit_margin or overall_avail_cash < unit_margin:
+            # Cannot afford even 1 whole share from actual liquid cash! Strictly reject purchase
+            return False, req, stock_avail, 0
 
         if req <= stock_avail and req > 0:
             return True, req, stock_avail, lot_size
 
-        # If full size exceeds stock margin pool, downscale to affordable shares
-        if unit_margin > 0 and stock_avail >= unit_margin:
-            affordable_shares = int(stock_avail // unit_margin)
-            adapted_lot = max(1, affordable_shares)
+        # If full size exceeds available cash, downscale strictly to affordable whole shares
+        affordable_shares = int(stock_avail // unit_margin)
+        if affordable_shares >= 1:
+            adapted_lot = affordable_shares
             adapted_req = round(cur_p * adapted_lot * 0.20, 2)
             return True, adapted_req, stock_avail, adapted_lot
         else:
@@ -2371,8 +2390,16 @@ def record_live_8pm_advisory(commodities_list, day_name):
             # Technical Invalidation Stop: placed beyond Day Extreme + buffer
             if direction == 'LOWER':
                 sl = round(min(cur_p * 0.992, lc_price * 0.995), 2)
+                if sl >= cur_p:
+                    sl = round(cur_p * 0.990, 2)
+                if tgt <= cur_p:
+                    tgt = round(cur_p * 1.015, 2)
             else:
                 sl = round(max(cur_p * 1.008, uc_price * 1.005), 2)
+                if sl <= cur_p:
+                    sl = round(cur_p * 1.010, 2)
+                if tgt >= cur_p:
+                    tgt = round(cur_p * 0.985, 2)
 
             # 1. Adaptively route to Mini contract or scale lot size strictly within ₹3,000 risk cap
             contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
@@ -2826,9 +2853,21 @@ def check_and_execute_615_confirmation(checker, alerter):
             action = "BUY" if direction == 'LOWER' else "SELL"
             if direction == 'LOWER':
                 sl = round(min(cur_p * 0.992, lc_p * 0.995), 2)
+                if sl >= cur_p:
+                    sl = round(cur_p * 0.990, 2)
+                if tgt <= cur_p:
+                    tgt = round(cur_p * 1.015, 2)
             else:
                 sl = round(max(cur_p * 1.008, uc_p * 1.005), 2)
+                if sl <= cur_p:
+                    sl = round(cur_p * 1.010, 2)
+                if tgt >= cur_p:
+                    tgt = round(cur_p * 0.985, 2)
             tgt = prev_close
+            if action == 'BUY' and tgt <= cur_p:
+                tgt = round(cur_p * 1.015, 2)
+            elif action == 'SELL' and tgt >= cur_p:
+                tgt = round(cur_p * 0.985, 2)
 
             # 1. Adaptively route to Mini contract or scale lot size strictly within ₹3,000 max risk cap
             contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
@@ -3627,6 +3666,10 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
 
         if hit_exit or hit_stagnation or hit_eod:
             pnl_pts = (exit_p - entry_p) if action == 'BUY' else (entry_p - exit_p)
+            # Strict Stop-Loss PnL Sanity Guard: An initial/structural stop-loss hit can NEVER yield positive profit!
+            if hit_sl and not is_trailing:
+                if pnl_pts > 0:
+                    pnl_pts = -abs(pnl_pts)
             pnl_inr = round(pnl_pts * lot_size, 2)
             
             pt['exit_price'] = exit_p
@@ -4762,17 +4805,32 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             t.get('paper_trade', {}).get('margin_required_inr', 0.0)
                             for t in active_intraday_trades
                         )
+                        cash_info = get_cash_and_margin(tracker)
+                        overall_avail_cash = cash_info['available_cash']
                         intraday_pool_info = get_intraday_margin_pool(tracker)
-                        avail_intraday_margin = max(0.0, intraday_pool_info['base_pool'] - used_intraday_margin)
-                        target_margin_per_stock = round(intraday_pool_info['base_pool'] / MAX_CONCURRENT_EQUITIES, 2)
+                        # Real liquid margin is strictly bounded by actual overall available cash in portfolio
+                        avail_intraday_margin = max(0.0, min(overall_avail_cash, intraday_pool_info['base_pool'] - used_intraday_margin))
+                        target_margin_per_stock = round(min(avail_intraday_margin, intraday_pool_info['base_pool'] / MAX_CONCURRENT_EQUITIES), 2)
                         margin_per_share = cur_p * 0.20  # 20% SEBI MIS intraday margin requirement (5x leverage)
                         if margin_per_share <= 0:
                             continue
 
-                        # Standard sizing for ₹10,000 stock allocation (₹50,000 buying power)
-                        eq_shares = max(1, math.floor(target_margin_per_stock / margin_per_share))
-                        req_margin_equity = round(cur_p * eq_shares * 0.20, 2)
-                        has_equity_margin = (req_margin_equity <= avail_intraday_margin)
+                        # Strict Balance Check Before Buying: Must have sufficient cash to afford at least 1 whole share!
+                        if overall_avail_cash < margin_per_share or avail_intraday_margin < margin_per_share:
+                            print(f"🛡️ Margin Deficit Guard: Blocked {clean_sym} Stock Purchase. Available Cash (₹{overall_avail_cash:,.2f}) < Required 1-Share Margin (₹{margin_per_share:,.2f}).")
+                            has_equity_margin = False
+                            eq_shares = 0
+                            req_margin_equity = margin_per_share
+                        else:
+                            affordable_shares = math.floor(target_margin_per_stock / margin_per_share)
+                            if affordable_shares < 1:
+                                has_equity_margin = False
+                                eq_shares = 0
+                                req_margin_equity = margin_per_share
+                            else:
+                                eq_shares = affordable_shares
+                                req_margin_equity = round(cur_p * eq_shares * 0.20, 2)
+                                has_equity_margin = (req_margin_equity <= avail_intraday_margin and req_margin_equity <= overall_avail_cash)
 
                         risk_per_share = abs(cur_p - eq_sl)
 
