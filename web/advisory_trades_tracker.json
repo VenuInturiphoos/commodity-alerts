@@ -1,5 +1,5 @@
 {
-  "last_updated": "13 Nov 2026, 01:29 PM IST",
+  "last_updated": "13 Nov 2026, 03:11 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -560,13 +560,14 @@
         "pnl_inr": 0.0,
         "status": "ACTIVE",
         "target": 7766.0,
-        "stop_loss": 7477.25,
+        "stop_loss": 7608.5,
         "initial_stop_loss": 7477.25,
         "original_sl": 7477.25,
-        "peak_high": 7608.5,
-        "trough_low": 7608.5,
+        "peak_high": 7652.0,
+        "trough_low": 7652.0,
         "margin_required_inr": 10651.9,
-        "product_type": "MIS_INTRADAY"
+        "product_type": "MIS_INTRADAY",
+        "trailing_sl_active": true
       },
       "eod_outcome": {
         "session_close": null,
@@ -575,6 +576,10 @@
         "badge": "Active Trigger \u26a1",
         "pnl_display": "Ticking Live...",
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b97,608.50 (Target: \u20b97,766.00, SL: \u20b97,477.25) | 3,000 Replays: 13.7% Target | 14.3% Stop | Expected: +0.02R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
+      },
+      "live_price_data": {
+        "current_price": 7652.0,
+        "change_pct": 0.57
       }
     },
     {
@@ -690,8 +695,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY 28 shares @ \u20b91,818.00 (Target: \u20b91,855.63, SL: \u20b91,786.64) | Sized for ~\u20b910,000 MIS margin (5x leverage)"
       },
       "live_price_data": {
-        "current_price": 1814.9,
-        "change_pct": -0.17
+        "current_price": 1815.7,
+        "change_pct": -0.13
       }
     },
     {
@@ -800,8 +805,8 @@
         "summary": "Trailing Stop to Breakeven activated (+1.0R achieved): Stop loss moved to \u20b9180,800.00 (Risk-Free). Position riding trend to Target \u20b9175,986.72."
       },
       "live_price_data": {
-        "current_price": 180065.0,
-        "change_pct": -0.41
+        "current_price": 180068.0,
+        "change_pct": -0.4
       }
     },
     {
