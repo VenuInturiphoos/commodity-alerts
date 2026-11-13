@@ -9,6 +9,9 @@ import os
 import json
 import pytz
 import requests
+import csv
+import io
+import time
 from datetime import datetime
 
 try:
@@ -67,22 +70,100 @@ MIDCAP_SYMBOLS = [
     'AUBANK.NS', 'METROPOLIS.NS', 'PVRINOX.NS', 'APLAPOLLO.NS', 'PRESTIGE.NS'
 ]
 
+NSE_NIFTY50_CSV_URL = 'https://archives.nseindia.com/content/indices/ind_nifty50list.csv'
+NSE_MIDCAP50_CSV_URL = 'https://archives.nseindia.com/content/indices/ind_niftymidcap50list.csv'
+CACHE_CONSTITUENTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'scannable_stocks_cache.json')
+
+def fetch_live_nse_indices(cache_path=CACHE_CONSTITUENTS_FILE, max_age_days=7):
+    """
+    Dynamically syncs official Nifty 50 and Nifty Midcap 50 constituents directly from NSE.
+    Refreshes automatically to capture NSE's semi-annual index rebalancings (additions/deletions).
+    Uses a 7-day local JSON cache to prevent redundant HTTP requests and falls back gracefully
+    to hardcoded baskets if NSE archives are unreachable.
+    """
+    now_ts = time.time()
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, 'r') as f:
+                cached = json.load(f)
+            cached_ts = cached.get('timestamp_epoch', 0)
+            if (now_ts - cached_ts) < (max_age_days * 86400):
+                n50 = cached.get('nifty_50', [])
+                mid50 = cached.get('midcap_50', [])
+                if len(n50) >= 45 and len(mid50) >= 45:
+                    return n50, mid50
+        except Exception as e:
+            print(f"Notice: Failed to read constituents cache: {e}")
+
+    # Fetch fresh official constituents from NSE
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    }
+
+    fresh_n50 = []
+    fresh_mid50 = []
+
+    try:
+        r50 = requests.get(NSE_NIFTY50_CSV_URL, headers=headers, timeout=6)
+        if r50.status_code == 200:
+            reader50 = csv.DictReader(io.StringIO(r50.text))
+            fresh_n50 = [f"{row['Symbol'].strip()}.NS" for row in reader50 if row.get('Symbol')]
+    except Exception as e:
+        print(f"Notice: Could not fetch fresh Nifty 50 from NSE: {e}")
+
+    try:
+        rmid = requests.get(NSE_MIDCAP50_CSV_URL, headers=headers, timeout=6)
+        if rmid.status_code == 200:
+            readermid = csv.DictReader(io.StringIO(rmid.text))
+            fresh_mid50 = [f"{row['Symbol'].strip()}.NS" for row in readermid if row.get('Symbol')]
+    except Exception as e:
+        print(f"Notice: Could not fetch fresh Midcap 50 from NSE: {e}")
+
+    # Fall back to curated baskets if either fetch returned insufficient data
+    final_n50 = fresh_n50 if len(fresh_n50) >= 45 else list(NIFTY_50_SYMBOLS)
+    final_mid50 = fresh_mid50 if len(fresh_mid50) >= 45 else list(MIDCAP_SYMBOLS)
+
+    # Save to local cache
+    try:
+        os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+        with open(cache_path, 'w') as f:
+            json.dump({
+                'last_updated': datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d %b %Y, %I:%M %p IST'),
+                'timestamp_epoch': now_ts,
+                'nifty_50_count': len(final_n50),
+                'midcap_50_count': len(final_mid50),
+                'total_scannable': len(set(final_n50 + final_mid50)),
+                'source': 'NSE Official Index Archives (Auto-Rebalanced)',
+                'nifty_50': final_n50,
+                'midcap_50': final_mid50
+            }, f, indent=2)
+        print(f"✅ Auto-Updated Scannable Basket from NSE: {len(final_n50)} Nifty 50 + {len(final_mid50)} Midcap 50 stocks.")
+    except Exception as e:
+        print(f"Warning: Could not save constituents cache: {e}")
+
+    return final_n50, final_mid50
+
 def load_nifty50_symbols(config_path='config.json'):
-    return list(NIFTY_50_SYMBOLS)
+    n50, _ = fetch_live_nse_indices()
+    return list(n50)
 
 def load_midcap_symbols():
-    return list(MIDCAP_SYMBOLS)
+    _, mid50 = fetch_live_nse_indices()
+    return list(mid50)
 
 def load_all_scannable_symbols():
-    return list(NIFTY_50_SYMBOLS) + list(MIDCAP_SYMBOLS)
+    n50, mid50 = fetch_live_nse_indices()
+    return list(set(n50 + mid50))
 
 def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
     """
     Scans all Nifty 50 and premier liquid Midcap stocks for Golden Crossovers and Oversold opportunities
     and writes results to JSON for the frontend dashboard and daily stock investment engine.
     """
-    raw_symbols = load_all_scannable_symbols()
-    large_cap_set = set(NIFTY_50_SYMBOLS)
+    n50_list, mid50_list = fetch_live_nse_indices()
+    raw_symbols = list(set(n50_list + mid50_list))
+    large_cap_set = set(n50_list)
     clean_map = {}
     for sym in raw_symbols:
         base = sym.replace('.NS', '')
