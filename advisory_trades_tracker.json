@@ -1,7 +1,7 @@
 {
   "last_updated": "13 Nov 2026, 10:01 AM IST",
   "account_email": "venu.photos1@gmail.com",
-  "starting_cash_inr": 159305.38,
+  "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 76,
     "executed_count": 19,
@@ -16,11 +16,11 @@
     "intraday_pool_balance_inr": 30871.12,
     "avg_trade_pnl_inr": 329.53,
     "active_trades_count": 3,
-    "starting_cash_inr": 159305.38,
-    "current_cash_inr": 165566.5,
-    "used_margin_inr": 165474.9,
-    "available_cash_inr": 91.6,
-    "net_worth_inr": 165566.5
+    "starting_cash_inr": 300000.0,
+    "current_cash_inr": 306261.12,
+    "used_margin_inr": 187570.0,
+    "available_cash_inr": 118691.12,
+    "net_worth_inr": 306261.12
   },
   "trades": [
     {
@@ -34,7 +34,7 @@
       "time_exit": "03:25 PM IST",
       "symbol": "AUROPHARMA.NS",
       "name": "Aurobindo Pharma Ltd",
-      "lot_size": 19,
+      "lot_size": 28,
       "asset_type": "INTRADAY_STOCK",
       "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
       "regime": {
@@ -78,8 +78,8 @@
         "passed": true,
         "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
         "reward_risk_ratio": 1.2,
-        "loss_at_stop_inr": 595.84,
-        "potential_gain_inr": 714.97
+        "loss_at_stop_inr": 878.08,
+        "potential_gain_inr": 1053.64
       },
       "orb_check": {
         "passed": true,
@@ -104,13 +104,13 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 1818.0,
-        "action_taken": "Entered BUY 19 shares @ \u20b91,818.00 (Sized strictly to available balance \u20b97,000)",
+        "action_taken": "Entered BUY 28 shares @ \u20b91,818.00",
         "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.80%) with healthy RSI (65.9) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 24.9% Target | 14.3% Stop | Expected: +0.16R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
-        "quantity": 19,
+        "quantity": 28,
         "entry_price": 1818.0,
         "entry_time": "10:01 AM IST",
         "exit_price": null,
@@ -124,7 +124,7 @@
         "original_sl": 1786.64,
         "peak_high": 1818.0,
         "trough_low": 1818.0,
-        "margin_required_inr": 6908.4,
+        "margin_required_inr": 10180.8,
         "product_type": "MIS_INTRADAY"
       },
       "eod_outcome": {
@@ -133,7 +133,7 @@
         "outcome": "PENDING",
         "badge": "Active Trigger \u26a1",
         "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY 19 shares @ \u20b91,818.00 (Target: \u20b91,855.63, SL: \u20b91,786.64) | Sized to available balance \u20b97,000"
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b91,818.00 (Target: \u20b91,855.63, SL: \u20b91,786.64) | 3,000 Replays: 24.9% Target | 14.3% Stop | Expected: +0.16R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       }
     },
     {
@@ -328,7 +328,7 @@
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
         "status": "ACTIVE",
-        "margin_required_inr": 77206.5,
+        "margin_required_inr": 106210.0,
         "target": 403.44,
         "stop_loss": 410.73,
         "initial_stop_loss": 410.73,
