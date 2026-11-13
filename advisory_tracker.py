@@ -612,8 +612,10 @@ def save_tracker(tracker_data):
         if not is_val_715 and not is_val_615:
             is_val_715 = not is_us_dst_active(now_dt)
         check_hour = 19 if is_val_715 else 18
-        is_today_past_615 = (not is_past_day and ((now_dt.hour == check_hour and now_dt.minute >= 15) or now_dt.hour > check_hour))
-        if (is_past_day or is_today_past_615) and (pt.get('status') in ['PENDING_615', 'PENDING_LIMIT', 'PENDING_615_CHECK'] or (not pt.get('entry_price') and pt.get('status') != 'ACTIVE')):
+        # Confirmation window is 18:15-18:30 in summer, 19:15-19:30 in winter.
+        # Only expire after the window ends (minute >= 30 or hour > check_hour)
+        is_today_past_615 = (not is_past_day and ((now_dt.hour == check_hour and now_dt.minute >= 30) or now_dt.hour > check_hour))
+        if pt.get('status') in ['PENDING_615', 'PENDING_LIMIT', 'PENDING_615_CHECK'] and (is_past_day or is_today_past_615):
             c15['checked'] = True
             c15['status'] = 'CONFIRMATION_EXPIRED'
             c15['action_taken'] = '15-Minute confirmation window elapsed without executed entry. STOOD ASIDE.'
@@ -2714,10 +2716,12 @@ def check_and_execute_615_confirmation(checker, alerter):
     
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     today_str = now_dt.strftime('%d %b %Y')
+    timing = get_us_aligned_session_times(now_dt)
+    sent_key = 'check_715_sent_date' if not is_us_dst_active(now_dt) else 'check_615_sent_date'
     
     pending_trades = [t for t in trades if t.get('date') == today_str and t.get('check_615', {}).get('status') == 'PENDING_615']
-    if not pending_trades and tracker.get('check_615_sent_date') == today_str:
-        print(f"6:15 PM confirmation alert already sent for today ({today_str}).")
+    if not pending_trades and tracker.get(sent_key) == today_str:
+        print(f"{timing['conf_str']} confirmation alert already sent for today ({today_str}).")
         return False
 
     circuits_res = checker.generate_circuits_data()
@@ -2736,8 +2740,10 @@ def check_and_execute_615_confirmation(checker, alerter):
         direction = 'LOWER' if 'LOWER' in trade['event_context'] else 'UPPER'
         lot_size = trade['lot_size']
         
-        # If we are well past the 6:15 PM window (past 6:30 PM), do not execute late entries; resolve cleanly as Stood Aside
-        if now_dt.hour > 18 or (now_dt.hour == 18 and now_dt.minute > 30):
+        # If we are well past the confirmation window (past 6:30 PM in summer / 7:30 PM in winter), do not execute late entries; resolve cleanly as Stood Aside
+        is_715 = ('07:15' in trade.get('time_validation', '') or '1900' in trade.get('id', ''))
+        conf_hour = 19 if is_715 else 18
+        if now_dt.hour > conf_hour or (now_dt.hour == conf_hour and now_dt.minute > 30):
             trade['check_615']['checked'] = True
             trade['check_615']['status'] = "CONFIRMED_STAND_ASIDE"
             trade['check_615']['action_taken'] = "15-Min candle window lapsed. Stood aside to preserve capital."
@@ -2760,6 +2766,9 @@ def check_and_execute_615_confirmation(checker, alerter):
             ref_p = float(trade.get('suggestion_6pm', {}).get('reference_price', cur_p))
             sl = float(trade.get('suggestion_6pm', {}).get('stop_loss') or (cur_p * 0.99 if action == 'BUY' else cur_p * 1.01))
             tgt = float(trade.get('suggestion_6pm', {}).get('target') or (cur_p * 1.015 if action == 'BUY' else cur_p * 0.985))
+            inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
+                sym, cur_p, prev_close, c_item.get('high', cur_p) if c_item else cur_p, c_item.get('low', cur_p) if c_item else cur_p, c_item.get('volume', 0) if c_item else 0
+            )
             vwap = inst_dir.get('vwap', cur_p)
             
             is_confirmed = False
@@ -2862,7 +2871,9 @@ def check_and_execute_615_confirmation(checker, alerter):
             trade['paper_trade']['action'] = action
             trade['paper_trade']['quantity'] = lot_size
             trade['paper_trade']['entry_price'] = cur_p
-            trade['paper_trade']['entry_time'] = "06:15 PM IST"
+            conf_label = "07:15 PM" if is_715 else "06:15 PM"
+            exit_label = "11:55 PM" if is_715 else "11:30 PM"
+            trade['paper_trade']['entry_time'] = f"{conf_label} IST"
             trade['paper_trade']['target'] = tgt
             trade['paper_trade']['stop_loss'] = sl
             trade['paper_trade']['margin_required_inr'] = req_margin
@@ -2870,10 +2881,10 @@ def check_and_execute_615_confirmation(checker, alerter):
             trade['eod_outcome']['outcome'] = "ACTIVE"
             trade['eod_outcome']['badge'] = "Active Trade ⚡"
             trade['eod_outcome']['pnl_display'] = "Ticking Live..."
-            trade['eod_outcome']['summary'] = f"Confirmed {action} position ({lot_size} units) active for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+            trade['eod_outcome']['summary'] = f"Confirmed {action} position ({lot_size} units) active for {USER_ACCOUNT}. Auto-exit at {exit_label} IST."
             
             msg = (
-                f"🟢 <b>[6:15 PM TRADE CONFIRMED] {trade['name'].upper()}</b>\n"
+                f"🟢 <b>[{conf_label} TRADE CONFIRMED] {trade['name'].upper()}</b>\n"
                 f"• US Pit Open Momentum: <b>15-Minute Candle Confirmed Trend</b>\n"
                 f"• Execution: <b>{action} {lot_size} units</b> @ ₹{cur_p:,.2f}\n"
                 f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{tgt:,.2f}\n"
@@ -3170,13 +3181,13 @@ def check_and_execute_615_confirmation(checker, alerter):
         )
         alert_messages.append(supplemental_sa)
 
-    tracker['check_615_sent_date'] = today_str
+    tracker[sent_key] = today_str
     save_tracker(tracker)
     
     if alert_messages and alerter:
         body = "\n\n".join(alert_messages) + "\n\n🌐 View Live Tracker: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
-        alerter.send_alert("⚡ [6:15 PM IST UPDATE] 15-Min Confirmation & Stand Aside Playbook", body)
-        print("Successfully dispatched 6:15 PM IST confirmation alert.")
+        alerter.send_alert(f"⚡ [{timing['conf_str']} UPDATE] 15-Min Confirmation & Stand Aside Playbook", body)
+        print(f"Successfully dispatched {timing['conf_str']} confirmation alert.")
     
     return True
 
