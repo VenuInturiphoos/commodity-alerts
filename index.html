@@ -7545,7 +7545,7 @@ function applyAdvisoryMonthFilter(monthValue) {
     });
 
     const activeFuturesMarginVal = activeFuturesTrades.reduce((sum, t) => sum + getFuturesTradeMargin(t), 0);
-    const futuresStartingCash = Number(summary.starting_cash_inr || 300000.0);
+    const futuresStartingCash = Math.max(300000.0, Number(summary.starting_cash_inr || 300000.0));
     const futuresRealizedPnl = allDatasetTrades.filter(t => !isIntradayStockTrade(t) && t.paper_trade?.status === 'CLOSED').reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
     // Overall trade balance reflects starting capital + commodity PnL + intraday booked profits
     const overallNetCash = futuresStartingCash + futuresRealizedPnl + intradayBookedProfit;
