@@ -1,28 +1,141 @@
 {
-  "last_updated": "13 Nov 2026, 01:10 PM IST",
+  "last_updated": "13 Nov 2026, 01:12 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 76,
-    "executed_count": 19,
-    "correct_count": 3,
+    "total_signals": 77,
+    "executed_count": 20,
+    "correct_count": 4,
     "wrong_count": 4,
     "protected_count": 57,
-    "win_rate_pct": 42.9,
-    "total_pnl_inr": 6261.12,
-    "commodity_pnl_inr": 5390.0,
+    "win_rate_pct": 50.0,
+    "total_pnl_inr": 26661.12,
+    "commodity_pnl_inr": 25790.0,
     "intraday_pnl_inr": 871.12,
     "intraday_booked_profit_inr": 871.12,
     "intraday_pool_balance_inr": 30871.12,
-    "avg_trade_pnl_inr": 329.53,
+    "avg_trade_pnl_inr": 1333.06,
     "active_trades_count": 3,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 306261.12,
-    "used_margin_inr": 300193.8,
-    "available_cash_inr": 6067.32,
-    "net_worth_inr": 306261.12
+    "current_cash_inr": 326661.12,
+    "used_margin_inr": 156432.7,
+    "available_cash_inr": 170228.42,
+    "net_worth_inr": 326661.12
   },
   "trades": [
+    {
+      "id": "ADV-13Nov2026-1312-EICHERMOT",
+      "date": "13 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "01:12 PM IST",
+      "time_6pm": "01:12 PM IST",
+      "time_validation": "01:12 PM IST",
+      "time_615": "01:12 PM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "EICHERMOT.NS",
+      "name": "Eicher Motors Limited",
+      "lot_size": 7,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 60.1). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 60.1,
+        "bb_width_pct": 11.19,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "MOVEMENT_OPPORTUNITY",
+        "verdict_text": "Movement Opportunity \ud83d\udfe2 (Risk Accepted)",
+        "p_target_pct": 13.7,
+        "p_stop_pct": 14.3,
+        "p_neither_pct": 72.0,
+        "resolved_win_rate_pct": 49.0,
+        "expected_r": 0.021,
+        "target_r": 1.2,
+        "sample_bars": 703,
+        "summary": "3,000 Replays: 13.7% Target | 14.3% Stop | Expected: +0.02R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 918.75,
+        "potential_gain_inr": 1102.5
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b97,608.50 breaking above range high \u20b97,608.50."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b97,608.50",
+        "rationale": "High-Beta breakout momentum (Chg: +0.81%) with healthy RSI (60.1) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 13.7% Target | 14.3% Stop | Expected: +0.02R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))",
+        "reference_price": 7608.5,
+        "stop_loss": 7477.25,
+        "target": 7766.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 7608.5,
+        "action_taken": "Entered BUY 7 shares @ \u20b97,608.50",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.81%) with healthy RSI (60.1) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 13.7% Target | 14.3% Stop | Expected: +0.02R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 7,
+        "entry_price": 7608.5,
+        "entry_time": "01:12 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 7766.0,
+        "stop_loss": 7477.25,
+        "initial_stop_loss": 7477.25,
+        "original_sl": 7477.25,
+        "peak_high": 7608.5,
+        "trough_low": 7608.5,
+        "margin_required_inr": 10651.9,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b97,608.50 (Target: \u20b97,766.00, SL: \u20b97,477.25) | 3,000 Replays: 13.7% Target | 14.3% Stop | Expected: +0.02R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
+      }
+    },
     {
       "id": "ADV-13Nov2026-1001-AUROPHARMA",
       "date": "13 Nov 2026",
@@ -136,8 +249,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY 28 shares @ \u20b91,818.00 (Target: \u20b91,855.63, SL: \u20b91,786.64) | Sized for ~\u20b910,000 MIS margin (5x leverage)"
       },
       "live_price_data": {
-        "current_price": 1814.0,
-        "change_pct": -0.22
+        "current_price": 1814.9,
+        "change_pct": -0.17
       }
     },
     {
@@ -246,8 +359,8 @@
         "summary": "Trailing Stop to Breakeven activated (+1.0R achieved): Stop loss moved to \u20b9180,800.00 (Risk-Free). Position riding trend to Target \u20b9175,986.72."
       },
       "live_price_data": {
-        "current_price": 179972.0,
-        "change_pct": -0.46
+        "current_price": 180065.0,
+        "change_pct": -0.41
       }
     },
     {
@@ -258,7 +371,7 @@
       "time_6pm": "09:06 AM IST",
       "time_validation": "09:06 AM IST",
       "time_615": "09:06 AM IST",
-      "time_exit": "11:30 PM IST",
+      "time_exit": "01:12 PM IST",
       "symbol": "ZINCMINI",
       "name": "Zinc Mini",
       "lot_size": 4000,
@@ -332,17 +445,17 @@
         "quantity": 4000,
         "entry_price": 408.5,
         "entry_time": "09:06 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 403.4,
+        "exit_time": "01:12 PM IST",
+        "pnl_points": 5.1,
+        "pnl_inr": 20400.0,
+        "status": "CLOSED",
         "margin_required_inr": 154413.0,
         "target": null,
         "stop_loss": 403.4,
         "initial_stop_loss": 410.73,
         "original_sl": 410.73,
-        "peak_high": 403.2,
+        "peak_high": 403.7,
         "trough_low": 402.4,
         "entry_day_high": 408.5,
         "entry_day_low": 408.5,
@@ -352,19 +465,22 @@
         "target_scrapped": true,
         "original_target": 403.44,
         "target_runner_active": true,
-        "target_runner_activated_at": "01:07 PM IST"
+        "target_runner_activated_at": "01:07 PM IST",
+        "exit_trigger": "TARGET_RUNNER_EXIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 403.4,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active (Trailing Stop @ \u20b9403.40 | 65% Locked \ud83d\ude80)",
-        "pnl_display": "Ticking Live...",
-        "summary": "Dynamic Trailing Stop active: 65% peak profit locked @ \u20b9403.40 (Max 35% pullback from trough \u20b9402.40)."
+        "outcome": "CORRECT",
+        "badge": "Target Runner \ud83c\udfaf\ud83d\ude80 (01:12 PM IST)",
+        "pnl_display": "+\u20b920,400.00",
+        "summary": "Target Runner Trailing Stop Triggered \ud83c\udfaf\ud83d\ude80 (Exit \u20b9403.40 vs \u20b9403.44 (Target Reached & Trailed) | Trough \u20b9402.40) at 01:12 PM IST. Entry: \u20b9408.50 -> Exit: \u20b9403.40 (+\u20b920,400.00).",
+        "exit_time": "01:12 PM IST",
+        "exit_trigger": "TARGET_RUNNER_EXIT"
       },
       "live_price_data": {
-        "current_price": 403.2,
-        "change_pct": -1.3
+        "current_price": 403.7,
+        "change_pct": -1.18
       }
     },
     {
