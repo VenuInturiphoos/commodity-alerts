@@ -1,5 +1,5 @@
 {
-  "last_updated": "13 Nov 2026, 07:22 PM IST",
+  "last_updated": "13 Nov 2026, 07:36 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -214,8 +214,13 @@
         "pnl_inr": 0.0,
         "status": "ACTIVE",
         "target": 300.29,
-        "stop_loss": 318.06,
-        "margin_required_inr": 111672.0
+        "stop_loss": 310.2,
+        "margin_required_inr": 111672.0,
+        "initial_stop_loss": 318.06,
+        "peak_high": 307.1,
+        "trough_low": 307.1,
+        "trailing_sl_active": true,
+        "original_sl": 318.06
       },
       "eod_outcome": {
         "session_close": null,
@@ -224,6 +229,10 @@
         "badge": "Active Trade \u26a1",
         "pnl_display": "Ticking Live...",
         "summary": "Confirmed SELL position (2000 units) active for venu.photos1@gmail.com. Auto-exit at 11:55 PM IST."
+      },
+      "live_price_data": {
+        "current_price": 307.1,
+        "change_pct": -1.0
       }
     },
     {
@@ -1541,8 +1550,8 @@
         "summary": "Trailing Stop to Breakeven activated (+1.0R achieved): Stop loss moved to \u20b9180,800.00 (Risk-Free). Position riding trend to Target \u20b9175,986.72."
       },
       "live_price_data": {
-        "current_price": 179866.0,
-        "change_pct": -0.52
+        "current_price": 179433.0,
+        "change_pct": -0.76
       }
     },
     {
