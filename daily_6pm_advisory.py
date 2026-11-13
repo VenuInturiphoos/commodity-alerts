@@ -466,7 +466,7 @@ def generate_and_send_130pm_advisory(force=False):
         f"2. <b>Support & Resistance Retest Execution</b>: Entries are executed on retests of broken key levels with tight risk-managed stop-losses (-0.25% to -0.30%) rather than chasing market momentum.\n"
         f"3. <b>Trailing Stop to Breakeven</b>: Once an active trade achieves +50% of its target distance, stop-loss automatically trails to entry price for a guaranteed risk-free run.\n"
         f"4. <b>Sector Correlation Guard & Circuit Breaker</b>: Maximum 1 position permitted per commodity basket (Bullion, Base Metals, Energy); trading halts if daily loss reaches ₹15,000.\n"
-        f"5. <b>Hard EOD Exit</b>: All intraday breakout positions auto-square-off at 11:30 PM IST.\n\n"
+        f"5. <b>Hard EOD Exit</b>: All intraday breakout positions auto-square-off at {timing['eod_str']}.\n\n"
         f"🌐 <b>Live Interactive Dashboard</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
     )
 
@@ -599,7 +599,7 @@ def generate_and_send_8pm_advisory(force=False):
                 f"  • Recommended Action: <b>{action}</b>\n"
                 f"  • Strategy: Mean-reversion fade against the {direction.lower()} circuit limit.\n"
                 f"  • Strict Stop-Loss: ₹{sl:,.2f} | Profit Target: ₹{p_close:,.2f} (Settlement Anchor)\n"
-                f"  • Hard Exit: Auto-close before 11:30 PM IST MCX settlement."
+                f"  • Hard Exit: Auto-close before {timing_8pm['eod_str']} MCX settlement."
             )
         elif abs(chg_pct) >= 1.5:
             direction_bias = "LONG / BUY" if chg_pct > 0 else "SHORT / SELL"
@@ -607,7 +607,7 @@ def generate_and_send_8pm_advisory(force=False):
                 f"🚀 <b>{name.upper()} (Evening Trend Runner: {chg_pct:+.2f}%)</b>\n"
                 f"  • Live Price: ₹{cur_p:,.2f}\n"
                 f"  • Recommended Action: <b>RIDE MOMENTUM ({direction_bias})</b>\n"
-                f"  • Strategy: Trail stop-loss at 50% of evening gain into 11:30 PM exit. Do not hold overnight."
+                f"  • Strategy: Trail stop-loss at 50% of evening gain into {timing_8pm['eod_str']} exit. Do not hold overnight."
             )
         else:
             action_items.append(
@@ -818,7 +818,7 @@ def generate_and_send_9am_advisory(force=False):
         f"1. <b>09:01 AM Live MCX Match Rule</b>: Morning trades are taken at 09:01 AM IST to ensure live MCX auction matching is settled and executed at real market prices.\n"
         f"2. <b>Gap Fill Rule (Wide CPR)</b>: Fade large gaps only when the 09:15 AM 15-minute candle closes in the direction of the gap fill.\n"
         f"3. <b>Gap & Go Rule (Narrow CPR)</b>: Never fade a narrow CPR gap; narrow CPRs indicate institutional trend days.\n"
-        f"4. <b>Hard 11:30 PM Exit</b>: All intraday positions auto-square-off at 11:30 PM IST before settlement.\n\n"
+        f"4. <b>Hard EOD Exit</b>: All intraday positions auto-square-off at {timing['eod_str']} before settlement.\n\n"
         f"🌐 <b>Live Interactive Dashboard</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
     )
 

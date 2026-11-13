@@ -33,8 +33,8 @@ def is_us_dst_active(dt=None):
 def get_us_aligned_session_times(dt=None):
     """
     Returns timing parameters in IST dynamically synchronized with US market hours:
-    - Summer (EDT): 6:00 PM Pit Open, 6:15 PM Confirmation, 8:00 PM Evening, 11:30 PM MCX Close
-    - Winter (EST): 7:00 PM Pit Open, 7:15 PM Confirmation, 9:00 PM Evening, 11:55 PM MCX Close
+    - Summer (EDT): 6:00 PM Pit Open, 6:15 PM Confirmation, 8:00 PM Evening, 11:20 PM Square-off (11:30 PM MCX Close)
+    - Winter (EST): 7:00 PM Pit Open, 7:15 PM Confirmation, 9:00 PM Evening, 11:45 PM Square-off (11:55 PM MCX Close)
     """
     is_dst = is_us_dst_active(dt)
     return {
@@ -50,7 +50,8 @@ def get_us_aligned_session_times(dt=None):
         "evening_str": "08:00 PM IST" if is_dst else "09:00 PM IST",
         "evening_tag": "2000" if is_dst else "2100",
         "eod_cutoff": (23, 20) if is_dst else (23, 45),
-        "eod_str": "11:30 PM IST" if is_dst else "11:55 PM IST",
+        "eod_str": "11:20 PM IST" if is_dst else "11:45 PM IST",
+        "market_close_str": "11:30 PM IST" if is_dst else "11:55 PM IST",
     }
 
 # MCX Risk-Parity Lot Sizes (Calibrated to match ~₹1.2 Lakh to ₹1.5 Lakh Purchase/Margin Capital per Trade)
@@ -647,12 +648,15 @@ def save_tracker(tracker_data):
                     t['check_615']['action_taken'] = t['check_615']['action_taken'].replace('2000 units', '3000 units')
 
         # 2. ACTIVE trades past their trading session (past day or current day past session cut-off)
+        timing_now = get_us_aligned_session_times(now_dt)
+        eod_cutoff_h, eod_cutoff_m = timing_now["eod_cutoff"]
+
         is_past_session = False
         if is_past_day:
             is_past_session = True
         elif is_eq and ((now_dt.hour == 15 and now_dt.minute >= 20) or now_dt.hour >= 16):
             is_past_session = True
-        elif not is_eq and ((now_dt.hour == 23 and now_dt.minute >= 30) or now_dt.hour < 9):
+        elif not is_eq and ((now_dt.hour == eod_cutoff_h and now_dt.minute >= eod_cutoff_m) or (now_dt.hour > eod_cutoff_h and now_dt.hour < 24) or now_dt.hour < 9):
             is_past_session = True
 
         if pt.get('status') == 'ACTIVE' and is_past_session:
@@ -667,7 +671,7 @@ def save_tracker(tracker_data):
             pts = (exit_p - entry_p) if action == 'BUY' else (entry_p - exit_p)
             pnl = round(pts * lot, 2)
             
-            exit_time_label = "03:20 PM IST" if is_eq else "11:30 PM IST"
+            exit_time_label = "03:20 PM IST" if is_eq else timing_now["eod_str"]
             exit_trigger = "INTRADAY_320_SQUAREOFF" if is_eq else "EOD_SQUAREOFF"
             
             pt['exit_price'] = exit_p
@@ -903,7 +907,7 @@ def record_live_9am_advisory(commodities_list):
                 "time_6pm": "09:01 AM IST",
                 "time_validation": "09:15 AM IST",
                 "time_615": "09:15 AM IST",
-                "time_exit": "11:30 PM IST",
+                "time_exit": get_us_aligned_session_times(now_dt)["eod_str"],
                 "symbol": sym,
                 "name": name,
                 "lot_size": lot_size,
@@ -1070,7 +1074,7 @@ def record_live_9am_advisory(commodities_list):
                 "time_6pm": "09:01 AM IST",
                 "time_validation": "09:15 AM IST",
                 "time_615": "09:15 AM IST",
-                "time_exit": "11:30 PM IST",
+                "time_exit": get_us_aligned_session_times(now_dt)["eod_str"],
                 "symbol": sym,
                 "name": name,
                 "lot_size": lot_size,
@@ -1125,7 +1129,7 @@ def record_live_9am_advisory(commodities_list):
                 "time_6pm": "09:01 AM IST",
                 "time_validation": "09:15 AM IST",
                 "time_615": "09:15 AM IST",
-                "time_exit": "11:30 PM IST",
+                "time_exit": get_us_aligned_session_times(now_dt)["eod_str"],
                 "symbol": sym,
                 "name": name,
                 "lot_size": lot_size,
@@ -1257,7 +1261,7 @@ def record_live_130pm_advisory(commodities_list):
             entry = {
                 "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                 "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                 "lot_size": lot_size, "event_context": "Event Risk Guard Blackout Window",
                 "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / EVENT RISK GUARD", "rationale": f"Event Blackout: {event_guard.get('reason')}", "reference_price": cur_p, "stop_loss": None, "target": None },
                 "check_615": { "checked": True, "status": "EVENT_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": event_guard.get('reason') },
@@ -1274,7 +1278,7 @@ def record_live_130pm_advisory(commodities_list):
                 entry = {
                     "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                     "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                     "lot_size": lot_size, "event_context": "Portfolio Circuit Breaker Triggered (Max Daily Loss Hit)",
                     "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / PORTFOLIO HALT", "rationale": f"Daily loss limit (₹15,000) reached. System halted to preserve capital.", "reference_price": cur_p, "stop_loss": None, "target": None },
                     "check_615": { "checked": True, "status": "CIRCUIT_BREAKER_HALT", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": "Daily risk cap preserved." },
@@ -1286,7 +1290,7 @@ def record_live_130pm_advisory(commodities_list):
                 entry = {
                     "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                     "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                     "lot_size": lot_size, "event_context": f"Counter-Trend Bull Trap Avoided (Daily Bearish: {chg_pct:+.2f}%)",
                     "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / COUNTER-TREND TRAP", "rationale": f"Macro trend is Bearish (below CPR ₹{cpr_bot:,.2f} | {chg_pct:+.2f}%). High Asian range breakout is a classic Bull Trap. Avoided.", "reference_price": cur_p, "stop_loss": None, "target": None },
                     "check_615": { "checked": True, "status": "BULL_TRAP_AVOIDED", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": f"Counter-trend BUY blocked by Macro CPR Filter." },
@@ -1298,7 +1302,7 @@ def record_live_130pm_advisory(commodities_list):
                 entry = {
                     "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                     "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                     "lot_size": lot_size, "event_context": f"Low Trend Strength (ADX: {adx:.1f} < 18)",
                     "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / WEAK TREND (ADX < 18)", "rationale": f"ADX is {adx:.1f} (below 18 threshold). Market is range-bound without directional impulse; breakout trade blocked to avoid chop.", "reference_price": cur_p, "stop_loss": None, "target": None },
                     "check_615": { "checked": True, "status": "WEAK_ADX_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": f"Low ADX {adx:.1f} avoided fake breakout." },
@@ -1310,7 +1314,7 @@ def record_live_130pm_advisory(commodities_list):
                 entry = {
                     "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                     "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                     "lot_size": lot_size, "event_context": f"Sector Correlation Guard ({item_sector} Exposure Capped)",
                     "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / SECTOR CAP", "rationale": f"{item_sector} sector risk already allocated. Stood aside to eliminate double correlated risk.", "reference_price": cur_p, "stop_loss": None, "target": None },
                     "check_615": { "checked": True, "status": "SECTOR_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": f"{item_sector} exposure already active." },
@@ -1328,7 +1332,7 @@ def record_live_130pm_advisory(commodities_list):
                     entry = {
                         "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                         "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                        "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                        "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                         "lot_size": lot_size, "event_context": f"Direction Engine Block ({inst_dir.get('reason')})",
                         "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / DIRECTION ENGINE", "rationale": inst_dir.get('reason'), "reference_price": cur_p, "stop_loss": None, "target": None },
                         "check_615": { "checked": True, "status": "DIRECTION_ENGINE_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": inst_dir.get('reason') },
@@ -1362,7 +1366,7 @@ def record_live_130pm_advisory(commodities_list):
                     entry = {
                         "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                         "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                        "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                        "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                         "lot_size": lot_size, "event_context": "Hard Risk Stop Guard (No Choked Stops)",
                         "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / HARD RISK STOP", "rationale": bracket_eval.get('reason'), "reference_price": cur_p, "stop_loss": None, "target": None },
                         "check_615": { "checked": True, "status": "HARD_RISK_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": bracket_eval.get('reason') },
@@ -1378,7 +1382,7 @@ def record_live_130pm_advisory(commodities_list):
                     entry = {
                         "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                         "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                        "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                        "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                         "lot_size": lot_size, "event_context": "ORB Bar-Close & Wick Trap Guard",
                         "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / WICK TRAP GUARD", "rationale": f"ORB Timer Block: {orb_check.get('reason')}", "reference_price": cur_p, "stop_loss": None, "target": None },
                         "check_615": { "checked": True, "status": "WICK_TRAP_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": orb_check.get('reason') },
@@ -1391,7 +1395,7 @@ def record_live_130pm_advisory(commodities_list):
                         entry = {
                             "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                             "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                            "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                            "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                             "lot_size": lot_size, "event_context": "Pre-Trade Risk Filter Guard",
                             "risk_check": risk_metrics,
                             "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / RISK GUARD", "rationale": f"Risk check failed: {risk_metrics.get('reason')}", "reference_price": cur_p, "stop_loss": None, "target": None },
@@ -1405,7 +1409,7 @@ def record_live_130pm_advisory(commodities_list):
                             entry = {
                                 "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                                 "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                                "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                                "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                                 "lot_size": lot_size, "event_context": "Monte Carlo Time Machine Simulation Guard",
                                 "time_machine": sim_metrics,
                                 "risk_check": risk_metrics,
@@ -1418,7 +1422,7 @@ def record_live_130pm_advisory(commodities_list):
                             entry = {
                                 "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                                 "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                                "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                                "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                                 "lot_size": lot_size, "event_context": f"London Bullish Breakout (Trend Aligned: CPR Top ₹{cpr_top:,.2f})",
                                 "time_machine": sim_metrics,
                                 "risk_check": risk_metrics,
@@ -1455,7 +1459,7 @@ def record_live_130pm_advisory(commodities_list):
                 entry = {
                     "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                     "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                     "lot_size": lot_size, "event_context": "Portfolio Circuit Breaker Triggered (Max Daily Loss Hit)",
                     "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / PORTFOLIO HALT", "rationale": f"Daily loss limit (₹15,000) reached. System halted to preserve capital.", "reference_price": cur_p, "stop_loss": None, "target": None },
                     "check_615": { "checked": True, "status": "CIRCUIT_BREAKER_HALT", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": "Daily risk cap preserved." },
@@ -1467,7 +1471,7 @@ def record_live_130pm_advisory(commodities_list):
                 entry = {
                     "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                     "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                     "lot_size": lot_size, "event_context": f"Asian Liquidity Sweep Trap Avoided (Daily Bullish: {chg_pct:+.2f}%)",
                     "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / LIQUIDITY SWEEP TRAP", "rationale": f"Macro trend is Bullish (above CPR ₹{cpr_top:,.2f} | {chg_pct:+.2f}%). Low Asian range breakdown is a classic institutional Liquidity Sweep. Avoided.", "reference_price": cur_p, "stop_loss": None, "target": None },
                     "check_615": { "checked": True, "status": "LIQUIDITY_SWEEP_AVOIDED", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": f"Counter-trend SELL blocked by Macro CPR Filter." },
@@ -1479,7 +1483,7 @@ def record_live_130pm_advisory(commodities_list):
                 entry = {
                     "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                     "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                     "lot_size": lot_size, "event_context": f"Low Trend Strength (ADX: {adx:.1f} < 18)",
                     "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / WEAK TREND (ADX < 18)", "rationale": f"ADX is {adx:.1f} (below 18 threshold). Market is range-bound without directional impulse; breakdown trade blocked to avoid chop.", "reference_price": cur_p, "stop_loss": None, "target": None },
                     "check_615": { "checked": True, "status": "WEAK_ADX_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": f"Low ADX {adx:.1f} avoided fake breakdown." },
@@ -1491,7 +1495,7 @@ def record_live_130pm_advisory(commodities_list):
                 entry = {
                     "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                     "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                    "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                    "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                     "lot_size": lot_size, "event_context": f"Sector Correlation Guard ({item_sector} Exposure Capped)",
                     "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / SECTOR CAP", "rationale": f"{item_sector} sector risk already allocated. Stood aside to eliminate double correlated risk.", "reference_price": cur_p, "stop_loss": None, "target": None },
                     "check_615": { "checked": True, "status": "SECTOR_GUARD_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": f"{item_sector} exposure already active." },
@@ -1521,7 +1525,7 @@ def record_live_130pm_advisory(commodities_list):
                     entry = {
                         "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                         "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                        "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                        "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                         "lot_size": lot_size, "event_context": "Hard Risk Stop Guard (No Choked Stops)",
                         "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / HARD RISK STOP", "rationale": bracket_eval.get('reason'), "reference_price": cur_p, "stop_loss": None, "target": None },
                         "check_615": { "checked": True, "status": "HARD_RISK_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": bracket_eval.get('reason') },
@@ -1537,7 +1541,7 @@ def record_live_130pm_advisory(commodities_list):
                     entry = {
                         "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                         "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                        "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                        "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                         "lot_size": lot_size, "event_context": "ORB Bar-Close & Wick Trap Guard",
                         "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / WICK TRAP GUARD", "rationale": f"ORB Timer Block: {orb_check.get('reason')}", "reference_price": cur_p, "stop_loss": None, "target": None },
                         "check_615": { "checked": True, "status": "WICK_TRAP_STAND_ASIDE", "price_615": cur_p, "action_taken": "Stood Aside (0 Units)", "detail": orb_check.get('reason') },
@@ -1550,7 +1554,7 @@ def record_live_130pm_advisory(commodities_list):
                         entry = {
                             "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                             "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                            "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                            "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                             "lot_size": lot_size, "event_context": "Pre-Trade Risk Filter Guard",
                             "risk_check": risk_metrics,
                             "suggestion_6pm": { "status": "STAND_ASIDE", "action_text": "STAND ASIDE / RISK GUARD", "rationale": f"Risk check failed: {risk_metrics.get('reason')}", "reference_price": cur_p, "stop_loss": None, "target": None },
@@ -1564,7 +1568,7 @@ def record_live_130pm_advisory(commodities_list):
                             entry = {
                                 "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                                 "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                                "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                                "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                                 "lot_size": lot_size, "event_context": "Monte Carlo Time Machine Simulation Guard",
                                 "time_machine": sim_metrics,
                                 "risk_check": risk_metrics,
@@ -1577,7 +1581,7 @@ def record_live_130pm_advisory(commodities_list):
                             entry = {
                                 "id": trade_id, "date": today_str, "session_name": "London Breakout (1:30 PM)",
                                 "time_trigger": "01:30 PM IST", "time_6pm": "01:30 PM IST", "time_validation": "01:45 PM IST",
-                                "time_615": "01:45 PM IST", "time_exit": "11:30 PM IST", "symbol": sym, "name": name,
+                                "time_615": "01:45 PM IST", "time_exit": get_us_aligned_session_times(now_dt)["eod_str"], "symbol": sym, "name": name,
                                 "lot_size": lot_size, "event_context": f"London Bearish Breakdown (Trend Aligned: CPR Bot ₹{cpr_bot:,.2f})",
                                 "time_machine": sim_metrics,
                                 "risk_check": risk_metrics,
@@ -1615,7 +1619,7 @@ def record_live_130pm_advisory(commodities_list):
                 "time_6pm": "01:30 PM IST",
                 "time_validation": "01:45 PM IST",
                 "time_615": "01:45 PM IST",
-                "time_exit": "11:30 PM IST",
+                "time_exit": get_us_aligned_session_times(now_dt)["eod_str"],
                 "symbol": sym,
                 "name": name,
                 "lot_size": lot_size,
@@ -1988,9 +1992,9 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                     "action": "STAND_ASIDE",
                     "quantity": 0,
                     "entry_price": cur_p,
-                    "entry_time": "06:00 PM IST",
+                    "entry_time": time_trigger_str,
                     "exit_price": cur_p,
-                    "exit_time": "11:30 PM IST",
+                    "exit_time": time_exit_str,
                     "pnl_points": 0.0,
                     "pnl_inr": 0.0,
                     "status": "CLOSED"
@@ -2698,7 +2702,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                     "outcome": "PENDING",
                     "badge": "Active Trade ⚡",
                     "pnl_display": "Ticking Live...",
-                    "summary": f"Active {action} position ({adaptive_lot} units) entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                    "summary": f"Active {action} position ({adaptive_lot} units) entered for {USER_ACCOUNT}. Auto-exit at {time_exit_str}."
                 }
             }
             new_entries.append(entry)
@@ -2877,7 +2881,7 @@ def check_and_execute_615_confirmation(checker, alerter):
             trade['paper_trade']['quantity'] = lot_size
             trade['paper_trade']['entry_price'] = cur_p
             conf_label = "07:15 PM" if is_715 else "06:15 PM"
-            exit_label = "11:55 PM" if is_715 else "11:30 PM"
+            exit_label = "11:45 PM" if is_715 else "11:20 PM"
             trade['paper_trade']['entry_time'] = f"{conf_label} IST"
             trade['paper_trade']['target'] = tgt
             trade['paper_trade']['stop_loss'] = sl
@@ -2895,7 +2899,7 @@ def check_and_execute_615_confirmation(checker, alerter):
                 f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{tgt:,.2f}\n"
                 f"• Risk Audit: Max loss capped inside ₹{MAX_LOSS_PER_TRADE_INR:,.0f}\n"
                 f"• Account: Virtual Paper Trade logged for {USER_ACCOUNT}\n"
-                f"• Auto-Exit: Position will be squared off at 11:30 PM IST."
+                f"• Auto-Exit: Position will be squared off at {exit_label} IST."
             )
             alert_messages.append(msg)
             continue
@@ -3100,16 +3104,17 @@ def check_and_execute_615_confirmation(checker, alerter):
                     trade['eod_outcome']['outcome'] = "ACTIVE"
                     trade['eod_outcome']['badge'] = "Active Trade ⚡"
                     trade['eod_outcome']['pnl_display'] = "Ticking Live..."
-                    trade['eod_outcome']['summary'] = f"Confirmed {action} position ({adaptive_lot} units) active for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                    timing_615 = get_us_aligned_session_times(now_dt)
+                    trade['eod_outcome']['summary'] = f"Confirmed {action} position ({adaptive_lot} units) active for {USER_ACCOUNT}. Auto-exit at {timing_615['eod_str']}."
                     
                     msg = (
-                        f"🟢 <b>[6:15 PM TRADE CONFIRMED] {trade['name'].upper()}</b>\n"
+                        f"🟢 <b>[TRADE CONFIRMED] {trade['name'].upper()}</b>\n"
                         f"• 15-Minute Rule: <b>Limit Barrier Held Successfully</b>\n"
                         f"• Execution: <b>{action} {adaptive_lot} units</b> @ ₹{cur_p:,.2f}\n"
                         f"• Stop-Loss: ₹{sl:,.2f} | Target: ₹{prev_close:,.2f}\n"
                         f"• Risk Audit: Max loss capped inside ₹5,000\n"
                         f"• Account: Virtual Paper Trade logged for {USER_ACCOUNT}\n"
-                        f"• Auto-Exit: Position will be squared off at 11:30 PM IST."
+                        f"• Auto-Exit: Position will be squared off at {timing_615['eod_str']}."
                     )
                     alert_messages.append(msg)
 
@@ -4240,7 +4245,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     "time_6pm": now_time_str,
                     "time_validation": now_time_str,
                     "time_615": now_time_str,
-                    "time_exit": "11:30 PM IST",
+                    "time_exit": get_us_aligned_session_times(now_dt)["eod_str"],
                     "symbol": contract_sym,
                     "name": contract_name,
                     "lot_size": adaptive_lot,
@@ -4270,7 +4275,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                         "entry_price": cur_p,
                         "entry_time": now_time_str,
                         "exit_price": cur_p,
-                        "exit_time": "11:30 PM IST",
+                        "exit_time": get_us_aligned_session_times(now_dt)["eod_str"],
                         "pnl_points": 0.0,
                         "pnl_inr": 0.0,
                         "status": "STAND_ASIDE",
@@ -4320,7 +4325,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 "time_6pm": now_time_str,
                 "time_validation": now_time_str,
                 "time_615": now_time_str,
-                "time_exit": "11:30 PM IST",
+                "time_exit": get_us_aligned_session_times(now_dt)["eod_str"],
                 "symbol": contract_sym,
                 "name": contract_name,
                 "lot_size": adaptive_lot,
