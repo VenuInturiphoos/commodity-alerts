@@ -3322,9 +3322,9 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
         trade_status = pt.get('status')
         
         s6 = trade.get('suggestion_6pm', {})
-        target = float(s6.get('target')) if s6.get('target') is not None else (float(pt.get('target')) if pt.get('target') is not None else None)
-        original_target = float(s6.get('original_target')) if s6.get('original_target') is not None else (float(pt.get('original_target')) if pt.get('original_target') is not None else target)
-        stop_loss = float(s6.get('stop_loss')) if s6.get('stop_loss') is not None else (float(pt.get('stop_loss')) if pt.get('stop_loss') is not None else None)
+        target = float(pt.get('target')) if pt.get('target') is not None else (float(s6.get('target')) if s6.get('target') is not None else None)
+        original_target = float(pt.get('original_target')) if pt.get('original_target') is not None else (float(s6.get('original_target')) if s6.get('original_target') is not None else target)
+        stop_loss = float(pt.get('stop_loss')) if pt.get('stop_loss') is not None else (float(s6.get('stop_loss')) if s6.get('stop_loss') is not None else None)
         entry_p = float(pt.get('entry_price')) if pt.get('entry_price') is not None else float(s6.get('reference_price', cur_p))
 
         # Strictly track prices visited AFTER trade entry to prevent pre-entry day extremes from corrupting trailing logic
