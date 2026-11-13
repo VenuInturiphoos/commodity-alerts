@@ -1,28 +1,143 @@
 {
-  "last_updated": "13 Nov 2026, 03:11 PM IST",
+  "last_updated": "13 Nov 2026, 03:20 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 86,
-    "executed_count": 20,
-    "correct_count": 4,
-    "wrong_count": 4,
+    "total_signals": 87,
+    "executed_count": 21,
+    "correct_count": 5,
+    "wrong_count": 6,
     "protected_count": 66,
-    "win_rate_pct": 50.0,
-    "total_pnl_inr": 26661.12,
+    "win_rate_pct": 45.5,
+    "total_pnl_inr": 26895.62,
     "commodity_pnl_inr": 25790.0,
-    "intraday_pnl_inr": 871.12,
-    "intraday_booked_profit_inr": 871.12,
-    "intraday_pool_balance_inr": 30871.12,
-    "avg_trade_pnl_inr": 1333.06,
-    "active_trades_count": 3,
+    "intraday_pnl_inr": 1105.62,
+    "intraday_booked_profit_inr": 1105.62,
+    "intraday_pool_balance_inr": 31105.62,
+    "avg_trade_pnl_inr": 1280.74,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 326661.12,
-    "used_margin_inr": 156432.7,
-    "available_cash_inr": 170228.42,
-    "net_worth_inr": 326661.12
+    "current_cash_inr": 326895.62,
+    "used_margin_inr": 135600.0,
+    "available_cash_inr": 191295.62,
+    "net_worth_inr": 326895.62
   },
   "trades": [
+    {
+      "id": "ADV-13Nov2026-1520-GRASIM",
+      "date": "13 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (EMA 50/200 Golden Cross Trend Pullback)",
+      "time_trigger": "03:20 PM IST",
+      "time_6pm": "03:20 PM IST",
+      "time_validation": "03:20 PM IST",
+      "time_615": "03:20 PM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "GRASIM.NS",
+      "name": "Grasim Industries Ltd.",
+      "lot_size": 17,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: EMA 50/200 Golden Cross Trend Pullback",
+      "regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 16.4%, Vol: 1.5%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "AGGRESSIVE_ENTRIES",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 20.0,
+        "rsi": 45.9,
+        "bb_width_pct": 16.42,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "MOVEMENT_OPPORTUNITY",
+        "verdict_text": "Movement Opportunity \ud83d\udfe2 (Risk Accepted)",
+        "p_target_pct": 11.6,
+        "p_stop_pct": 12.9,
+        "p_neither_pct": 75.5,
+        "resolved_win_rate_pct": 47.3,
+        "expected_r": 0.01,
+        "target_r": 1.2,
+        "sample_bars": 725,
+        "summary": "3,000 Replays: 11.6% Target | 12.9% Stop | Expected: +0.01R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 891.48,
+        "potential_gain_inr": 1069.81
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "CONFIRMED",
+        "reason": "Standard momentum confluence."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b93,040.00",
+        "rationale": "50 EMA > 200 EMA Golden Cross confirmed with value pullback into demand zone (RSI: 45.9). Trend continuation entry targeting realistic intraday 1.2R upside. 3,000 Replays: 11.6% Target | 12.9% Stop | Expected: +0.01R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))",
+        "reference_price": 3040.0,
+        "stop_loss": 2987.56,
+        "target": 3102.93
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 3040.0,
+        "action_taken": "Entered BUY 17 shares @ \u20b93,040.00",
+        "detail": "EMA 50/200 Golden Cross Trend Pullback: 50 EMA > 200 EMA Golden Cross confirmed with value pullback into demand zone (RSI: 45.9). Trend continuation entry targeting realistic intraday 1.2R upside. | 3,000 Replays: 11.6% Target | 12.9% Stop | Expected: +0.01R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 17,
+        "entry_price": 3040.0,
+        "entry_time": "03:20 PM IST",
+        "exit_price": 3040.0,
+        "exit_time": "03:20 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED",
+        "target": 3102.93,
+        "stop_loss": 2987.56,
+        "initial_stop_loss": 2987.56,
+        "original_sl": 2987.56,
+        "peak_high": 3040.0,
+        "trough_low": 3040.0,
+        "margin_required_inr": 10336.0,
+        "product_type": "MIS_INTRADAY",
+        "exit_trigger": "INTRADAY_320_SQUAREOFF"
+      },
+      "eod_outcome": {
+        "session_close": 3040.0,
+        "circuit_limit": null,
+        "outcome": "WRONG",
+        "badge": "Wrong \u274c (03:20 PM)",
+        "pnl_display": "+\u20b90.00",
+        "summary": "03:20 PM IST session close exit. Entry: \u20b93,040.00 -> Exit: \u20b93,040.00 (+0.00 pts | +\u20b90.00). Margin released.",
+        "exit_time": "03:20 PM IST",
+        "exit_trigger": "INTRADAY_320_SQUAREOFF"
+      }
+    },
     {
       "id": "ADV-13Nov2026-1330-GOLDM",
       "date": "13 Nov 2026",
@@ -472,7 +587,7 @@
       "time_6pm": "01:12 PM IST",
       "time_validation": "01:12 PM IST",
       "time_615": "01:12 PM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "03:20 PM IST",
       "symbol": "EICHERMOT.NS",
       "name": "Eicher Motors Limited",
       "lot_size": 7,
@@ -554,32 +669,35 @@
         "quantity": 7,
         "entry_price": 7608.5,
         "entry_time": "01:12 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 7650.0,
+        "exit_time": "03:20 PM IST",
+        "pnl_points": 41.5,
+        "pnl_inr": 290.5,
+        "status": "CLOSED",
         "target": 7766.0,
-        "stop_loss": 7608.5,
+        "stop_loss": 7477.25,
         "initial_stop_loss": 7477.25,
         "original_sl": 7477.25,
         "peak_high": 7652.0,
-        "trough_low": 7652.0,
+        "trough_low": 7650.0,
         "margin_required_inr": 10651.9,
         "product_type": "MIS_INTRADAY",
-        "trailing_sl_active": true
+        "trailing_sl_active": true,
+        "exit_trigger": "EOD_SQUAREOFF"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 7650.0,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b97,608.50 (Target: \u20b97,766.00, SL: \u20b97,477.25) | 3,000 Replays: 13.7% Target | 14.3% Stop | Expected: +0.02R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
+        "outcome": "CORRECT",
+        "badge": "EOD Square-off \u23f0 (03:20 PM IST)",
+        "pnl_display": "+\u20b9290.50",
+        "summary": "Intraday EOD Square-off (03:20 PM) \u23f0 at 03:20 PM IST. Entry: \u20b97,608.50 -> Exit: \u20b97,650.00 (+\u20b9290.50).",
+        "exit_time": "03:20 PM IST",
+        "exit_trigger": "EOD_SQUAREOFF"
       },
       "live_price_data": {
-        "current_price": 7652.0,
-        "change_pct": 0.57
+        "current_price": 7650.0,
+        "change_pct": 0.55
       }
     },
     {
@@ -590,7 +708,7 @@
       "time_6pm": "10:01 AM IST",
       "time_validation": "10:01 AM IST",
       "time_615": "10:01 AM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "03:20 PM IST",
       "symbol": "AUROPHARMA.NS",
       "name": "Aurobindo Pharma Ltd",
       "lot_size": 28,
@@ -672,11 +790,11 @@
         "quantity": 28,
         "entry_price": 1818.0,
         "entry_time": "10:01 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 1816.0,
+        "exit_time": "03:20 PM IST",
+        "pnl_points": -2.0,
+        "pnl_inr": -56.0,
+        "status": "CLOSED",
         "target": 1855.63,
         "stop_loss": 1786.64,
         "initial_stop_loss": 1786.64,
@@ -684,19 +802,22 @@
         "peak_high": 1818.0,
         "trough_low": 1810.0,
         "margin_required_inr": 10180.8,
-        "product_type": "MIS_INTRADAY"
+        "product_type": "MIS_INTRADAY",
+        "exit_trigger": "EOD_SQUAREOFF"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 1816.0,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY 28 shares @ \u20b91,818.00 (Target: \u20b91,855.63, SL: \u20b91,786.64) | Sized for ~\u20b910,000 MIS margin (5x leverage)"
+        "outcome": "WRONG",
+        "badge": "EOD Square-off \u23f0 (03:20 PM IST)",
+        "pnl_display": "\u20b9-56.00",
+        "summary": "Intraday EOD Square-off (03:20 PM) \u23f0 at 03:20 PM IST. Entry: \u20b91,818.00 -> Exit: \u20b91,816.00 (\u20b9-56.00).",
+        "exit_time": "03:20 PM IST",
+        "exit_trigger": "EOD_SQUAREOFF"
       },
       "live_price_data": {
-        "current_price": 1815.7,
-        "change_pct": -0.13
+        "current_price": 1816.0,
+        "change_pct": -0.11
       }
     },
     {
@@ -805,8 +926,8 @@
         "summary": "Trailing Stop to Breakeven activated (+1.0R achieved): Stop loss moved to \u20b9180,800.00 (Risk-Free). Position riding trend to Target \u20b9175,986.72."
       },
       "live_price_data": {
-        "current_price": 180068.0,
-        "change_pct": -0.4
+        "current_price": 179866.0,
+        "change_pct": -0.52
       }
     },
     {
