@@ -7871,14 +7871,7 @@ function renderAdvisoryTradesTable() {
             outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${badgeText}</span>`;
         } else if (pt.status === 'ACTIVE') {
             if (isSlBreached) {
-                const isProfitLock = Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active);
-                if (isProfitLock) {
-                    outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-lock"></i> Trailing Profit Locked 💰</span>`;
-                } else if (pt.trailing_sl_active) {
-                    outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Breakeven Stop Hit 🛡️</span>`;
-                } else {
-                    outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-circle-exclamation"></i> Stop-Loss Triggered 🛑</span>`;
-                }
+                outcomeBadge = `<span class="adv-badge-active" style="background:rgba(239,68,68,0.18); border:1px solid rgba(239,68,68,0.45); color:#fca5a5;"><i class="fa-solid fa-arrows-rotate fa-spin"></i> SL Breached (Auto-Exiting...)</span>`;
             } else if (isSessionExpired) {
                 const isWin = (pt.pnl_inr || 0) > 0;
                 outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : (t.time_exit || '11:55 PM')})</span>`;
@@ -8179,7 +8172,7 @@ function renderAdvisoryTradesTable() {
                     ${tgtDisplayHtml}
                 </td>
                 <td>
-                    <strong style="font-size:0.9rem; color:#f8fafc;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : (isSlBreached ? (Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active) ? '<span style="color:#4ade80; font-size:0.85rem; font-weight:700;">₹' + Number(curSl).toFixed(2) + ' (Profit Locked)</span>' : '<span style="color:#fb7185; font-size:0.85rem; font-weight:700;">₹' + Number(curSl).toFixed(2) + ' (SL Hit)</span>') : (pt.status === 'ACTIVE' ? '<span style="color:#38bdf8; font-size:0.85rem;"><i class="fa-solid fa-arrows-spin"></i> Open Position</span>' : '--'))}</strong>
+                    <strong style="font-size:0.9rem; color:#f8fafc;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : (isSlBreached ? '<span style="color:#fb7185; font-size:0.85rem; font-weight:700;">₹' + Number(curSl).toFixed(2) + ' (SL Hit)</span>' : (pt.status === 'ACTIVE' ? '<span style="color:#38bdf8; font-size:0.85rem;"><i class="fa-solid fa-arrows-spin"></i> Open Position</span>' : '--'))}</strong>
                     ${exitDetailHtml}
                 </td>
                 <td style="font-weight:700; font-size:0.95rem; color:${pnlColor};">
@@ -8257,14 +8250,7 @@ function renderAdvisoryTradesTable() {
                 outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${badgeText}</span>`;
             } else if (pt.status === 'ACTIVE') {
                 if (isSlBreached) {
-                    const isProfitLock = Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active);
-                    if (isProfitLock) {
-                        outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-lock"></i> Trailing Profit Locked 💰</span>`;
-                    } else if (pt.trailing_sl_active) {
-                        outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Breakeven Stop Hit 🛡️</span>`;
-                    } else {
-                        outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-circle-exclamation"></i> Stop-Loss Triggered 🛑</span>`;
-                    }
+                    outcomeBadge = `<span class="adv-badge-active" style="background:rgba(239,68,68,0.18); border:1px solid rgba(239,68,68,0.45); color:#fca5a5;"><i class="fa-solid fa-arrows-rotate fa-spin"></i> SL Breached (Auto-Exiting...)</span>`;
                 } else if (isSessionExpired) {
                     const isWin = (pt.pnl_inr || 0) > 0;
                     outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : (t.time_exit || '11:55 PM')})</span>`;
