@@ -147,11 +147,11 @@
       "time_exit": "11:30 PM IST",
       "symbol": "SILVERMIC",
       "name": "Silver Micro",
-      "lot_size": 3,
+      "lot_size": 5,
       "event_context": "Indicator Confluence: Pre-Ignition Volatility Coil",
       "regime": {
         "regime": "CHOP_CONSOLIDATION",
-        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "badge": "💤 Chop / Consolidation",
         "short_tag": "Chop / Range",
         "color": "#94a3b8",
         "bg_color": "rgba(148, 163, 184, 0.12)",
@@ -176,7 +176,7 @@
         "replays": 1000,
         "passed": true,
         "verdict": "PARAMETRIC_STATISTICAL_PASS",
-        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
+        "verdict_text": "Statistically Favorable 🎯 (Parametric)",
         "p_target_pct": 45.3,
         "p_stop_pct": 41.0,
         "p_neither_pct": 13.7,
@@ -191,13 +191,13 @@
         "passed": true,
         "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
         "reward_risk_ratio": 2.0,
-        "loss_at_stop_inr": 7219.92,
-        "potential_gain_inr": 14439.84
+        "loss_at_stop_inr": 12033.2,
+        "potential_gain_inr": 24066.4
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "SELL @ \u20b9180,800.00",
-        "rationale": "Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 0.62% (1115.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.07x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9192,629.35), building downward coil pressure.. Early coil entry prior to breakout expansion. Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R",
+        "action_text": "SELL @ ₹180,800.00",
+        "rationale": "Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 0.62% (1115.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.07x average indicates supply exhaustion before move. | Price capped below baseline (₹192,629.35), building downward coil pressure.. Early coil entry prior to breakout expansion. Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R",
         "reference_price": 180800.0,
         "stop_loss": 183206.64,
         "target": 175986.72,
@@ -208,13 +208,13 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 180800.0,
-        "action_taken": "Entered SELL 3 units @ \u20b9180,800.00",
-        "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 0.62% (1115.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.07x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9192,629.35), building downward coil pressure.. Early coil entry prior to breakout expansion. | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+        "action_taken": "Entered SELL 5 units @ ₹180,800.00",
+        "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 0.62% (1115.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.07x average indicates supply exhaustion before move. | Price capped below baseline (₹192,629.35), building downward coil pressure.. Early coil entry prior to breakout expansion. | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 3,
+        "quantity": 5,
         "entry_price": 180800.0,
         "entry_time": "09:45 AM IST",
         "exit_price": null,
@@ -222,7 +222,7 @@
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
         "status": "ACTIVE",
-        "margin_required_inr": 81360.0,
+        "margin_required_inr": 135600.0,
         "target": 175986.72,
         "stop_loss": 183206.64,
         "initial_stop_loss": 183206.64,
@@ -236,9 +236,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
+        "badge": "Active Trigger ⚡",
         "pnl_display": "Ticking Live...",
-        "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b9180,800.00 (Target: \u20b9175,986.72, SL: \u20b9183,206.64) | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+        "summary": "Pre-Ignition Volatility Coil active: SELL 5 units @ ₹180,800.00 (Target: ₹175,986.72, SL: ₹183,206.64) | Calibrated for ~₹1.36L-₹1.5L margin | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
       }
     },
     {
@@ -250,13 +250,13 @@
       "time_validation": "09:06 AM IST",
       "time_615": "09:06 AM IST",
       "time_exit": "11:30 PM IST",
-      "symbol": "ZINCM",
+      "symbol": "ZINCMINI",
       "name": "Zinc Mini",
-      "lot_size": 2000,
+      "lot_size": 4000,
       "event_context": "Indicator Confluence: Pre-Ignition Volatility Coil",
       "regime": {
         "regime": "CHOP_CONSOLIDATION",
-        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "badge": "💤 Chop / Consolidation",
         "short_tag": "Chop / Range",
         "color": "#c084fc",
         "bg_color": "rgba(192, 132, 252, 0.12)",
@@ -282,7 +282,7 @@
         "replays": 1000,
         "passed": true,
         "verdict": "PARAMETRIC_STATISTICAL_PASS",
-        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
+        "verdict_text": "Statistically Favorable 🎯 (Parametric)",
         "p_target_pct": 42.6,
         "p_stop_pct": 43.1,
         "p_neither_pct": 14.3,
@@ -297,13 +297,13 @@
         "passed": true,
         "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
         "reward_risk_ratio": 2.27,
-        "loss_at_stop_inr": 4460.0,
-        "potential_gain_inr": 10120.0
+        "loss_at_stop_inr": 8920.0,
+        "potential_gain_inr": 20240.0
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "SELL @ \u20b9408.50",
-        "rationale": "Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 0.20% (0.82 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.02x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9409.54), building downward coil pressure.. Early coil entry prior to breakout expansion. Parametric Model: 42.6% Target | 43.1% Stop | Expected: +0.54R",
+        "action_text": "SELL @ ₹408.50",
+        "rationale": "Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 0.20% (0.82 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.02x average indicates supply exhaustion before move. | Price capped below baseline (₹409.54), building downward coil pressure.. Early coil entry prior to breakout expansion. Parametric Model: 42.6% Target | 43.1% Stop | Expected: +0.54R",
         "reference_price": 408.5,
         "stop_loss": 410.73,
         "target": 403.44,
@@ -314,13 +314,13 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 408.5,
-        "action_taken": "Entered SELL 2000 units @ \u20b9408.50",
-        "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 0.20% (0.82 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.02x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9409.54), building downward coil pressure.. Early coil entry prior to breakout expansion. | Parametric Model: 42.6% Target | 43.1% Stop | Expected: +0.54R"
+        "action_taken": "Entered SELL 4000 units @ ₹408.50",
+        "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 0.20% (0.82 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.02x average indicates supply exhaustion before move. | Price capped below baseline (₹409.54), building downward coil pressure.. Early coil entry prior to breakout expansion. | Parametric Model: 42.6% Target | 43.1% Stop | Expected: +0.54R"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 2000,
+        "quantity": 4000,
         "entry_price": 408.5,
         "entry_time": "09:06 AM IST",
         "exit_price": null,
@@ -328,7 +328,7 @@
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
         "status": "ACTIVE",
-        "margin_required_inr": 77206.5,
+        "margin_required_inr": 154413.0,
         "target": 403.44,
         "stop_loss": 410.73,
         "initial_stop_loss": 410.73,
@@ -342,9 +342,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
+        "badge": "Active Trigger ⚡",
         "pnl_display": "Ticking Live...",
-        "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b9408.50 (Target: \u20b9403.44, SL: \u20b9410.73) | Parametric Model: 42.6% Target | 43.1% Stop | Expected: +0.54R"
+        "summary": "Pre-Ignition Volatility Coil active: SELL 4000 units @ ₹408.50 (Target: ₹403.44, SL: ₹410.73) | Calibrated for ~₹1.54L margin (4 lots Zinc Mini) | Parametric Model: 42.6% Target | 43.1% Stop | Expected: +0.54R"
       }
     },
     {

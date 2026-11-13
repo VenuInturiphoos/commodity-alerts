@@ -1541,32 +1541,25 @@ const COMMODITY_BASE_MAP = {
 
 function getSynchronizedCommodityPrice(symbol, defaultPrice = 0) {
     if (!symbol) return Number(defaultPrice) || 0;
-    const cleanSym = String(symbol).replace('-FUT', '').toUpperCase();
-    const baseSym = COMMODITY_BASE_MAP[cleanSym] || cleanSym;
+    const cleanSym = String(symbol).replace('-FUT', '').replace('.NS', '').toUpperCase();
     
-    // 1. Authoritative: Live Exchange quote from rawCircuitsData (Strict exact-match first)
+    // 1. Authoritative: Live Exchange quote from rawCircuitsData (Strict exact-match ONLY - never borrow quotes from different expiries)
     if (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData) && rawCircuitsData.length > 0) {
-        let cItem = rawCircuitsData.find(c => {
+        const cItem = rawCircuitsData.find(c => {
             const cs = (c.symbol || '').toUpperCase();
             return cs === cleanSym || cs === String(symbol).toUpperCase();
         });
-        if (!cItem && baseSym !== cleanSym) {
-            cItem = rawCircuitsData.find(c => (c.symbol || '').toUpperCase() === baseSym);
-        }
         if (cItem && cItem.current_price !== undefined && cItem.current_price !== null && !isNaN(Number(cItem.current_price))) {
             return Number(cItem.current_price);
         }
     }
     
-    // 2. Fallback: Supabase marketData (Strict exact-match first)
+    // 2. Fallback: Supabase marketData (Strict exact-match ONLY)
     if (typeof marketData !== 'undefined' && Array.isArray(marketData) && marketData.length > 0) {
-        let mItem = marketData.find(m => {
+        const mItem = marketData.find(m => {
             const ms = (m.symbol || '').toUpperCase();
             return ms === String(symbol).toUpperCase() || ms === cleanSym;
         });
-        if (!mItem && baseSym !== cleanSym) {
-            mItem = marketData.find(m => (m.symbol || '').toUpperCase() === baseSym);
-        }
         if (mItem && mItem.current_price !== undefined && mItem.current_price !== null && !isNaN(Number(mItem.current_price))) {
             return Number(mItem.current_price);
         }
@@ -2018,18 +2011,28 @@ async function fetchCircuitsData(forceNetwork = false) {
             const tvEndpoint = 'https://scanner.tradingview.com/futures/scan';
             const commodityMap = {
                 'GOLD': { ticker: 'MCX:GOLD1!', name: 'Gold', dpl_initial: 0.03, dpl_max: 0.06, category: 'Bullion', unit: '10 g' },
+                'GOLDM': { ticker: 'MCX:GOLDM1!', name: 'Gold Mini', dpl_initial: 0.03, dpl_max: 0.06, category: 'Bullion', unit: '100 g' },
                 'SILVER': { ticker: 'MCX:SILVER1!', name: 'Silver', dpl_initial: 0.04, dpl_max: 0.06, category: 'Bullion', unit: '1 kg' },
+                'SILVERM': { ticker: 'MCX:SILVERM1!', name: 'Silver Mini', dpl_initial: 0.04, dpl_max: 0.06, category: 'Bullion', unit: '5 kg' },
+                'SILVERMIC': { ticker: 'MCX:SILVERMIC1!', name: 'Silver Micro', dpl_initial: 0.04, dpl_max: 0.06, category: 'Bullion', unit: '1 kg' },
                 'CRUDEOIL': { ticker: 'MCX:CRUDEOIL1!', name: 'Crude Oil', dpl_initial: 0.04, dpl_max: 0.07, category: 'Energy', unit: '1 bbl' },
+                'CRUDEOILM': { ticker: 'MCX:CRUDEOILM1!', name: 'Crude Oil Mini', dpl_initial: 0.04, dpl_max: 0.07, category: 'Energy', unit: '10 bbl' },
                 'NATURALGAS': { ticker: 'MCX:NATURALGAS1!', name: 'Natural Gas', dpl_initial: 0.06, dpl_max: 0.09, category: 'Energy', unit: '1 mmBtu' },
+                'NATURALGASM': { ticker: 'MCX:NATURALGASM1!', name: 'Natural Gas Mini', dpl_initial: 0.06, dpl_max: 0.09, category: 'Energy', unit: '250 mmBtu' },
                 'COPPER': { ticker: 'MCX:COPPER1!', name: 'Copper', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' },
+                'COPPERM': { ticker: 'MCX:COPPERM1!', name: 'Copper Mini', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1000 kg' },
                 'ZINC': { ticker: 'MCX:ZINC1!', name: 'Zinc', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' },
-                'ALUMINIUM': { ticker: 'MCX:ALUMINIUM1!', name: 'Aluminium', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' }
+                'ZINCM': { ticker: 'MCX:ZINCM1!', name: 'Zinc Mini', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1000 kg' },
+                'ZINCMINI': { ticker: 'MCX:ZINCMINI1!', name: 'Zinc Mini', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1000 kg' },
+                'ALUMINIUM': { ticker: 'MCX:ALUMINIUM1!', name: 'Aluminium', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1 kg' },
+                'ALUMINI': { ticker: 'MCX:ALUMINI1!', name: 'Aluminium Mini', dpl_initial: 0.04, dpl_max: 0.06, category: 'Base Metals', unit: '1000 kg' }
             };
             
-            // Prefer resolved active contract tickers from circuits_data.json so client probe matches active contract
-            const tickers = (rawCircuitsData && rawCircuitsData.length > 0)
-                ? rawCircuitsData.map(m => m.ticker).filter(Boolean)
-                : Object.values(commodityMap).map(m => m.ticker);
+            // Prefer resolved active contract tickers + continuous TV tickers for reliable real-time updates
+            const tickers = [...new Set([
+                ...(rawCircuitsData && rawCircuitsData.length > 0 ? rawCircuitsData.map(m => m.tv_chart_symbol || m.ticker).filter(Boolean) : []),
+                ...Object.values(commodityMap).map(m => m.ticker)
+            ])];
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 3500);
             
@@ -2063,7 +2066,7 @@ async function fetchCircuitsData(forceNetwork = false) {
                 if (rawCircuitsData && rawCircuitsData.length > 0) {
                     // Update existing official exchange dataset with live real-time ticks
                     rawCircuitsData.forEach(item => {
-                        const t = tickerData[item.ticker];
+                        const t = tickerData[item.tv_chart_symbol] || tickerData[item.ticker];
                         if (t && t.close !== null && t.close !== undefined) {
                             const close = parseFloat(t.close);
                             const chg_abs = parseFloat(t.change_abs || 0);
@@ -7071,30 +7074,25 @@ function isCalledAdvisoryTrade(t) {
 function getAdvisoryTradeLivePriceData(t) {
     if (!t) return null;
     const cleanSym = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
-    const baseSym = (typeof COMMODITY_BASE_MAP !== 'undefined' && COMMODITY_BASE_MAP[cleanSym]) ? COMMODITY_BASE_MAP[cleanSym] : cleanSym;
 
+    // Strict contract isolation: NEVER fallback to a parent/different contract expiry or standard commodity!
+    // A Silver Micro position MUST evaluate against Silver Micro quotes only.
     if (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) {
-        let item = rawCircuitsData.find(c => {
+        const item = rawCircuitsData.find(c => {
             const cs = (c.symbol || '').toUpperCase();
             return cs === cleanSym || cs === (t.symbol || '').toUpperCase();
         });
-        if (!item && baseSym !== cleanSym) {
-            item = rawCircuitsData.find(c => (c.symbol || '').toUpperCase() === baseSym);
-        }
-        if (item && item.current_price) {
+        if (item && item.current_price !== undefined && item.current_price !== null && !isNaN(Number(item.current_price))) {
             return { current_price: Number(item.current_price), change_pct: Number(item.change_pct || 0) };
         }
     }
 
     if (typeof marketData !== 'undefined' && Array.isArray(marketData)) {
-        let item = marketData.find(m => {
+        const item = marketData.find(m => {
             const ms = (m.symbol || '').toUpperCase();
             return ms === (t.symbol || '').toUpperCase() || ms === cleanSym;
         });
-        if (!item && baseSym !== cleanSym) {
-            item = marketData.find(m => (m.symbol || '').toUpperCase() === baseSym);
-        }
-        if (item && item.current_price) {
+        if (item && item.current_price !== undefined && item.current_price !== null && !isNaN(Number(item.current_price))) {
             return { current_price: Number(item.current_price), change_pct: Number(item.change_pct || 0) };
         }
     }
