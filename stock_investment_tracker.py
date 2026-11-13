@@ -260,20 +260,29 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
 
     # Sizing is strictly capped by the real unencumbered available cash
     allocatable_cash = min(TARGET_INVESTMENT_AMOUNT, avail_cash)
-    if allocatable_cash < price or avail_cash < price:
-        print(f"⚠️ Cannot afford even 1 share of {chosen_stock.get('name')} at ₹{price:,.2f}. Available cash: ₹{avail_cash:,.2f}. Skipping purchase.")
-        return None
+    is_cash_available = (avail_cash >= price and allocatable_cash >= price)
 
-    # Size shares strictly within available cash balance (e.g. ₹7,000 budget buys floor(7000/price))
-    max_shares = math.floor(avail_cash / price)
-    target_shares = math.floor(allocatable_cash / price)
-    shares = max_shares if target_shares < 1 else min(target_shares, max_shares)
-    invested_val = round(shares * price, 2)
-    while shares > 1 and invested_val > avail_cash:
-        shares -= 1
+    if not is_cash_available:
+        print(f"⚠️ Cash unavailable for {chosen_stock.get('name')} at ₹{price:,.2f} (Available cash: ₹{avail_cash:,.2f} < ₹{price:,.2f}). Creating Hero Trade Display with 0 shares (No Purchase).")
+        shares = 0
+        invested_val = 0.0
+        variance = round(-TARGET_INVESTMENT_AMOUNT, 2)
+        status = 'SIGNAL_ONLY'
+        action_text = 'WATCHLIST / HERO SETUP (Display Only - Insufficient Cash)'
+        exec_note = f"Display Only: 0 Shares Purchased (Available Cash ₹{avail_cash:,.2f} < Share Price ₹{price:,.2f})"
+    else:
+        # Size shares strictly within available cash balance (e.g. ₹7,000 budget buys floor(7000/price))
+        max_shares = math.floor(avail_cash / price)
+        target_shares = math.floor(allocatable_cash / price)
+        shares = max_shares if target_shares < 1 else min(target_shares, max_shares)
         invested_val = round(shares * price, 2)
-
-    variance = round(invested_val - TARGET_INVESTMENT_AMOUNT, 2)
+        while shares > 1 and invested_val > avail_cash:
+            shares -= 1
+            invested_val = round(shares * price, 2)
+        variance = round(invested_val - TARGET_INVESTMENT_AMOUNT, 2)
+        status = 'ACTIVE'
+        action_text = 'STRONG BUY (Delivery SIP - Hold for Target)'
+        exec_note = f"Executed (Sized to Available Cash: {shares} Shares)"
 
     trade_plan = chosen_stock.get('trade_plan', {})
     target_1 = float(trade_plan.get('target_1', round(price * 1.10, 2)))
@@ -331,28 +340,43 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         'ema_50': chosen_stock.get('ema_50'),
         'ema_200': chosen_stock.get('ema_200'),
         'crossover_status': 'Golden Cross Active 🌟',
-        'action': 'STRONG BUY (Delivery SIP - Hold for Target)',
+        'action': action_text,
         'rationale': trade_plan.get('rationale', '50 EMA > 200 EMA Golden Cross with deep value confluence. Held unconditionally for Target 1 without stop-loss exits.'),
-        'status': 'ACTIVE',
+        'status': status,
+        'execution_note': exec_note,
         'exit_price': None,
         'exit_time': None,
         'exit_trigger': None
     }
 
-    # If force running for today, replace today's existing or prepend
-    if today_existing:
-        for idx, item in enumerate(investments):
-            if item.get('date') == today_str:
-                investments[idx] = new_investment
-                break
+    # If shares > 0, record in active holdings. If shares == 0 (no cash), do NOT add to active portfolio
+    if shares > 0:
+        if today_existing:
+            for idx, item in enumerate(investments):
+                if item.get('date') == today_str:
+                    investments[idx] = new_investment
+                    break
+        else:
+            investments.insert(0, new_investment)
     else:
-        investments.insert(0, new_investment)
+        # If no cash, ensure no duplicate active holding consumes capital today
+        if today_existing:
+            investments = [i for i in investments if i.get('date') != today_str]
+            tracker_data['investments'] = investments
 
     tracker_data['today_pick'] = new_investment
     save_stock_investments(tracker_data)
 
-    print(f"\n✅ EXECUTED DAILY STOCK INVESTMENT (CASH DELIVERY):")
-    print(f"   Asset: {new_investment['name']} ({new_investment['symbol']})")
+    if shares > 0:
+        print(f"\n✅ EXECUTED DAILY STOCK INVESTMENT (CASH DELIVERY):")
+        print(f"   Asset: {new_investment['name']} ({new_investment['symbol']})")
+        print(f"   Shares: {shares} @ ₹{price:,.2f} = ₹{invested_val:,.2f} (Target: ₹30,000 | Variance: ₹{variance:+,.2f})")
+        print(f"   Remaining Available Stock Cash: ₹{avail_cash - invested_val:,.2f}")
+    else:
+        print(f"\n🟡 HERO TRADE DISPLAY ONLY (NO DEMAT PURCHASE - ZERO CASH ALLOCATED):")
+        print(f"   Asset: {new_investment['name']} ({new_investment['symbol']})")
+        print(f"   Entry / CMP: ₹{price:,.2f} | Target 1: ₹{target_1:,.2f} | Target 2: ₹{target_2:,.2f}")
+        print(f"   Available Cash (₹{avail_cash:,.2f}) < Price (₹{price:,.2f}). Shares Purchased: 0 (₹0.00 Invested).")
     print(f"   Shares: {shares} @ ₹{price:,.2f} = ₹{invested_val:,.2f} (Target: ₹30,000 | Variance: ₹{variance:+,.2f})")
     print(f"   Remaining Available Stock Cash: ₹{avail_cash - invested_val:,.2f}")
     print(f"   Win Prob: {new_investment['win_probability']}% | 52W Disc: {new_investment['discount_pct']}% | RSI: {new_investment['rsi']}")
@@ -366,28 +390,51 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
             from alerter import EmailAlerter
             alerter = EmailAlerter(cfg)
             
-            subject = f"🌟 [DAILY STOCK SIP] Bought {shares} shares of {new_investment['name']} (~₹30,000 Golden Cross Investment)"
-            body = (
-                f"🌟 DAILY GOLDEN CROSSOVER STOCK INVESTMENT EXECUTION\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"• Stock: {new_investment['full_name']} ({new_investment['symbol']})\n"
-                f"• Strategy: Automated 50/200 EMA Golden Crossover Value SIP (100% Cash Delivery)\n"
-                f"• Shares Purchased: {shares} Shares\n"
-                f"• Entry Price: ₹{price:,.2f} CMP\n"
-                f"• Capital Invested: ₹{invested_val:,.2f} (Remaining Cash: ₹{avail_cash - invested_val:,.2f})\n\n"
-                f"📊 QUANTITATIVE CONFLUENCE METRICS:\n"
-                f"• Algorithmic Win Probability: {new_investment['win_probability']}%\n"
-                f"• 52-Week High Discount: {new_investment['discount_pct']}% Off Peak\n"
-                f"• RSI Indicator: {new_investment['rsi']} (Oversold Value Zone)\n"
-                f"• Moving Averages: 50 EMA (₹{new_investment['ema_50']}) > 200 EMA (₹{new_investment['ema_200']})\n\n"
-                f"🎯 TARGET & EXIT STRATEGY (NO STOP-LOSS):\n"
-                f"• Model: 100% Cash Delivery in Demat (Zero forced leverage, zero expiry, NO Stop Loss)\n"
-                f"• Exit Plan: Unconditionally wait for Target 1 mean reversion / bounce\n"
-                f"• Target 1 (Mean Reversion): ₹{target_1:,.2f} (+{new_investment['potential_upside_t1']}% upside)\n"
-                f"• Target 2 (Swing High Retest): ₹{target_2:,.2f} (+{new_investment['potential_upside_t2']}% upside)\n\n"
-                f"💡 Rationale: {new_investment['rationale']}\n"
-                f"View live tracker on: https://VenuInturiphoos.github.io/commodity-alerts/"
-            )
+            if shares > 0:
+                subject = f"🌟 [DAILY STOCK SIP] Bought {shares} shares of {new_investment['name']} (Sized to Available Cash)"
+                body = (
+                    f"🌟 DAILY GOLDEN CROSSOVER STOCK INVESTMENT EXECUTION\n"
+                    f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"• Stock: {new_investment['full_name']} ({new_investment['symbol']})\n"
+                    f"• Strategy: Automated 50/200 EMA Golden Crossover Value SIP (100% Cash Delivery)\n"
+                    f"• Shares Purchased: {shares} Shares\n"
+                    f"• Entry Price: ₹{price:,.2f} CMP\n"
+                    f"• Capital Invested: ₹{invested_val:,.2f} (Remaining Cash: ₹{avail_cash - invested_val:,.2f})\n\n"
+                    f"📊 QUANTITATIVE CONFLUENCE METRICS:\n"
+                    f"• Algorithmic Win Probability: {new_investment['win_probability']}%\n"
+                    f"• 52-Week High Discount: {new_investment['discount_pct']}% Off Peak\n"
+                    f"• RSI Indicator: {new_investment['rsi']} (Oversold Value Zone)\n"
+                    f"• Moving Averages: 50 EMA (₹{new_investment['ema_50']}) > 200 EMA (₹{new_investment['ema_200']})\n\n"
+                    f"🎯 TARGET & EXIT STRATEGY (NO STOP-LOSS):\n"
+                    f"• Model: 100% Cash Delivery in Demat (Zero forced leverage, zero expiry, NO Stop Loss)\n"
+                    f"• Exit Plan: Unconditionally wait for Target 1 mean reversion / bounce\n"
+                    f"• Target 1 (Mean Reversion): ₹{target_1:,.2f} (+{new_investment['potential_upside_t1']}% upside)\n"
+                    f"• Target 2 (Swing High Retest): ₹{target_2:,.2f} (+{new_investment['potential_upside_t2']}% upside)\n\n"
+                    f"💡 Rationale: {new_investment['rationale']}\n"
+                    f"View live tracker on: https://VenuInturiphoos.github.io/commodity-alerts/"
+                )
+            else:
+                subject = f"🟡 [DAILY STOCK SIGNAL] {new_investment['name']} Golden Cross Setup (Hero Display Only - Zero Cash Allocated)"
+                body = (
+                    f"🟡 DAILY GOLDEN CROSSOVER STOCK HERO SIGNAL (DISPLAY ONLY)\n"
+                    f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"• Stock: {new_investment['full_name']} ({new_investment['symbol']})\n"
+                    f"• Status: DISPLAY ONLY — No Demat purchase made (Available Cash: ₹{avail_cash:,.2f} < Share Price: ₹{price:,.2f})\n"
+                    f"• Shares Purchased: 0 Shares (₹0.00 Capital Deployed)\n"
+                    f"• Entry Price / CMP: ₹{price:,.2f}\n"
+                    f"• Target 1: ₹{target_1:,.2f} (+{new_investment['potential_upside_t1']}% upside)\n"
+                    f"• Target 2: ₹{target_2:,.2f} (+{new_investment['potential_upside_t2']}% upside)\n\n"
+                    f"📊 QUANTITATIVE CONFLUENCE METRICS:\n"
+                    f"• Win Probability: {new_investment['win_probability']}%\n"
+                    f"• 52-Week High Discount: {new_investment['discount_pct']}% Off Peak\n"
+                    f"• RSI Indicator: {new_investment['rsi']} (Oversold Value Zone)\n"
+                    f"• Moving Averages: 50 EMA (₹{new_investment['ema_50']}) > 200 EMA (₹{new_investment['ema_200']})\n\n"
+                    f"🎯 SETUP STRATEGY:\n"
+                    f"• Model: Golden Cross Value Watchlist (Waiting for Liquid Capital)\n"
+                    f"• Target 1: ₹{target_1:,.2f} | Target 2: ₹{target_2:,.2f}\n\n"
+                    f"💡 Thesis: {new_investment['rationale']}\n"
+                    f"View live tracker on: https://VenuInturiphoos.github.io/commodity-alerts/"
+                )
             alerter.send_alert(subject, body)
             print("Successfully dispatched Daily Stock Investment alert via Telegram/Email.")
     except Exception as e:

@@ -2975,13 +2975,18 @@ function renderNiftyDailyPickHeroCard(pick) {
     const livePrice = (typeof getSynchronizedCommodityPrice === 'function') 
         ? getSynchronizedCommodityPrice(effectivePick.symbol, effectivePick.current_price || effectivePick.entry_price)
         : (effectivePick.current_price || effectivePick.entry_price);
-    const sharesCount = Number(effectivePick.shares || 1);
-    const costBasis = Number(effectivePick.invested_value || (sharesCount * Number(effectivePick.entry_price || 0)));
+    const isSignalOnly = effectivePick.status === 'SIGNAL_ONLY' || Number(effectivePick.shares || 0) === 0;
+    const sharesCount = isSignalOnly ? 0 : Number(effectivePick.shares || 1);
+    const costBasis = isSignalOnly ? 0 : Number(effectivePick.invested_value || (sharesCount * Number(effectivePick.entry_price || 0)));
     const currentValue = sharesCount * livePrice;
 
     let pnl = 0;
     let pnlPct = 0;
-    if (effectivePick.status === 'ACTIVE' || !effectivePick.status) {
+    if (isSignalOnly) {
+        const entryP = Number(effectivePick.entry_price || livePrice);
+        pnl = livePrice - entryP;
+        pnlPct = entryP > 0 ? ((livePrice - entryP) / entryP) * 100 : 0;
+    } else if (effectivePick.status === 'ACTIVE' || !effectivePick.status) {
         pnl = currentValue - costBasis;
         pnlPct = costBasis > 0 ? (pnl / costBasis) * 100 : 0;
     } else {
@@ -3005,20 +3010,43 @@ function renderNiftyDailyPickHeroCard(pick) {
     const pnlSign = pnl > 0 ? '+' : (pnl < 0 ? '-' : '');
     const pnlText = `${pnlSign}₹${Math.abs(pnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     const pnlPctText = `${pnlPct > 0 ? '+' : ''}${pnlPct.toFixed(2)}% Return`;
-    const statusBg = effectivePick.status === 'TARGET_HIT' ? 'rgba(74, 222, 128, 0.2)' : (effectivePick.status === 'STOP_LOSS_HIT' ? 'rgba(251, 113, 133, 0.2)' : 'rgba(245, 158, 11, 0.2)');
-    const statusBorder = effectivePick.status === 'TARGET_HIT' ? 'rgba(74, 222, 128, 0.4)' : (effectivePick.status === 'STOP_LOSS_HIT' ? 'rgba(251, 113, 133, 0.4)' : 'rgba(245, 158, 11, 0.4)');
-    const statusColor = effectivePick.status === 'TARGET_HIT' ? '#4ade80' : (effectivePick.status === 'STOP_LOSS_HIT' ? '#fb7185' : '#fbbf24');
-    const statusLabel = effectivePick.status === 'TARGET_HIT' ? '🎯 TARGET HIT (+10%)' : (effectivePick.status === 'STOP_LOSS_HIT' ? '🛡️ STOP LOSS HIT' : '🟢 ACTIVE / HOLD FOR TARGET');
+
+    let statusBg = 'rgba(245, 158, 11, 0.2)';
+    let statusBorder = 'rgba(245, 158, 11, 0.4)';
+    let statusColor = '#fbbf24';
+    let statusLabel = '🟢 ACTIVE / HOLD FOR TARGET';
+
+    if (isSignalOnly) {
+        statusBg = 'rgba(234, 179, 8, 0.2)';
+        statusBorder = 'rgba(234, 179, 8, 0.45)';
+        statusColor = '#facc15';
+        statusLabel = '🟡 WATCHLIST HERO SETUP (NO PURCHASE · ZERO CASH)';
+    } else if (effectivePick.status === 'TARGET_HIT') {
+        statusBg = 'rgba(74, 222, 128, 0.2)';
+        statusBorder = 'rgba(74, 222, 128, 0.4)';
+        statusColor = '#4ade80';
+        statusLabel = '🎯 TARGET HIT (+10%)';
+    } else if (effectivePick.status === 'STOP_LOSS_HIT') {
+        statusBg = 'rgba(251, 113, 133, 0.2)';
+        statusBorder = 'rgba(251, 113, 133, 0.4)';
+        statusColor = '#fb7185';
+        statusLabel = '🛡️ STOP LOSS HIT';
+    }
 
     const varianceVal = Number(effectivePick.variance_from_30k || 0);
     const varianceText = varianceVal >= 0 ? `+₹${varianceVal.toFixed(2)}` : `-₹${Math.abs(varianceVal).toFixed(2)}`;
     const isSizedToBalance = Number(effectivePick.invested_value || 0) < 25000;
-    const badgeText = isSizedToBalance 
-        ? "Today's Daily Golden Cross Investment (Sized to Available Cash)"
-        : "Today's Daily Golden Cross Investment (~₹30,000 Sizing)";
-    const targetTagText = isSizedToBalance
-        ? `Sized to Available Cash (${effectivePick.shares} Shares)`
-        : `Target: ₹30k (${varianceText})`;
+    
+    let badgeText = "Today's Daily Golden Cross Investment (~₹30,000 Sizing)";
+    let targetTagText = `Target: ₹30k (${varianceText})`;
+
+    if (isSignalOnly) {
+        badgeText = "Today's Daily Golden Cross Hero Setup (Display Only · Insufficient Cash)";
+        targetTagText = "No Demat Purchase (0 Shares)";
+    } else if (isSizedToBalance) {
+        badgeText = "Today's Daily Golden Cross Investment (Sized to Available Cash)";
+        targetTagText = `Sized to Available Cash (${effectivePick.shares} Shares)`;
+    }
 
     const cardHtml = `
         <div class="glass-card full-width" style="border: 1px solid rgba(245, 158, 11, 0.45); background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border-radius: 14px; padding: 1.25rem 1.5rem; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);">
@@ -3033,15 +3061,15 @@ function renderNiftyDailyPickHeroCard(pick) {
                         <span style="font-size: 0.75rem; color: ${statusColor}; background: ${statusBg}; border: 1px solid ${statusBorder}; padding: 2px 8px; border-radius: 4px; font-weight: 700;">${statusLabel}</span>
                     </div>
                     <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">
-                        <i class="fa-regular fa-calendar-check" style="color: #818cf8; margin-right: 4px;"></i> Executed at Start of Day (${effectivePick.date}) · <span style="color:${effectivePick.cap_category === 'Mid Cap' ? '#38bdf8' : '#fbbf24'}; font-weight:700;">${effectivePick.cap_category || 'Large Cap'}</span> · ${effectivePick.sector || 'Indian Equities'} · 50 EMA (₹${effectivePick.ema_50}) &gt; 200 EMA (₹${effectivePick.ema_200})
+                        <i class="${isSignalOnly ? 'fa-solid fa-eye' : 'fa-regular fa-calendar-check'}" style="color: ${isSignalOnly ? '#facc15' : '#818cf8'}; margin-right: 4px;"></i> ${isSignalOnly ? 'Hero Setup Displayed (' + effectivePick.date + ') · <span style="color:#facc15; font-weight:700;">No Demat Purchase Made</span>' : 'Executed at Start of Day (' + effectivePick.date + ')'} · <span style="color:${effectivePick.cap_category === 'Mid Cap' ? '#38bdf8' : '#fbbf24'}; font-weight:700;">${effectivePick.cap_category || 'Large Cap'}</span> · ${effectivePick.sector || 'Indian Equities'} · 50 EMA (₹${effectivePick.ema_50}) &gt; 200 EMA (₹${effectivePick.ema_200})
                     </div>
                 </div>
                 <div style="text-align: right;">
-                    <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Automated Capital Allocated</div>
-                    <div style="font-size: 1.5rem; font-weight: 800; color: #4ade80; margin: 2px 0;">₹${Number(effectivePick.invested_value).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    <div style="font-size: 0.72rem; color: ${isSignalOnly ? '#facc15' : '#94a3b8'}; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">${isSignalOnly ? 'Display Only · Zero Cash' : 'Automated Capital Allocated'}</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: ${isSignalOnly ? '#94a3b8' : '#4ade80'}; margin: 2px 0;">₹${Number(effectivePick.invested_value || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                     <div style="font-size: 0.78rem; color: #cbd5e1;">
-                        <strong style="color: #f8fafc;">${effectivePick.shares} Shares</strong> @ ₹${Number(effectivePick.entry_price).toFixed(2)} 
-                        <span style="color: #a5b4fc; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); padding: 1px 6px; border-radius: 4px; margin-left: 4px;">${targetTagText}</span>
+                        <strong style="color: ${isSignalOnly ? '#facc15' : '#f8fafc'};">${effectivePick.shares || 0} Shares</strong> @ ₹${Number(effectivePick.entry_price).toFixed(2)} 
+                        <span style="color: ${isSignalOnly ? '#facc15' : '#a5b4fc'}; background: ${isSignalOnly ? 'rgba(234, 179, 8, 0.15)' : 'rgba(99, 102, 241, 0.15)'}; border: 1px solid ${isSignalOnly ? 'rgba(234, 179, 8, 0.3)' : 'rgba(99, 102, 241, 0.3)'}; padding: 1px 6px; border-radius: 4px; margin-left: 4px;">${targetTagText}</span>
                     </div>
                 </div>
             </div>
@@ -3095,8 +3123,8 @@ function renderNiftyDailyPickHeroCard(pick) {
                     <i class="fa-solid fa-lightbulb" style="color: #fbbf24; margin-right: 5px;"></i> <strong>Daily Selection Thesis:</strong> ${pick.rationale}
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    <button class="trade-btn buy-btn btn-small" onclick="const btn = document.getElementById('investing-tab-btn'); if (btn) switchTab(btn, 'investing-tab');" style="background: linear-gradient(135deg, #10b981, #059669); padding: 7px 14px; font-weight: 700; font-size: 0.82rem;">
-                        <i class="fa-solid fa-seedling"></i> View in Stock Portfolio
+                    <button class="trade-btn btn-small" onclick="const btn = document.getElementById('investing-tab-btn'); if (btn) switchTab(btn, 'investing-tab');" style="background: ${isSignalOnly ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #10b981, #059669)'}; padding: 7px 14px; font-weight: 700; font-size: 0.82rem; color: #fff;">
+                        <i class="fa-solid ${isSignalOnly ? 'fa-eye' : 'fa-seedling'}"></i> ${isSignalOnly ? 'View Stock Watchlist' : 'View in Stock Portfolio'}
                     </button>
                 </div>
             </div>
