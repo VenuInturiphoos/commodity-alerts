@@ -6892,7 +6892,7 @@ function switchTradingSubTab(subtab) {
         if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-chart-line"></i> Dedicated Futures Pool: ₹3,00,000 (Commodity Minis & Stock Futures)';
         if (titleEl) titleEl.innerHTML = '🎯 Futures Trading Tracker (Commodities & Stock Futures)';
         const isDstNow = typeof isUSDaylightSaving === 'function' ? isUSDaylightSaving() : false;
-        if (descEl) descEl.innerHTML = `Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions active till ${isDstNow ? '11:20 PM IST (Summer EDT)' : '11:45 PM IST (Winter EST)'}.`;
+        if (descEl) descEl.innerHTML = `Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions active till ${isDstNow ? '11:30 PM IST (Summer EDT)' : '11:55 PM IST (Winter EST)'}.`;
         if (sessionFilterContainer) sessionFilterContainer.style.display = 'block';
     } else {
         if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday MIS Allocation: Base ₹30,000 Margin (+ Booked Profits) | 5x Buying Power';
@@ -6979,27 +6979,27 @@ function getTradeValidationCutoff(t) {
 }
 
 function getTradeExitCutoff(t) {
-    if (!t) return { hour: 23, min: 45 };
+    if (!t) return { hour: 23, min: 30 };
     if (t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')))) {
         return { hour: 15, min: 20 };
     }
     const exitStr = t.time_exit || '';
     const trigStr = t.time_trigger || '';
     const idStr = t.id || '';
-    if (exitStr.includes('11:45') || exitStr.includes('23:45') || exitStr.includes('11:55') || exitStr.includes('23:55') || trigStr.includes('07:00') || trigStr.includes('7:00') || idStr.includes('-1900-')) {
-        return { hour: 23, min: 45 };
+    if (exitStr.includes('11:55') || exitStr.includes('23:55') || trigStr.includes('07:00') || trigStr.includes('7:00') || idStr.includes('-1900-')) {
+        return { hour: 23, min: 55 };
     }
-    if (exitStr.includes('11:20') || exitStr.includes('23:20') || exitStr.includes('11:30') || exitStr.includes('23:30') || trigStr.includes('06:00') || trigStr.includes('6:00') || idStr.includes('-1800-')) {
-        return { hour: 23, min: 20 };
+    if (exitStr.includes('11:30') || exitStr.includes('23:30') || trigStr.includes('06:00') || trigStr.includes('6:00') || idStr.includes('-1800-')) {
+        return { hour: 23, min: 30 };
     }
     if (t.date && typeof parseDateStrToParts === 'function') {
         const tp = parseDateStrToParts(t.date);
         if (tp) {
             const d = new Date(tp.year, tp.month - 1, tp.day, 12, 0, 0);
-            return isUSDaylightSaving(d) ? { hour: 23, min: 20 } : { hour: 23, min: 45 };
+            return isUSDaylightSaving(d) ? { hour: 23, min: 30 } : { hour: 23, min: 55 };
         }
     }
-    return isUSDaylightSaving() ? { hour: 23, min: 20 } : { hour: 23, min: 45 };
+    return isUSDaylightSaving() ? { hour: 23, min: 30 } : { hour: 23, min: 55 };
 }
 
 function updateSessionStatsBadges(trades) {
@@ -7881,7 +7881,7 @@ function renderAdvisoryTradesTable() {
                 }
             } else if (isSessionExpired) {
                 const isWin = (pt.pnl_inr || 0) > 0;
-                outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : (t.time_exit || '11:45 PM')})</span>`;
+                outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : (t.time_exit || '11:55 PM')})</span>`;
             } else if (pt.target_runner_active) {
                 outcomeBadge = `<span class="adv-badge-active" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🚀 (SL @ ₹${curSl.toFixed(2)})</span>`;
             } else if (pt.stage_3_target_approaching || pt.target_scrapped) {
@@ -8023,7 +8023,7 @@ function renderAdvisoryTradesTable() {
         }
 
         // Format Exit Price & Logged Exit Time
-        const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || (isEqTrade ? '03:20 PM Close' : '11:45 PM Close');
+        const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || (isEqTrade ? '03:20 PM Close' : '11:55 PM Close');
         let exitDetailHtml = `<div style="font-size:0.75rem; color:#94a3b8;"><i class="fa-regular fa-clock"></i> ${exitTimeStr}</div>`;
         
         if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
@@ -8032,7 +8032,7 @@ function renderAdvisoryTradesTable() {
             if (isSessionExpired) {
                 exitDetailHtml = isEqTrade
                     ? `<div style="font-size:0.75rem; color:#f59e0b; font-weight:700;"><i class="fa-solid fa-clock"></i> Intraday Exit (03:20 PM)</div>`
-                    : `<div style="font-size:0.75rem; color:#4ade80; font-weight:700;"><i class="fa-solid fa-clock"></i> Session Close (${t.time_exit || '11:45 PM'})</div>`;
+                    : `<div style="font-size:0.75rem; color:#4ade80; font-weight:700;"><i class="fa-solid fa-clock"></i> Session Close (${t.time_exit || '11:55 PM'})</div>`;
             } else {
                 exitDetailHtml = `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</div>`;
             }
@@ -8267,7 +8267,7 @@ function renderAdvisoryTradesTable() {
                     }
                 } else if (isSessionExpired) {
                     const isWin = (pt.pnl_inr || 0) > 0;
-                    outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : (t.time_exit || '11:45 PM')})</span>`;
+                    outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : (t.time_exit || '11:55 PM')})</span>`;
                 } else if (pt.target_runner_active) {
                     outcomeBadge = `<span class="adv-badge-active" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🚀</span>`;
                 } else {
@@ -8352,7 +8352,7 @@ function renderAdvisoryTradesTable() {
                 executedText = `${pt.action} ${pt.quantity} ${unitLabel} <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:1px 4px; border-radius:3px;">${multLabel}</span><div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</div>`;
             }
 
-            const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || (isEqTrade ? '03:20 PM' : '11:45 PM');
+            const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || (isEqTrade ? '03:20 PM' : '11:55 PM');
             let mobileExitLabel = 'Exit (EOD)';
             let mobileExitVal = pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--';
 
@@ -8364,7 +8364,7 @@ function renderAdvisoryTradesTable() {
                 mobileExitVal = isSlBreached
                     ? `<span style="color:#fb7185; font-weight:700;"><i class="fa-solid fa-arrows-rotate fa-spin"></i> SL Hit @ ₹${Number(curSl).toFixed(2)}</span>`
                     : (isSessionExpired
-                        ? `<span style="color:#4ade80; font-weight:700;"><i class="fa-solid fa-clock"></i> Session Close (${isEqTrade ? '03:20 PM' : (t.time_exit || '11:45 PM')})</span>`
+                        ? `<span style="color:#4ade80; font-weight:700;"><i class="fa-solid fa-clock"></i> Session Close (${isEqTrade ? '03:20 PM' : (t.time_exit || '11:55 PM')})</span>`
                         : '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</span>');
             } else if (pt.status === 'PENDING_615') {
                 mobileExitLabel = 'Position Status';
