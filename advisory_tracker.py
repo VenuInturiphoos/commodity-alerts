@@ -562,8 +562,11 @@ def save_tracker(tracker_data):
         is_past_day = bool(t_date and t_date != today_str)
         is_eq = t.get('asset_type') in ['EQUITY', 'STOCK_FUTURES'] or ('-FUT' in t.get('symbol', '')) or ('.NS' in t.get('symbol', ''))
         
-        # 1. Unconfirmed setups from past days or today's 6:00 PM session past 6:15 PM window
-        is_today_past_615 = (not is_past_day and ((now_dt.hour == 18 and now_dt.minute >= 15) or now_dt.hour > 18) and ('1800' in t.get('id', '') or t.get('time_validation') == '06:15 PM IST'))
+        # 1. Unconfirmed setups from past days or today's US Pit Open session past confirmation window (6:15 PM or 7:15 PM IST)
+        is_today_past_615 = (not is_past_day and (
+            (((now_dt.hour == 18 and now_dt.minute >= 15) or now_dt.hour > 18) and ('1800' in t.get('id', '') or t.get('time_validation') == '06:15 PM IST')) or
+            (((now_dt.hour == 19 and now_dt.minute >= 15) or now_dt.hour > 19) and ('1900' in t.get('id', '') or t.get('time_validation') == '07:15 PM IST'))
+        ))
         if (is_past_day or is_today_past_615) and (pt.get('status') in ['PENDING_615', 'PENDING_LIMIT', 'PENDING_615_CHECK'] or (not pt.get('entry_price') and pt.get('status') != 'ACTIVE')):
             c15['checked'] = True
             c15['status'] = 'CONFIRMATION_EXPIRED'
@@ -1619,6 +1622,14 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     today_str = now_dt.strftime('%d %b %Y')
     
+    # Adapt to US Daylight Saving Time (Winter Schedule Nov to mid-March: 7:00 PM US Pit Open, 11:55 PM MCX Close)
+    is_winter = (now_dt.hour >= 19 or now_dt.month in [11, 12, 1, 2] or (now_dt.month == 3 and now_dt.day < 10))
+    time_trigger_str = "07:00 PM IST" if is_winter else "06:00 PM IST"
+    time_val_str = "07:15 PM IST" if is_winter else "06:15 PM IST"
+    time_exit_str = "11:55 PM IST" if is_winter else "11:30 PM IST"
+    time_tag = "1900" if is_winter else "1800"
+    session_title = f"US Pit Open ({time_trigger_str.split()[0]})"
+
     # Check if trades for today already exist
     existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str}
     new_entries = []
@@ -1639,7 +1650,7 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
         lc_price = item['lower_circuit']
         uc_price = item['upper_circuit']
 
-        trade_id = f"ADV-{today_str.replace(' ', '')}-1800-{sym}"
+        trade_id = f"ADV-{today_str.replace(' ', '')}-{time_tag}-{sym}"
         trade_id_alt = f"ADV-{today_str.replace(' ', '')}-{sym}"
         if trade_id in existing_today_ids or trade_id_alt in existing_today_ids:
             continue
@@ -1659,14 +1670,14 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
             if direction == 'LOWER' and inst_dir.get('allowed_action') != 'BUY':
                 action = "STAND_ASIDE"
                 entry_text = "STAND ASIDE / DIRECTION ENGINE"
-                rationale = f"Pre-6 PM Lower Circuit fade blocked: {inst_dir.get('reason')}. Knife-catching prohibited."
+                rationale = f"Pre-Pit Open Lower Circuit fade blocked: {inst_dir.get('reason')}. Knife-catching prohibited."
                 sl = None
                 c15_status = "DIRECTION_ENGINE_STAND_ASIDE"
                 c15_detail = inst_dir.get('reason')
             elif direction == 'UPPER' and inst_dir.get('allowed_action') != 'SELL':
                 action = "STAND_ASIDE"
                 entry_text = "STAND ASIDE / DIRECTION ENGINE"
-                rationale = f"Pre-6 PM Upper Circuit fade blocked: {inst_dir.get('reason')}. Counter-trend short prohibited."
+                rationale = f"Pre-Pit Open Upper Circuit fade blocked: {inst_dir.get('reason')}. Counter-trend short prohibited."
                 sl = None
                 c15_status = "DIRECTION_ENGINE_STAND_ASIDE"
                 c15_detail = inst_dir.get('reason')
@@ -1676,26 +1687,24 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                     sl = round(min(cur_p, lc_price) * 0.996, 2)
                 else:
                     sl = round(max(cur_p, uc_price) * 1.004, 2)
-                entry_text = f"WAIT FOR 6:15 PM CANDLE CLOSE before entering {action}"
-                rationale = "High institutional volatility at US open. Awaiting 6:15 PM bar-close to confirm limit barrier holds."
+                entry_text = f"WAIT FOR {time_val_str} CANDLE CLOSE before entering {action}"
+                rationale = "High institutional volatility at US open. Awaiting bar-close to confirm limit barrier holds."
                 c15_status = "PENDING_615"
-                c15_detail = "Action will be triggered dynamically at 6:15 PM IST."
+                c15_detail = f"Action will be triggered dynamically at {time_val_str}."
 
-            # Mandatory 15-Minute Rule: Never take instant blind fades at 6:00 PM US open rush.
-            # Require 6:15 PM candle close verification to confirm boundary holds.
             entry = {
                 "id": trade_id,
                 "date": today_str,
-                "session_name": "US Pit Open (6:00 PM)",
-                "time_trigger": "06:00 PM IST",
-                "time_6pm": "06:00 PM IST",
-                "time_validation": "06:15 PM IST",
-                "time_615": "06:15 PM IST",
-                "time_exit": "11:30 PM IST",
+                "session_name": session_title,
+                "time_trigger": time_trigger_str,
+                "time_6pm": time_trigger_str,
+                "time_validation": time_val_str,
+                "time_615": time_val_str,
+                "time_exit": time_exit_str,
                 "symbol": sym,
                 "name": name,
                 "lot_size": lot_size,
-                "event_context": f"Pre-6 PM {direction.title()} Circuit Test (15-Min Confirmation Enforced)",
+                "event_context": f"Pre-Open {direction.title()} Circuit Test (15-Min Confirmation Enforced)",
                 "suggestion_6pm": {
                     "status": "WAIT_615" if action in ['BUY', 'SELL'] else "STAND_ASIDE",
                     "action_text": entry_text,
@@ -1708,7 +1717,7 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                     "checked": action not in ['BUY', 'SELL'],
                     "status": c15_status,
                     "price_615": cur_p if action not in ['BUY', 'SELL'] else None,
-                    "action_taken": "Awaiting 6:15 PM candle close verification..." if action in ['BUY', 'SELL'] else "Stood Aside (0 Units)",
+                    "action_taken": f"Awaiting {time_val_str} candle close verification..." if action in ['BUY', 'SELL'] else "Stood Aside (0 Units)",
                     "detail": c15_detail
                 },
                 "paper_trade": {
@@ -1727,9 +1736,9 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                     "session_close": None,
                     "circuit_limit": lc_price if direction == 'LOWER' else uc_price,
                     "outcome": "PENDING" if action in ['BUY', 'SELL'] else "PROTECTED",
-                    "badge": "Awaiting 6:15 PM ⏳" if action in ['BUY', 'SELL'] else "Direction Protected 🛡️",
+                    "badge": f"Awaiting {time_val_str.split()[0]} ⏳" if action in ['BUY', 'SELL'] else "Direction Protected 🛡️",
                     "pnl_display": "Pending Confirmation" if action in ['BUY', 'SELL'] else "₹0.00",
-                    "summary": "15-minute confirmation check scheduled for 6:15 PM IST." if action in ['BUY', 'SELL'] else f"Stood aside: {rationale}"
+                    "summary": f"15-minute confirmation check scheduled for {time_val_str}." if action in ['BUY', 'SELL'] else f"Stood aside: {rationale}"
                 }
             }
             new_entries.append(entry)
@@ -1757,20 +1766,20 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                     sl = round(min(cur_p, lc_price) * 0.996, 2)
                 else:
                     sl = round(max(cur_p, uc_price) * 1.004, 2)
-                entry_text = f"WAIT FOR 6:15 PM CANDLE CLOSE before entering {action}"
+                entry_text = f"WAIT FOR {time_val_str} CANDLE CLOSE before entering {action}"
                 rationale = "High institutional volume at US open. Must confirm limit barrier holds."
                 c15_status = "PENDING_615"
-                c15_detail = "Action will be triggered dynamically at 6:15 PM IST."
+                c15_detail = f"Action will be triggered dynamically at {time_val_str}."
             
             entry = {
                 "id": trade_id,
                 "date": today_str,
-                "session_name": "US Pit Open (6:00 PM)",
-                "time_trigger": "06:00 PM IST",
-                "time_6pm": "06:00 PM IST",
-                "time_validation": "06:15 PM IST",
-                "time_615": "06:15 PM IST",
-                "time_exit": "11:30 PM IST",
+                "session_name": session_title,
+                "time_trigger": time_trigger_str,
+                "time_6pm": time_trigger_str,
+                "time_validation": time_val_str,
+                "time_615": time_val_str,
+                "time_exit": time_exit_str,
                 "symbol": sym,
                 "name": name,
                 "lot_size": lot_size,
@@ -1787,7 +1796,7 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                     "checked": action not in ['BUY', 'SELL'],
                     "status": c15_status,
                     "price_615": cur_p if action not in ['BUY', 'SELL'] else None,
-                    "action_taken": "Awaiting 6:15 PM candle close verification..." if action in ['BUY', 'SELL'] else "Stood Aside (0 Units)",
+                    "action_taken": f"Awaiting {time_val_str} candle close verification..." if action in ['BUY', 'SELL'] else "Stood Aside (0 Units)",
                     "detail": c15_detail
                 },
                 "paper_trade": {
@@ -1806,15 +1815,15 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                     "session_close": None,
                     "circuit_limit": lc_price if direction == 'LOWER' else uc_price,
                     "outcome": "PENDING",
-                    "badge": "Awaiting 6:15 PM ⏳",
+                    "badge": f"Awaiting {time_val_str.split()[0]} ⏳",
                     "pnl_display": "Pending Confirmation",
-                    "summary": "15-minute confirmation check scheduled for 6:15 PM IST."
+                    "summary": f"15-minute confirmation check scheduled for {time_val_str}."
                 }
             }
             new_entries.append(entry)
 
         else:
-            # US Pit Open (6:00 PM IST) Directional Momentum Setup
+            # US Pit Open Directional Momentum Setup
             # When assets are within normal daily bands, evaluate NYMEX/COMEX pit open trend momentum
             act_dir = inst_dir.get('allowed_action')
             if act_dir in ['BUY', 'SELL']:
@@ -1841,19 +1850,19 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                     entry = {
                         "id": trade_id,
                         "date": today_str,
-                        "session_name": "US Pit Open (6:00 PM)",
-                        "time_trigger": "06:00 PM IST",
-                        "time_6pm": "06:00 PM IST",
-                        "time_validation": "06:15 PM IST",
-                        "time_615": "06:15 PM IST",
-                        "time_exit": "11:30 PM IST",
+                        "session_name": session_title,
+                        "time_trigger": time_trigger_str,
+                        "time_6pm": time_trigger_str,
+                        "time_validation": time_val_str,
+                        "time_615": time_val_str,
+                        "time_exit": time_exit_str,
                         "symbol": contract_sym,
                         "name": contract_name,
                         "lot_size": adaptive_lot,
                         "event_context": f"US Pit Open Trend Momentum {action.title()} (NYMEX/COMEX Open)",
                         "suggestion_6pm": {
                             "status": "WAIT_615",
-                            "action_text": f"WAIT FOR 6:15 PM CANDLE CLOSE before entering {action} {contract_sym}",
+                            "action_text": f"WAIT FOR {time_val_str} CANDLE CLOSE before entering {action} {contract_sym}",
                             "rationale": f"US Pit Open Momentum: {inst_dir.get('reason')} Target 1.2R calibrated to ATR.",
                             "reference_price": cur_p,
                             "stop_loss": sl,
@@ -1863,8 +1872,8 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                             "checked": False,
                             "status": "PENDING_615",
                             "price_615": None,
-                            "action_taken": f"Awaiting 6:15 PM candle close to confirm {action} trend holds...",
-                            "detail": f"15-minute verification scheduled for 6:15 PM IST (Reference: ₹{cur_p:,.2f})."
+                            "action_taken": f"Awaiting {time_val_str} candle close to confirm {action} trend holds...",
+                            "detail": f"15-minute verification scheduled for {time_val_str} (Reference: ₹{cur_p:,.2f})."
                         },
                         "paper_trade": {
                             "user": USER_ACCOUNT,
@@ -1884,9 +1893,9 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                             "session_close": None,
                             "circuit_limit": sl,
                             "outcome": "PENDING",
-                            "badge": "Awaiting 6:15 PM ⏳",
+                            "badge": f"Awaiting {time_val_str.split()[0]} ⏳",
                             "pnl_display": "Pending Confirmation",
-                            "summary": f"US Pit Open {action} momentum setup awaiting 6:15 PM candle close."
+                            "summary": f"US Pit Open {action} momentum setup awaiting {time_val_str} candle close."
                         }
                     }
                     new_entries.append(entry)
@@ -1896,12 +1905,12 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
             entry = {
                 "id": trade_id,
                 "date": today_str,
-                "session_name": "US Pit Open (6:00 PM)",
-                "time_trigger": "06:00 PM IST",
-                "time_6pm": "06:00 PM IST",
-                "time_validation": "06:15 PM IST",
-                "time_615": "06:15 PM IST",
-                "time_exit": "11:30 PM IST",
+                "session_name": session_title,
+                "time_trigger": time_trigger_str,
+                "time_6pm": time_trigger_str,
+                "time_validation": time_val_str,
+                "time_615": time_val_str,
+                "time_exit": time_exit_str,
                 "symbol": sym,
                 "name": name,
                 "lot_size": lot_size,

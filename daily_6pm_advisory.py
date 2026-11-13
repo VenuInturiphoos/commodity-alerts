@@ -249,9 +249,15 @@ def generate_and_send_6pm_advisory(force=False):
     except Exception as e:
         print(f"Error compiling London review in 6 PM advisory: {e}")
 
-    subject = f"🎯 [6 PM IST ADVISORY] MCX Commodity Action Playbook ({day_name})"
+    # Determine winter DST schedule (November to mid-March: US Pit Open is 7:00 PM IST, MCX closes 11:55 PM IST)
+    is_winter = (now_dt.hour >= 19 or now_dt.month in [11, 12, 1, 2] or (now_dt.month == 3 and now_dt.day < 10))
+    subject_time_tag = "7:00 PM IST" if is_winter else "6:00 PM IST"
+    val_time_str = "7:15 PM IST" if is_winter else "6:15 PM IST"
+    eod_exit_str = "11:50 PM IST (MCX Winter Settlement: 11:55 PM IST)" if is_winter else "11:15 PM IST (MCX Settlement: 11:30 PM IST)"
+
+    subject = f"🎯 [{subject_time_tag} ADVISORY] MCX Commodity Action Playbook ({day_name})"
     body = (
-        f"🎯 <b>DAILY 6:00 PM IST ACTION ADVISORY</b>\n"
+        f"🎯 <b>DAILY {subject_time_tag} ACTION ADVISORY</b>\n"
         f"📅 <i>{today_time_ist}</i>\n\n"
         f"{london_review_text}"
         f"<b>📊 LIVE COMMODITY STATUS OVERVIEW:</b>\n"
@@ -259,8 +265,8 @@ def generate_and_send_6pm_advisory(force=False):
         f"<b>⚡ HIGH-PROBABILITY ACTION PLAYBOOK:</b>\n"
         f"{action_text}\n\n"
         f"<b>🛡️ RISK MANAGEMENT & EXECUTION RULES:</b>\n"
-        f"1. <b>15-Minute Rule</b>: For fresh 6 PM circuit hits, wait until 6:15 PM IST candle close to verify if limit holds.\n"
-        f"2. <b>11:15 PM Hard Exit</b>: Square off all intraday positions before MCX settlement (11:30 PM IST). Never gamble on overnight gaps.\n"
+        f"1. <b>15-Minute Rule</b>: For fresh circuit hits or pit open breakouts, wait until {val_time_str} candle close to verify if limit holds.\n"
+        f"2. <b>Hard EOD Exit</b>: Square off all intraday positions before {eod_exit_str}. Never gamble on overnight gaps.\n"
         f"3. {dow_note}\n\n"
         f"🌐 <b>Live Interactive Dashboard</b>: https://VenuInturiphoos.github.io/commodity-alerts/#circuits"
     )
@@ -866,11 +872,14 @@ def run_auto_session(force=False):
     sent_8pm = state.get('DAILY_8PM_ADVISORY', {}).get('last_alert_date') == today_ist
 
     print(f"Auto-dispatch evaluating at {now_dt.strftime('%d %b %Y, %I:%M:%S %p IST')} (HH:MM={cur_hm})")
-    print(f"State Today ({today_ist}): 9AM={sent_9am}, 1:30PM={sent_130pm}, 6PM={sent_6pm}, 8PM={sent_8pm}")
+    print(f"State Today ({today_ist}): 9AM={sent_9am}, 1:30PM={sent_130pm}, 6PM/7PM={sent_6pm}, 8PM/9PM={sent_8pm}")
 
-    # 1. 11:20 PM IST or later -> EOD Exit
-    if cur_hm >= (23, 20):
-        print("Time is >= 11:20 PM IST. Triggering EOD Settlement & Square-off.")
+    is_winter = (now_dt.month in [11, 12, 1, 2] or (now_dt.month == 3 and now_dt.day < 10))
+
+    # 1. EOD Settlement & Square-off (MCX closes at 11:55 PM IST in Winter, 11:30 PM in Summer)
+    eod_cutoff = (23, 45) if is_winter else (23, 20)
+    if cur_hm >= eod_cutoff:
+        print(f"Time is >= {eod_cutoff[0]}:{eod_cutoff[1]} PM IST. Triggering EOD Settlement & Square-off.")
         with open('config.json', 'r') as f:
             cfg = json.load(f)
         chk = PriceChecker(cfg)
@@ -878,21 +887,24 @@ def run_auto_session(force=False):
         from advisory_tracker import exit_and_evaluate_eod_trades
         return exit_and_evaluate_eod_trades(chk, alt)
 
-    # 2. 8:00 PM IST or later -> 8 PM EIA / Evening Playbook
-    if cur_hm >= (20, 0) and (not sent_8pm or force):
-        print("Time is >= 8:00 PM IST and 8 PM advisory not sent today. Dispatching 8 PM Advisory.")
+    # 2. Evening / EIA Playbook (9:00 PM IST in Winter, 8:00 PM in Summer)
+    evening_cutoff = (20, 45) if is_winter else (20, 0)
+    if cur_hm >= evening_cutoff and (not sent_8pm or force):
+        print(f"Time is >= {evening_cutoff[0]}:{evening_cutoff[1]} IST and evening advisory not sent today. Dispatching Evening Advisory.")
         return generate_and_send_8pm_advisory(force=force)
 
-    # 3. 6:15 PM IST or later -> 6:15 Confirmation check (if 6 PM was already sent or trades are pending confirmation)
-    has_pending_615 = False
+    # 3. Confirmation check (7:15 PM IST in Winter, 6:15 PM in Summer)
+    has_pending_conf = False
     try:
         from advisory_tracker import load_tracker
-        has_pending_615 = any(t.get('check_615', {}).get('status') == 'PENDING_615' for t in load_tracker().get('trades', []))
+        has_pending_conf = any(t.get('check_615', {}).get('status') == 'PENDING_615' for t in load_tracker().get('trades', []))
     except Exception:
         pass
 
-    if cur_hm >= (18, 15) and (sent_6pm or has_pending_615) and cur_hm < (20, 0):
-        print("Time is in 6:15 PM - 8:00 PM IST window with 6 PM dispatched or trades pending confirmation. Running 6:15 Confirmation.")
+    conf_start = (19, 15) if is_winter else (18, 15)
+    conf_end = (20, 45) if is_winter else (20, 0)
+    if cur_hm >= conf_start and (sent_6pm or has_pending_conf) and cur_hm < conf_end:
+        print(f"Time is in {conf_start[0]}:{conf_start[1]} - {conf_end[0]}:{conf_end[1]} IST window with pit open dispatched or trades pending confirmation. Running Confirmation Check.")
         with open('config.json', 'r') as f:
             cfg = json.load(f)
         chk = PriceChecker(cfg)
@@ -900,9 +912,10 @@ def run_auto_session(force=False):
         from advisory_tracker import check_and_execute_615_confirmation
         return check_and_execute_615_confirmation(chk, alt)
 
-    # 4. 6:00 PM IST or later -> 6 PM US Pit Open Advisory
-    if cur_hm >= (18, 0) and (not sent_6pm or force):
-        print("Time is >= 6:00 PM IST and 6 PM advisory not sent today. Dispatching 6 PM Advisory.")
+    # 4. US Pit Open Advisory (7:00 PM IST in Winter, 6:00 PM in Summer)
+    pit_cutoff = (19, 0) if is_winter else (18, 0)
+    if cur_hm >= pit_cutoff and (not sent_6pm or force):
+        print(f"Time is >= {pit_cutoff[0]}:00 IST and US Pit Open advisory not sent today. Dispatching US Pit Open Advisory.")
         return generate_and_send_6pm_advisory(force=force)
 
     # 5. 1:30 PM IST or later -> London Breakout Advisory
@@ -931,7 +944,7 @@ def run_auto_session(force=False):
 if __name__ == "__main__":
     import sys
     force_run = '--force' in sys.argv
-    if '--check-615' in sys.argv:
+    if '--check-615' in sys.argv or '--check-715' in sys.argv:
         with open('config.json', 'r') as f:
             cfg = json.load(f)
         chk = PriceChecker(cfg)
@@ -947,12 +960,12 @@ if __name__ == "__main__":
         exit_and_evaluate_eod_trades(chk, alt)
     elif '--auto' in sys.argv:
         run_auto_session(force=force_run)
-    elif '--session' in sys.argv or any(s in sys.argv for s in ['--9am', '--130pm', '--8pm', '--6pm']):
+    elif '--session' in sys.argv or any(s in sys.argv for s in ['--9am', '--130pm', '--8pm', '--6pm', '--7pm', '--9pm']):
         if '--9am' in sys.argv or ('--session' in sys.argv and ('9am' in sys.argv or '900' in sys.argv)):
             generate_and_send_9am_advisory(force=force_run)
         elif '--130pm' in sys.argv or ('--session' in sys.argv and '130' in sys.argv):
             generate_and_send_130pm_advisory(force=force_run)
-        elif '--8pm' in sys.argv or ('--session' in sys.argv and ('800' in sys.argv or '8pm' in sys.argv)):
+        elif '--8pm' in sys.argv or '--9pm' in sys.argv or ('--session' in sys.argv and ('800' in sys.argv or '8pm' in sys.argv or '9pm' in sys.argv)):
             generate_and_send_8pm_advisory(force=force_run)
         else:
             generate_and_send_6pm_advisory(force=force_run)
