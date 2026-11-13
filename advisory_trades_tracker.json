@@ -228,21 +228,22 @@
         "status": "ACTIVE",
         "margin_required_inr": 135600.0,
         "target": 175986.72,
-        "stop_loss": 183206.64,
+        "stop_loss": 180800.0,
         "initial_stop_loss": 183206.64,
         "original_sl": 183206.64,
         "peak_high": 180800.0,
         "trough_low": 180800.0,
         "entry_day_high": 180800.0,
-        "entry_day_low": 180800.0
+        "entry_day_low": 180800.0,
+        "trailing_sl_active": true
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PENDING",
-        "badge": "Active Trigger ⚡",
+        "badge": "Breakeven Active 🛡️",
         "pnl_display": "Ticking Live...",
-        "summary": "Pre-Ignition Volatility Coil active: SELL 5 units @ ₹180,800.00 (Target: ₹175,986.72, SL: ₹183,206.64) | Calibrated for ~₹1.36L-₹1.5L margin | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+        "summary": "Trailing Stop to Breakeven activated (+1.0R achieved): Stop loss moved to ₹180,800.00 (Risk-Free). Position riding trend to Target ₹175,986.72."
       },
       "live_price_data": {
         "current_price": 179623.0,
@@ -338,21 +339,22 @@
         "status": "ACTIVE",
         "margin_required_inr": 154413.0,
         "target": 403.44,
-        "stop_loss": 410.73,
+        "stop_loss": 408.5,
         "initial_stop_loss": 410.73,
         "original_sl": 410.73,
         "peak_high": 408.5,
         "trough_low": 408.5,
         "entry_day_high": 408.5,
-        "entry_day_low": 408.5
+        "entry_day_low": 408.5,
+        "trailing_sl_active": true
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PENDING",
-        "badge": "Active Trigger ⚡",
+        "badge": "Breakeven Active 🛡️",
         "pnl_display": "Ticking Live...",
-        "summary": "Pre-Ignition Volatility Coil active: SELL 4000 units @ ₹408.50 (Target: ₹403.44, SL: ₹410.73) | Calibrated for ~₹1.54L margin (4 lots Zinc Mini) | Parametric Model: 42.6% Target | 43.1% Stop | Expected: +0.54R"
+        "summary": "Trailing Stop to Breakeven activated (+1.0R achieved): Stop loss moved to ₹408.50 (Risk-Free). Position riding trend to Target ₹403.44."
       },
       "live_price_data": {
         "current_price": 407.2,
