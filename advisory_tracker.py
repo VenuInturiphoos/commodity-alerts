@@ -42,11 +42,11 @@ MARGIN_RATES = {
     'SILVERMIC': 0.15,
     'COPPER': 0.08,      # 8% margin (~₹1.40 Lakh)
     'COPPERM': 0.08,
-    'ZINC': 0.13,        # 13% margin (~₹1.33 Lakh @ ₹410)
-    'ZINCM': 0.13,
-    'ZINCMINI': 0.13,
-    'ALUMINIUM': 0.16,   # 16% margin (~₹1.32 Lakh @ ₹330)
-    'ALUMINI': 0.16,
+    'ZINC': 0.0945,      # 9.45% margin (~₹38.5k/lot, ₹77k for 2 lots of Zinc Mini @ ~₹408)
+    'ZINCM': 0.0945,
+    'ZINCMINI': 0.0945,
+    'ALUMINIUM': 0.092,  # 9.2% margin (~₹30.5k/lot for Aluminium Mini @ ~₹330)
+    'ALUMINI': 0.092,
     'GOLD': 0.10,        # 10% margin (~₹1.44 Lakh)
     'GOLDM': 0.10,
     'GOLDTEN': 0.10
@@ -406,7 +406,8 @@ def get_cash_and_margin(tracker_data):
         p = float(pt.get('entry_price') or t.get('suggestion_6pm', {}).get('reference_price') or 0.0)
         q = float(pt.get('quantity') or t.get('lot_size') or 1)
         sym = t.get('symbol', '')
-        rate = MARGIN_RATES.get(sym, 0.15)
+        base_sym = sym.replace('MIC', '').replace('MINI', '').replace('INI', '').replace('M', '').replace('TEN', '').replace('-FUT', '')
+        rate = MARGIN_RATES.get(sym, MARGIN_RATES.get(base_sym, 0.10))
         return round(p * q * rate, 2)
 
     used_margin = sum(calc_commodity_margin(t) for t in active_trades)

@@ -613,9 +613,9 @@ class PositionSizer:
         'NATURALGAS': 0.18, 'NATURALGASM': 0.18,
         'SILVER': 0.15, 'SILVERM': 0.15, 'SILVERMIC': 0.15,
         'GOLD': 0.10, 'GOLDM': 0.10, 'GOLDTEN': 0.10,
-        'COPPER': 0.10, 'COPPERM': 0.10,
-        'ZINC': 0.15, 'ZINCM': 0.15, 'ZINCMINI': 0.15,
-        'ALUMINIUM': 0.16, 'ALUMINI': 0.16
+        'COPPER': 0.08, 'COPPERM': 0.08,
+        'ZINC': 0.0945, 'ZINCM': 0.0945, 'ZINCMINI': 0.0945,
+        'ALUMINIUM': 0.092, 'ALUMINI': 0.092
     }
 
     @classmethod
