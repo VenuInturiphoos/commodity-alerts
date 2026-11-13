@@ -734,7 +734,7 @@
                             </div>
                             <h2 id="trading-subtab-title" style="margin: 0; font-size: 1.35rem; color: #f8fafc;">🎯 Futures Trading Tracker (Commodities & Stock Futures)</h2>
                             <p id="trading-subtab-desc" style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">
-                                Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions active till 11:55 PM IST (MCX Winter Schedule).
+                                Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions synchronized with US market hours (MCX Close: 11:30 PM Summer EDT / 11:55 PM Winter EST).
                             </p>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
@@ -6891,7 +6891,8 @@ function switchTradingSubTab(subtab) {
     if (subtab === 'futures') {
         if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-chart-line"></i> Dedicated Futures Pool: ₹3,00,000 (Commodity Minis & Stock Futures)';
         if (titleEl) titleEl.innerHTML = '🎯 Futures Trading Tracker (Commodities & Stock Futures)';
-        if (descEl) descEl.innerHTML = 'Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions active till 11:55 PM IST (MCX Winter Schedule).';
+        const isDstNow = typeof isUSDaylightSaving === 'function' ? isUSDaylightSaving() : false;
+        if (descEl) descEl.innerHTML = `Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions active till ${isDstNow ? '11:30 PM IST (Summer EDT)' : '11:55 PM IST (Winter EST)'}.`;
         if (sessionFilterContainer) sessionFilterContainer.style.display = 'block';
     } else {
         if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday MIS Allocation: Base ₹30,000 Margin (+ Booked Profits) | 5x Buying Power';
@@ -6945,6 +6946,17 @@ function getTradeSessionCategory(t) {
     return 'OTHER';
 }
 
+function isUSDaylightSaving(dateObj) {
+    const d = dateObj || new Date();
+    try {
+        const nyStr = d.toLocaleString('en-US', { timeZone: 'America/New_York', timeZoneName: 'short' });
+        return nyStr.includes('EDT');
+    } catch (e) {
+        const m = d.getMonth() + 1;
+        return (m > 3 && m < 11);
+    }
+}
+
 function getTradeValidationCutoff(t) {
     if (!t) return { hour: 18, min: 15 };
     const valStr = t.time_validation || '';
@@ -6953,7 +6965,17 @@ function getTradeValidationCutoff(t) {
     if (valStr.includes('07:15') || valStr.includes('7:15') || trigStr.includes('07:00') || trigStr.includes('7:00') || idStr.includes('-1900-')) {
         return { hour: 19, min: 15 };
     }
-    return { hour: 18, min: 15 };
+    if (valStr.includes('06:15') || valStr.includes('6:15') || trigStr.includes('06:00') || trigStr.includes('6:00') || idStr.includes('-1800-')) {
+        return { hour: 18, min: 15 };
+    }
+    if (t.date && typeof parseDateStrToParts === 'function') {
+        const tp = parseDateStrToParts(t.date);
+        if (tp) {
+            const d = new Date(tp.year, tp.month - 1, tp.day, 12, 0, 0);
+            return isUSDaylightSaving(d) ? { hour: 18, min: 15 } : { hour: 19, min: 15 };
+        }
+    }
+    return isUSDaylightSaving() ? { hour: 18, min: 15 } : { hour: 19, min: 15 };
 }
 
 function getTradeExitCutoff(t) {
@@ -6967,17 +6989,28 @@ function getTradeExitCutoff(t) {
     if (exitStr.includes('11:55') || exitStr.includes('23:55') || trigStr.includes('07:00') || trigStr.includes('7:00') || idStr.includes('-1900-')) {
         return { hour: 23, min: 55 };
     }
-    return { hour: 23, min: 30 };
+    if (exitStr.includes('11:30') || exitStr.includes('23:30') || trigStr.includes('06:00') || trigStr.includes('6:00') || idStr.includes('-1800-')) {
+        return { hour: 23, min: 30 };
+    }
+    if (t.date && typeof parseDateStrToParts === 'function') {
+        const tp = parseDateStrToParts(t.date);
+        if (tp) {
+            const d = new Date(tp.year, tp.month - 1, tp.day, 12, 0, 0);
+            return isUSDaylightSaving(d) ? { hour: 23, min: 30 } : { hour: 23, min: 55 };
+        }
+    }
+    return isUSDaylightSaving() ? { hour: 23, min: 30 } : { hour: 23, min: 55 };
 }
 
 function updateSessionStatsBadges(trades) {
     const sessions = ['TRIGGER', '9AM', '1PM', '6PM', '8PM'];
+    const isDstNow = isUSDaylightSaving();
     const sessNames = {
         'TRIGGER': '⚡ Real-Time Technical Triggers',
         '9AM': '09:01 AM Morning Pulse',
         '1PM': '01:30 PM London Breakout',
-        '6PM': 'US Pit Open (7:00 PM Winter / 6:00 PM)',
-        '8PM': 'Evening Review (9:00 PM Winter / 8:00 PM)'
+        '6PM': `US Pit Open (${isDstNow ? '06:00 PM Summer EDT' : '07:00 PM Winter EST'})`,
+        '8PM': `Evening Review (${isDstNow ? '08:00 PM Summer EDT' : '09:00 PM Winter EST'})`
     };
     
     sessions.forEach(sessKey => {

@@ -10,6 +10,49 @@ NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web'
 import math
 USER_ACCOUNT = "venu.photos1@gmail.com"
 
+def is_us_dst_active(dt=None):
+    """
+    Returns True if US Eastern Time is currently in Daylight Saving Time (EDT, Regular Summer Schedule),
+    or False if in Standard Time (EST, Winter Schedule).
+    Automatically switches on the 2nd Sunday in March and 1st Sunday in November every year.
+    """
+    try:
+        from zoneinfo import ZoneInfo
+        tz_ny = ZoneInfo('America/New_York')
+        check_dt = dt.astimezone(tz_ny) if (dt and getattr(dt, 'tzinfo', None)) else datetime.now(tz_ny)
+        return bool(check_dt.dst())
+    except Exception:
+        try:
+            tz_ny = pytz.timezone('America/New_York')
+            check_dt = dt.astimezone(tz_ny) if (dt and getattr(dt, 'tzinfo', None)) else datetime.now(tz_ny)
+            return bool(check_dt.dst())
+        except Exception:
+            m = (dt or datetime.utcnow()).month
+            return (3 < m < 11)
+
+def get_us_aligned_session_times(dt=None):
+    """
+    Returns timing parameters in IST dynamically synchronized with US market hours:
+    - Summer (EDT): 6:00 PM Pit Open, 6:15 PM Confirmation, 8:00 PM Evening, 11:30 PM MCX Close
+    - Winter (EST): 7:00 PM Pit Open, 7:15 PM Confirmation, 9:00 PM Evening, 11:55 PM MCX Close
+    """
+    is_dst = is_us_dst_active(dt)
+    return {
+        "is_dst": is_dst,
+        "schedule_label": "Summer (EDT)" if is_dst else "Winter (EST)",
+        "pit_cutoff": (18, 0) if is_dst else (19, 0),
+        "pit_str": "06:00 PM IST" if is_dst else "07:00 PM IST",
+        "pit_tag": "1800" if is_dst else "1900",
+        "conf_start": (18, 15) if is_dst else (19, 15),
+        "conf_end": (20, 0) if is_dst else (20, 45),
+        "conf_str": "06:15 PM IST" if is_dst else "07:15 PM IST",
+        "evening_cutoff": (20, 0) if is_dst else (20, 45),
+        "evening_str": "08:00 PM IST" if is_dst else "09:00 PM IST",
+        "evening_tag": "2000" if is_dst else "2100",
+        "eod_cutoff": (23, 20) if is_dst else (23, 45),
+        "eod_str": "11:30 PM IST" if is_dst else "11:55 PM IST",
+    }
+
 # MCX Risk-Parity Lot Sizes (Calibrated to match ~₹1.2 Lakh to ₹1.5 Lakh Purchase/Margin Capital per Trade)
 LOT_SIZES = {
     'CRUDEOIL': 100,    # Crude Oil Standard (100 bbl) - 1 pt = ₹100
@@ -562,11 +605,14 @@ def save_tracker(tracker_data):
         is_past_day = bool(t_date and t_date != today_str)
         is_eq = t.get('asset_type') in ['EQUITY', 'STOCK_FUTURES'] or ('-FUT' in t.get('symbol', '')) or ('.NS' in t.get('symbol', ''))
         
-        # 1. Unconfirmed setups from past days or today's US Pit Open session past confirmation window (6:15 PM or 7:15 PM IST)
-        is_today_past_615 = (not is_past_day and (
-            (((now_dt.hour == 18 and now_dt.minute >= 15) or now_dt.hour > 18) and ('1800' in t.get('id', '') or t.get('time_validation') == '06:15 PM IST')) or
-            (((now_dt.hour == 19 and now_dt.minute >= 15) or now_dt.hour > 19) and ('1900' in t.get('id', '') or t.get('time_validation') == '07:15 PM IST'))
-        ))
+        # 1. Unconfirmed setups from past days or today's confirmation window (6:15 PM in Summer EDT / 7:15 PM in Winter EST)
+        val_time = t.get('time_validation', '')
+        is_val_715 = ('07:15' in val_time or '1900' in t.get('id', ''))
+        is_val_615 = ('06:15' in val_time or '1800' in t.get('id', ''))
+        if not is_val_715 and not is_val_615:
+            is_val_715 = not is_us_dst_active(now_dt)
+        check_hour = 19 if is_val_715 else 18
+        is_today_past_615 = (not is_past_day and ((now_dt.hour == check_hour and now_dt.minute >= 15) or now_dt.hour > check_hour))
         if (is_past_day or is_today_past_615) and (pt.get('status') in ['PENDING_615', 'PENDING_LIMIT', 'PENDING_615_CHECK'] or (not pt.get('entry_price') and pt.get('status') != 'ACTIVE')):
             c15['checked'] = True
             c15['status'] = 'CONFIRMATION_EXPIRED'
@@ -1622,12 +1668,12 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     today_str = now_dt.strftime('%d %b %Y')
     
-    # Adapt to US Daylight Saving Time (Winter Schedule Nov to mid-March: 7:00 PM US Pit Open, 11:55 PM MCX Close)
-    is_winter = (now_dt.hour >= 19 or now_dt.month in [11, 12, 1, 2] or (now_dt.month == 3 and now_dt.day < 10))
-    time_trigger_str = "07:00 PM IST" if is_winter else "06:00 PM IST"
-    time_val_str = "07:15 PM IST" if is_winter else "06:15 PM IST"
-    time_exit_str = "11:55 PM IST" if is_winter else "11:30 PM IST"
-    time_tag = "1900" if is_winter else "1800"
+    # Dynamically align with US Daylight Saving Time (Summer EDT vs Winter EST)
+    timing = get_us_aligned_session_times(now_dt)
+    time_trigger_str = timing["pit_str"]
+    time_val_str = timing["conf_str"]
+    time_exit_str = timing["eod_str"]
+    time_tag = timing["pit_tag"]
     session_title = f"US Pit Open ({time_trigger_str.split()[0]})"
 
     # Check if trades for today already exist
@@ -1963,7 +2009,7 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
 
 def record_live_8pm_advisory(commodities_list, day_name):
     """
-    Called at 8:00 PM IST by generate_and_send_8pm_advisory.
+    Called at 8:00 PM IST (Summer EDT) / 9:00 PM IST (Winter EST) by daily_6pm_advisory.py.
     Evaluates EIA inventory setups (Wed Crude, Thu NatGas) and evening momentum,
     creates paper trades for venu.photos1@gmail.com, and logs entries in the advisory tracker.
     """
@@ -1973,6 +2019,14 @@ def record_live_8pm_advisory(commodities_list, day_name):
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     today_str = now_dt.strftime('%d %b %Y')
     
+    # Dynamically align with US Daylight Saving Time (Summer EDT vs Winter EST)
+    timing = get_us_aligned_session_times(now_dt)
+    time_trigger_str = timing["evening_str"]
+    time_val_str = f"{timing['evening_str'].split(':')[0]}:15 PM IST"
+    time_exit_str = timing["eod_str"]
+    time_tag = timing["evening_tag"]
+    session_title = f"Evening Review ({time_trigger_str.split()[0]})"
+    
     existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str}
     new_entries = []
 
@@ -1980,7 +2034,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
     if day_name == 'Wednesday':
         crude = next((c for c in commodities_list if c['symbol'] in ['CRUDEOILM', 'CRUDEOIL']), None)
         if crude:
-            trade_id = f"ADV-{today_str.replace(' ', '')}-2000-CRUDEOIL"
+            trade_id = f"ADV-{today_str.replace(' ', '')}-{time_tag}-CRUDEOIL"
             if trade_id not in existing_today_ids:
                 cur_p = crude['current_price']
                 p_close = crude['prev_close']
@@ -2050,12 +2104,12 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         entry = {
                             "id": trade_id,
                             "date": today_str,
-                            "session_name": "EIA Crude Inventory (8:00 PM)",
-                            "time_trigger": "08:00 PM IST",
-                            "time_6pm": "08:00 PM IST",
-                            "time_validation": "08:15 PM IST",
-                            "time_615": "08:15 PM IST",
-                            "time_exit": "11:30 PM IST",
+                            "session_name": f"EIA Crude Inventory ({time_trigger_str.split()[0]})",
+                            "time_trigger": time_trigger_str,
+                            "time_6pm": time_trigger_str,
+                            "time_validation": time_val_str,
+                            "time_615": time_val_str,
+                            "time_exit": time_exit_str,
                             "symbol": c_sym,
                             "name": c_name,
                             "lot_size": lot_size,
@@ -2080,7 +2134,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                                 "action": "STAND_ASIDE",
                                 "quantity": 0,
                                 "entry_price": None,
-                                "entry_time": "08:00 PM IST",
+                                "entry_time": time_trigger_str,
                                 "exit_price": None,
                                 "exit_time": None,
                                 "pnl_points": 0.0,
@@ -2101,12 +2155,12 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         entry = {
                             "id": trade_id,
                             "date": today_str,
-                            "session_name": "EIA Crude Inventory (8:00 PM)",
-                            "time_trigger": "08:00 PM IST",
-                            "time_6pm": "08:00 PM IST",
-                            "time_validation": "08:15 PM IST",
-                            "time_615": "08:15 PM IST",
-                            "time_exit": "11:30 PM IST",
+                            "session_name": f"EIA Crude Inventory ({time_trigger_str.split()[0]})",
+                            "time_trigger": time_trigger_str,
+                            "time_6pm": time_trigger_str,
+                            "time_validation": time_val_str,
+                            "time_615": time_val_str,
+                            "time_exit": time_exit_str,
                             "symbol": c_sym,
                             "name": c_name,
                             "lot_size": adaptive_lot,
@@ -2124,14 +2178,14 @@ def record_live_8pm_advisory(commodities_list, day_name):
                                 "status": "DIRECT_ENTRY",
                                 "price_615": cur_p,
                                 "action_taken": f"Entered {action} {adaptive_lot} units @ ₹{cur_p:,.2f}",
-                                "detail": "EIA Inventory setup entered at 8:00 PM IST."
+                                "detail": f"EIA Inventory setup entered at {time_trigger_str}."
                             },
                             "paper_trade": {
                                 "user": USER_ACCOUNT,
                                 "action": action,
                                 "quantity": adaptive_lot,
                                 "entry_price": cur_p,
-                                "entry_time": "08:00 PM IST",
+                                "entry_time": time_trigger_str,
                                 "exit_price": None,
                                 "exit_time": None,
                                 "pnl_points": 0.0,
@@ -2147,7 +2201,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                                 "outcome": "PENDING",
                                 "badge": "Active Trade ⚡",
                                 "pnl_display": "Ticking Live...",
-                                "summary": f"Active {action} position ({adaptive_lot} units) entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                                "summary": f"Active {action} position ({adaptive_lot} units) entered for {USER_ACCOUNT}. Auto-exit at {time_exit_str}."
                             }
                         }
                         new_entries.append(entry)
@@ -2156,7 +2210,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
     elif day_name == 'Thursday':
         natgas = next((c for c in commodities_list if c['symbol'] in ['NATURALGASM', 'NATURALGAS']), None)
         if natgas:
-            trade_id = f"ADV-{today_str.replace(' ', '')}-2000-NATURALGAS"
+            trade_id = f"ADV-{today_str.replace(' ', '')}-{time_tag}-NATURALGAS"
             if trade_id not in existing_today_ids:
                 cur_p = natgas['current_price']
                 p_close = natgas['prev_close']
@@ -2224,12 +2278,12 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         entry = {
                             "id": trade_id,
                             "date": today_str,
-                            "session_name": "EIA NatGas Storage (8:00 PM)",
-                            "time_trigger": "08:00 PM IST",
-                            "time_6pm": "08:00 PM IST",
-                            "time_validation": "08:15 PM IST",
-                            "time_615": "08:15 PM IST",
-                            "time_exit": "11:30 PM IST",
+                            "session_name": f"EIA NatGas Storage ({time_trigger_str.split()[0]})",
+                            "time_trigger": time_trigger_str,
+                            "time_6pm": time_trigger_str,
+                            "time_validation": time_val_str,
+                            "time_615": time_val_str,
+                            "time_exit": time_exit_str,
                             "symbol": c_sym,
                             "name": c_name,
                             "lot_size": lot_size,
@@ -2254,7 +2308,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                                 "action": "STAND_ASIDE",
                                 "quantity": 0,
                                 "entry_price": None,
-                                "entry_time": "08:00 PM IST",
+                                "entry_time": time_trigger_str,
                                 "exit_price": None,
                                 "exit_time": None,
                                 "pnl_points": 0.0,
@@ -2275,12 +2329,12 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         entry = {
                             "id": trade_id,
                             "date": today_str,
-                            "session_name": "EIA NatGas Storage (8:00 PM)",
-                            "time_trigger": "08:00 PM IST",
-                            "time_6pm": "08:00 PM IST",
-                            "time_validation": "08:15 PM IST",
-                            "time_615": "08:15 PM IST",
-                            "time_exit": "11:30 PM IST",
+                            "session_name": f"EIA NatGas Storage ({time_trigger_str.split()[0]})",
+                            "time_trigger": time_trigger_str,
+                            "time_6pm": time_trigger_str,
+                            "time_validation": time_val_str,
+                            "time_615": time_val_str,
+                            "time_exit": time_exit_str,
                             "symbol": c_sym,
                             "name": c_name,
                             "lot_size": adaptive_lot,
@@ -2298,14 +2352,14 @@ def record_live_8pm_advisory(commodities_list, day_name):
                                 "status": "DIRECT_ENTRY",
                                 "price_615": cur_p,
                                 "action_taken": f"Entered {action} {adaptive_lot} units @ ₹{cur_p:,.2f}",
-                                "detail": "EIA Storage setup entered at 8:00 PM IST."
+                                "detail": f"EIA Storage setup entered at {time_trigger_str}."
                             },
                             "paper_trade": {
                                 "user": USER_ACCOUNT,
                                 "action": action,
                                 "quantity": adaptive_lot,
                                 "entry_price": cur_p,
-                                "entry_time": "08:00 PM IST",
+                                "entry_time": time_trigger_str,
                                 "exit_price": None,
                                 "exit_time": None,
                                 "pnl_points": 0.0,
@@ -2321,7 +2375,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                                 "outcome": "PENDING",
                                 "badge": "Active Trade ⚡",
                                 "pnl_display": "Ticking Live...",
-                                "summary": f"Active {action} position ({adaptive_lot} units) entered for {USER_ACCOUNT}. Auto-exit at 11:30 PM IST."
+                                "summary": f"Active {action} position ({adaptive_lot} units) entered for {USER_ACCOUNT}. Auto-exit at {time_exit_str}."
                             }
                         }
                         new_entries.append(entry)
@@ -2338,7 +2392,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
         seen_underlyings.add(clean_underlying)
 
         c_sym, c_name, def_lot = get_defense_contract_and_lot(sym, item['name'])
-        trade_id = f"ADV-{today_str.replace(' ', '')}-2000-{clean_underlying}"
+        trade_id = f"ADV-{today_str.replace(' ', '')}-{time_tag}-{clean_underlying}"
         if trade_id in existing_today_ids:
             continue
 
@@ -2377,12 +2431,12 @@ def record_live_8pm_advisory(commodities_list, day_name):
                 entry = {
                     "id": trade_id,
                     "date": today_str,
-                    "session_name": "Evening Pit Review (8:00 PM)",
-                    "time_trigger": "08:00 PM IST",
-                    "time_6pm": "08:00 PM IST",
-                    "time_validation": "08:15 PM IST",
-                    "time_615": "08:15 PM IST",
-                    "time_exit": "11:30 PM IST",
+                    "session_name": session_title,
+                    "time_trigger": time_trigger_str,
+                    "time_6pm": time_trigger_str,
+                    "time_validation": time_val_str,
+                    "time_615": time_val_str,
+                    "time_exit": time_exit_str,
                     "symbol": c_sym,
                     "name": c_name,
                     "lot_size": 0,
@@ -5299,7 +5353,8 @@ def exit_and_evaluate_eod_trades(checker, alerter):
         pnl_inr = round(pnl_pts * lot_size, 2)
         total_day_pnl += pnl_inr
         
-        exit_time_label = "03:20 PM IST" if is_eq else "11:30 PM IST"
+        timing = get_us_aligned_session_times(now_dt)
+        exit_time_label = "03:20 PM IST" if is_eq else timing["eod_str"]
         exit_trigger = "INTRADAY_320_SQUAREOFF" if is_eq else "EOD_SQUAREOFF"
         
         pt['exit_price'] = close_p
@@ -5327,17 +5382,18 @@ def exit_and_evaluate_eod_trades(checker, alerter):
     save_tracker(tracker)
     
     if summary_lines and alerter:
+        eod_time_title = timing["eod_str"].replace(" IST", "")
         body = (
-            f"🏁 <b>DAILY 11:30 PM IST ADVISORY PAPER TRADING SETTLEMENT</b>\n"
+            f"🏁 <b>DAILY {eod_time_title} IST ADVISORY PAPER TRADING SETTLEMENT ({timing['schedule_label']})</b>\n"
             f"📅 <i>{today_str}</i>\n"
             f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
-            f"<b>📊 TODAY'S 6 PM ADVISORY RESULTS:</b>\n"
+            f"<b>📊 TODAY'S ADVISORY RESULTS:</b>\n"
             + "\n".join(summary_lines) + "\n\n"
             f"💰 <b>Total Day Realized P&L</b>: <b>{'+' if total_day_pnl >= 0 else ''}₹{total_day_pnl:,.2f}</b>\n"
             f"📈 Cumulative Advisory Win Rate: <b>{tracker['summary']['win_rate_pct']}%</b> ({tracker['summary']['correct_count']}/{tracker['summary'].get('executed_count', 0)})\n\n"
             f"🌐 <b>Interactive Tracker</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
         )
-        alerter.send_alert(f"🏁 [11:30 PM SETTLEMENT] Daily 6 PM Advisory Results ({today_str})", body)
+        alerter.send_alert(f"🏁 [{eod_time_title} SETTLEMENT - {timing['schedule_label']}] Daily Advisory Results ({today_str})", body)
         
     return True
 

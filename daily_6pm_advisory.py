@@ -4,16 +4,19 @@ import pytz
 from datetime import datetime
 from alerter import EmailAlerter
 from price_checker import PriceChecker
+from advisory_tracker import is_us_dst_active, get_us_aligned_session_times
 
 def generate_and_send_6pm_advisory(force=False):
     """
-    Scans live market data and historical probabilities at 6:00 PM IST,
+    Scans live market data and historical probabilities at US Pit Open (6:00 PM IST Summer / 7:00 PM IST Winter),
     constructs an actionable trade advisory, and sends it via Telegram & Email.
     """
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     today_ist = now_dt.strftime('%Y-%m-%d')
     today_time_ist = now_dt.strftime('%d %b %Y, %I:%M %p IST')
     day_name = now_dt.strftime('%A')
+    timing = get_us_aligned_session_times(now_dt)
+    val_time_str = timing["conf_str"]
     
     # Deduplication check: only send once per day unless forced
     state_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
@@ -149,7 +152,7 @@ def generate_and_send_6pm_advisory(force=False):
                     action_items.append(
                         f"⚠️ <b>{name.upper()} (Testing Upper Circuit Band)</b>\n"
                         f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}% | {dist_uc:.2f}% from Ceiling)\n"
-                        f"  • Action: Wait for 6:15 PM candle. Do not chase breakouts without volume confirmation."
+                        f"  • Action: Wait for {val_time_str} candle. Do not chase breakouts without volume confirmation."
                     )
         else:
             # Case 3: US Pit Open Directional Trend Momentum (06:00 PM IST NYMEX/COMEX Open)
@@ -190,7 +193,7 @@ def generate_and_send_6pm_advisory(force=False):
                             f"{icon} <b>{contract_name.upper()} (US Pit Open {trend_type})</b>\n"
                             f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}% | VWAP: ₹{inst_dir.get('vwap', cur_p):,.1f})\n"
                             f"  • Strategy: <b>NYMEX/COMEX Institutional Trend Momentum</b> ({inst_dir.get('reason')})\n"
-                            f"  • Recommended Action: <b>{act_dir} {adaptive_lot} Lot ({contract_sym})</b> (Wait for 6:15 PM candle confirmation)\n"
+                            f"  • Recommended Action: <b>{act_dir} {adaptive_lot} Lot ({contract_sym})</b> (Wait for {val_time_str} candle confirmation)\n"
                             f"  • Invalidation Stop-Loss: ₹{sl:,.2f} (Structural chart support/resistance)\n"
                             f"  • Target: ₹{tgt:,.2f} (1.2R Target calibrated to intraday ATR)"
                         )
@@ -249,15 +252,12 @@ def generate_and_send_6pm_advisory(force=False):
     except Exception as e:
         print(f"Error compiling London review in 6 PM advisory: {e}")
 
-    # Determine winter DST schedule (November to mid-March: US Pit Open is 7:00 PM IST, MCX closes 11:55 PM IST)
-    is_winter = (now_dt.hour >= 19 or now_dt.month in [11, 12, 1, 2] or (now_dt.month == 3 and now_dt.day < 10))
-    subject_time_tag = "7:00 PM IST" if is_winter else "6:00 PM IST"
-    val_time_str = "7:15 PM IST" if is_winter else "6:15 PM IST"
-    eod_exit_str = "11:50 PM IST (MCX Winter Settlement: 11:55 PM IST)" if is_winter else "11:15 PM IST (MCX Settlement: 11:30 PM IST)"
+    subject_time_tag = timing["pit_str"]
+    eod_exit_str = f"session close ({timing['eod_str']})"
 
-    subject = f"🎯 [{subject_time_tag} ADVISORY] MCX Commodity Action Playbook ({day_name})"
+    subject = f"🎯 [{subject_time_tag} ADVISORY - {timing['schedule_label']}] MCX Commodity Action Playbook ({day_name})"
     body = (
-        f"🎯 <b>DAILY {subject_time_tag} ACTION ADVISORY</b>\n"
+        f"🎯 <b>DAILY {subject_time_tag} ACTION ADVISORY ({timing['schedule_label']})</b>\n"
         f"📅 <i>{today_time_ist}</i>\n\n"
         f"{london_review_text}"
         f"<b>📊 LIVE COMMODITY STATUS OVERVIEW:</b>\n"
@@ -617,21 +617,24 @@ def generate_and_send_8pm_advisory(force=False):
     overview_text = "\n".join(overview_lines)
     action_text = "\n\n".join(action_items)
 
+    timing_8pm = get_us_aligned_session_times(now_dt)
+    eia_time = timing_8pm["evening_str"]
+    eia_stabilize = f"{timing_8pm['evening_str'].split(':')[0]}:10 PM"
     is_eia_day = day_name in ['Wednesday', 'Thursday']
-    eia_context_note = "1. <b>Inventory Knee-Jerk Filter</b>: Never enter during the exact 8:00 PM second. Wait for 8:10 PM stabilization." if is_eia_day else "1. <b>US Mid-Day Momentum Rule</b>: Trade only confirmed breakout runners or circuit band tests. Avoid mid-range chop."
+    eia_context_note = f"1. <b>Inventory Knee-Jerk Filter</b>: Never enter during the exact {eia_time} second. Wait for {eia_stabilize} stabilization." if is_eia_day else "1. <b>US Mid-Day Momentum Rule</b>: Trade only confirmed breakout runners or circuit band tests. Avoid mid-range chop."
     session_title = f"EIA Inventory Special & US Evening Playbook ({day_name})" if is_eia_day else f"US Evening Pit & Mid-Day Momentum Playbook ({day_name})"
 
-    subject = f"🎯 [8:00 PM IST ADVISORY] {session_title}"
+    subject = f"🎯 [{timing_8pm['evening_str']} ADVISORY - {timing_8pm['schedule_label']}] {session_title}"
     body = (
-        f"🎯 <b>DAILY 8:00 PM IST ACTION ADVISORY</b>\n"
+        f"🎯 <b>DAILY {timing_8pm['evening_str']} ACTION ADVISORY ({timing_8pm['schedule_label']})</b>\n"
         f"📅 <i>{today_time_ist}</i>\n\n"
-        f"<b>📊 LIVE COMMODITY STATUS AT 8:00 PM IST:</b>\n"
+        f"<b>📊 LIVE COMMODITY STATUS AT {timing_8pm['evening_str']}:</b>\n"
         f"{overview_text}\n\n"
         f"<b>⚡ ACTION PLAYBOOK & RECOMMENDATIONS:</b>\n"
         f"{action_text}\n\n"
         f"<b>🛡️ RISK MANAGEMENT & EXECUTION RULES:</b>\n"
         f"{eia_context_note}\n"
-        f"2. <b>Hard 11:30 PM Exit</b>: All intraday positions close at 11:30 PM IST before MCX settlement.\n\n"
+        f"2. <b>Hard EOD Exit</b>: All intraday positions close at {timing_8pm['eod_str']} before MCX settlement.\n\n"
         f"🌐 <b>Live Interactive Dashboard</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
     )
 
@@ -871,15 +874,13 @@ def run_auto_session(force=False):
     sent_6pm = state.get('DAILY_6PM_ADVISORY', {}).get('last_alert_date') == today_ist
     sent_8pm = state.get('DAILY_8PM_ADVISORY', {}).get('last_alert_date') == today_ist
 
-    print(f"Auto-dispatch evaluating at {now_dt.strftime('%d %b %Y, %I:%M:%S %p IST')} (HH:MM={cur_hm})")
-    print(f"State Today ({today_ist}): 9AM={sent_9am}, 1:30PM={sent_130pm}, 6PM/7PM={sent_6pm}, 8PM/9PM={sent_8pm}")
+    timing = get_us_aligned_session_times(now_dt)
+    print(f"Auto-dispatch evaluating at {now_dt.strftime('%d %b %Y, %I:%M:%S %p IST')} (HH:MM={cur_hm}) | Active US Alignment: {timing['schedule_label']}")
+    print(f"State Today ({today_ist}): 9AM={sent_9am}, 1:30PM={sent_130pm}, PitOpen={sent_6pm}, Evening={sent_8pm}")
 
-    is_winter = (now_dt.month in [11, 12, 1, 2] or (now_dt.month == 3 and now_dt.day < 10))
-
-    # 1. EOD Settlement & Square-off (MCX closes at 11:55 PM IST in Winter, 11:30 PM in Summer)
-    eod_cutoff = (23, 45) if is_winter else (23, 20)
-    if cur_hm >= eod_cutoff:
-        print(f"Time is >= {eod_cutoff[0]}:{eod_cutoff[1]} PM IST. Triggering EOD Settlement & Square-off.")
+    # 1. EOD Settlement & Square-off (MCX closes at 11:55 PM in Winter EST, 11:30 PM in Summer EDT)
+    if cur_hm >= timing["eod_cutoff"]:
+        print(f"Time is >= {timing['eod_cutoff'][0]}:{timing['eod_cutoff'][1]} PM IST. Triggering EOD Settlement & Square-off ({timing['eod_str']}).")
         with open('config.json', 'r') as f:
             cfg = json.load(f)
         chk = PriceChecker(cfg)
@@ -887,13 +888,12 @@ def run_auto_session(force=False):
         from advisory_tracker import exit_and_evaluate_eod_trades
         return exit_and_evaluate_eod_trades(chk, alt)
 
-    # 2. Evening / EIA Playbook (9:00 PM IST in Winter, 8:00 PM in Summer)
-    evening_cutoff = (20, 45) if is_winter else (20, 0)
-    if cur_hm >= evening_cutoff and (not sent_8pm or force):
-        print(f"Time is >= {evening_cutoff[0]}:{evening_cutoff[1]} IST and evening advisory not sent today. Dispatching Evening Advisory.")
+    # 2. Evening / EIA Playbook (9:00 PM IST in Winter EST, 8:00 PM in Summer EDT)
+    if cur_hm >= timing["evening_cutoff"] and (not sent_8pm or force):
+        print(f"Time is >= {timing['evening_cutoff'][0]}:{timing['evening_cutoff'][1]} IST ({timing['evening_str']}) and evening advisory not sent today. Dispatching Evening Advisory.")
         return generate_and_send_8pm_advisory(force=force)
 
-    # 3. Confirmation check (7:15 PM IST in Winter, 6:15 PM in Summer)
+    # 3. Confirmation check (7:15 PM IST in Winter EST, 6:15 PM in Summer EDT)
     has_pending_conf = False
     try:
         from advisory_tracker import load_tracker
@@ -901,10 +901,8 @@ def run_auto_session(force=False):
     except Exception:
         pass
 
-    conf_start = (19, 15) if is_winter else (18, 15)
-    conf_end = (20, 45) if is_winter else (20, 0)
-    if cur_hm >= conf_start and (sent_6pm or has_pending_conf) and cur_hm < conf_end:
-        print(f"Time is in {conf_start[0]}:{conf_start[1]} - {conf_end[0]}:{conf_end[1]} IST window with pit open dispatched or trades pending confirmation. Running Confirmation Check.")
+    if cur_hm >= timing["conf_start"] and (sent_6pm or has_pending_conf) and cur_hm < timing["conf_end"]:
+        print(f"Time is in {timing['conf_start'][0]}:{timing['conf_start'][1]} - {timing['conf_end'][0]}:{timing['conf_end'][1]} IST window ({timing['conf_str']}). Running Confirmation Check.")
         with open('config.json', 'r') as f:
             cfg = json.load(f)
         chk = PriceChecker(cfg)
@@ -912,10 +910,9 @@ def run_auto_session(force=False):
         from advisory_tracker import check_and_execute_615_confirmation
         return check_and_execute_615_confirmation(chk, alt)
 
-    # 4. US Pit Open Advisory (7:00 PM IST in Winter, 6:00 PM in Summer)
-    pit_cutoff = (19, 0) if is_winter else (18, 0)
-    if cur_hm >= pit_cutoff and (not sent_6pm or force):
-        print(f"Time is >= {pit_cutoff[0]}:00 IST and US Pit Open advisory not sent today. Dispatching US Pit Open Advisory.")
+    # 4. US Pit Open Advisory (7:00 PM IST in Winter EST, 6:00 PM in Summer EDT)
+    if cur_hm >= timing["pit_cutoff"] and (not sent_6pm or force):
+        print(f"Time is >= {timing['pit_cutoff'][0]}:00 IST ({timing['pit_str']}) and US Pit Open advisory not sent today. Dispatching US Pit Open Advisory.")
         return generate_and_send_6pm_advisory(force=force)
 
     # 5. 1:30 PM IST or later -> London Breakout Advisory

@@ -8,13 +8,29 @@ on:
     - cron: '45 03 * * 1-5'
     # 08:00 UTC = 13:30 (1:30 PM) IST, Monday to Friday (London Breakout)
     - cron: '00 08 * * 1-5'
-    # 13:30 UTC = 19:00 (7:00 PM) IST, Monday to Friday (US Pit Open Advisory - Winter Schedule)
+
+    # US Pit Open Advisory (08:30 AM ET):
+    # - 12:30 UTC = 18:00 (6:00 PM) IST during US Daylight Saving Time (Summer EDT)
+    # - 13:30 UTC = 19:00 (7:00 PM) IST during US Standard Time (Winter EST)
+    - cron: '30 12 * * 1-5'
     - cron: '30 13 * * 1-5'
-    # 13:45 UTC = 19:15 (7:15 PM) IST, Monday to Friday (7:15 PM Confirmation & Stand Aside Playbook)
+
+    # 15-Minute Confirmation & Stand Aside Playbook (08:45 AM ET):
+    # - 12:45 UTC = 18:15 (6:15 PM) IST during US Daylight Saving Time (Summer EDT)
+    # - 13:45 UTC = 19:15 (7:15 PM) IST during US Standard Time (Winter EST)
+    - cron: '45 12 * * 1-5'
     - cron: '45 13 * * 1-5'
-    # 15:30 UTC = 21:00 (9:00 PM) IST, Monday to Friday (EIA Inventory & US Cash Open Evening Review)
+
+    # EIA Inventory & US Cash Open Evening Review (10:30 AM ET):
+    # - 14:30 UTC = 20:00 (8:00 PM) IST during US Daylight Saving Time (Summer EDT)
+    # - 15:30 UTC = 21:00 (9:00 PM) IST during US Standard Time (Winter EST)
+    - cron: '30 14 * * 1-5'
     - cron: '30 15 * * 1-5'
-    # 18:25 UTC = 23:55 (11:55 PM) IST, Monday to Friday (MCX Winter EOD Settlement & Square-off)
+
+    # MCX EOD Settlement & Square-off:
+    # - 18:00 UTC = 23:30 (11:30 PM) IST during US Daylight Saving Time (Summer EDT)
+    # - 18:25 UTC = 23:55 (11:55 PM) IST during US Standard Time (Winter EST)
+    - cron: '00 18 * * 1-5'
     - cron: '25 18 * * 1-5'
   workflow_dispatch:
     inputs:
@@ -27,11 +43,15 @@ on:
           - 'auto'
           - '9am'
           - '130pm'
+          - 'pit_open'
           - '7pm'
           - '6pm'
+          - 'evening'
           - '8pm'
+          - 'confirmation'
           - 'check715'
           - 'check615'
+          - 'exit_eod'
           - 'exit1155pm'
           - 'exit1130pm'
 
@@ -79,16 +99,16 @@ jobs:
               130pm)
                 python daily_6pm_advisory.py --130pm --force
                 ;;
-              7pm|6pm)
-                python daily_6pm_advisory.py --7pm --force
+              pit_open|7pm|6pm)
+                python daily_6pm_advisory.py --6pm --force
                 ;;
-              8pm)
+              evening|8pm|9pm)
                 python daily_6pm_advisory.py --8pm --force
                 ;;
-              check715|check615)
-                python daily_6pm_advisory.py --check-715
+              confirmation|check715|check615)
+                python daily_6pm_advisory.py --check-615
                 ;;
-              exit1155pm|exit1130pm)
+              exit_eod|exit1155pm|exit1130pm)
                 python daily_6pm_advisory.py --exit-eod
                 ;;
               *)
