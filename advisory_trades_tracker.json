@@ -1,5 +1,5 @@
 {
-  "last_updated": "13 Nov 2026, 08:53 PM IST",
+  "last_updated": "13 Nov 2026, 09:32 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -1512,7 +1512,7 @@
         "rationale": "Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 0.62% (1115.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.07x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9192,629.35), building downward coil pressure.. Early coil entry prior to breakout expansion. Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R",
         "reference_price": 180800.0,
         "stop_loss": 183206.64,
-        "target": 175986.72,
+        "target": null,
         "original_stop_loss": 183206.64,
         "original_target": 175986.72
       },
@@ -1535,28 +1535,31 @@
         "pnl_inr": 0.0,
         "status": "ACTIVE",
         "margin_required_inr": 135600.0,
-        "target": 175986.72,
-        "stop_loss": 179356.02,
+        "target": null,
+        "stop_loss": 178054.99,
         "initial_stop_loss": 183206.64,
         "original_sl": 183206.64,
-        "peak_high": 178347.0,
-        "trough_low": 178347.0,
+        "peak_high": 177333.0,
+        "trough_low": 177333.0,
         "entry_day_high": 180800.0,
         "entry_day_low": 180800.0,
         "trailing_sl_active": true,
-        "stage_2_profit_locked": true
+        "stage_2_profit_locked": true,
+        "stage_3_target_approaching": true,
+        "target_scrapped": true,
+        "original_target": 175986.72
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PENDING",
-        "badge": "Active (Trailing Stop @ \u20b9179,356.02)",
+        "badge": "Active (Trailing Stop @ \u20b9178,054.99 | 65% Locked \ud83d\ude80)",
         "pnl_display": "Ticking Live...",
-        "summary": "Trailing Profit Stop (+35% profit locked @ \u20b9179,356.02) active. Position running towards Target."
+        "summary": "Dynamic Trailing Stop active: 65% peak profit locked @ \u20b9178,054.99 (Max 35% pullback from trough \u20b9177,333.00)."
       },
       "live_price_data": {
-        "current_price": 178347.0,
-        "change_pct": -1.36
+        "current_price": 177333.0,
+        "change_pct": -1.92
       }
     },
     {
