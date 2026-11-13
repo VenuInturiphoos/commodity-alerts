@@ -418,7 +418,7 @@ def get_cash_and_margin(tracker_data):
     When intraday profit is booked, that profit is also settled into the overall trade balance.
     If intraday incurred a loss, the daily intraday balance is refreshed back to ₹30,000 every day.
     """
-    starting_cash = tracker_data.get('starting_cash_inr', DEFAULT_STARTING_CASH)
+    starting_cash = max(float(tracker_data.get('starting_cash_inr', DEFAULT_STARTING_CASH) or DEFAULT_STARTING_CASH), DEFAULT_STARTING_CASH)
     trades = tracker_data.get('trades', [])
     
     # Realized P&L from closed commodity trades
