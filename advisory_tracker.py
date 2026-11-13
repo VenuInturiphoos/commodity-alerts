@@ -3499,6 +3499,14 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
         if stop_loss is not None:
             pt['stop_loss'] = stop_loss
 
+        # Ensure active trades carry authoritative live price snapshot for client UI
+        if trade_status == 'ACTIVE' and cur_p > 0:
+            chg_pct = round(((cur_p - entry_p) / entry_p) * 100, 2) if entry_p > 0 else 0.0
+            trade['live_price_data'] = {
+                'current_price': cur_p,
+                'change_pct': chg_pct
+            }
+
         # 3. Check Event Risk Guard on Active Positions (Tighten Stop to Breakeven before Inventory Release)
         if trade_status == 'ACTIVE' and not is_equity:
             event_check = EventRiskGuard.check_event_risk(sym, now_dt)
