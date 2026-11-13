@@ -6071,8 +6071,8 @@ const COMMODITY_MARGIN_RATES = {
     'SILVER': 0.15,      // 5 kg @ ~₹194,300 -> ~₹1.45L margin
     'GOLD': 0.10,        // 10 units (100g) @ ~₹143,700 -> ~₹1.44L margin
     'COPPER': 0.08,      // 1250 kg @ ~₹1,406 -> ~₹1.40L margin
-    'ZINC': 0.0945,      // ~₹38.5k/lot (~₹77k for 2 lots of Zinc Mini @ ~₹408)
-    'ALUMINIUM': 0.092   // ~₹30.5k/lot for Aluminium Mini @ ~₹330
+    'ZINC': 0.13,        // 2500 kg @ ~₹410 -> ~₹1.33L margin
+    'ALUMINIUM': 0.16    // 2500 kg @ ~₹330 -> ~₹1.32L margin
 };
 
 function getAssetMarginRate(symbol) {
@@ -7445,8 +7445,8 @@ function applyAdvisoryMonthFilter(monthValue) {
         'NATURALGAS': 0.18, 'NATURALGASM': 0.18,
         'SILVER': 0.15, 'SILVERM': 0.15, 'SILVERMIC': 0.15,
         'COPPER': 0.08, 'COPPERM': 0.08,
-        'ZINC': 0.0945, 'ZINCM': 0.0945, 'ZINCMINI': 0.0945,
-        'ALUMINIUM': 0.092, 'ALUMINI': 0.092,
+        'ZINC': 0.13, 'ZINCM': 0.13, 'ZINCMINI': 0.13,
+        'ALUMINIUM': 0.16, 'ALUMINI': 0.16,
         'GOLD': 0.10, 'GOLDM': 0.10, 'GOLDTEN': 0.10
     };
 
