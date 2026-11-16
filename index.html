@@ -7830,12 +7830,8 @@ function renderAdvisoryTradesTable() {
 
         // Find live market data from authoritative exchange / scanner feed
         const liveSource = getAdvisoryTradeLivePriceData(t);
+        const curSl = Number(pt.stop_loss || s6.stop_loss || 0);
         const initialSl = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
-        const rawCurSl = Number(pt.stop_loss || s6.stop_loss || 0);
-        // Hard invariant: Stop-loss can NEVER widen or move in the direction of additional loss
-        const curSl = initialSl > 0 
-            ? (pt.action === 'BUY' ? Math.max(rawCurSl, initialSl) : (pt.action === 'SELL' ? Math.min(rawCurSl, initialSl) : rawCurSl))
-            : rawCurSl;
         let isSlBreached = false;
         if (curSl > 0 && liveSource && liveSource.current_price) {
             const cp = Number(liveSource.current_price);
@@ -8128,36 +8124,64 @@ function renderAdvisoryTradesTable() {
 
         const initialSlVal = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
         let displaySl = Number(pt.stop_loss || s6.stop_loss || 0);
-
-        // Hard Invariant: Stop-loss can NEVER widen or move in the direction of additional loss
-        if (initialSlVal > 0 && displaySl > 0) {
-            if (pt.action === 'BUY') {
-                displaySl = Math.max(displaySl, initialSlVal);
-            } else if (pt.action === 'SELL') {
-                displaySl = Math.min(displaySl, initialSlVal);
-            }
-        }
-
+        let isTrailed = Boolean(pt.trailing_sl_active || pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active || (initialSlVal > 0 && Math.abs(Number(displaySl) - initialSlVal) > 0.01));
         const isTargetScrapped = Boolean(pt.target_scrapped || pt.stage_3_target_approaching || pt.target_runner_active || (!s6.target && (pt.original_target || s6.original_target)));
-        const isTrailed = Boolean(pt.trailing_sl_active || pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active || (initialSlVal > 0 && Math.abs(Number(displaySl) - initialSlVal) > 0.01));
         let slBadge = '';
         let slColor = '#fb7185';
 
-        if (pt.target_runner_active) {
-            slBadge = '<span style="font-size:0.65rem; color:#4ade80; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Trailing 🚀</span>';
-            slColor = '#4ade80';
-        } else if (pt.stage_3_target_approaching || isTargetScrapped) {
-            slBadge = '<span style="font-size:0.65rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+65% Locked 💰</span>';
-            slColor = '#38bdf8';
-        } else if (pt.stage_2_profit_locked) {
-            slBadge = '<span style="font-size:0.65rem; color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+35% Locked 💰</span>';
-            slColor = '#fbbf24';
-        } else if (pt.trailing_sl_active) {
-            slBadge = '<span style="font-size:0.65rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Breakeven 🛡️</span>';
-            slColor = '#a5b4fc';
-        } else if (isTrailed) {
-            slBadge = '<span style="font-size:0.65rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Trailed 🛡️</span>';
-            slColor = '#38bdf8';
+        // Real-Time Dynamic Trailing Stop-Loss Engine (Live calculation for Futures & Equities)
+        const entryPriceVal = Number(pt.entry_price || s6.reference_price || 0);
+        const targetPriceVal = Number(s6.target || pt.target || pt.original_target || s6.original_target || 0);
+        const liveCMP = (liveSource && liveSource.current_price) 
+            ? Number(liveSource.current_price) 
+            : Number(t.live_price_data?.current_price || entryPriceVal);
+
+        if (pt.status === 'ACTIVE' && entryPriceVal > 0 && targetPriceVal > 0 && liveCMP > 0) {
+            const tgtDist = pt.action === 'BUY' ? (targetPriceVal - entryPriceVal) : (entryPriceVal - targetPriceVal);
+            const favMove = pt.action === 'BUY' ? (liveCMP - entryPriceVal) : (entryPriceVal - liveCMP);
+            if (tgtDist > 0 && favMove > 0) {
+                const pctTgt = (favMove / tgtDist) * 100;
+                if (pctTgt >= 85.0 || pt.target_runner_active) {
+                    const runnerFloor = Math.round((pt.action === 'BUY' ? (entryPriceVal + (tgtDist * 0.75)) : (entryPriceVal - (tgtDist * 0.75))) * 100) / 100;
+                    displaySl = runnerFloor;
+                    isTrailed = true;
+                    slBadge = '<span style="font-size:0.65rem; color:#4ade80; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Trailing 🚀</span>';
+                    slColor = '#4ade80';
+                } else if (pctTgt >= 70.0 || pt.stage_3_target_approaching) {
+                    const lock55 = Math.round((pt.action === 'BUY' ? (entryPriceVal + (tgtDist * 0.55)) : (entryPriceVal - (tgtDist * 0.55))) * 100) / 100;
+                    displaySl = lock55;
+                    isTrailed = true;
+                    slBadge = '<span style="font-size:0.65rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+55% Locked 💰</span>';
+                    slColor = '#38bdf8';
+                } else if (pctTgt >= 50.0 || pt.stage_2_profit_locked) {
+                    const lock30 = Math.round((pt.action === 'BUY' ? (entryPriceVal + (tgtDist * 0.30)) : (entryPriceVal - (tgtDist * 0.30))) * 100) / 100;
+                    displaySl = lock30;
+                    isTrailed = true;
+                    slBadge = '<span style="font-size:0.65rem; color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+30% Locked 💰</span>';
+                    slColor = '#fbbf24';
+                } else if (pctTgt >= 25.0 || pt.trailing_sl_active) {
+                    displaySl = entryPriceVal;
+                    isTrailed = true;
+                    slBadge = '<span style="font-size:0.65rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Breakeven 🛡️</span>';
+                    slColor = '#a5b4fc';
+                }
+            }
+        }
+
+        if (!slBadge) {
+            if (pt.target_runner_active) {
+                slBadge = '<span style="font-size:0.65rem; color:#4ade80; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Trailing 🚀</span>';
+                slColor = '#4ade80';
+            } else if (pt.stage_3_target_approaching || isTargetScrapped) {
+                slBadge = '<span style="font-size:0.65rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+55% Locked</span>';
+                slColor = '#38bdf8';
+            } else if (pt.stage_2_profit_locked) {
+                slBadge = '<span style="font-size:0.65rem; color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+30% Locked</span>';
+                slColor = '#fbbf24';
+            } else if (pt.trailing_sl_active) {
+                slBadge = '<span style="font-size:0.65rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Breakeven</span>';
+                slColor = '#a5b4fc';
+            }
         }
 
         let tgtDisplayHtml = '';
@@ -8274,11 +8298,7 @@ function renderAdvisoryTradesTable() {
 
             // Find live market data from authoritative exchange / scanner feed
             const liveSource = getAdvisoryTradeLivePriceData(t);
-            const initialSl = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
-            const rawCurSl = Number(pt.stop_loss || s6.stop_loss || 0);
-            const curSl = initialSl > 0 
-                ? (pt.action === 'BUY' ? Math.max(rawCurSl, initialSl) : (pt.action === 'SELL' ? Math.min(rawCurSl, initialSl) : rawCurSl))
-                : rawCurSl;
+            const curSl = Number(pt.stop_loss || s6.stop_loss || 0);
             const isSlBreached = Boolean(curSl > 0 && liveSource && liveSource.current_price && ((pt.action === 'BUY' && Number(liveSource.current_price) <= curSl) || (pt.action === 'SELL' && Number(liveSource.current_price) >= curSl)));
 
             const isEnteredTrade = Boolean((pt.entry_price && Number(pt.entry_price) > 0) || (pt.status === 'ACTIVE' && (pt.action === 'BUY' || pt.action === 'SELL')));
@@ -8479,16 +8499,9 @@ function renderAdvisoryTradesTable() {
                 : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
 
             const mobInitialSlVal = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
-            let mobDisplaySl = Number(pt.stop_loss || s6.stop_loss || 0);
-            if (mobInitialSlVal > 0 && mobDisplaySl > 0) {
-                if (pt.action === 'BUY') {
-                    mobDisplaySl = Math.max(mobDisplaySl, mobInitialSlVal);
-                } else if (pt.action === 'SELL') {
-                    mobDisplaySl = Math.min(mobDisplaySl, mobInitialSlVal);
-                }
-            }
-            const mobIsTargetScrapped = Boolean(pt.target_scrapped || pt.stage_3_target_approaching || pt.target_runner_active || (!s6.target && (pt.original_target || s6.original_target)));
+            const mobDisplaySl = pt.stop_loss || s6.stop_loss;
             const mobIsTrailed = Boolean(pt.trailing_sl_active || pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active || (mobInitialSlVal > 0 && Math.abs(Number(mobDisplaySl) - mobInitialSlVal) > 0.01));
+            const mobIsTargetScrapped = Boolean(pt.target_scrapped || pt.stage_3_target_approaching || pt.target_runner_active || (!s6.target && (pt.original_target || s6.original_target)));
             let mobSlBadge = '';
             let mobSlColor = '#fb7185';
             if (pt.target_runner_active) {
@@ -8503,9 +8516,6 @@ function renderAdvisoryTradesTable() {
             } else if (pt.trailing_sl_active) {
                 mobSlBadge = '<span style="font-size:0.6rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">BE</span>';
                 mobSlColor = '#a5b4fc';
-            } else if (mobIsTrailed) {
-                mobSlBadge = '<span style="font-size:0.6rem; color:#38bdf8; background:rgba(56,189,248,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">Trailed</span>';
-                mobSlColor = '#38bdf8';
             }
 
             mobActiveSummary = outcome.summary || '';
