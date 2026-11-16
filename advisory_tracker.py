@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 import pytz
 from datetime import datetime
 from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer, MarketRegimeDetector, TradingAgentsOrchestrator, InstitutionalDirectionEngine
@@ -3375,6 +3376,14 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
         return False
 
     circuits_res = checker.generate_circuits_data() if checker else {}
+    if not circuits_res:
+        circuits_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_data.json')
+        if os.path.exists(circuits_file):
+            try:
+                with open(circuits_file, 'r') as cf:
+                    circuits_res = json.load(cf)
+            except Exception:
+                pass
     commodities_map = {c['symbol']: c for c in circuits_res.get('commodities', [])} if circuits_res else {}
 
     # Multi-Asset Support: Load live Nifty equity data alongside MCX commodities
@@ -3741,13 +3750,17 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
         if stop_loss is not None:
             pt['stop_loss'] = stop_loss
 
-        # Ensure active trades carry authoritative live price snapshot for client UI
+        # Ensure active trades carry authoritative live price snapshot and live MTM for client UI
         if trade_status == 'ACTIVE' and cur_p > 0:
             chg_pct = round(((cur_p - entry_p) / entry_p) * 100, 2) if entry_p > 0 else 0.0
             trade['live_price_data'] = {
                 'current_price': cur_p,
                 'change_pct': chg_pct
             }
+            pts_mtm = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
+            pt['pnl_points'] = round(pts_mtm, 2)
+            pt['pnl_inr'] = round(pts_mtm * lot_size, 2)
+            updated_any = True
 
         # 3. Check Event Risk Guard on Active Positions (Tighten Stop to Breakeven before Inventory Release)
         if trade_status == 'ACTIVE' and not is_equity:
@@ -5566,6 +5579,14 @@ def exit_and_evaluate_eod_trades(checker, alerter):
         return bool(pending_to_expire)
 
     circuits_res = checker.generate_circuits_data() if checker else {}
+    if not circuits_res:
+        circuits_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_data.json')
+        if os.path.exists(circuits_file):
+            try:
+                with open(circuits_file, 'r') as cf:
+                    circuits_res = json.load(cf)
+            except Exception:
+                pass
     commodities_map = {c['symbol']: c for c in circuits_res.get('commodities', [])} if circuits_res else {}
     
     summary_lines = []
