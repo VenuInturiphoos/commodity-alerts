@@ -1,5 +1,5 @@
 {
-  "last_updated": "16 Nov 2026, 05:09 PM IST",
+  "last_updated": "16 Nov 2026, 05:15 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -18,19 +18,19 @@
     "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 361849.47,
-    "used_margin_inr": 180918.0,
-    "available_cash_inr": 180931.47,
+    "used_margin_inr": 180835.2,
+    "available_cash_inr": 181014.27,
     "net_worth_inr": 361849.47
   },
   "trades": [
     {
-      "id": "ADV-16Nov2026-1707-ALUMINI",
+      "id": "ADV-16Nov2026-1711-ALUMINI",
       "date": "16 Nov 2026",
       "session_name": "Real-Time Technical Trigger (Pre-Ignition Volatility Coil)",
-      "time_trigger": "05:07 PM IST",
-      "time_6pm": "05:07 PM IST",
-      "time_validation": "05:07 PM IST",
-      "time_615": "05:07 PM IST",
+      "time_trigger": "05:11 PM IST",
+      "time_6pm": "05:11 PM IST",
+      "time_validation": "05:11 PM IST",
+      "time_615": "05:11 PM IST",
       "time_exit": "11:45 PM IST",
       "symbol": "ALUMINI",
       "name": "Aluminium Mini",
@@ -43,7 +43,7 @@
         "color": "#fb7185",
         "bg_color": "rgba(251, 113, 133, 0.12)",
         "border_color": "rgba(251, 113, 133, 0.35)",
-        "mandate": "Downtrend in effect (Close < 50E, ADX: 21.7, RSI: 44.2). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 21.7, RSI: 44.0). Capital preservation priority; falling knife defense. Do not take long breakouts.",
         "allowed_strategies": [
           "DEFENSIVE_HEDGING",
           "BEAR_CALL_SPREAD",
@@ -56,8 +56,8 @@
         ],
         "icon": "fa-solid fa-arrow-trend-down",
         "adx": 21.7,
-        "rsi": 44.2,
-        "bb_width_pct": 7.99,
+        "rsi": 44.0,
+        "bb_width_pct": 8.0,
         "daily_vol_pct": 1.4
       },
       "time_machine": {
@@ -77,49 +77,49 @@
       },
       "risk_check": {
         "passed": true,
-        "reason": "High-conviction movement risk accepted: Potential loss \u20b920,400.00 exceeds standard cap \u20b918,000.00.",
+        "reason": "High-conviction movement risk accepted: Potential loss \u20b921,300.00 exceeds standard cap \u20b918,000.00.",
         "reward_risk_ratio": 2.0,
-        "loss_at_stop_inr": 20400.0,
-        "potential_gain_inr": 40800.0,
-        "risk_warning": "High-conviction movement risk accepted: Potential loss \u20b920,400.00 exceeds standard cap \u20b918,000.00."
+        "loss_at_stop_inr": 21300.0,
+        "potential_gain_inr": 42600.0,
+        "risk_warning": "High-conviction movement risk accepted: Potential loss \u20b921,300.00 exceeds standard cap \u20b918,000.00."
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "SELL @ \u20b9327.75",
-        "rationale": "Pre-Move Readiness Index: 80.0/100. Intraday Range Coiled: Day range is only 1.33% (4.35 pts <= 1.15x ATR). Volatility bottleneck. | Price capped below baseline (\u20b9329.16), building downward coil pressure. | ADX strength (21.7) ready to sustain breakout momentum.. Early coil entry prior to breakout expansion. Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R",
-        "reference_price": 327.75,
+        "action_text": "SELL @ \u20b9327.60",
+        "rationale": "Pre-Move Readiness Index: 80.0/100. Intraday Range Coiled: Day range is only 1.33% (4.35 pts <= 1.15x ATR). Volatility bottleneck. | Price capped below baseline (\u20b9329.14), building downward coil pressure. | ADX strength (21.7) ready to sustain breakout momentum.. Early coil entry prior to breakout expansion. Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R",
+        "reference_price": 327.6,
         "stop_loss": 331.15,
-        "target": 320.95,
+        "target": 320.5,
         "original_stop_loss": 331.15,
-        "original_target": 320.95
+        "original_target": 320.5
       },
       "check_615": {
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
-        "price_615": 327.75,
-        "action_taken": "Entered SELL 6000 units @ \u20b9327.75",
-        "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 80.0/100. Intraday Range Coiled: Day range is only 1.33% (4.35 pts <= 1.15x ATR). Volatility bottleneck. | Price capped below baseline (\u20b9329.16), building downward coil pressure. | ADX strength (21.7) ready to sustain breakout momentum.. Early coil entry prior to breakout expansion. | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+        "price_615": 327.6,
+        "action_taken": "Entered SELL 6000 units @ \u20b9327.60",
+        "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 80.0/100. Intraday Range Coiled: Day range is only 1.33% (4.35 pts <= 1.15x ATR). Volatility bottleneck. | Price capped below baseline (\u20b9329.14), building downward coil pressure. | ADX strength (21.7) ready to sustain breakout momentum.. Early coil entry prior to breakout expansion. | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
         "quantity": 6000,
-        "entry_price": 327.75,
-        "entry_time": "05:07 PM IST",
+        "entry_price": 327.6,
+        "entry_time": "05:11 PM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": 0.05,
-        "pnl_inr": 300.0,
+        "pnl_points": 0.15,
+        "pnl_inr": 900.0,
         "status": "ACTIVE",
-        "margin_required_inr": 180918.0,
-        "target": 320.95,
+        "margin_required_inr": 180835.2,
+        "target": 320.5,
         "stop_loss": 331.15,
         "initial_stop_loss": 331.15,
         "original_sl": 331.15,
-        "peak_high": 327.75,
-        "trough_low": 327.7,
-        "entry_day_high": 327.75,
-        "entry_day_low": 327.75
+        "peak_high": 327.6,
+        "trough_low": 327.45,
+        "entry_day_high": 327.6,
+        "entry_day_low": 327.6
       },
       "eod_outcome": {
         "session_close": null,
@@ -127,11 +127,11 @@
         "outcome": "PENDING",
         "badge": "Active Trigger \u26a1",
         "pnl_display": "Ticking Live...",
-        "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b9327.75 (Target: \u20b9320.95, SL: \u20b9331.15) | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+        "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b9327.60 (Target: \u20b9320.50, SL: \u20b9331.15) | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
       },
       "live_price_data": {
-        "current_price": 327.7,
-        "change_pct": -0.02
+        "current_price": 327.45,
+        "change_pct": -0.05
       }
     },
     {
@@ -142,7 +142,7 @@
       "time_6pm": "03:20 PM IST",
       "time_validation": "03:20 PM IST",
       "time_615": "03:20 PM IST",
-      "time_exit": "05:06 PM IST",
+      "time_exit": "05:05 PM IST",
       "symbol": "NATURALGASM",
       "name": "Natural Gas Mini",
       "lot_size": 2750,
@@ -214,7 +214,7 @@
         "entry_price": 291.9,
         "entry_time": "03:20 PM IST",
         "exit_price": 297.2,
-        "exit_time": "05:06 PM IST",
+        "exit_time": "05:05 PM IST",
         "pnl_points": 5.3,
         "pnl_inr": 14575.0,
         "status": "CLOSED",
@@ -224,7 +224,7 @@
         "initial_stop_loss": 289.03,
         "original_sl": 289.03,
         "peak_high": 298.2,
-        "trough_low": 296.8,
+        "trough_low": 297.1,
         "entry_day_high": 291.9,
         "entry_day_low": 291.9,
         "trailing_sl_active": true,
@@ -240,15 +240,15 @@
         "session_close": 297.2,
         "circuit_limit": null,
         "outcome": "CORRECT",
-        "badge": "Target Runner \ud83c\udfaf\ud83d\ude80 (05:06 PM IST)",
+        "badge": "Target Runner \ud83c\udfaf\ud83d\ude80 (05:05 PM IST)",
         "pnl_display": "+\u20b914,575.00",
-        "summary": "Target Runner Trailing Stop Triggered \ud83c\udfaf\ud83d\ude80 (Exit \u20b9297.20 vs \u20b9295.34 (Target Reached & Trailed) | Peak \u20b9298.20) at 05:06 PM IST. Entry: \u20b9291.90 -> Exit: \u20b9297.20 (+\u20b914,575.00).",
-        "exit_time": "05:06 PM IST",
+        "summary": "Target Runner Trailing Stop Triggered \ud83c\udfaf\ud83d\ude80 (Exit \u20b9297.20 vs \u20b9295.34 (Target Reached & Trailed) | Peak \u20b9298.20) at 05:05 PM IST. Entry: \u20b9291.90 -> Exit: \u20b9297.20 (+\u20b914,575.00).",
+        "exit_time": "05:05 PM IST",
         "exit_trigger": "TARGET_RUNNER_EXIT"
       },
       "live_price_data": {
-        "current_price": 296.8,
-        "change_pct": 1.68
+        "current_price": 297.1,
+        "change_pct": 1.78
       }
     },
     {
@@ -821,7 +821,7 @@
       "time_6pm": "11:11 AM IST",
       "time_validation": "11:11 AM IST",
       "time_615": "11:11 AM IST",
-      "time_exit": "05:07 PM IST",
+      "time_exit": "05:11 PM IST",
       "symbol": "ALUMINI",
       "name": "Aluminium Mini",
       "lot_size": 6000,
@@ -896,7 +896,7 @@
         "entry_price": 328.85,
         "entry_time": "11:11 AM IST",
         "exit_price": 327.41,
-        "exit_time": "05:07 PM IST",
+        "exit_time": "05:11 PM IST",
         "pnl_points": 1.44,
         "pnl_inr": 8640.0,
         "status": "CLOSED",
@@ -905,7 +905,7 @@
         "stop_loss": 327.41,
         "initial_stop_loss": 330.53,
         "original_sl": 330.53,
-        "peak_high": 327.75,
+        "peak_high": 327.6,
         "trough_low": 325.85,
         "entry_day_high": 328.85,
         "entry_day_low": 328.85,
@@ -917,15 +917,15 @@
         "session_close": 327.41,
         "circuit_limit": null,
         "outcome": "CORRECT",
-        "badge": "Trailing Profit \ud83d\udcb0 (05:07 PM IST)",
+        "badge": "Trailing Profit \ud83d\udcb0 (05:11 PM IST)",
         "pnl_display": "+\u20b98,640.00",
-        "summary": "Trailing Profit Stop Triggered \ud83d\udcb0 (Exit \u20b9327.41 | +35% Target Gains Secured) at 05:07 PM IST. Entry: \u20b9328.85 -> Exit: \u20b9327.41 (+\u20b98,640.00).",
-        "exit_time": "05:07 PM IST",
+        "summary": "Trailing Profit Stop Triggered \ud83d\udcb0 (Exit \u20b9327.41 | +35% Target Gains Secured) at 05:11 PM IST. Entry: \u20b9328.85 -> Exit: \u20b9327.41 (+\u20b98,640.00).",
+        "exit_time": "05:11 PM IST",
         "exit_trigger": "TRAILING_PROFIT_HIT"
       },
       "live_price_data": {
-        "current_price": 327.75,
-        "change_pct": -0.33
+        "current_price": 327.6,
+        "change_pct": -0.38
       }
     },
     {
