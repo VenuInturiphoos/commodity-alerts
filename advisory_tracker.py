@@ -4216,17 +4216,29 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         if len(sym_today_trades) >= MAX_TRADES_PER_SYMBOL_DAY:
             continue  # Max 3 trades per commodity per day
 
-        # Check 60-minute cooldown from last trade on this symbol
+        # Check cooldown from last closed/entered trade on this symbol
         if sym_today_trades:
-            last_t = sym_today_trades[0]
-            last_entry_time = last_t.get('paper_trade', {}).get('entry_time') or last_t.get('time_trigger')
-            if last_entry_time:
+            # Sort or find the most recent trade by taking the latest entry
+            last_t = sym_today_trades[-1]
+            last_pt = last_t.get('paper_trade', {})
+            # Cooldown MUST be measured from exit_time if trade closed, or entry_time if still pending/active
+            last_time_str = last_pt.get('exit_time') or last_pt.get('entry_time') or last_t.get('time_trigger')
+            if last_time_str:
                 try:
-                    clean_time = last_entry_time.replace(' IST', '').strip()
+                    clean_time = last_time_str.replace(' IST', '').strip()
                     t_struct = datetime.strptime(f"{today_str} {clean_time}", "%d %b %Y %I:%M %p").replace(tzinfo=pytz.timezone('Asia/Kolkata'))
                     diff_mins = (now_dt - t_struct).total_seconds() / 60.0
-                    if diff_mins < COOLDOWN_MINUTES_BETWEEN_TRADES:
-                        continue  # In 60-minute cooldown period
+                    
+                    # Post-Stop-Loss Guard:
+                    # If the last trade on this symbol ended in STOP LOSS, enforce strict 60m cooldown.
+                    # Entering immediately in the same direction right after a stop-loss is an invalid whipsaw trap.
+                    last_exit_trigger = str(last_pt.get('exit_trigger') or last_t.get('eod_outcome', {}).get('exit_trigger', ''))
+                    is_sl_hit = 'STOP_LOSS' in last_exit_trigger or (last_pt.get('pnl_inr', 0.0) < 0)
+                    required_cooldown = 60.0 if is_sl_hit else 30.0
+                    
+                    if diff_mins < required_cooldown:
+                        print(f"⏱️ Cooldown Active for {sym}: Most recent trade exited {int(diff_mins)}m ago (required: {int(required_cooldown)}m{' [Post-Stop-Loss Guard]' if is_sl_hit else ''}). Skipping.")
+                        continue
                 except Exception:
                     pass
 
@@ -4727,6 +4739,30 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 # Duplicate active position guard (prevent holding both stock and stock future simultaneously)
                 if any(t.get('symbol') in [sym, clean_sym, f"{clean_sym}-FUT"] and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT'] for t in (trades + new_trades)):
                     continue
+
+                # Symbol cooldown guard: Prevent taking multiple trades on same equity/stock future within cooldown window
+                eq_today_trades = [
+                    t for t in (trades + new_trades)
+                    if t.get('date') == today_str
+                    and t.get('symbol') in [sym, clean_sym, f"{clean_sym}-FUT"]
+                    and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
+                    and t.get('paper_trade', {}).get('quantity', 0) > 0
+                ]
+                if eq_today_trades:
+                    last_eq_t = eq_today_trades[-1]
+                    last_eq_pt = last_eq_t.get('paper_trade', {})
+                    last_eq_time_str = last_eq_pt.get('exit_time') or last_eq_pt.get('entry_time') or last_eq_t.get('time_trigger')
+                    if last_eq_time_str:
+                        try:
+                            clean_t_str = last_eq_time_str.replace(' IST', '').strip()
+                            eq_t_struct = datetime.strptime(f"{today_str} {clean_t_str}", "%d %b %Y %I:%M %p").replace(tzinfo=pytz.timezone('Asia/Kolkata'))
+                            eq_diff_mins = (now_dt - eq_t_struct).total_seconds() / 60.0
+                            is_eq_sl_hit = 'STOP_LOSS' in str(last_eq_pt.get('exit_trigger', '')) or (last_eq_pt.get('pnl_inr', 0.0) < 0)
+                            req_eq_cooldown = 60.0 if is_eq_sl_hit else 30.0
+                            if eq_diff_mins < req_eq_cooldown:
+                                continue
+                        except Exception:
+                            pass
 
                 name = s.get('full_name') or s.get('name', clean_sym)
                 cur_p = float(s.get('close') or 0)
