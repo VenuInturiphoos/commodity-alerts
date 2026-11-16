@@ -4482,6 +4482,15 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 print(f"🎲 Monte Carlo Time Machine Blocked {sym} {action}: {sim_metrics.get('summary')}")
                 continue
 
+            # Rigorous Profitability Verification Gate (Commodities):
+            # Must demonstrate statistical edge: positive expectancy (>= +0.05R) and at least 10% simulated target reach
+            exp_r = float(sim_metrics.get('expected_r', 0.0) or 0.0)
+            win_rate = float(sim_metrics.get('resolved_win_rate', 0.0) or sim_metrics.get('resolved_win_rate_pct', 0.0) or 0.0)
+            p_tgt = float(sim_metrics.get('p_target_pct', 0.0) or 0.0)
+            if exp_r < 0.05 or win_rate < 40.0 or p_tgt < 10.0:
+                print(f"🛡️ Profitability Gate Blocked {sym} {action}: Statistical replay shows low target hit probability (P_tgt: {p_tgt:.1f}%, Exp R: {exp_r:+.2f}R, Win Rate: {win_rate:.1f}%). Standing aside.")
+                continue
+
             # Check Margin Availability for commodity trigger
             # If available balance < ₹1.5L target margin, downscale to affordable whole lots instead of skipping
             has_margin, req_margin, avail_margin, adaptive_lot = check_margin_availability(tracker, contract_sym, cur_p, adaptive_lot, is_equity=False, sl=sl)
