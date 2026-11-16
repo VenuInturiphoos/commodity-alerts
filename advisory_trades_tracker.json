@@ -1,5 +1,5 @@
 {
-  "last_updated": "16 Nov 2026, 06:28 PM IST",
+  "last_updated": "16 Nov 2026, 06:29 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -18,79 +18,105 @@
     "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 361849.47,
-    "used_margin_inr": 275281.75,
-    "available_cash_inr": 86567.72,
+    "used_margin_inr": 309722.7,
+    "available_cash_inr": 52126.77,
     "net_worth_inr": 361849.47
   },
   "trades": [
     {
-      "id": "ADV-16Nov2026-1806-SILVERMIC",
+      "id": "ADV-16Nov2026-1821-SILVERMIC",
       "date": "16 Nov 2026",
       "session_name": "Real-Time Technical Trigger (Pre-Ignition Volatility Coil)",
-      "time_trigger": "06:06 PM IST",
-      "time_6pm": "06:06 PM IST",
-      "time_validation": "06:06 PM IST",
-      "time_615": "06:06 PM IST",
+      "time_trigger": "06:21 PM IST",
+      "time_6pm": "06:21 PM IST",
+      "time_validation": "06:21 PM IST",
+      "time_615": "06:21 PM IST",
       "time_exit": "11:45 PM IST",
       "symbol": "SILVERMIC",
       "name": "Silver Micro",
       "lot_size": 5,
       "event_context": "Indicator Confluence: Pre-Ignition Volatility Coil",
       "regime": {
-        "regime": "BREAKDOWN",
-        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
-        "short_tag": "Breakdown",
-        "color": "#fb7185",
-        "mandate": "Downtrend in effect. High directional conviction for short expansion."
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 8.3%, Vol: 3.3%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "AGGRESSIVE_ENTRIES",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 50.7,
+        "rsi": 24.8,
+        "bb_width_pct": 8.29,
+        "daily_vol_pct": 3.32
       },
       "time_machine": {
         "replays": 3000,
+        "passed": true,
+        "verdict": "MOVEMENT_OPPORTUNITY",
+        "verdict_text": "Movement Opportunity \ud83d\udfe2 (Risk Accepted)",
         "p_target_pct": 0.0,
         "p_stop_pct": 0.0,
+        "p_neither_pct": 100.0,
+        "resolved_win_rate_pct": 50.0,
         "expected_r": 0.0,
-        "summary": "3,000 Replays: 0.0% Target | 0.0% Stop | Expected: +0.00R (Movement Opportunity \ud83d\udfe2)"
+        "target_r": 2.0,
+        "sample_bars": 2012,
+        "summary": "3,000 Replays: 0.0% Target | 0.0% Stop | Expected: +0.00R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
       },
       "risk_check": {
         "passed": true,
-        "reason": "Risk check passed."
+        "reason": "High-conviction movement risk accepted: Potential loss \u20b932,884.70 exceeds standard cap \u20b918,000.00.",
+        "reward_risk_ratio": 2.0,
+        "loss_at_stop_inr": 32884.7,
+        "potential_gain_inr": 65769.4,
+        "risk_warning": "High-conviction movement risk accepted: Potential loss \u20b932,884.70 exceeds standard cap \u20b918,000.00."
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "SELL @ \u20b9171,721.00",
-        "rationale": "Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 3.59% (6172.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.67x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9190,418.13), building downward coil pressure.. Early coil entry prior to breakout expansion.",
-        "reference_price": 171721.0,
+        "action_text": "SELL @ \u20b9171,850.00",
+        "rationale": "Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 3.59% (6172.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.68x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9190,424.42), building downward coil pressure.. Early coil entry prior to breakout expansion. 3,000 Replays: 0.0% Target | 0.0% Stop | Expected: +0.00R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))",
+        "reference_price": 171850.0,
         "stop_loss": 178426.94,
-        "target": 158309.12,
+        "target": 158696.12,
         "original_stop_loss": 178426.94,
-        "original_target": 158309.12
+        "original_target": 158696.12
       },
       "check_615": {
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
-        "price_615": 171721.0,
-        "action_taken": "Entered SELL 5 units @ \u20b9171,721.00",
-        "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 3.59% (6172.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.67x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9190,418.13), building downward coil pressure.. Early coil entry prior to breakout expansion."
+        "price_615": 171850.0,
+        "action_taken": "Entered SELL 5 units @ \u20b9171,850.00",
+        "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 3.59% (6172.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.68x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9190,424.42), building downward coil pressure.. Early coil entry prior to breakout expansion. | 3,000 Replays: 0.0% Target | 0.0% Stop | Expected: +0.00R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
         "quantity": 5,
-        "entry_price": 171721.0,
-        "entry_time": "06:06 PM IST",
+        "entry_price": 171850.0,
+        "entry_time": "06:21 PM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": -93.0,
-        "pnl_inr": -465.0,
+        "pnl_points": -106.0,
+        "pnl_inr": -530.0,
         "status": "ACTIVE",
-        "margin_required_inr": 94446.55,
-        "target": 158309.12,
+        "margin_required_inr": 128887.5,
+        "target": 158696.12,
         "stop_loss": 178426.94,
         "initial_stop_loss": 178426.94,
         "original_sl": 178426.94,
-        "peak_high": 171721.0,
-        "trough_low": 171721.0,
-        "entry_day_high": 177001.0,
-        "entry_day_low": 170829.0
+        "peak_high": 171956.0,
+        "trough_low": 171844.0,
+        "entry_day_high": 171850.0,
+        "entry_day_low": 171850.0
       },
       "eod_outcome": {
         "session_close": null,
@@ -98,7 +124,11 @@
         "outcome": "PENDING",
         "badge": "Active Trigger \u26a1",
         "pnl_display": "Ticking Live...",
-        "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b9171,721.00 (Target: \u20b9158,309.12, SL: \u20b9178,426.94)"
+        "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b9171,850.00 (Target: \u20b9158,696.12, SL: \u20b9178,426.94) | 3,000 Replays: 0.0% Target | 0.0% Stop | Expected: +0.00R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
+      },
+      "live_price_data": {
+        "current_price": 171956.0,
+        "change_pct": 0.06
       }
     },
     {
@@ -186,15 +216,15 @@
         "entry_time": "05:11 PM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": -0.7,
-        "pnl_inr": -4200.0,
+        "pnl_points": -1.0,
+        "pnl_inr": -6000.0,
         "status": "ACTIVE",
         "margin_required_inr": 180835.2,
         "target": 320.5,
         "stop_loss": 331.15,
         "initial_stop_loss": 331.15,
         "original_sl": 331.15,
-        "peak_high": 328.5,
+        "peak_high": 328.6,
         "trough_low": 327.2,
         "entry_day_high": 327.6,
         "entry_day_low": 327.6
@@ -208,8 +238,8 @@
         "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b9327.60 (Target: \u20b9320.50, SL: \u20b9331.15) | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
       },
       "live_price_data": {
-        "current_price": 328.3,
-        "change_pct": 0.21
+        "current_price": 328.6,
+        "change_pct": 0.31
       }
     },
     {
