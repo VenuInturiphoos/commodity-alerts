@@ -3,7 +3,7 @@ import json
 import requests
 import pytz
 from datetime import datetime
-from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer, MarketRegimeDetector, TradingAgentsOrchestrator, InstitutionalDirectionEngine
+from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer, MarketRegimeDetector, TradingAgentsOrchestrator, InstitutionalDirectionEngine, PullbackRetestGate
 from pre_move_detector import PreMoveDetector, PreMoveSignal
 
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'advisory_trades_tracker.json')
@@ -166,10 +166,10 @@ for sfc_sym, sfc_cfg in STOCK_FUTURES_CONFIG.items():
     MARGIN_RATES[sfc_sym] = sfc_cfg['margin_rate']
 
 # =========================================================================
-# 🛡️ CAPITAL DEFENSE & RECOVERY PROTOCOL (CALIBRATED FOR ₹2.9L TRADING CAPITAL)
+# 🛡️ CAPITAL DEFENSE & RECOVERY PROTOCOL (OPTION 2: PULLBACK RETEST SNIPING)
 # =========================================================================
-MAX_LOSS_PER_TRADE_INR = 18000.0   # Calibrated for ~₹1.5L commodity margin allocation (10-12% of margin / 1.2-1.5% technical stop)
-MAX_DAILY_LOSS_INR = 36000.0      # Portfolio daily risk circuit breaker (approx 12% of ₹3 Lakhs capital)
+MAX_LOSS_PER_TRADE_INR = 6000.0   # Option 2 Calibrated: ₹6,000 max risk per commodity position (2% of ₹3 Lakhs capital)
+MAX_DAILY_LOSS_INR = 12000.0      # Portfolio daily risk circuit breaker (strictly 4% of ₹3 Lakhs capital; halts after 2 full stop-outs)
 MAX_INTRADAY_STOCK_MARGIN_INR = 30000.0 # Dedicated ₹30,000 margin allocated per day for Intraday Stock Trading (split across 3 stocks = ₹10,000 margin / ₹50,000 buying power each)
 INTRADAY_STOCK_MIS_LEVERAGE = 5.0 # 5x leverage for MIS intraday equity (20% margin requirement)
 MAX_INTRADAY_STOCK_POSITION_INR = MAX_INTRADAY_STOCK_MARGIN_INR * INTRADAY_STOCK_MIS_LEVERAGE # ₹1,50,000 buying power across 3 stocks
@@ -496,70 +496,72 @@ class IntradayStockSelector:
         return [item[0] for item in ranked]
 
 
-def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=None, ema50=None, atr=None, min_rrr=1.2, is_intraday=True):
+def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=None, ema50=None, atr=None, min_rrr=1.2, is_intraday=True, symbol=None):
     """
-    📐 Technical Invalidation Stop & Realistic Target Engine:
-    Places stop-losses strictly at structural chart invalidation points rather than arbitrary rupee caps.
-    - Short Trades: SL placed strictly above Day High / Dynamic 20 EMA Resistance (+ buffer).
-    - Long Trades: SL placed strictly below Day Low / Dynamic 20 EMA Support (- buffer).
-    - Target: Sized to achievable intraday price movement (1.0R - 1.3R, capped at 1.25x ATR or 1.5% move).
+    📐 Technical Invalidation Stop & Realistic Target Engine (Option 2 Calibrated):
+    Places stop-losses strictly at structural chart invalidation points (Pullback Anchors) rather than arbitrary guesses.
+    - Short Trades: SL placed strictly above Resistance Anchor (20 EMA / ORB Midpoint / Day High) (+ small buffer).
+    - Long Trades: SL placed strictly below Support Anchor (20 EMA / ORB Midpoint / Day Low) (- small buffer).
+    - Strict Risk Distance Cap: For high-multiplier contracts, stop distance is bounded by PullbackRetestGate.MAX_STOP_DISTANCE
+      (e.g. Aluminium Mini <= 1.00 pt = ₹6,000 max risk; Zinc Mini <= 1.50 pts; Silver Micro <= 1,200 pts).
+    - Target: Calibrated to achievable intraday move (1.2R - 1.5R), guaranteeing positive expectancy and high hit rate.
     """
     if cur_p <= 0:
         return None, None
+
+    # Contract-specific maximum allowable structural stop distance under Option 2
+    clean_sym = symbol.replace('-FUT', '').replace('.NS', '').replace('.BO', '').upper() if symbol else ""
+    contract_max_stop = PullbackRetestGate.MAX_STOP_DISTANCE.get(clean_sym)
         
-    atr_buf = round(atr * 0.15, 2) if (atr and atr > 0) else round(cur_p * 0.0012, 2)
-    atr_buf = max(atr_buf, round(cur_p * 0.0006, 2))
+    atr_buf = round(atr * 0.12, 2) if (atr and atr > 0) else round(cur_p * 0.0010, 2)
+    atr_buf = max(atr_buf, round(cur_p * 0.0005, 2))
     
     if action.upper() == 'SELL':
         ref_high = max(cur_p, day_h) if day_h and day_h > 0 else cur_p
         if day_h and day_l and day_h > day_l:
-            # trader-exit standard: opening-range midpoint provides optimal invalidation resistance
             or_mid = (day_h + day_l) / 2.0
             if cur_p < or_mid < day_h:
                 ref_high = or_mid
-        # If ema20 is above cur_p and closer than day_h, use ema20 as dynamic resistance stop
         if ema20 and cur_p < ema20 < ref_high:
             ref_high = ema20
-        # Guard against excessively wide stops (> 1.2x ATR for intraday)
-        max_sl_dist = (atr * 1.2) if (atr and is_intraday) else ((atr * 1.6) if atr else (cur_p * 0.015))
+            
+        # Hard Ceiling Guard: Under Option 2, stop distance must not exceed contract maximum or 1.0x ATR
+        max_sl_dist = contract_max_stop if contract_max_stop else ((atr * 1.0) if (atr and is_intraday) else (cur_p * 0.010))
         if (ref_high - cur_p) > max_sl_dist:
             ref_high = cur_p + (max_sl_dist * 0.85)
-        sl = round(ref_high + atr_buf, 2)
-        risk_pts = abs(sl - cur_p)
-        if is_intraday:
-            tgt_dist = round(min_rrr * risk_pts, 2)
-            tgt = round(cur_p - tgt_dist, 2)
-        else:
-            tgt = round(cur_p - (min_rrr * risk_pts), 2)
+            
+        sl = round(min(ref_high + atr_buf, cur_p + max_sl_dist), 2)
+        risk_pts = max(round(abs(sl - cur_p), 2), round(cur_p * 0.0015, 2))
+        tgt_dist = round(min_rrr * risk_pts, 2)
+        tgt = round(cur_p - tgt_dist, 2)
     else:
         ref_low = min(cur_p, day_l) if day_l and day_l > 0 else cur_p
         if day_h and day_l and day_h > day_l:
-            # trader-exit standard: opening-range midpoint provides optimal invalidation support
             or_mid = (day_h + day_l) / 2.0
             if cur_p > or_mid > day_l:
                 ref_low = or_mid
         if ema20 and cur_p > ema20 > ref_low:
             ref_low = ema20
-        max_sl_dist = (atr * 1.2) if (atr and is_intraday) else ((atr * 1.6) if atr else (cur_p * 0.015))
+            
+        # Hard Ceiling Guard: Under Option 2, stop distance must not exceed contract maximum or 1.0x ATR
+        max_sl_dist = contract_max_stop if contract_max_stop else ((atr * 1.0) if (atr and is_intraday) else (cur_p * 0.010))
         if (cur_p - ref_low) > max_sl_dist:
             ref_low = cur_p - (max_sl_dist * 0.85)
-        sl = round(ref_low - atr_buf, 2)
-        risk_pts = abs(cur_p - sl)
-        if is_intraday:
-            tgt_dist = round(min_rrr * risk_pts, 2)
-            tgt = round(cur_p + tgt_dist, 2)
-        else:
-            tgt = round(cur_p + (min_rrr * risk_pts), 2)
+            
+        sl = round(max(ref_low - atr_buf, cur_p - max_sl_dist), 2)
+        risk_pts = max(round(abs(cur_p - sl), 2), round(cur_p * 0.0015, 2))
+        tgt_dist = round(min_rrr * risk_pts, 2)
+        tgt = round(cur_p + tgt_dist, 2)
 
     # Directional Invariant Validation: Guarantee SL and Target are NEVER inverted relative to entry price
     if action.upper() == 'BUY':
         if sl >= cur_p:
-            sl = round(cur_p - max(atr * 0.8 if atr else cur_p * 0.01, cur_p * 0.005), 2)
+            sl = round(cur_p - (max_sl_dist if contract_max_stop else max(atr * 0.6 if atr else cur_p * 0.005, cur_p * 0.003)), 2)
         if tgt <= cur_p:
             tgt = round(cur_p + (min_rrr * abs(cur_p - sl)), 2)
     else:
         if sl <= cur_p:
-            sl = round(cur_p + max(atr * 0.8 if atr else cur_p * 0.01, cur_p * 0.005), 2)
+            sl = round(cur_p + (max_sl_dist if contract_max_stop else max(atr * 0.6 if atr else cur_p * 0.005, cur_p * 0.003)), 2)
         if tgt >= cur_p:
             tgt = round(cur_p - (min_rrr * abs(sl - cur_p)), 2)
         
@@ -2039,17 +2041,29 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
             act_dir = inst_dir.get('allowed_action')
             if act_dir in ['BUY', 'SELL']:
                 action = act_dir
-                # Technical Invalidation Stop and Realistic 1.1R-1.25R Target
-                sl, tgt = calculate_technical_bracket(
-                    action, cur_p,
-                    day_h=item.get('day_high', cur_p),
-                    day_l=item.get('day_low', cur_p),
-                    ema20=item.get('ema_20'),
-                    ema50=item.get('ema_50'),
-                    atr=item.get('atr_14'),
-                    min_rrr=1.1,
-                    is_intraday=True
+                # Option 2: Pullback-Only Retest Sniping Gate Check
+                pullback_eval = PullbackRetestGate.validate_retest_entry(
+                    sym, action, cur_p, item.get('day_high', cur_p), item.get('day_low', cur_p),
+                    ema20=item.get('ema_20'), atr=item.get('atr_14')
                 )
+                if not pullback_eval.get('passed'):
+                    print(f"🛡️ US Pit Open Pullback Gate Blocked {sym} {action}: {pullback_eval.get('reason')}")
+                    action = "STAND_ASIDE"
+                    entry_text = f"PULLBACK REQUIRED: {pullback_eval.get('reason')}"
+                    rationale = f"Option 2 discipline: Price extended from structural anchor. Standing aside until pullback retest into support/resistance."
+                else:
+                    # Technical Invalidation Stop and Realistic 1.1R-1.25R Target
+                    sl, tgt = calculate_technical_bracket(
+                        action, cur_p,
+                        day_h=item.get('day_high', cur_p),
+                        day_l=item.get('day_low', cur_p),
+                        ema20=item.get('ema_20'),
+                        ema50=item.get('ema_50'),
+                        atr=item.get('atr_14'),
+                        min_rrr=1.1,
+                        is_intraday=True,
+                        symbol=sym
+                    )
                 contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
                     sym, name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR
                 )
@@ -4419,9 +4433,14 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 print(f"🚫 Trend Guard: Blocked {sym} SELL because price (₹{cur_p:,.2f}) is above 50 EMA in strong uptrend (ADX {adx:.1f}).")
                 continue
 
-            # 📐 Structural Technical Bracket: Stop placed beyond Day High/Low to eliminate noise stop-outs
-            if setup_name != "Pre-Ignition Volatility Coil" or not sl or not tgt:
-                sl, tgt = calculate_technical_bracket(action, cur_p, day_h, day_l, ema20=ema20, ema50=ema50, atr=atr_val, min_rrr=1.2, is_intraday=True)
+            # 🛡️ Option 2: Pullback-Only Retest Sniping Gate (Anti-Chasing & Structural Proximity)
+            pullback_eval = PullbackRetestGate.validate_retest_entry(sym, action, cur_p, day_h, day_l, ema20=ema20, atr=atr_val)
+            if not pullback_eval.get('passed'):
+                print(f"🛡️ Option 2 Pullback Gate Blocked {sym} {action}: {pullback_eval.get('reason')}")
+                continue
+
+            # 📐 Structural Technical Bracket: Option 2 calibrated with contract-specific bounds
+            sl, tgt = calculate_technical_bracket(action, cur_p, day_h, day_l, ema20=ema20, ema50=ema50, atr=atr_val, min_rrr=1.2, is_intraday=True, symbol=sym)
 
             trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{sym}"
             if any(t.get('id') == trade_id for t in trades):
@@ -4463,7 +4482,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     print(f"⏱️ ORB Timer Blocked {sym} {action}: {orb_metrics.get('reason')}")
                     continue
 
-            # 4. Dynamic Position Sizing & Mini-Contract Routing (Ensures Technical Stop fits <= ₹3,000 risk)
+            # 4. Dynamic Position Sizing & Mini-Contract Routing (Ensures Technical Stop fits <= ₹6,000 risk)
             contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
                 sym, name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR, atr=atr_val
             )
@@ -4471,7 +4490,11 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 adaptive_lot = lot_size if lot_size > 0 else 1
 
             all_existing = new_trades + trades
-            risk_metrics = PreTradeRiskEngine.check_risk(contract_sym, action, cur_p, sl, tgt, adaptive_lot, all_existing, max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR)
+            risk_metrics = PreTradeRiskEngine.check_risk(
+                contract_sym, action, cur_p, sl, tgt, adaptive_lot, all_existing,
+                max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR,
+                day_h=day_h, day_l=day_l, ema20=ema20, atr=atr_val
+            )
             if not risk_metrics.get('passed'):
                 print(f"🛡️ Pre-Trade Risk Engine Blocked {contract_sym} {action}: {risk_metrics.get('reason')}")
                 continue

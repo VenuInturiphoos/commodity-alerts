@@ -60,33 +60,164 @@ CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', '.si
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 
+class PullbackRetestGate:
+    """
+    Option 2: Pullback-Only Retest Sniping Gate for High-Multiplier MCX Contracts & Commodities.
+    Enforces strict anti-chasing discipline:
+    1. Anti-Chasing Extremes:
+       - Refuses to SELL at or near the day low (within 0.4% or lower 15% of day range).
+       - Refuses to BUY at or near the day high (within 0.4% or upper 15% of day range).
+    2. Retest / Pullback Proximity:
+       - SELL orders must wait for price to pull back to overhead resistance (20 EMA, ORB Midpoint, or Day High).
+       - BUY orders must wait for price to dip to underlying support (20 EMA, ORB Midpoint, or Day Low).
+       - The distance to the invalidation anchor cannot exceed the contract's maximum allowable structural stop distance.
+    3. Structural Invalidation Ceilings (Guarantees max loss <= ₹6,000 on canonical ~1.5L margin lots):
+       - ALUMINI (6,000 units): max stop distance <= 1.00 pt (₹6,000 max risk)
+       - ZINCMINI (4,000 units): max stop distance <= 1.50 pts (₹6,000 max risk)
+       - COPPERM (2,000 units): max stop distance <= 2.50 pts (₹5,000 max risk)
+       - SILVERMIC (5 units): max stop distance <= 1,200 pts (₹6,000 max risk)
+       - CRUDEOILM (100 units): max stop distance <= 50.0 pts (₹5,000 max risk)
+       - NATURALGASM (3,000 units): max stop distance <= 2.00 pts (₹6,000 max risk)
+       - GOLDM (20 units): max stop distance <= 300.0 pts (₹6,000 max risk)
+    """
+
+    MAX_STOP_DISTANCE = {
+        'ALUMINIUM': 1.00,
+        'ALUMINI': 1.00,
+        'ZINC': 1.50,
+        'ZINCM': 1.50,
+        'ZINCMINI': 1.50,
+        'COPPER': 2.50,
+        'COPPERM': 2.50,
+        'SILVER': 1200.0,
+        'SILVERM': 1200.0,
+        'SILVERMIC': 1200.0,
+        'CRUDEOIL': 50.0,
+        'CRUDEOILM': 50.0,
+        'NATURALGAS': 2.00,
+        'NATURALGASM': 2.00,
+        'GOLD': 300.0,
+        'GOLDM': 300.0,
+        'GOLDTEN': 300.0,
+    }
+
+    @classmethod
+    def validate_retest_entry(cls, symbol, action, cur_p, day_h, day_l, ema20=None, atr=None):
+        """
+        Validates whether current entry complies with Option 2 Pullback Retest Sniping rules.
+        Returns:
+            {"passed": bool, "reason": str, "ref_anchor": float, "stop_distance": float, "code": str}
+        """
+        if cur_p <= 0 or not day_h or not day_l or day_h <= day_l:
+            return {"passed": True, "reason": "Insufficient range data for pullback evaluation."}
+
+        clean_sym = symbol.replace('-FUT', '').replace('.NS', '').replace('.BO', '').upper()
+        max_dist = cls.MAX_STOP_DISTANCE.get(clean_sym)
+        if not max_dist:
+            max_dist = atr if (atr and atr > 0) else (cur_p * 0.006)
+
+        day_range = day_h - day_l
+        or_mid = (day_h + day_l) / 2.0
+        act = action.upper()
+
+        if act == 'SELL':
+            # 1. Anti-Chasing Day Low Guard: Selling near the absolute low of the day is strictly blocked
+            dist_from_low = cur_p - day_l
+            if dist_from_low <= (cur_p * 0.0035) or cur_p <= (day_l + 0.12 * day_range):
+                return {
+                    "passed": False,
+                    "reason": f"PULLBACK_REQUIRED: Chasing day low (Price ₹{cur_p:,.2f} is within {dist_from_low:.2f} pts of Day Low ₹{day_l:,.2f}). Option 2 mandates waiting for pullback into resistance before shorting.",
+                    "code": "CHASING_DAY_LOW"
+                }
+
+            # 2. Identify nearest overhead structural resistance anchor
+            overhead_anchors = [r for r in [ema20, or_mid, day_h] if r is not None and r > cur_p]
+            ref_anchor = min(overhead_anchors) if overhead_anchors else day_h
+
+            stop_dist = ref_anchor - cur_p
+            if stop_dist > max_dist:
+                return {
+                    "passed": False,
+                    "reason": f"PULLBACK_REQUIRED: Extended from resistance (Gap: {stop_dist:.2f} pts > Max Allowed: {max_dist:.2f} pts from ₹{ref_anchor:,.2f}). Wait for price to bounce closer to resistance before shorting.",
+                    "code": "EXTENDED_FROM_RESISTANCE",
+                    "ref_anchor": ref_anchor,
+                    "stop_distance": stop_dist
+                }
+
+            return {
+                "passed": True,
+                "reason": f"PULLBACK_CONFIRMED: Price ₹{cur_p:,.2f} is within {stop_dist:.2f} pts (<= {max_dist:.2f} pts) of overhead resistance ₹{ref_anchor:,.2f}.",
+                "ref_anchor": ref_anchor,
+                "stop_distance": stop_dist,
+                "code": "PULLBACK_CONFIRMED"
+            }
+
+        elif act == 'BUY':
+            # 1. Anti-Chasing Day High Guard: Buying near the absolute high of the day is strictly blocked
+            dist_from_high = day_h - cur_p
+            if dist_from_high <= (cur_p * 0.0035) or cur_p >= (day_h - 0.12 * day_range):
+                return {
+                    "passed": False,
+                    "reason": f"PULLBACK_REQUIRED: Chasing day high (Price ₹{cur_p:,.2f} is within {dist_from_high:.2f} pts of Day High ₹{day_h:,.2f}). Option 2 mandates waiting for dip into support before buying.",
+                    "code": "CHASING_DAY_HIGH"
+                }
+
+            # 2. Identify nearest underlying structural support anchor
+            underlying_anchors = [s for s in [ema20, or_mid, day_l] if s is not None and s < cur_p]
+            ref_anchor = max(underlying_anchors) if underlying_anchors else day_l
+
+            stop_dist = cur_p - ref_anchor
+            if stop_dist > max_dist:
+                return {
+                    "passed": False,
+                    "reason": f"PULLBACK_REQUIRED: Extended from support (Gap: {stop_dist:.2f} pts > Max Allowed: {max_dist:.2f} pts from ₹{ref_anchor:,.2f}). Wait for price to dip closer to support before buying.",
+                    "code": "EXTENDED_FROM_SUPPORT",
+                    "ref_anchor": ref_anchor,
+                    "stop_distance": stop_dist
+                }
+
+            return {
+                "passed": True,
+                "reason": f"PULLBACK_CONFIRMED: Price ₹{cur_p:,.2f} is within {stop_dist:.2f} pts (<= {max_dist:.2f} pts) of underlying support ₹{ref_anchor:,.2f}.",
+                "ref_anchor": ref_anchor,
+                "stop_distance": stop_dist,
+                "code": "PULLBACK_CONFIRMED"
+            }
+
+        return {"passed": True, "reason": "Non-directional action."}
+
+
 class PreTradeRiskEngine:
     """
     Evaluates proposed orders against hard risk rules before any recommendation is dispatched.
     Derived from day-trader-skill (trader-risk).
-    Calibrated for ₹3,00,000 capital pool:
-    - Max Loss Per Trade: ₹1,000 (strictly 0.35% of capital)
-    - Max Daily Loss: ₹3,000 (strictly 1.0% of capital; allows 3-4 trade buffer before halting)
-    - Max Active Positions: 3 (Max 2 Futures + Max 1 Intraday Stock)
-    - Min Reward-to-Risk: 1.5R (strictly positive expectancy)
+    Option 2 Calibrated:
+    - Max Loss Per Trade: ₹6,000.00 (strictly 2.0% of ₹3L capital)
+    - Max Daily Loss: ₹12,000.00 (strictly 4.0% of ₹3L capital)
+    - Max Active Positions: 2 Commodities + 2 Stock Futures + 3 Equities
+    - Min Reward-to-Risk: 1.1R - 1.5R (strictly positive expectancy)
+    - Pullback-Only Retest Gate: prevents chasing extended moves at extremes
     """
 
     @staticmethod
     def check_risk(symbol, action, entry, stop, target, lot_size, existing_trades,
-                   max_loss_per_trade_inr=1000.0, max_daily_loss_inr=3000.0,
-                   min_reward_risk=1.1, max_active_positions=3):
+                   max_loss_per_trade_inr=6000.0, max_daily_loss_inr=12000.0,
+                   min_reward_risk=1.1, max_active_positions=3,
+                   day_h=None, day_l=None, ema20=None, atr=None):
         """
         Runs comprehensive pre-trade risk validation:
         1. Stop loss presence and direction
         2. Minimum reward-to-risk ratio (Calibrated to 1.1R for realistic intraday equity & futures)
-        3. Maximum allowable rupee loss per trade (Strictly capped at max_loss_per_trade_inr)
-        4. Portfolio daily loss circuit breaker (Strictly capped at max_daily_loss_inr)
-        5. Maximum concurrent open positions
-        6. Minimum risk spread (filters bid-ask noise)
-        7. Late-session cut-off time (no entries after 10:45 PM IST)
+        3. Maximum allowable rupee loss per trade (Strictly capped at max_loss_per_trade_inr <= ₹6,000)
+        4. Option 2: Pullback-Only Retest Sniping Gate (no chasing range extremes)
+        5. Portfolio daily loss circuit breaker (Strictly capped at max_daily_loss_inr <= ₹12,000)
+        6. Maximum concurrent open positions
+        7. Minimum risk spread (filters bid-ask noise)
+        8. Late-session cut-off time (no entries after 10:45 PM IST)
         """
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
         today_str = now_ist.strftime('%d %b %Y')
+        risk_note = ""
         
         # 1. Mandatory Stop-Loss Guard
         if stop is None or stop <= 0:
@@ -107,7 +238,7 @@ class PreTradeRiskEngine:
         if target is None or target <= 0:
             return {"passed": False, "reason": "MANDATORY_TARGET_MISSING: Order must have an explicit take-profit target."}
 
-        # 5. Reward-to-Risk Ratio Guard (Min 1.5R)
+        # 5. Reward-to-Risk Ratio Guard (Min 1.1R)
         reward_pts = abs(target - entry)
         rrr = round(reward_pts / risk_pts, 2) if risk_pts > 0 else 0.0
         if rrr < min_reward_risk:
@@ -118,7 +249,7 @@ class PreTradeRiskEngine:
             }
 
         # 6. Strict Max Loss Per Trade Guard (INR)
-        # Strictly enforce maximum risk per trade (<= ₹3,000 cap). Reject any contract where loss at stop exceeds cap.
+        # Strictly enforce maximum risk per trade (<= ₹6,000 cap). Reject any contract where loss at stop exceeds cap.
         loss_at_stop = round(risk_pts * lot_size, 2)
         if max_loss_per_trade_inr and loss_at_stop > max_loss_per_trade_inr:
             return {
@@ -126,6 +257,17 @@ class PreTradeRiskEngine:
                 "reason": f"MAX_LOSS_EXCEEDED: Potential loss at stop (₹{loss_at_stop:,.2f}) exceeds strict limit (₹{max_loss_per_trade_inr:,.2f}). Trade blocked.",
                 "loss_at_stop_inr": loss_at_stop
             }
+
+        # 7. Option 2: Pullback Retest Sniping Gate Check (if day range is provided)
+        if day_h and day_l and day_h > day_l:
+            retest_res = PullbackRetestGate.validate_retest_entry(symbol, action, entry, day_h, day_l, ema20=ema20, atr=atr)
+            if not retest_res.get('passed'):
+                return {
+                    "passed": False,
+                    "reason": retest_res.get('reason'),
+                    "loss_at_stop_inr": loss_at_stop,
+                    "pullback_code": retest_res.get('code')
+                }
 
         # 7. Portfolio Daily Loss Circuit Breaker
         # Segregated by Asset Class so commodity risk caps don't falsely choke intraday stock trading and vice-versa

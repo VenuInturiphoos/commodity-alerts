@@ -165,7 +165,7 @@ def generate_and_send_6pm_advisory(force=False):
         else:
             # Case 3: US Pit Open Directional Trend Momentum (06:00 PM IST NYMEX/COMEX Open)
             try:
-                from trader_engine_bridge import InstitutionalDirectionEngine, PositionSizer
+                from trader_engine_bridge import InstitutionalDirectionEngine, PositionSizer, PullbackRetestGate
                 from advisory_tracker import calculate_technical_bracket, MAX_LOSS_PER_TRADE_INR
                 
                 inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
@@ -175,36 +175,45 @@ def generate_and_send_6pm_advisory(force=False):
                 )
                 act_dir = inst_dir.get('allowed_action')
                 if act_dir in ['BUY', 'SELL'] and (abs(chg_pct) >= 0.35 or float(item.get('adx_14') or 0) >= 18.0):
-                    sl, tgt = calculate_technical_bracket(
-                        act_dir, cur_p,
-                        day_h=item.get('day_high', cur_p),
-                        day_l=item.get('day_low', cur_p),
-                        ema20=item.get('ema_20'),
-                        ema50=item.get('ema_50'),
-                        atr=item.get('atr_14'),
-                        min_rrr=1.1,
-                        is_intraday=True
+                    # Option 2: Pullback-Only Retest Sniping Gate Check
+                    pullback_eval = PullbackRetestGate.validate_retest_entry(
+                        sym, act_dir, cur_p, item.get('day_high', cur_p), item.get('day_low', cur_p),
+                        ema20=item.get('ema_20'), atr=item.get('atr_14')
                     )
-                    contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
-                        sym, name, cur_p, sl, item.get('lot_size', 1), max_risk_inr=MAX_LOSS_PER_TRADE_INR
-                    )
-                    bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
-                        contract_sym, act_dir, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else 1,
-                        max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.1
-                    )
-                    adaptive_lot = max(1, adaptive_lot)
-                    if bracket_eval.get('passed'):
-                        has_active_setups = True
-                        icon = "🟢" if act_dir == "BUY" else "🔴"
-                        trend_type = "Trend Long" if act_dir == "BUY" else "Trend Short"
-                        action_items.append(
-                            f"{icon} <b>{contract_name.upper()} (US Pit Open {trend_type})</b>\n"
-                            f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}% | VWAP: ₹{inst_dir.get('vwap', cur_p):,.1f})\n"
-                            f"  • Strategy: <b>NYMEX/COMEX Institutional Trend Momentum</b> ({inst_dir.get('reason')})\n"
-                            f"  • Recommended Action: <b>{act_dir} {adaptive_lot} units ({contract_sym})</b> (Wait for {val_time_str} candle confirmation)\n"
-                            f"  • Invalidation Stop-Loss: ₹{sl:,.2f} (Structural chart support/resistance)\n"
-                            f"  • Target: ₹{tgt:,.2f} (1.2R Target calibrated to intraday ATR)"
+                    if not pullback_eval.get('passed'):
+                        print(f"🛡️ US Pit Open Pullback Gate Blocked {sym} {act_dir}: {pullback_eval.get('reason')}")
+                    else:
+                        sl, tgt = calculate_technical_bracket(
+                            act_dir, cur_p,
+                            day_h=item.get('day_high', cur_p),
+                            day_l=item.get('day_low', cur_p),
+                            ema20=item.get('ema_20'),
+                            ema50=item.get('ema_50'),
+                            atr=item.get('atr_14'),
+                            min_rrr=1.1,
+                            is_intraday=True,
+                            symbol=sym
                         )
+                        contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
+                            sym, name, cur_p, sl, item.get('lot_size', 1), max_risk_inr=MAX_LOSS_PER_TRADE_INR
+                        )
+                        bracket_eval = InstitutionalDirectionEngine.validate_futures_risk_bracket(
+                            contract_sym, act_dir, cur_p, sl, tgt, adaptive_lot if adaptive_lot > 0 else 1,
+                            max_loss_inr=MAX_LOSS_PER_TRADE_INR, min_rrr=1.1
+                        )
+                        adaptive_lot = max(1, adaptive_lot)
+                        if bracket_eval.get('passed'):
+                            has_active_setups = True
+                            icon = "🟢" if act_dir == "BUY" else "🔴"
+                            trend_type = "Trend Long" if act_dir == "BUY" else "Trend Short"
+                            action_items.append(
+                                f"{icon} <b>{contract_name.upper()} (US Pit Open {trend_type})</b>\n"
+                                f"  • Live: ₹{cur_p:,.2f} ({chg_pct:+.2f}% | VWAP: ₹{inst_dir.get('vwap', cur_p):,.1f})\n"
+                                f"  • Strategy: <b>NYMEX/COMEX Institutional Trend Momentum</b> ({inst_dir.get('reason')})\n"
+                                f"  • Recommended Action: <b>{act_dir} {adaptive_lot} units ({contract_sym})</b> (Wait for {val_time_str} candle confirmation)\n"
+                                f"  • Invalidation Stop-Loss: ₹{sl:,.2f} (Structural chart support/resistance)\n"
+                                f"  • Target: ₹{tgt:,.2f} (1.2R Target calibrated to intraday ATR)"
+                            )
             except Exception as e:
                 print(f"Error checking US open trend setup for {sym}: {e}")
 
