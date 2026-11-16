@@ -1,5 +1,5 @@
 {
-  "last_updated": "16 Nov 2026, 04:02 PM IST",
+  "last_updated": "16 Nov 2026, 04:14 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -85,7 +85,7 @@
         "rationale": "Price tested Lower Circuit zone (0.78% away) or oversold RSI (43.2 <= 26) and confirmed +0.25% bounce off day low \u20b9290.80. High probability mean-reversion. 3,000 Replays: 39.6% Target | 39.6% Stop | Expected: +0.08R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
         "reference_price": 291.9,
         "stop_loss": 289.03,
-        "target": 295.34,
+        "target": null,
         "original_stop_loss": 289.03,
         "original_target": 295.34
       },
@@ -104,31 +104,35 @@
         "entry_time": "03:20 PM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
+        "pnl_points": 3.2,
+        "pnl_inr": 8800.0,
         "status": "ACTIVE",
         "margin_required_inr": 144490.5,
-        "target": 295.34,
-        "stop_loss": 291.9,
+        "target": null,
+        "stop_loss": 294.31,
         "initial_stop_loss": 289.03,
         "original_sl": 289.03,
-        "peak_high": 293.8,
-        "trough_low": 293.8,
+        "peak_high": 295.2,
+        "trough_low": 295.1,
         "entry_day_high": 291.9,
         "entry_day_low": 291.9,
-        "trailing_sl_active": true
+        "trailing_sl_active": true,
+        "stage_2_profit_locked": true,
+        "stage_3_target_approaching": true,
+        "target_scrapped": true,
+        "original_target": 295.34
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
+        "badge": "Active (Trailing Stop @ \u20b9294.31)",
         "pnl_display": "Ticking Live...",
-        "summary": "Circuit Floor Rebound (Mean Reversion) active: BUY @ \u20b9291.90 (Target: \u20b9295.34, SL: \u20b9289.03) | 3,000 Replays: 39.6% Target | 39.6% Stop | Expected: +0.08R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+        "summary": "Target removed \u2014 Trailing Profit Stop (+65% profit locked @ \u20b9294.31) active. Relying entirely on trailing stoploss."
       },
       "live_price_data": {
-        "current_price": 293.8,
-        "change_pct": 0.65
+        "current_price": 295.1,
+        "change_pct": 1.1
       }
     },
     {
@@ -893,16 +897,16 @@
         "entry_time": "11:11 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": 1.55,
-        "pnl_inr": 9300.0,
+        "pnl_points": 2.45,
+        "pnl_inr": 14700.0,
         "status": "ACTIVE",
         "margin_required_inr": 181525.2,
         "target": 325.25,
         "stop_loss": 327.41,
         "initial_stop_loss": 330.53,
         "original_sl": 330.53,
-        "peak_high": 326.4,
-        "trough_low": 326.05,
+        "peak_high": 326.65,
+        "trough_low": 325.85,
         "entry_day_high": 328.85,
         "entry_day_low": 328.85,
         "trailing_sl_active": true,
