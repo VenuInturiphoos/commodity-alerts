@@ -1,20 +1,20 @@
 {
-  "last_updated": "16 Nov 2026, 07:10 PM IST",
+  "last_updated": "16 Nov 2026, 07:16 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 127,
-    "executed_count": 33,
+    "executed_count": 32,
     "correct_count": 10,
     "wrong_count": 11,
-    "protected_count": 94,
+    "protected_count": 95,
     "win_rate_pct": 47.6,
     "total_pnl_inr": 58849.47,
     "commodity_pnl_inr": 58512.55,
     "intraday_pnl_inr": 336.92,
     "intraday_booked_profit_inr": 336.92,
     "intraday_pool_balance_inr": 30336.92,
-    "avg_trade_pnl_inr": 1783.32,
+    "avg_trade_pnl_inr": 1839.05,
     "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 358849.47,
@@ -45,33 +45,33 @@
         "target": 134905.99
       },
       "check_615": {
-        "checked": false,
-        "status": "PENDING_615",
-        "price_615": null,
-        "action_taken": "Awaiting 07:15 PM IST candle close to confirm SELL trend holds...",
-        "detail": "15-minute verification scheduled for 07:15 PM IST (Reference: \u20b9135,219.00)."
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 135221.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9135,221.00 (-1.13%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "SELL",
-        "quantity": 20,
-        "entry_price": null,
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 135221.0,
         "entry_time": null,
-        "exit_price": null,
+        "exit_price": 135221.0,
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "PENDING_615",
+        "status": "STAND_ASIDE",
         "target": 134905.99,
         "stop_loss": 135503.55
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": 135503.55,
-        "outcome": "PENDING",
-        "badge": "Awaiting 07:15 \u23f3",
-        "pnl_display": "Pending Confirmation",
-        "summary": "US Pit Open SELL momentum setup awaiting 07:15 PM IST candle close."
+        "outcome": "PROTECTED",
+        "badge": "Risk Filter \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Risk engine blocked 6:15 PM entry: DAILY_LOSS_LIMIT_REACHED: Today's realized loss (\u20b915,240.00) reached \u20b912,000.00 daily circuit breaker. Halted for the day."
       }
     },
     {
@@ -97,10 +97,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "DIRECTION_ENGINE_STAND_ASIDE",
-        "price_615": 171285.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Aligned with HTF Bear Trend (50E: \u20b9205,387.2) & trading below Session VWAP (\u20b9171,312.8)."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 171183.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9171,183.00 (-3.93%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -146,10 +146,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "PULLBACK_REQUIRED_STAND_ASIDE",
-        "price_615": 8241.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "PULLBACK_REQUIRED: Extended from resistance (Gap: 76.00 pts > Max Allowed: 50.00 pts from \u20b98,317.00). Wait for price to bounce closer to resistance before shorting."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 8228.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b98,228.00 (-1.76%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -195,10 +195,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "DIRECTION_ENGINE_STAND_ASIDE",
-        "price_615": 299.1,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Conflict: HTF is Bearish but price (\u20b9299.1) is trading above Session VWAP (\u20b9298.6). Counter-trend short blocked."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 298.2,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9298.20 (-3.15%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -244,10 +244,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "PULLBACK_REQUIRED_STAND_ASIDE",
-        "price_615": 1288.1,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "PULLBACK_REQUIRED: Extended from resistance (Gap: 2.97 pts > Max Allowed: 2.50 pts from \u20b91,291.07). Wait for price to bounce closer to resistance before shorting."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 1292.35,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b91,292.35 (-1.23%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -294,9 +294,9 @@
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 401.8,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Tight non-trending consolidation. Capital preserved."
+        "price_615": 402.6,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9402.60 (-0.24%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -343,9 +343,9 @@
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 329.1,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Tight non-trending consolidation. Capital preserved."
+        "price_615": 329.05,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9329.05 (+0.14%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -392,9 +392,9 @@
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 401.8,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Tight non-trending consolidation. Capital preserved."
+        "price_615": 402.6,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9402.60 (-0.24%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -441,9 +441,9 @@
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 329.1,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Tight non-trending consolidation. Capital preserved."
+        "price_615": 329.05,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9329.05 (+0.14%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -796,10 +796,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 134792.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 135221.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9135,221.00 (-1.13%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -845,10 +845,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 171500.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 171183.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9171,183.00 (-3.93%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -894,10 +894,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 8330.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 8228.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b98,228.00 (-1.76%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -943,10 +943,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 293.7,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 298.2,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9298.20 (-3.15%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -992,10 +992,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "HARD_RISK_STAND_ASIDE",
-        "price_615": 1284.7,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Reward:Risk ratio 0.94 is below minimum requirement of 1.1R (Risk: 23.8 pts, Reward: 22.2 pts)."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 1292.35,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b91,292.35 (-1.23%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1041,10 +1041,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 399.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 402.6,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9402.60 (-0.24%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1090,10 +1090,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 327.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 329.05,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9329.05 (+0.14%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1139,10 +1139,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 399.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 402.6,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9402.60 (-0.24%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1188,10 +1188,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 327.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 329.05,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9329.05 (+0.14%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -8378,5 +8378,5 @@
     }
   ],
   "check_615_sent_date": "13 Nov 2026",
-  "check_715_sent_date": "13 Nov 2026"
+  "check_715_sent_date": "16 Nov 2026"
 }
