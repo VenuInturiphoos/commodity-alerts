@@ -3962,6 +3962,18 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
     # Market day check (Mon - Fri)
     if now_dt.weekday() >= 5:
         return False
+
+    if alerter is None:
+        try:
+            from alerter import EmailAlerter
+            cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json')
+            if os.path.exists(cfg_path):
+                with open(cfg_path, 'r') as cf:
+                    cfg = json.load(cf)
+                alerter = EmailAlerter(cfg)
+        except Exception as e:
+            print(f"Warning: Could not initialize fallback EmailAlerter: {e}")
+            alerter = None
         
     # Active intraday window: 09:05 AM to 10:45 PM IST
     hour = now_dt.hour
