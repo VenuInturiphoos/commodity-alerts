@@ -4507,6 +4507,18 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 with open(NIFTY_JSON_FILE, 'r') as nf:
                     nifty_data = json.load(nf)
                 equity_stocks = nifty_data.get('stocks', [])
+                nifty_last_updated_str = nifty_data.get('last_updated', '')
+                is_nifty_data_fresh = True
+                age_mins = 0.0
+                if nifty_last_updated_str:
+                    try:
+                        clean_dt_str = nifty_last_updated_str.replace(' IST', '').strip()
+                        dt_nifty = datetime.strptime(clean_dt_str, "%d %b %Y, %I:%M %p").replace(tzinfo=pytz.timezone('Asia/Kolkata'))
+                        age_mins = (now_dt - dt_nifty).total_seconds() / 60.0
+                        if age_mins > 8.0:
+                            is_nifty_data_fresh = False
+                    except Exception:
+                        pass
             except Exception as e:
                 print(f"Warning: Could not read Nifty F&O scanner data: {e}")
                 equity_stocks = []
@@ -4606,6 +4618,9 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 
                 if live_eq_p and live_eq_p > 0:
                     cur_p = live_eq_p
+                elif not is_nifty_data_fresh:
+                    print(f"🛡️ Stale Data Guard: Blocked {clean_sym} trigger. Scanner data is {age_mins:.1f} mins old and real-time quote unavailable. Trade refused.")
+                    continue
                 if cur_p <= 0:
                     continue
 
