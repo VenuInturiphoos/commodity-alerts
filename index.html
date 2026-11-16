@@ -773,9 +773,21 @@
                             <div class="circuit-kpi-sub" id="kpi-adv-correct-sub">-- Won / -- Lost</div>
                         </div>
 
+                        <!-- 🌟 TODAY'S RETURNS CARD 🌟 -->
+                        <div class="circuit-kpi-card" id="card-adv-today-returns" style="border: 1px solid rgba(56, 189, 248, 0.4); background: linear-gradient(145deg, rgba(14, 165, 233, 0.12), rgba(15, 23, 42, 0.75));">
+                            <div class="circuit-kpi-header">
+                                <span id="kpi-adv-today-title" style="color: #38bdf8; font-weight: 700;"><i class="fa-regular fa-calendar-check" style="margin-right: 4px;"></i> Today's Returns</span>
+                                <div class="circuit-kpi-icon" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">
+                                    <i class="fa-solid fa-calendar-day"></i>
+                                </div>
+                            </div>
+                            <div class="circuit-kpi-value" id="kpi-adv-today-pnl" style="color: #4ade80;">₹--</div>
+                            <div class="circuit-kpi-sub" id="kpi-adv-today-sub">-- trades today</div>
+                        </div>
+
                         <div class="circuit-kpi-card">
                             <div class="circuit-kpi-header">
-                                <span id="kpi-adv-pnl-title">Live Realized P&L</span>
+                                <span id="kpi-adv-pnl-title">Overall Realized P&L</span>
                                 <div class="circuit-kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
                                     <i class="fa-solid fa-sack-dollar"></i>
                                 </div>
@@ -933,6 +945,18 @@
                                     </div>
                                     <div class="circuit-kpi-value" id="stock-kpi-winrate" style="color: #4ade80;">--%</div>
                                     <div class="circuit-kpi-sub" id="stock-kpi-winrate-sub">-- Won / -- Lost</div>
+                                </div>
+
+                                <!-- 🌟 TODAY'S STOCK RETURNS CARD 🌟 -->
+                                <div class="circuit-kpi-card" style="border: 1px solid rgba(56, 189, 248, 0.4); background: linear-gradient(145deg, rgba(14, 165, 233, 0.12), rgba(15, 23, 42, 0.75));">
+                                    <div class="circuit-kpi-header">
+                                        <span id="stock-kpi-today-title" style="color: #38bdf8; font-weight: 700;"><i class="fa-regular fa-calendar-check" style="margin-right: 4px;"></i> Today's Returns</span>
+                                        <div class="circuit-kpi-icon" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">
+                                            <i class="fa-solid fa-calendar-day"></i>
+                                        </div>
+                                    </div>
+                                    <div class="circuit-kpi-value" id="stock-kpi-today-pl" style="color: #4ade80;">₹0.00</div>
+                                    <div class="circuit-kpi-sub" id="stock-kpi-today-sub">Day's investment return</div>
                                 </div>
 
                                 <div class="circuit-kpi-card">
@@ -4941,6 +4965,29 @@ function renderPortfolio() {
     const winRateSubEl = document.getElementById('stock-kpi-winrate-sub');
     if (winRateSubEl) winRateSubEl.textContent = `${tgtHits} Won / ${slHits} Lost (Target vs SL)`;
 
+    // 🌟 KPI Card 3: Today's Returns for Stock Investments
+    let todayStockRealizedPnl = 0;
+    if (activeStkData && activeStkData.investments) {
+        activeStkData.investments.forEach(inv => {
+            if (inv.status === 'CLOSED' || inv.status === 'TARGET_HIT') {
+                const isToday = (inv.date && inv.date.includes('16 Nov 2026')) || (inv.exit_time && inv.exit_time.includes('16 Nov 2026'));
+                if (isToday) {
+                    todayStockRealizedPnl += Number(inv.pnl_inr || 0);
+                }
+            }
+        });
+    }
+    const todayStockPlEl = document.getElementById('stock-kpi-today-pl');
+    const todayStockSubEl = document.getElementById('stock-kpi-today-sub');
+    if (todayStockPlEl) {
+        const sign = todayStockRealizedPnl >= 0 ? '+' : '-';
+        todayStockPlEl.textContent = `${sign}₹${Math.abs(todayStockRealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        todayStockPlEl.style.color = todayStockRealizedPnl >= 0 ? '#4ade80' : '#fb7185';
+    }
+    if (todayStockSubEl) {
+        todayStockSubEl.textContent = `Realized return on today's investment exits`;
+    }
+
     // KPI Card 4: Available Stock Cash Subtitle
     const cashSubEl = document.getElementById('stock-kpi-cash-sub');
     if (cashSubEl) {
@@ -7629,6 +7676,71 @@ function renderAdvisorySummaryCards() {
             pnlSubEl.innerHTML = `Realized: <strong style="color:${rColor};">${rSign}₹${Math.abs(realizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · Unrealized: <strong style="color:${uColor};">${uSign}₹${Math.abs(unrealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong>`;
         } else {
             pnlSubEl.textContent = 'Actual forward paper trading return';
+        }
+    }
+
+    // 🌟 Calculate Today's Returns specifically for today's trades (filtered by subtab)
+    const todayTrades = allDatasetTrades.filter(t => {
+        if (isIntradayActive && !isIntradayStockTrade(t)) return false;
+        if (!isIntradayActive && isIntradayStockTrade(t)) return false;
+        return isTodayISTTrade(t);
+    });
+
+    let todayRealizedPnl = 0;
+    let todayUnrealizedPnl = 0;
+    let todayActiveCount = 0;
+    let todayWonCount = 0;
+    let todayLostCount = 0;
+
+    todayTrades.forEach(t => {
+        const pt = t.paper_trade || {};
+        if (pt.status === 'CLOSED') {
+            const pnl = Number(pt.pnl_inr || 0);
+            todayRealizedPnl += pnl;
+            if (pnl > 0) todayWonCount++;
+            else if (pnl < 0) todayLostCount++;
+        } else if (pt.status === 'ACTIVE' && pt.entry_price && Number(pt.entry_price) > 0) {
+            todayActiveCount++;
+            const liveData = getAdvisoryTradeLivePriceData(t);
+            const curPrice = (liveData && liveData.current_price) 
+                ? Number(liveData.current_price) 
+                : (Number(t.live_price_data?.current_price) || Number(pt.entry_price));
+            if (curPrice && !isNaN(curPrice)) {
+                const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
+                const lot = pt.quantity || t.lot_size || 1;
+                todayUnrealizedPnl += pts * lot;
+            }
+        }
+    });
+
+    const todayTotalPnl = todayRealizedPnl + todayUnrealizedPnl;
+    const basePoolCap = isIntradayActive ? 30000 : 300000;
+    const todayReturnPct = ((todayTotalPnl / basePoolCap) * 100).toFixed(2);
+
+    const todayTitleEl = document.getElementById('kpi-adv-today-title');
+    const todayPnlEl = document.getElementById('kpi-adv-today-pnl');
+    const todaySubEl = document.getElementById('kpi-adv-today-sub');
+
+    if (todayTitleEl) {
+        const todayDateStr = todayTrades.length > 0 && todayTrades[0].date ? todayTrades[0].date : '';
+        const dateSuffix = todayDateStr ? ` (${todayDateStr.split(' ').slice(0, 2).join(' ')})` : '';
+        todayTitleEl.innerHTML = `<i class="fa-regular fa-calendar-check" style="margin-right: 4px;"></i> Today's Returns${dateSuffix}`;
+    }
+    if (todayPnlEl) {
+        const sign = todayTotalPnl >= 0 ? '+' : '-';
+        const pctSign = Number(todayReturnPct) >= 0 ? '+' : '';
+        todayPnlEl.textContent = `${sign}₹${Math.abs(todayTotalPnl).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (${pctSign}${todayReturnPct}%)`;
+        todayPnlEl.style.color = todayTotalPnl >= 0 ? '#4ade80' : '#fb7185';
+    }
+    if (todaySubEl) {
+        if (todayActiveCount > 0) {
+            const rSign = todayRealizedPnl >= 0 ? '+' : '-';
+            const uSign = todayUnrealizedPnl >= 0 ? '+' : '-';
+            const rColor = todayRealizedPnl >= 0 ? '#4ade80' : '#fb7185';
+            const uColor = todayUnrealizedPnl >= 0 ? '#4ade80' : '#fb7185';
+            todaySubEl.innerHTML = `Realized: <strong style="color:${rColor};">${rSign}₹${Math.abs(todayRealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · MTM: <strong style="color:${uColor};">${uSign}₹${Math.abs(todayUnrealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong>`;
+        } else {
+            todaySubEl.textContent = `${todayWonCount} Won · ${todayLostCount} Lost (${todayTrades.length} signals today)`;
         }
     }
     
