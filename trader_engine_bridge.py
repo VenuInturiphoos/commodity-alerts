@@ -126,11 +126,15 @@ class PreTradeRiskEngine:
             risk_note = f"High-conviction movement risk accepted: Potential loss ₹{loss_at_stop:,.2f} exceeds standard cap ₹{max_loss_per_trade_inr:,.2f}."
 
         # 7. Portfolio Daily Loss Circuit Breaker
-        # Halt only if TODAY'S ACTUAL REALIZED LOSSES already hit the daily limit
+        # Segregated by Asset Class so commodity risk caps don't falsely choke intraday stock trading and vice-versa
+        is_target_eq = (symbol.endswith('.NS') or symbol.endswith('.BO') or '-FUT' in symbol)
         today_losses = sum(
             abs(t.get('paper_trade', {}).get('pnl_inr', 0.0))
             for t in existing_trades
-            if t.get('date') == today_str and t.get('paper_trade', {}).get('pnl_inr', 0.0) < 0
+            if t.get('date') == today_str and t.get('paper_trade', {}).get('pnl_inr', 0.0) < 0 and (
+                (is_target_eq and (t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'] or '-FUT' in str(t.get('symbol', '')))) or
+                (not is_target_eq and t.get('asset_type') not in ['EQUITY', 'INTRADAY_STOCK'] and '-FUT' not in str(t.get('symbol', '')))
+            )
         )
         if today_losses >= max_daily_loss_inr:
             return {
@@ -382,9 +386,10 @@ class ORBTimer:
 
     @classmethod
     def check_orb_confirmation(cls, symbol, action, current_price, day_high, day_low,
-                               open_price=None, volume_ratio=None, last_bar_close=None, current_time=None):
+                               open_price=None, volume_ratio=None, last_bar_close=None, current_time=None,
+                               stock_chg_pct=None, benchmark_chg_pct=None):
         """
-        Validates breakout entry against opening range parameters.
+        Validates breakout entry against opening range parameters (trader-entry & trader-scanner standards).
         Returns:
             dict with 'passed', 'status', 'reason'
         """
@@ -406,28 +411,44 @@ class ORBTimer:
         action_upper = action.upper()
         bar_close = last_bar_close if last_bar_close is not None else current_price
 
+        # Relative Strength vs Market Benchmark (trader-scanner standard)
+        if stock_chg_pct is not None and benchmark_chg_pct is not None:
+            rs_diff = stock_chg_pct - benchmark_chg_pct
+            if action_upper == 'BUY' and rs_diff < -0.25:
+                return {
+                    "passed": False,
+                    "status": "RELATIVE_WEAKNESS_AVOIDED",
+                    "reason": f"Relative weakness vs Nifty 50: Stock ({stock_chg_pct:+.2f}%) is lagging benchmark ({benchmark_chg_pct:+.2f}%) by {rs_diff:.2f}%. Long entries require relative leadership."
+                }
+            elif action_upper == 'SELL' and rs_diff > 0.25:
+                return {
+                    "passed": False,
+                    "status": "RELATIVE_STRENGTH_SHORT_AVOIDED",
+                    "reason": f"Relative strength conflict: Stock ({stock_chg_pct:+.2f}%) is outperforming benchmark ({benchmark_chg_pct:+.2f}%) by +{rs_diff:.2f}%. Shorting relative strength leaders is forbidden."
+                }
+
         # Check Bullish Breakout
         if action_upper == 'BUY':
             # Did price pierce day_high but close back below it? (Wick fakeout / rejection)
-            if current_price >= day_high and bar_close < (day_high * 0.994):
+            if current_price >= day_high and bar_close < (day_high * 0.998):
                 return {
                     "passed": False,
                     "status": "WICK_TRAP_AVOIDED",
                     "reason": f"Wick trap rejected: price wicked to ₹{current_price:,.2f} (above Day High ₹{day_high:,.2f}) but bar closed inside range at ₹{bar_close:,.2f}."
                 }
-            # Low volume fakeout check
-            if volume_ratio is not None and volume_ratio < 0.30:
+            # Institutional Volume expansion check (trader-entry requires >= 1.0x average OR volume)
+            if volume_ratio is not None and volume_ratio < 1.0:
                 return {
                     "passed": False,
                     "status": "LOW_VOLUME_FAKE_AVOIDED",
-                    "reason": f"Low volume breakout: Volume ratio ({volume_ratio:.2f}x) is below 0.30x average OR volume threshold."
+                    "reason": f"Low volume breakout: Volume ratio ({volume_ratio:.2f}x) is below 1.0x institutional volume threshold."
                 }
             # Solid close above range
-            if bar_close >= day_high * 0.996:
+            if bar_close >= day_high * 0.999:
                 return {
                     "passed": True,
                     "status": "ORB_BREAKOUT_CONFIRMED",
-                    "reason": f"ORB BUY Confirmed: Solid bar close ₹{bar_close:,.2f} breaking above range high ₹{day_high:,.2f}."
+                    "reason": f"ORB BUY Confirmed: Solid bar close ₹{bar_close:,.2f} breaking above range high ₹{day_high:,.2f} with volume confirmation."
                 }
             else:
                 return {
@@ -438,26 +459,26 @@ class ORBTimer:
 
         # Check Bearish Breakdown
         elif action_upper == 'SELL':
-            # Did price pierce day_low but close back above it? (Liquidity sweep / bounce)
-            if current_price <= day_low and bar_close > (day_low * 1.006):
+            # Did price pierce day_low but close back below it? (Liquidity sweep / bounce)
+            if current_price <= day_low and bar_close > (day_low * 1.002):
                 return {
                     "passed": False,
                     "status": "WICK_TRAP_AVOIDED",
                     "reason": f"Liquidity sweep rejected: price wicked to ₹{current_price:,.2f} (below Day Low ₹{day_low:,.2f}) but bar closed inside range at ₹{bar_close:,.2f}."
                 }
-            # Low volume fakeout check
-            if volume_ratio is not None and volume_ratio < 0.30:
+            # Institutional Volume expansion check
+            if volume_ratio is not None and volume_ratio < 1.0:
                 return {
                     "passed": False,
                     "status": "LOW_VOLUME_FAKE_AVOIDED",
-                    "reason": f"Low volume breakdown: Volume ratio ({volume_ratio:.2f}x) is below 0.30x average OR volume threshold."
+                    "reason": f"Low volume breakdown: Volume ratio ({volume_ratio:.2f}x) is below 1.0x institutional volume threshold."
                 }
             # Solid close below range
-            if bar_close <= day_low * 1.004:
+            if bar_close <= day_low * 1.001:
                 return {
                     "passed": True,
                     "status": "ORB_BREAKDOWN_CONFIRMED",
-                    "reason": f"ORB SELL Confirmed: Solid bar close ₹{bar_close:,.2f} breaking below range low ₹{day_low:,.2f}."
+                    "reason": f"ORB SELL Confirmed: Solid bar close ₹{bar_close:,.2f} breaking below range low ₹{day_low:,.2f} with volume confirmation."
                 }
             else:
                 return {

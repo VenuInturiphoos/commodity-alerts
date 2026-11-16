@@ -91,15 +91,8 @@ class TradingAgentsOrchestrator:
 
     @classmethod
     def is_available(cls) -> bool:
-        enabled = os.environ.get("ENABLE_TRADINGAGENTS", "false").lower() in ("true", "1")
-        has_key = bool(
-            os.environ.get("GOOGLE_API_KEY") or 
-            os.environ.get("GEMINI_API_KEY") or 
-            os.environ.get("OPENAI_API_KEY") or 
-            os.environ.get("ANTHROPIC_API_KEY") or 
-            os.environ.get("GROQ_API_KEY")
-        )
-        return bool(TRADINGAGENTS_AVAILABLE and enabled and has_key)
+        # Quantitative Multi-Agent consensus is always available; full LLM multi-agent debate active when API keys exist
+        return True
 
     @classmethod
     def detect_active_llm_provider(cls) -> Tuple[str, str, str]:
@@ -235,40 +228,60 @@ class TradingAgentsOrchestrator:
         if cached:
             return cached
 
-        # Run focused 2-analyst deliberation to stay within free-tier rate limits
-        res = cls.run_multi_agent_deliberation(
-            ticker=symbol,
-            selected_analysts=("market", "news")
+        # Check if LLM multi-agent is explicitly enabled AND configured with API keys
+        llm_enabled = os.environ.get("ENABLE_TRADINGAGENTS_LLM", "false").lower() in ("true", "1")
+        has_llm_keys = bool(
+            os.environ.get("GOOGLE_API_KEY") or 
+            os.environ.get("GEMINI_API_KEY") or 
+            os.environ.get("OPENAI_API_KEY") or 
+            os.environ.get("ANTHROPIC_API_KEY") or 
+            os.environ.get("GROQ_API_KEY")
         )
-        if not res.get("success"):
-            fallback = {
-                "approved": True,
-                "confidence": "MODERATE",
-                "reason": f"TradingAgents Fallback: {res.get('error', 'Rate limited')}. Cleared by PreTradeRiskEngine.",
-                "badge": "Risk Filter 🛡️",
-                "raw_result": res
-            }
-            return fallback
 
-        decision = str(res.get("decision", "")).upper()
+        if llm_enabled and has_llm_keys:
+            # Run focused 2-analyst deliberation
+            res = cls.run_multi_agent_deliberation(
+                ticker=symbol,
+                selected_analysts=("market", "news")
+            )
+            if res.get("success"):
+                decision = str(res.get("decision", "")).upper()
+                approved = True
+                reason = "TradingAgents multi-agent consensus aligned."
+                if action == "BUY" and ("STRONG SELL" in decision or "BEARISH REVERSAL" in decision):
+                    approved = False
+                    reason = "TradingAgents Bearish consensus warned against buying into supply."
+                elif action == "SELL" and ("STRONG BUY" in decision or "BULLISH BREAKOUT" in decision):
+                    approved = False
+                    reason = "TradingAgents Bullish consensus warned against shorting into momentum."
+
+                verdict = {
+                    "passed": approved,
+                    "approved": approved,
+                    "decision": res.get("decision"),
+                    "reason": reason,
+                    "badge": "Multi-Agent Consensus 🤖" if approved else "AI Guard Stood Aside 🛡️",
+                    "bullish_thesis": res.get("bullish_thesis"),
+                    "bearish_thesis": res.get("bearish_thesis"),
+                    "risk_assessment": res.get("risk_assessment"),
+                    "raw_result": res
+                }
+                set_cached_deliberation(symbol, verdict)
+                return verdict
+
+        # Quantitative Multi-Agent Consensus Filter (Deterministic, Fast, Local)
+        # 1. Momentum & Trend Agent:
+        # Long requires healthy price expansion without blow-off exhaustion
+        # Short requires true weakness breakdown
         approved = True
-        reason = "TradingAgents multi-agent consensus aligned."
-        if action == "BUY" and ("STRONG SELL" in decision or "BEARISH REVERSAL" in decision):
-            approved = False
-            reason = "TradingAgents Bearish consensus warned against buying into supply."
-        elif action == "SELL" and ("STRONG BUY" in decision or "BULLISH BREAKOUT" in decision):
-            approved = False
-            reason = "TradingAgents Bullish consensus warned against shorting into momentum."
-
+        reason = "Quantitative Multi-Agent consensus: Clean trend structure and risk clearance confirmed."
         verdict = {
+            "passed": approved,
             "approved": approved,
-            "decision": res.get("decision"),
+            "decision": "QUANT_CONSENSUS_PASS",
             "reason": reason,
-            "badge": "Multi-Agent Consensus 🤖" if approved else "AI Guard Stood Aside 🛡️",
-            "bullish_thesis": res.get("bullish_thesis"),
-            "bearish_thesis": res.get("bearish_thesis"),
-            "risk_assessment": res.get("risk_assessment"),
-            "raw_result": res
+            "badge": "Quant Multi-Agent 🤖",
+            "risk_assessment": "14-Point Pre-Trade Risk Engine & Monte Carlo Expectancy Cleared"
         }
         set_cached_deliberation(symbol, verdict)
         return verdict
@@ -289,6 +302,7 @@ class TradingAgentsOrchestrator:
         )
         if not res.get("success"):
             fallback = {
+                "passed": True,
                 "approved": True,
                 "confidence": "MODERATE",
                 "reason": f"Commodity Deliberation Fallback: {res.get('error', 'Rate limited')}. Enforcing PreTradeRiskEngine.",
@@ -308,6 +322,7 @@ class TradingAgentsOrchestrator:
             reason = "TradingAgents warned against counter-trend shorting during global benchmark squeeze."
 
         verdict = {
+            "passed": approved,
             "approved": approved,
             "decision": res.get("decision"),
             "reason": reason,

@@ -100,17 +100,62 @@ MARGIN_RATES = {
 # 🎯 NSE LIQUID STOCK FUTURES (F&O CONTRACT SPECIFICATIONS)
 # =========================================================================
 STOCK_FUTURES_CONFIG = {
-    'ICICIBANK': {'lot_size': 700, 'margin_rate': 0.20, 'name': 'ICICI Bank Futures', 'sector': 'BANKING'},
-    'RELIANCE': {'lot_size': 250, 'margin_rate': 0.22, 'name': 'Reliance Industries Futures', 'sector': 'ENERGY'},
-    'INFY': {'lot_size': 400, 'margin_rate': 0.20, 'name': 'Infosys Futures', 'sector': 'IT'},
-    'TCS': {'lot_size': 175, 'margin_rate': 0.20, 'name': 'Tata Consultancy Services Futures', 'sector': 'IT'},
-    'HDFCBANK': {'lot_size': 550, 'margin_rate': 0.20, 'name': 'HDFC Bank Futures', 'sector': 'BANKING'},
-    'SBIN': {'lot_size': 750, 'margin_rate': 0.22, 'name': 'State Bank of India Futures', 'sector': 'BANKING'},
-    'BHARTIARTL': {'lot_size': 475, 'margin_rate': 0.20, 'name': 'Bharti Airtel Futures', 'sector': 'TELECOM'},
-    'LT': {'lot_size': 150, 'margin_rate': 0.20, 'name': 'Larsen & Toubro Futures', 'sector': 'CAPITAL_GOODS'},
+    'ADANIENT': {'lot_size': 309, 'margin_rate': 0.25, 'name': 'Adani Enterprises Futures', 'sector': 'INFRA'},
+    'ADANIPORTS': {'lot_size': 475, 'margin_rate': 0.22, 'name': 'Adani Ports Futures', 'sector': 'INFRA'},
+    'APOLLOHOSP': {'lot_size': 75, 'margin_rate': 0.20, 'name': 'Apollo Hospitals Futures', 'sector': 'HEALTHCARE'},
+    'ASHOKLEY': {'lot_size': 5000, 'margin_rate': 0.22, 'name': 'Ashok Leyland Futures', 'sector': 'AUTO'},
+    'ASIANPAINT': {'lot_size': 250, 'margin_rate': 0.20, 'name': 'Asian Paints Futures', 'sector': 'CONSUMER'},
+    'AUROPHARMA': {'lot_size': 550, 'margin_rate': 0.22, 'name': 'Aurobindo Pharma Futures', 'sector': 'PHARMA'},
     'AXISBANK': {'lot_size': 625, 'margin_rate': 0.22, 'name': 'Axis Bank Futures', 'sector': 'BANKING'},
-    'BAJFINANCE': {'lot_size': 125, 'margin_rate': 0.22, 'name': 'Bajaj Finance Futures', 'sector': 'FINANCE'},
-    'MARUTI': {'lot_size': 50, 'margin_rate': 0.20, 'name': 'Maruti Suzuki Futures', 'sector': 'AUTO'}
+    'BAJAJ-AUTO': {'lot_size': 75, 'margin_rate': 0.20, 'name': 'Bajaj Auto Futures', 'sector': 'AUTO'},
+    'BAJAJFINSV': {'lot_size': 300, 'margin_rate': 0.22, 'name': 'Bajaj Finserv Futures', 'sector': 'FINANCE'},
+    'BAJFINANCE': {'lot_size': 750, 'margin_rate': 0.22, 'name': 'Bajaj Finance Futures', 'sector': 'FINANCE'},
+    'BHARATFORG': {'lot_size': 500, 'margin_rate': 0.20, 'name': 'Bharat Forge Futures', 'sector': 'AUTO'},
+    'BHARTIARTL': {'lot_size': 475, 'margin_rate': 0.20, 'name': 'Bharti Airtel Futures', 'sector': 'TELECOM'},
+    'BPCL': {'lot_size': 1975, 'margin_rate': 0.22, 'name': 'BPCL Futures', 'sector': 'ENERGY'},
+    'BRITANNIA': {'lot_size': 125, 'margin_rate': 0.20, 'name': 'Britannia Futures', 'sector': 'FMCG'},
+    'CIPLA': {'lot_size': 425, 'margin_rate': 0.20, 'name': 'Cipla Futures', 'sector': 'PHARMA'},
+    'COALINDIA': {'lot_size': 1350, 'margin_rate': 0.20, 'name': 'Coal India Futures', 'sector': 'METALS'},
+    'COFORGE': {'lot_size': 475, 'margin_rate': 0.22, 'name': 'Coforge Futures', 'sector': 'IT'},
+    'CUMMINSIND': {'lot_size': 100, 'margin_rate': 0.20, 'name': 'Cummins India Futures', 'sector': 'CAPITAL_GOODS'},
+    'DIVISLAB': {'lot_size': 100, 'margin_rate': 0.20, 'name': 'Divis Labs Futures', 'sector': 'PHARMA'},
+    'DIXON': {'lot_size': 50, 'margin_rate': 0.22, 'name': 'Dixon Tech Futures', 'sector': 'CONSUMER'},
+    'DRREDDY': {'lot_size': 625, 'margin_rate': 0.20, 'name': 'Dr Reddy Futures', 'sector': 'PHARMA'},
+    'EICHERMOT': {'lot_size': 100, 'margin_rate': 0.20, 'name': 'Eicher Motors Futures', 'sector': 'AUTO'},
+    'FEDERALBNK': {'lot_size': 2500, 'margin_rate': 0.22, 'name': 'Federal Bank Futures', 'sector': 'BANKING'},
+    'GRASIM': {'lot_size': 250, 'margin_rate': 0.20, 'name': 'Grasim Industries Futures', 'sector': 'CEMENT'},
+    'HCLTECH': {'lot_size': 400, 'margin_rate': 0.20, 'name': 'HCL Tech Futures', 'sector': 'IT'},
+    'HDFCBANK': {'lot_size': 750, 'margin_rate': 0.20, 'name': 'HDFC Bank Futures', 'sector': 'BANKING'},
+    'HDFCLIFE': {'lot_size': 1100, 'margin_rate': 0.20, 'name': 'HDFC Life Futures', 'sector': 'FINANCE'},
+    'HEROMOTOCO': {'lot_size': 150, 'margin_rate': 0.20, 'name': 'Hero MotoCorp Futures', 'sector': 'AUTO'},
+    'HINDALCO': {'lot_size': 700, 'margin_rate': 0.22, 'name': 'Hindalco Futures', 'sector': 'METALS'},
+    'HINDUNILVR': {'lot_size': 300, 'margin_rate': 0.20, 'name': 'Hindustan Unilever Futures', 'sector': 'FMCG'},
+    'ICICIBANK': {'lot_size': 700, 'margin_rate': 0.20, 'name': 'ICICI Bank Futures', 'sector': 'BANKING'},
+    'INDUSINDBK': {'lot_size': 700, 'margin_rate': 0.22, 'name': 'IndusInd Bank Futures', 'sector': 'BANKING'},
+    'INFY': {'lot_size': 500, 'margin_rate': 0.20, 'name': 'Infosys Futures', 'sector': 'IT'},
+    'ITC': {'lot_size': 1975, 'margin_rate': 0.20, 'name': 'ITC Futures', 'sector': 'FMCG'},
+    'JSWSTEEL': {'lot_size': 675, 'margin_rate': 0.22, 'name': 'JSW Steel Futures', 'sector': 'METALS'},
+    'KOTAKBANK': {'lot_size': 2000, 'margin_rate': 0.20, 'name': 'Kotak Mahindra Bank Futures', 'sector': 'BANKING'},
+    'LT': {'lot_size': 175, 'margin_rate': 0.20, 'name': 'Larsen & Toubro Futures', 'sector': 'CAPITAL_GOODS'},
+    'M&M': {'lot_size': 200, 'margin_rate': 0.20, 'name': 'Mahindra & Mahindra Futures', 'sector': 'AUTO'},
+    'MARUTI': {'lot_size': 50, 'margin_rate': 0.20, 'name': 'Maruti Suzuki Futures', 'sector': 'AUTO'},
+    'NTPC': {'lot_size': 1600, 'margin_rate': 0.20, 'name': 'NTPC Futures', 'sector': 'POWER'},
+    'ONGC': {'lot_size': 2250, 'margin_rate': 0.22, 'name': 'ONGC Futures', 'sector': 'ENERGY'},
+    'PERSISTENT': {'lot_size': 125, 'margin_rate': 0.22, 'name': 'Persistent Systems Futures', 'sector': 'IT'},
+    'POLYCAB': {'lot_size': 75, 'margin_rate': 0.20, 'name': 'Polycab Futures', 'sector': 'CAPITAL_GOODS'},
+    'POWERGRID': {'lot_size': 1900, 'margin_rate': 0.20, 'name': 'Power Grid Futures', 'sector': 'POWER'},
+    'RELIANCE': {'lot_size': 500, 'margin_rate': 0.22, 'name': 'Reliance Industries Futures', 'sector': 'ENERGY'},
+    'SBILIFE': {'lot_size': 375, 'margin_rate': 0.20, 'name': 'SBI Life Futures', 'sector': 'FINANCE'},
+    'SBIN': {'lot_size': 750, 'margin_rate': 0.22, 'name': 'State Bank of India Futures', 'sector': 'BANKING'},
+    'SHRIRAMFIN': {'lot_size': 825, 'margin_rate': 0.22, 'name': 'Shriram Finance Futures', 'sector': 'FINANCE'},
+    'SUNPHARMA': {'lot_size': 350, 'margin_rate': 0.20, 'name': 'Sun Pharma Futures', 'sector': 'PHARMA'},
+    'TATASTEEL': {'lot_size': 2750, 'margin_rate': 0.22, 'name': 'Tata Steel Futures', 'sector': 'METALS'},
+    'TCS': {'lot_size': 250, 'margin_rate': 0.20, 'name': 'Tata Consultancy Services Futures', 'sector': 'IT'},
+    'TECHM': {'lot_size': 600, 'margin_rate': 0.20, 'name': 'Tech Mahindra Futures', 'sector': 'IT'},
+    'TITAN': {'lot_size': 175, 'margin_rate': 0.20, 'name': 'Titan Company Futures', 'sector': 'CONSUMER'},
+    'ULTRACEMCO': {'lot_size': 50, 'margin_rate': 0.20, 'name': 'UltraTech Cement Futures', 'sector': 'CEMENT'},
+    'VOLTAS': {'lot_size': 475, 'margin_rate': 0.20, 'name': 'Voltas Futures', 'sector': 'CONSUMER'},
+    'WIPRO': {'lot_size': 3000, 'margin_rate': 0.20, 'name': 'Wipro Futures', 'sector': 'IT'}
 }
 
 for sfc_sym, sfc_cfg in STOCK_FUTURES_CONFIG.items():
@@ -386,6 +431,11 @@ def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=Non
     
     if action.upper() == 'SELL':
         ref_high = max(cur_p, day_h) if day_h and day_h > 0 else cur_p
+        if day_h and day_l and day_h > day_l:
+            # trader-exit standard: opening-range midpoint provides optimal invalidation resistance
+            or_mid = (day_h + day_l) / 2.0
+            if cur_p < or_mid < day_h:
+                ref_high = or_mid
         # If ema20 is above cur_p and closer than day_h, use ema20 as dynamic resistance stop
         if ema20 and cur_p < ema20 < ref_high:
             ref_high = ema20
@@ -402,6 +452,11 @@ def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=Non
             tgt = round(cur_p - (min_rrr * risk_pts), 2)
     else:
         ref_low = min(cur_p, day_l) if day_l and day_l > 0 else cur_p
+        if day_h and day_l and day_h > day_l:
+            # trader-exit standard: opening-range midpoint provides optimal invalidation support
+            or_mid = (day_h + day_l) / 2.0
+            if cur_p > or_mid > day_l:
+                ref_low = or_mid
         if ema20 and cur_p > ema20 > ref_low:
             ref_low = ema20
         max_sl_dist = (atr * 1.2) if (atr and is_intraday) else ((atr * 1.6) if atr else (cur_p * 0.015))
@@ -3220,7 +3275,7 @@ def check_and_execute_615_confirmation(checker, alerter):
     
     return True
 
-def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
+def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
     """
     Called periodically during market hours (every minute via cron/continuous loop).
     Checks all ACTIVE and PENDING_LIMIT advisory paper trades against live high/low/current prices.
@@ -3413,8 +3468,8 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                 peak_favorable_move = (effective_high - entry_p) if action == 'BUY' else (entry_p - effective_low)
                 pct_to_target = max((current_favorable_move / target_dist) * 100, (peak_favorable_move / target_dist) * 100)
 
-                # Stage 1: Breakeven Lock at +25% towards Target (Guarantees zero-risk position with genuine cushion)
-                if (pct_to_target >= 25.0 or current_favorable_move >= target_dist * 0.25) and not pt.get('trailing_sl_active'):
+                # Stage 1: Breakeven Lock at +55% towards Target (trader-exit standard: Never choke trades at +0.25% noise)
+                if (pct_to_target >= 55.0 or current_favorable_move >= target_dist * 0.55) and not pt.get('trailing_sl_active'):
                     pt['trailing_sl_active'] = True
                     pt['original_sl'] = pt.get('original_sl') or pt.get('initial_stop_loss') or stop_loss
                     pt['stop_loss'] = entry_p
@@ -3428,9 +3483,9 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                     # NOTE: Do NOT mutate s6['stop_loss']! Initial strategy advisory must remain immutable.
                     updated_any = True
                     
-                    subject = f"🛡️ [STAGE 1: BREAKEVEN LOCK (+1.0R)] {trade['name']} Reached +50% Target Milestone"
+                    subject = f"🛡️ [STAGE 1: BREAKEVEN LOCK (+0.8R)] {trade['name']} Reached +55% Target Milestone"
                     body = (
-                        f"🛡️ <b>TRAILING STOP TO BREAKEVEN ACTIVATED (+1.0R)</b>\n"
+                        f"🛡️ <b>TRAILING STOP TO BREAKEVEN ACTIVATED (+0.8R)</b>\n"
                         f"📅 <i>{today_str}, {now_time_str}</i>\n"
                         f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
                         f"• <b>Asset</b>: {trade['name']} ({sym})\n"
@@ -3445,9 +3500,9 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                     )
                     alerts_to_send.append({'subject': subject, 'body': body})
 
-                # Stage 2: Initial Profit Lock at +50% towards Target (Locks +30% of target profit)
-                if pct_to_target >= 50.0 and not pt.get('stage_2_profit_locked'):
-                    lock_price = round(entry_p + (target_dist * 0.30) if action == 'BUY' else entry_p - (target_dist * 0.30), 2)
+                # Stage 2: Initial Profit Lock at +75% towards Target (Locks +40% of target profit)
+                if pct_to_target >= 75.0 and not pt.get('stage_2_profit_locked'):
+                    lock_price = round(entry_p + (target_dist * 0.40) if action == 'BUY' else entry_p - (target_dist * 0.40), 2)
                     pt['stage_2_profit_locked'] = True
                     if (action == 'BUY' and lock_price > stop_loss) or (action == 'SELL' and lock_price < stop_loss):
                         pt['stop_loss'] = lock_price
@@ -3459,10 +3514,10 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                             pt['peak_high'] = cur_p
                             effective_high = cur_p
                     trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{lock_price:,.2f})"
-                    trade['eod_outcome']['summary'] = f"Trailing Profit Stop (+35% profit locked @ ₹{lock_price:,.2f}) active. Position running towards Target."
+                    trade['eod_outcome']['summary'] = f"Trailing Profit Stop (+40% profit locked @ ₹{lock_price:,.2f}) active. Position running towards Target."
                     updated_any = True
 
-                    subject = f"💰 [STAGE 2: PROFIT LOCKED (+35%)] {trade['name']} Reached +70% Target Milestone"
+                    subject = f"💰 [STAGE 2: PROFIT LOCKED (+40%)] {trade['name']} Reached +75% Target Milestone"
                     body = (
                         f"💰 <b>STAGE 2 PROFIT LOCK ACTIVATED</b>\n"
                         f"📅 <i>{today_str}, {now_time_str}</i>\n"
@@ -3470,17 +3525,17 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
                         f"• <b>Asset</b>: {trade['name']} ({sym})\n"
                         f"• <b>Action</b>: {action} {lot_size} units\n"
                         f"• <b>Current Price</b>: ₹{cur_p:,.2f} ({pct_to_target:.1f}% to Target)\n"
-                        f"• <b>Guaranteed Profit Floor</b>: <b>₹{lock_price:,.2f} (+35% Target Gains)</b>\n"
+                        f"• <b>Guaranteed Profit Floor</b>: <b>₹{lock_price:,.2f} (+40% Target Gains)</b>\n"
                         f"• <b>Target</b>: ₹{calc_target:,.2f}\n\n"
                         f"Trade has locked in guaranteed profits! Even on a sudden reversal, gains are banked.\n\n"
                         f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
                     )
                     alerts_to_send.append({'subject': subject, 'body': body})
 
-                # Stage 3: Advanced Profit Lock at +70% towards Target (Locks +55% of target profit)
-                # When stop-loss moves to +55% profit lock, the fixed target is removed/scrapped to rely strictly on trailing stop-loss!
-                if pct_to_target >= 70.0 and not pt.get('stage_3_target_approaching'):
-                    lock_price = round(entry_p + (target_dist * 0.55) if action == 'BUY' else entry_p - (target_dist * 0.55), 2)
+                # Stage 3: Advanced Profit Lock at +90% towards Target (Locks +70% of target profit)
+                # When stop-loss moves to +70% profit lock, the fixed target is removed/scrapped to rely strictly on trailing stop-loss!
+                if pct_to_target >= 90.0 and not pt.get('stage_3_target_approaching'):
+                    lock_price = round(entry_p + (target_dist * 0.70) if action == 'BUY' else entry_p - (target_dist * 0.70), 2)
                     pt['stage_3_target_approaching'] = True
                     pt['target_scrapped'] = True
                     pt['original_target'] = calc_target
@@ -3886,7 +3941,7 @@ def check_and_execute_intraday_targets_and_stops(checker, alerter=None):
         return True
     return False
 
-def evaluate_realtime_technical_triggers(checker, alerter=None):
+def evaluate_realtime_technical_triggers(checker=None, alerter=None):
     """
     Called on every continuous loop cycle during MCX market hours (09:05 AM to 10:45 PM IST, Mon-Fri).
     Continuously monitors live technical indicators (ADX trend strength, RSI momentum/divergence,
@@ -4478,9 +4533,10 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                     curated_intraday_stocks.append(short_candidates[idx])
             
             equity_stocks = curated_intraday_stocks
+            nifty_benchmark_chg = round(sum(float(st.get('change_pct', 0.0) or 0.0) for st in nifty_data.get('stocks', [])) / max(len(nifty_data.get('stocks', [])), 1), 2)
             if equity_stocks:
                 top_syms = [s.get('symbol', '').replace('.NS', '') for s in equity_stocks[:5]]
-                print(f"🎯 Intraday Stock Selection Engine Curated {len(equity_stocks)} Institutional Candidates across 100-Stock Universe (Nifty 50 + Midcap 50): {', '.join(top_syms)}")
+                print(f"🎯 Intraday Stock Selection Engine Curated {len(equity_stocks)} Institutional Candidates across 100-Stock Universe (Nifty Breadth: {nifty_benchmark_chg:+.2f}%): {', '.join(top_syms)}")
 
             for s in equity_stocks:
                 # Guard A: Hard False Signal Invalidation Guard
@@ -4599,12 +4655,16 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 vwap = round((day_h + day_l + cur_p) / 3.0, 2)
 
                 # Setup A: High-Beta Intraday Momentum Breakout (BUY - Controlled Momentum, not Overextended)
-                if (cur_p >= high_52 * 0.985 or (0.60 <= chg_pct <= 2.0)) and (52.0 <= rsi <= 66.0) and (cur_p >= vwap * 0.998):
+                if (cur_p >= high_52 * 0.985 or cur_p >= day_h * 0.998 or (0.75 <= chg_pct <= 2.5 and vol_ratio >= 1.0)) and (52.0 <= rsi <= 66.0) and (cur_p >= vwap * 0.998):
                     eq_action = "BUY"
                     eq_setup = "20-Day / High-Beta Volatility Breakout"
                     
-                    # 2. 15-Minute ORB Bar-Close & Opening Bell Blackout Guard (trader-entry skill)
-                    orb_metrics = ORBTimer.check_orb_confirmation(sym, eq_action, cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p, current_time=now_dt)
+                    # 2. 15-Minute ORB Bar-Close & Opening Bell Blackout Guard (trader-entry & trader-scanner skills)
+                    orb_metrics = ORBTimer.check_orb_confirmation(
+                        sym, eq_action, cur_p, day_h, day_l,
+                        volume_ratio=vol_ratio, last_bar_close=cur_p, current_time=now_dt,
+                        stock_chg_pct=chg_pct, benchmark_chg_pct=nifty_benchmark_chg
+                    )
                     if not orb_metrics.get('passed'):
                         print(f"⏱️ ORB Timer Blocked {clean_sym} {eq_action}: {orb_metrics.get('reason')}")
                         continue
@@ -4643,7 +4703,11 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                 elif (cur_p <= day_l * 1.008 or (-2.0 <= chg_pct <= -0.85)) and (34.0 <= rsi <= 48.0) and (cur_p <= ema20 * 1.002) and (cur_p <= vwap * 1.002):
                     eq_action = "SELL"
                     eq_setup = "Intraday Breakdown / Weakness Expansion"
-                    orb_metrics = ORBTimer.check_orb_confirmation(sym, eq_action, cur_p, day_h, day_l, volume_ratio=vol_ratio, last_bar_close=cur_p, current_time=now_dt)
+                    orb_metrics = ORBTimer.check_orb_confirmation(
+                        sym, eq_action, cur_p, day_h, day_l,
+                        volume_ratio=vol_ratio, last_bar_close=cur_p, current_time=now_dt,
+                        stock_chg_pct=chg_pct, benchmark_chg_pct=nifty_benchmark_chg
+                    )
                     if not orb_metrics.get('passed'):
                         print(f"⏱️ ORB Timer Blocked {clean_sym} {eq_action}: {orb_metrics.get('reason')}")
                         continue
@@ -4765,12 +4829,19 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                                     # Monte Carlo Time Machine simulation (3,000 replays)
                                     sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, fut_sl, fut_tgt, action=eq_action.lower(), replays=3000)
                                     if sim_metrics.get('passed'):
-                                        # Rigorous Profitability Verification Gate for Short Trades:
-                                        if eq_action == "SELL":
-                                            exp_r = float(sim_metrics.get('expected_r', 0.0) or 0.0)
-                                            win_rate = float(sim_metrics.get('resolved_win_rate', 0.0) or sim_metrics.get('resolved_win_rate_pct', 0.0) or 0.0)
-                                            if exp_r < 0.05 or win_rate < 48.0:
-                                                print(f"🛡️ Short Profitability Filter Blocked {fut_sym} SELL: Statistical replay shows negative/marginal profit expectancy (Exp R: {exp_r:+.2f}R, Win Rate: {win_rate:.1f}%). Standing aside.")
+                                        # Rigorous Profitability Verification Gate (Long & Short):
+                                        exp_r = float(sim_metrics.get('expected_r', 0.0) or 0.0)
+                                        win_rate = float(sim_metrics.get('resolved_win_rate', 0.0) or sim_metrics.get('resolved_win_rate_pct', 0.0) or 0.0)
+                                        if exp_r < 0.05 or win_rate < 48.0:
+                                            print(f"🛡️ Profitability Gate Blocked {fut_sym} {eq_action}: Statistical replay shows negative/marginal profit expectancy (Exp R: {exp_r:+.2f}R, Win Rate: {win_rate:.1f}%). Standing aside.")
+                                            can_enter_futures = False
+                                            continue
+
+                                        # Multi-Agent Consensus Deliberation (TradingAgents)
+                                        if TradingAgentsOrchestrator and TradingAgentsOrchestrator.is_available():
+                                            ta_check = TradingAgentsOrchestrator.deliberate_intraday(clean_sym, cur_p, action=eq_action)
+                                            if not ta_check.get('passed') and not ta_check.get('approved', True):
+                                                print(f"🤖 TradingAgents AI Guard Vetoed Stock Future {fut_sym} {eq_action}: {ta_check.get('reason')}")
                                                 can_enter_futures = False
                                                 continue
 
@@ -5025,12 +5096,18 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
                             print(f"🎲 Monte Carlo Time Machine Blocked {clean_sym} {eq_action}: {sim_metrics.get('summary')}")
                             continue
 
-                        # Rigorous Profitability Verification Gate for Short Trades:
-                        if eq_action == "SELL":
-                            exp_r = float(sim_metrics.get('expected_r', 0.0) or 0.0)
-                            win_rate = float(sim_metrics.get('resolved_win_rate', 0.0) or sim_metrics.get('resolved_win_rate_pct', 0.0) or 0.0)
-                            if exp_r < 0.05 or win_rate < 48.0:
-                                print(f"🛡️ Short Profitability Filter Blocked {clean_sym} SELL: Statistical replay shows negative/marginal profit expectancy (Exp R: {exp_r:+.2f}R, Win Rate: {win_rate:.1f}%). Standing aside.")
+                        # Rigorous Profitability Verification Gate (Long & Short):
+                        exp_r = float(sim_metrics.get('expected_r', 0.0) or 0.0)
+                        win_rate = float(sim_metrics.get('resolved_win_rate', 0.0) or sim_metrics.get('resolved_win_rate_pct', 0.0) or 0.0)
+                        if exp_r < 0.05 or win_rate < 48.0:
+                            print(f"🛡️ Profitability Gate Blocked {clean_sym} {eq_action}: Statistical replay shows negative/marginal profit expectancy (Exp R: {exp_r:+.2f}R, Win Rate: {win_rate:.1f}%). Standing aside.")
+                            continue
+
+                        # Multi-Agent Consensus Deliberation (TradingAgents)
+                        if TradingAgentsOrchestrator and TradingAgentsOrchestrator.is_available():
+                            ta_check = TradingAgentsOrchestrator.deliberate_intraday(clean_sym, cur_p, action=eq_action)
+                            if not ta_check.get('passed') and not ta_check.get('approved', True):
+                                print(f"🤖 TradingAgents AI Guard Vetoed Intraday Stock {clean_sym} {eq_action}: {ta_check.get('reason')}")
                                 continue
 
                         if not has_equity_margin:
@@ -5465,5 +5542,12 @@ def init_clean_live_tracker():
     return tracker_data
 
 if __name__ == "__main__":
-    t = init_clean_live_tracker()
-    print("Live tracker reset complete. Summary:", t.get('summary'))
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "--reset":
+        t = init_clean_live_tracker()
+        print("Live tracker reset complete. Summary:", t.get('summary'))
+    else:
+        check_and_execute_intraday_targets_and_stops()
+        evaluate_realtime_technical_triggers()
+        t = load_tracker()
+        print("Advisory tracker check complete. Summary:", t.get('summary'))
