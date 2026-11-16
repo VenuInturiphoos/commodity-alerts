@@ -1294,13 +1294,11 @@
                         <!-- Quick Commodity Prompt Chips -->
                         <div class="copilot-pills-bar">
                             <span style="font-size: 0.8rem; color: var(--text-secondary); margin-right: 4px;">Quick Ask:</span>
-                            <button class="copilot-chip" onclick="quickPromptCopilot('Aluminium')">🏢 Aluminium</button>
                             <button class="copilot-chip" onclick="quickPromptCopilot('Crude Oil')">🛢️ Crude Oil</button>
                             <button class="copilot-chip" onclick="quickPromptCopilot('Natural Gas')">⚡ Natural Gas</button>
                             <button class="copilot-chip" onclick="quickPromptCopilot('Gold')">🥇 Gold</button>
                             <button class="copilot-chip" onclick="quickPromptCopilot('Silver')">🥈 Silver</button>
                             <button class="copilot-chip" onclick="quickPromptCopilot('Copper')">🪙 Copper</button>
-                            <button class="copilot-chip" onclick="quickPromptCopilot('Zinc')">🔩 Zinc</button>
                             <button class="copilot-chip" onclick="quickPromptCopilot('Scan All')" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2)); border-color: rgba(168, 85, 247, 0.45); color: #c084fc;">🎯 Scan All Commodities</button>
                         </div>
                     </div>
@@ -1336,10 +1334,9 @@
                                         <strong style="color: var(--text-primary); font-size: 1.05rem;">Welcome to the Commodity Trade Copilot!</strong>
                                     </div>
                                     <p style="font-size: 0.92rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 12px;">
-                                        Type any commodity name (e.g. <em>"Aluminium"</em>, <em>"Crude Oil"</em>, <em>"Gold"</em>, <em>"Natural Gas"</em>, <em>"Copper"</em>, <em>"Zinc"</em>, or <em>"Silver"</em>) or click any chip above. I will immediately analyze the latest live MCX prices, Central Pivot Range (CPR), opening gap, and circuit limits to deliver an actionable <strong>BUY</strong>, <strong>SELL</strong>, or <strong>STAND ASIDE</strong> decision with exact Entry, Target, and Stop-Loss.
+                                        Type any commodity name (e.g. <em>"Crude Oil"</em>, <em>"Gold"</em>, <em>"Natural Gas"</em>, <em>"Copper"</em>, or <em>"Silver"</em>) or click any chip above. I will immediately analyze the latest live MCX prices, Central Pivot Range (CPR), opening gap, and circuit limits to deliver an actionable <strong>BUY</strong>, <strong>SELL</strong>, or <strong>STAND ASIDE</strong> decision with exact Entry, Target, and Stop-Loss.
                                     </p>
                                     <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                                        <button class="copilot-chip" style="padding: 5px 12px; font-size: 0.78rem;" onclick="quickPromptCopilot('Aluminium')">Analyze Aluminium 🏢</button>
                                         <button class="copilot-chip" style="padding: 5px 12px; font-size: 0.78rem;" onclick="quickPromptCopilot('Crude Oil')">Analyze Crude Oil 🛢️</button>
                                         <button class="copilot-chip" style="padding: 5px 12px; font-size: 0.78rem;" onclick="quickPromptCopilot('Natural Gas')">Analyze Natural Gas ⚡</button>
                                         <button class="copilot-chip" style="padding: 5px 12px; font-size: 0.78rem;" onclick="quickPromptCopilot('Scan All')">Scan Full Market 🎯</button>
@@ -1351,7 +1348,7 @@
                         <!-- Input Bar -->
                         <div class="copilot-chat-input-bar">
                             <div class="copilot-input-wrapper">
-                                <input type="text" id="copilot-input" class="copilot-input-field" placeholder="Type a commodity name (e.g. 'Aluminium', 'Crude Oil', 'Natural Gas', 'Gold', 'Silver', 'Copper', 'Zinc')..." autocomplete="off" onkeypress="if(event.key === 'Enter') handleCopilotSend()">
+                                <input type="text" id="copilot-input" class="copilot-input-field" placeholder="Type a commodity name (e.g. 'Crude Oil', 'Natural Gas', 'Gold', 'Silver', 'Copper')..." autocomplete="off" onkeypress="if(event.key === 'Enter') handleCopilotSend()">
                             </div>
                             <button id="copilot-send-btn" class="copilot-send-btn" onclick="handleCopilotSend()" title="Send query">
                                 <i class="fa-solid fa-paper-plane"></i>
@@ -9254,13 +9251,11 @@ if (document.readyState === 'loading') {
 
             <!-- Quick Chips Bar in Floating Widget -->
             <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; gap: 6px; overflow-x: auto; white-space: nowrap;">
-                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Aluminium')">🏢 Alumini</button>
                 <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Crude Oil')">🛢️ Crude</button>
                 <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Natural Gas')">⚡ NatGas</button>
                 <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Gold')">🥇 Gold</button>
                 <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Silver')">🥈 Silver</button>
                 <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Copper')">🪙 Copper</button>
-                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Zinc')">🔩 Zinc</button>
                 <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(168, 85, 247, 0.2); color: #c084fc;" onclick="quickPromptCopilot('Scan All')">🎯 All</button>
             </div>
             
@@ -9268,13 +9263,13 @@ if (document.readyState === 'loading') {
             <div id="chat-messages" style="flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth;">
                 <div style="align-self: flex-start; background: rgba(30, 41, 59, 0.7); padding: 12px 14px; border-radius: 14px 14px 14px 2px; max-width: 95%; border: 1px solid rgba(255, 255, 255, 0.08);">
                     <p style="margin: 0 0 6px 0; color: #f8fafc; font-size: 0.88rem; font-weight: 700;">👋 Ask me about any MCX commodity!</p>
-                    <p style="margin: 0; color: #94a3b8; font-size: 0.8rem; line-height: 1.45;">Type <strong>Aluminium</strong>, <strong>Crude Oil</strong>, <strong>Natural Gas</strong>, <strong>Gold</strong>, <strong>Silver</strong>, <strong>Copper</strong>, or <strong>Zinc</strong> to get an immediate <strong>BUY / SELL / STAND ASIDE</strong> analysis with exact Entry, Target, Stop-Loss, and CPR pivot levels.</p>
+                    <p style="margin: 0; color: #94a3b8; font-size: 0.8rem; line-height: 1.45;">Type <strong>Crude Oil</strong>, <strong>Natural Gas</strong>, <strong>Gold</strong>, <strong>Silver</strong>, or <strong>Copper</strong> to get an immediate <strong>BUY / SELL / STAND ASIDE</strong> analysis with exact Entry, Target, Stop-Loss, and CPR pivot levels.</p>
                 </div>
             </div>
             
             <!-- Input -->
             <div style="padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; background: rgba(11, 15, 25, 0.9);">
-                <input type="text" id="chat-input" placeholder="Type commodity name (e.g. 'Aluminium', 'Crude Oil', 'Gold')..." style="flex: 1; padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: white; font-size: 0.88rem; outline: none;" onkeypress="if(event.key === 'Enter') handleChatInput()">
+                <input type="text" id="chat-input" placeholder="Type commodity name (e.g. 'Crude Oil', 'Gold')..." style="flex: 1; padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: white; font-size: 0.88rem; outline: none;" onkeypress="if(event.key === 'Enter') handleChatInput()">
                 <button onclick="handleChatInput()" style="background: linear-gradient(135deg, #6366f1, #a855f7); border: none; width: 38px; height: 38px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4); flex-shrink: 0;"><i class="fa-solid fa-paper-plane" style="font-size: 0.85rem;"></i></button>
             </div>
         </div>
@@ -9298,8 +9293,8 @@ if (document.readyState === 'loading') {
             'SILVERMIC': { name: 'Silver', lot: 5, unit: '1kg (5kg)', icon: '🥈', aliases: ['silvermic', 'silver micro'] },
             'ZINC': { name: 'Zinc', lot: 2500, unit: 'kg', icon: '🔩', aliases: ['zinc', 'zn', 'jasta', 'zincmini', 'zinc mini'] },
             'ZINCMINI': { name: 'Zinc', lot: 2500, unit: 'kg', icon: '🔩', aliases: ['zincmini', 'zinc mini'] },
-            'ALUMINIUM': { name: 'Aluminium', lot: 5000, unit: 'kg', icon: '🏢', aliases: ['aluminium', 'alluminium', 'aluminum', 'alluminum', 'al', 'alumini', 'allumini', 'alumin', 'aluminium mini', 'alluminium mini'] },
-            'ALUMINI': { name: 'Aluminium Mini', lot: 6000, unit: 'kg', icon: '🏢', aliases: ['alumini', 'allumini', 'aluminium mini', 'alluminium mini', 'alluminium', 'aluminium', 'aluminum'] }
+            'ALUMINIUM': { name: 'Aluminium', lot: 2500, unit: 'kg', icon: '🪨', aliases: ['aluminium', 'aluminum', 'al', 'alumini', 'aluminium mini'] },
+            'ALUMINI': { name: 'Aluminium', lot: 2500, unit: 'kg', icon: '🪨', aliases: ['alumini', 'aluminium mini'] }
         };
 
         function toggleChat() {
@@ -9505,20 +9500,18 @@ if (document.readyState === 'loading') {
                             Please enter a valid MCX commodity name. Quick select below:
                         </p>
                         <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                            <button class="copilot-chip" onclick="quickPromptCopilot('Aluminium')">🏢 Aluminium</button>
                             <button class="copilot-chip" onclick="quickPromptCopilot('Crude Oil')">🛢️ Crude Oil</button>
                             <button class="copilot-chip" onclick="quickPromptCopilot('Natural Gas')">⚡ Natural Gas</button>
                             <button class="copilot-chip" onclick="quickPromptCopilot('Gold')">🥇 Gold</button>
                             <button class="copilot-chip" onclick="quickPromptCopilot('Silver')">🥈 Silver</button>
                             <button class="copilot-chip" onclick="quickPromptCopilot('Copper')">🪙 Copper</button>
-                            <button class="copilot-chip" onclick="quickPromptCopilot('Zinc')">🔩 Zinc</button>
                             <button class="copilot-chip" onclick="quickPromptCopilot('Scan All')" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">🎯 Scan All</button>
                         </div>
                     </div>
                 `;
             }
 
-            const commData = commodities.find(c => c.symbol === matchedSymbol) || commodities.find(c => c.symbol.startsWith(matchedSymbol.substring(0, 5)));
+            const commData = commodities.find(c => c.symbol === matchedSymbol);
             if (!commData) {
                 return `<p style="color: #fb7185;">Could not retrieve live price feed for ${matchedSymbol}. Please refresh in a moment.</p>`;
             }
@@ -9873,7 +9866,7 @@ if (document.readyState === 'loading') {
                 <div style="margin-bottom: 14px;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
                         <strong style="font-size: 1.12rem; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
-                            <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> MCX Commodity Playbook Scan (${commodities.length} Assets)
+                            <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> MCX Commodity Playbook Scan (5 Assets)
                         </strong>
                         <span style="font-size: 0.74rem; color: #94a3b8;"><i class="fa-regular fa-clock" style="margin-right:3px;"></i>${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} IST</span>
                     </div>
