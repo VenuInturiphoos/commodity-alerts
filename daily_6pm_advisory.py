@@ -73,17 +73,19 @@ def generate_and_send_6pm_advisory(force=False):
     action_items = []
     has_active_setups = False
 
+    commodities_map = {c.get('symbol'): c for c in commodities_list if c.get('symbol')}
+    from advisory_tracker import resolve_defense_contract_and_quote
     for item in commodities_list:
-        sym = item['symbol']
-        name = item['name']
-        cur_p = item['current_price']
-        p_close = item['prev_close']
-        chg_pct = item['change_pct']
-        status = item['status']
-        dist_lc = item['dist_to_lc_pct']
-        dist_uc = item['dist_to_uc_pct']
-        lc_price = item['lower_circuit']
-        uc_price = item['upper_circuit']
+        raw_sym = item['symbol']
+        sym, name, lot_size, quote_item = resolve_defense_contract_and_quote(raw_sym, item, commodities_map)
+        cur_p = quote_item['current_price']
+        p_close = quote_item['prev_close']
+        chg_pct = quote_item['change_pct']
+        status = quote_item.get('status', item['status'])
+        dist_lc = quote_item.get('dist_to_lc_pct', item.get('dist_to_lc_pct', 99))
+        dist_uc = quote_item.get('dist_to_uc_pct', item.get('dist_to_uc_pct', 99))
+        lc_price = quote_item.get('lower_circuit', item.get('lower_circuit'))
+        uc_price = quote_item.get('upper_circuit', item.get('upper_circuit'))
 
         # Rule evaluation
         # Case 1: Pre-6 PM circuit test

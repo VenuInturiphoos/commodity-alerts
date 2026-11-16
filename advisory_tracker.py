@@ -2065,14 +2065,14 @@ def record_live_8pm_advisory(commodities_list, day_name):
         if crude:
             trade_id = f"ADV-{today_str.replace(' ', '')}-{time_tag}-CRUDEOIL"
             if trade_id not in existing_today_ids:
-                cur_p = crude['current_price']
-                p_close = crude['prev_close']
-                chg = crude.get('change_pct', crude.get('pct_change', 0.0))
-                lc = crude['lower_circuit']
-                uc = crude['upper_circuit']
-                day_h = float(crude.get('day_high', cur_p))
-                day_l = float(crude.get('day_low', cur_p))
-                c_sym, c_name, lot_size = get_defense_contract_and_lot('CRUDEOIL', 'Crude Oil Mini')
+                c_sym, c_name, lot_size, quote_item = resolve_defense_contract_and_quote(crude['symbol'], crude, commodities_map)
+                cur_p = quote_item['current_price']
+                p_close = quote_item['prev_close']
+                chg = quote_item.get('change_pct', quote_item.get('pct_change', 0.0))
+                lc = quote_item['lower_circuit']
+                uc = quote_item['upper_circuit']
+                day_h = float(quote_item.get('day_high', cur_p))
+                day_l = float(quote_item.get('day_low', cur_p))
 
                 # Fade overreaction if near circuit or spike > 1.5% with trend verification
                 if 'NEAR' in crude['status'] or 'HIT' in crude['status'] or abs(chg) >= 1.5:
@@ -2241,14 +2241,14 @@ def record_live_8pm_advisory(commodities_list, day_name):
         if natgas:
             trade_id = f"ADV-{today_str.replace(' ', '')}-{time_tag}-NATURALGAS"
             if trade_id not in existing_today_ids:
-                cur_p = natgas['current_price']
-                p_close = natgas['prev_close']
-                chg = natgas.get('change_pct', natgas.get('pct_change', 0.0))
-                lc = natgas['lower_circuit']
-                uc = natgas['upper_circuit']
-                day_h = float(natgas.get('day_high', cur_p))
-                day_l = float(natgas.get('day_low', cur_p))
-                c_sym, c_name, lot_size = get_defense_contract_and_lot('NATURALGAS', 'Natural Gas Mini')
+                c_sym, c_name, lot_size, quote_item = resolve_defense_contract_and_quote(natgas['symbol'], natgas, commodities_map)
+                cur_p = quote_item['current_price']
+                p_close = quote_item['prev_close']
+                chg = quote_item.get('change_pct', quote_item.get('pct_change', 0.0))
+                lc = quote_item['lower_circuit']
+                uc = quote_item['upper_circuit']
+                day_h = float(quote_item.get('day_high', cur_p))
+                day_l = float(quote_item.get('day_low', cur_p))
 
                 if 'NEAR' in natgas['status'] or 'HIT' in natgas['status'] or abs(chg) >= 2.0:
                     inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
