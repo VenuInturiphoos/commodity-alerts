@@ -5,6 +5,7 @@ import pytz
 from datetime import datetime
 from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer, MarketRegimeDetector, TradingAgentsOrchestrator, InstitutionalDirectionEngine, PullbackRetestGate
 from pre_move_detector import PreMoveDetector, PreMoveSignal
+from dhan_brokerage_calculator import DhanBrokerageCalculator
 
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'advisory_trades_tracker.json')
 NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'nifty_crossover_oversold.json')
@@ -822,7 +823,18 @@ def save_tracker(tracker_data):
             action = pt.get('action') or 'BUY'
             lot = t.get('lot_size') or pt.get('quantity') or 1
             pts = (exit_p - entry_p) if action == 'BUY' else (entry_p - exit_p)
-            pnl = round(pts * lot, 2)
+            gross_pnl = round(pts * lot, 2)
+            charges = DhanBrokerageCalculator.calculate_trade_charges(
+                symbol=t.get('symbol', ''),
+                asset_type=t.get('asset_type'),
+                action=action,
+                entry_price=entry_p,
+                exit_price=exit_p,
+                quantity=lot,
+                product_type=pt.get('product_type')
+            )
+            net_pnl = round(gross_pnl - charges['total_charges'], 2)
+            pnl = net_pnl
             
             exit_time_label = "03:20 PM IST" if is_eq else timing_now["eod_str"]
             exit_trigger = "INTRADAY_320_SQUAREOFF" if is_eq else "EOD_SQUAREOFF"
@@ -831,17 +843,53 @@ def save_tracker(tracker_data):
             pt['exit_time'] = exit_time_label
             pt['exit_trigger'] = exit_trigger
             pt['pnl_points'] = round(pts, 2)
+            pt['gross_pnl_inr'] = gross_pnl
+            pt['charges'] = charges
+            pt['net_pnl_inr'] = net_pnl
             pt['pnl_inr'] = pnl
             pt['status'] = 'CLOSED'
             
-            is_correct = pnl > 0
+            is_correct = gross_pnl > 0
             eod['session_close'] = exit_p
             eod['exit_time'] = exit_time_label
             eod['exit_trigger'] = exit_trigger
-            eod['outcome'] = 'CORRECT' if is_correct else 'WRONG'
+            eod['outcome'] = 'CORRECT' if is_correct else ('PROTECTED' if abs(gross_pnl) < 1.0 else 'WRONG')
             eod['badge'] = f"{'Correct ✅' if is_correct else 'Wrong ❌'} ({exit_time_label.replace(' IST', '')})"
+            eod['gross_pnl_inr'] = gross_pnl
+            eod['charges'] = charges
+            eod['net_pnl_inr'] = net_pnl
             eod['pnl_display'] = f"{'+' if pnl >= 0 else ''}₹{pnl:,.2f}"
-            eod['summary'] = f"{exit_time_label} session close exit. Entry: ₹{entry_p:,.2f} -> Exit: ₹{exit_p:,.2f} ({pts:+.2f} pts | {'+' if pnl >= 0 else ''}₹{pnl:,.2f}). Margin released."
+            eod['summary'] = f"{exit_time_label} session close exit. Entry: ₹{entry_p:,.2f} -> Exit: ₹{exit_p:,.2f} ({pts:+.2f} pts | Gross: {'+' if gross_pnl >= 0 else ''}₹{gross_pnl:,.2f} | Dhan: -₹{charges['total_charges']:,.2f} | Net: {'+' if pnl >= 0 else ''}₹{pnl:,.2f}). Margin released."
+
+    # Self-healing Dhan brokerage and charges verification for all historical executed closed trades
+    for t in trades:
+        pt = t.get('paper_trade', {})
+        if pt.get('status') == 'CLOSED' and pt.get('action') in ['BUY', 'SELL']:
+            entry_p = float(pt.get('entry_price') or 0.0)
+            exit_p = float(pt.get('exit_price') or 0.0)
+            qty = float(pt.get('quantity') or t.get('lot_size') or 1)
+            act = pt.get('action')
+            if entry_p > 0 and exit_p > 0 and qty > 0:
+                raw_pts = (exit_p - entry_p) if act == 'BUY' else (entry_p - exit_p)
+                gross_pnl = round(raw_pts * qty, 2)
+                charges = DhanBrokerageCalculator.calculate_trade_charges(
+                    symbol=t.get('symbol', ''),
+                    asset_type=t.get('asset_type'),
+                    action=act,
+                    entry_price=entry_p,
+                    exit_price=exit_p,
+                    quantity=qty,
+                    product_type=pt.get('product_type')
+                )
+                net_pnl = round(gross_pnl - charges['total_charges'], 2)
+                pt['gross_pnl_inr'] = gross_pnl
+                pt['charges'] = charges
+                pt['net_pnl_inr'] = net_pnl
+                pt['pnl_inr'] = net_pnl
+                if 'eod_outcome' in t:
+                    t['eod_outcome']['gross_pnl_inr'] = gross_pnl
+                    t['eod_outcome']['charges'] = charges
+                    t['eod_outcome']['net_pnl_inr'] = net_pnl
     
     # Strictly distinguish executed positions from protected / filtered signals
     executed_trades = [t for t in trades if t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']]
@@ -851,6 +899,8 @@ def save_tracker(tracker_data):
     win_rate = round((correct_count / (correct_count + wrong_count) * 100), 1) if (correct_count + wrong_count) > 0 else 0.0
     
     protected_count = sum(1 for t in trades if t.get('paper_trade', {}).get('action') == 'STAND_ASIDE' or (t.get('eod_outcome', {}).get('outcome') == 'PROTECTED' and t.get('paper_trade', {}).get('action') not in ['BUY', 'SELL']))
+    total_gross_pnl = sum(t.get('paper_trade', {}).get('gross_pnl_inr', t.get('paper_trade', {}).get('pnl_inr', 0.0)) for t in trades if t.get('paper_trade', {}).get('status') == 'CLOSED' and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL'])
+    total_dhan_charges = sum(t.get('paper_trade', {}).get('charges', {}).get('total_charges', 0.0) for t in trades if t.get('paper_trade', {}).get('status') == 'CLOSED' and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL'])
     total_pnl = sum(t.get('paper_trade', {}).get('pnl_inr', 0.0) for t in trades if t.get('paper_trade', {}).get('status') == 'CLOSED')
     active_count = sum(1 for t in trades if t.get('paper_trade', {}).get('status') == 'ACTIVE')
     
@@ -865,6 +915,9 @@ def save_tracker(tracker_data):
         'wrong_count': wrong_count,
         'protected_count': protected_count,
         'win_rate_pct': win_rate,
+        'broker': 'Dhan',
+        'total_gross_pnl_inr': round(total_gross_pnl, 2),
+        'total_charges_inr': round(total_dhan_charges, 2),
         'total_pnl_inr': round(total_pnl, 2),
         'commodity_pnl_inr': round(cash_info.get('commodity_realized_pnl', 0.0), 2),
         'intraday_pnl_inr': round(cash_info.get('intraday_pool', {}).get('intraday_realized_pnl', 0.0), 2),
@@ -4067,10 +4120,26 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
             if hit_sl and not is_trailing:
                 if pnl_pts > 0:
                     pnl_pts = -abs(pnl_pts)
-            pnl_inr = round(pnl_pts * lot_size, 2)
+            gross_pnl_inr = round(pnl_pts * lot_size, 2)
+            
+            # Authoritative Dhan Brokerage & Statutory Taxes
+            charges = DhanBrokerageCalculator.calculate_trade_charges(
+                symbol=sym,
+                asset_type=trade.get('asset_type'),
+                action=action,
+                entry_price=entry_p,
+                exit_price=exit_p,
+                quantity=lot_size,
+                product_type=pt.get('product_type')
+            )
+            net_pnl_inr = round(gross_pnl_inr - charges['total_charges'], 2)
+            pnl_inr = net_pnl_inr
             
             pt['exit_price'] = exit_p
             pt['exit_time'] = now_time_str
+            pt['gross_pnl_inr'] = gross_pnl_inr
+            pt['charges'] = charges
+            pt['net_pnl_inr'] = net_pnl_inr
             
             if hit_target_runner_exit:
                 pt['exit_trigger'] = "TARGET_RUNNER_EXIT"
@@ -4090,11 +4159,11 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                 badge_text = f"Stop Loss Hit 🛑 ({now_time_str})"
             elif hit_stagnation:
                 pt['exit_trigger'] = "STAGNATION_EXIT"
-                outcome_val = "CORRECT" if pnl_inr > 0 else ("PROTECTED" if pnl_inr == 0 else "WRONG")
+                outcome_val = "CORRECT" if gross_pnl_inr > 0 else ("PROTECTED" if abs(gross_pnl_inr) < 1.0 else "WRONG")
                 badge_text = f"Stagnation Exit ⏱️ ({now_time_str})"
             elif hit_eod:
                 pt['exit_trigger'] = "TARGET_RUNNER_EOD" if pt.get('target_runner_active') else "EOD_SQUAREOFF"
-                outcome_val = "CORRECT" if pnl_inr > 0 else ("WRONG" if pnl_inr < 0 else "PROTECTED")
+                outcome_val = "CORRECT" if gross_pnl_inr > 0 else ("WRONG" if gross_pnl_inr < 0 else "PROTECTED")
                 badge_text = f"Runner EOD Peak 🎯🚀 ({now_time_str})" if pt.get('target_runner_active') else f"EOD Square-off ⏰ ({now_time_str})"
             
             pt['pnl_points'] = round(pnl_pts, 2)
@@ -4107,8 +4176,11 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
             trade['eod_outcome']['exit_trigger'] = pt['exit_trigger']
             trade['eod_outcome']['outcome'] = outcome_val
             trade['eod_outcome']['badge'] = badge_text
+            trade['eod_outcome']['gross_pnl_inr'] = gross_pnl_inr
+            trade['eod_outcome']['charges'] = charges
+            trade['eod_outcome']['net_pnl_inr'] = net_pnl_inr
             trade['eod_outcome']['pnl_display'] = f"{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}"
-            trade['eod_outcome']['summary'] = f"{reason} at {now_time_str}. Entry: ₹{entry_p:,.2f} -> Exit: ₹{exit_p:,.2f} ({'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f})."
+            trade['eod_outcome']['summary'] = f"{reason} at {now_time_str}. Entry: ₹{entry_p:,.2f} -> Exit: ₹{exit_p:,.2f} (Gross: {'+' if gross_pnl_inr >= 0 else ''}₹{gross_pnl_inr:,.2f} | Dhan: -₹{charges['total_charges']:,.2f} | Net: {'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f})."
             
             updated_any = True
             
@@ -4123,7 +4195,9 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                 f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
                 f"• <b>Exit Price</b>: ₹{exit_p:,.2f} ({reason})\n"
                 f"• <b>Target</b>: {f'₹{target:,.2f}' if target is not None else (f'₹{calc_target:,.2f} (Trailed)' if calc_target else 'None')} | <b>Stop-Loss</b>: ₹{stop_loss:,.2f}\n"
-                f"• <b>Net Realized P&L</b>: <b>{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}</b>\n\n"
+                f"• <b>Gross P&L</b>: <b>{'+' if gross_pnl_inr >= 0 else ''}₹{gross_pnl_inr:,.2f}</b>\n"
+                f"• <b>Dhan Charges & Taxes</b>: <b>-₹{charges['total_charges']:,.2f}</b> (Brokerage ₹{charges['brokerage']:,.2f} + Taxes ₹{charges['total_charges'] - charges['brokerage']:,.2f})\n"
+                f"• <b>Net Realized P&L</b>: <b>{'+' if net_pnl_inr >= 0 else ''}₹{net_pnl_inr:,.2f}</b>\n\n"
                 f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
             )
             alerts_to_send.append({'subject': subject, 'body': body})
@@ -5648,28 +5722,45 @@ def square_off_intraday_equity_trades(checker=None, alerter=None):
         qty = pt.get('quantity') or trade.get('lot_size') or 1
         
         pts = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
-        pnl_inr = round(pts * qty, 2)
+        gross_pnl_inr = round(pts * qty, 2)
+        charges = DhanBrokerageCalculator.calculate_trade_charges(
+            symbol=sym,
+            asset_type=trade.get('asset_type'),
+            action=action,
+            entry_price=entry_p,
+            exit_price=cur_p,
+            quantity=qty,
+            product_type=pt.get('product_type')
+        )
+        net_pnl_inr = round(gross_pnl_inr - charges['total_charges'], 2)
+        pnl_inr = net_pnl_inr
         
         pt['exit_price'] = cur_p
         pt['exit_time'] = "03:20 PM IST"
         pt['exit_trigger'] = "INTRADAY_320_SQUAREOFF"
         pt['pnl_points'] = round(pts, 2)
+        pt['gross_pnl_inr'] = gross_pnl_inr
+        pt['charges'] = charges
+        pt['net_pnl_inr'] = net_pnl_inr
         pt['pnl_inr'] = pnl_inr
         pt['status'] = "CLOSED"
         
-        is_correct = pnl_inr > 0
+        is_correct = gross_pnl_inr > 0
         trade['time_exit'] = "03:20 PM IST"
         eod = trade.setdefault('eod_outcome', {})
         eod['session_close'] = cur_p
         eod['exit_time'] = "03:20 PM IST"
         eod['exit_trigger'] = "INTRADAY_320_SQUAREOFF"
-        eod['outcome'] = "CORRECT" if is_correct else "WRONG"
+        eod['outcome'] = "CORRECT" if is_correct else ("PROTECTED" if abs(gross_pnl_inr) < 1.0 else "WRONG")
         eod['badge'] = "Intraday Exit (03:20 PM)"
+        eod['gross_pnl_inr'] = gross_pnl_inr
+        eod['charges'] = charges
+        eod['net_pnl_inr'] = net_pnl_inr
         eod['pnl_display'] = f"{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}"
-        eod['summary'] = f"Intraday 03:20 PM square-off executed. Entry: ₹{entry_p:,.2f} -> Exit: ₹{cur_p:,.2f} ({pts:+.2f} pts | {'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}). Margin released."
+        eod['summary'] = f"Intraday 03:20 PM square-off executed. Entry: ₹{entry_p:,.2f} -> Exit: ₹{cur_p:,.2f} ({pts:+.2f} pts | Gross: {'+' if gross_pnl_inr >= 0 else ''}₹{gross_pnl_inr:,.2f} | Dhan: -₹{charges['total_charges']:,.2f} | Net: {'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}). Margin released."
         
         summary_lines.append(
-            f"• <b>{trade['name']} ({action})</b>: Entry ₹{entry_p:,.2f} ➔ Exit ₹{cur_p:,.2f} | P&L: <b>{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}</b>"
+            f"• <b>{trade['name']} ({action})</b>: Entry ₹{entry_p:,.2f} ➔ Exit ₹{cur_p:,.2f} | Gross: <b>{'+' if gross_pnl_inr >= 0 else ''}₹{gross_pnl_inr:,.2f}</b> | Dhan: -₹{charges['total_charges']:,.2f} | Net P&L: <b>{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}</b>"
         )
 
     save_tracker(tracker)
@@ -5779,7 +5870,18 @@ def exit_and_evaluate_eod_trades(checker, alerter):
             close_p = float(pt.get('exit_price') or entry_p)
             
         pnl_pts = (close_p - entry_p) if action == 'BUY' else (entry_p - close_p)
-        pnl_inr = round(pnl_pts * lot_size, 2)
+        gross_pnl_inr = round(pnl_pts * lot_size, 2)
+        charges = DhanBrokerageCalculator.calculate_trade_charges(
+            symbol=sym,
+            asset_type=trade.get('asset_type'),
+            action=action,
+            entry_price=entry_p,
+            exit_price=close_p,
+            quantity=lot_size,
+            product_type=pt.get('product_type')
+        )
+        net_pnl_inr = round(gross_pnl_inr - charges['total_charges'], 2)
+        pnl_inr = net_pnl_inr
         total_day_pnl += pnl_inr
         
         timing = get_us_aligned_session_times(now_dt)
@@ -5790,22 +5892,28 @@ def exit_and_evaluate_eod_trades(checker, alerter):
         pt['exit_time'] = exit_time_label
         pt['exit_trigger'] = exit_trigger
         pt['pnl_points'] = round(pnl_pts, 2)
+        pt['gross_pnl_inr'] = gross_pnl_inr
+        pt['charges'] = charges
+        pt['net_pnl_inr'] = net_pnl_inr
         pt['pnl_inr'] = pnl_inr
         pt['status'] = "CLOSED"
         
-        is_correct = pnl_inr > 0
+        is_correct = gross_pnl_inr > 0
         trade['time_exit'] = exit_time_label
         eod = trade.setdefault('eod_outcome', {})
         eod['session_close'] = close_p
         eod['exit_time'] = exit_time_label
         eod['exit_trigger'] = exit_trigger
-        eod['outcome'] = "CORRECT" if is_correct else "WRONG"
+        eod['outcome'] = "CORRECT" if is_correct else ("PROTECTED" if abs(gross_pnl_inr) < 1.0 else "WRONG")
         eod['badge'] = f"{'Correct ✅' if is_correct else 'Wrong ❌'} ({exit_time_label.replace(' IST', '')})"
+        eod['gross_pnl_inr'] = gross_pnl_inr
+        eod['charges'] = charges
+        eod['net_pnl_inr'] = net_pnl_inr
         eod['pnl_display'] = f"{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}"
-        eod['summary'] = f"{exit_time_label} session close exit. Entry: ₹{entry_p:,.2f} -> Exit: ₹{close_p:,.2f} ({pnl_pts:+.2f} pts | {'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}). Margin released."
+        eod['summary'] = f"{exit_time_label} session close exit. Entry: ₹{entry_p:,.2f} -> Exit: ₹{close_p:,.2f} ({pnl_pts:+.2f} pts | Gross: {'+' if gross_pnl_inr >= 0 else ''}₹{gross_pnl_inr:,.2f} | Dhan: -₹{charges['total_charges']:,.2f} | Net: {'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}). Margin released."
         
         summary_lines.append(
-            f"• <b>{trade['name']} ({action})</b>: Entry ₹{entry_p:,.2f} ➔ Exit ₹{close_p:,.2f} | P&L: <b>{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}</b> ({'Correct ✅' if is_correct else 'Wrong ❌'})"
+            f"• <b>{trade['name']} ({action})</b>: Entry ₹{entry_p:,.2f} ➔ Exit ₹{close_p:,.2f} | Gross: <b>{'+' if gross_pnl_inr >= 0 else ''}₹{gross_pnl_inr:,.2f}</b> | Dhan: -₹{charges['total_charges']:,.2f} | Net P&L: <b>{'+' if pnl_inr >= 0 else ''}₹{pnl_inr:,.2f}</b> ({'Correct ✅' if is_correct else 'Wrong ❌'})"
         )
 
     save_tracker(tracker)

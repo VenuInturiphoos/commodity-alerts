@@ -26,6 +26,8 @@ except ImportError:
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Multi-Agent LLM Deliberation Engine Integration (TradingAgents)
+from dhan_brokerage_calculator import DhanBrokerageCalculator
+
 try:
     from tradingagents_bridge import TradingAgentsOrchestrator
 except ImportError:
@@ -303,12 +305,26 @@ class PreTradeRiskEngine:
         if now_ist.hour > 22 or (now_ist.hour == 22 and now_ist.minute >= 45):
             return {"passed": False, "reason": "LATE_SESSION_RESTRICTION: No new entries permitted after 10:45 PM IST."}
 
+        # Estimate round-trip Dhan broker charges at stop-loss
+        dhan_est = DhanBrokerageCalculator.calculate_trade_charges(
+            symbol=symbol,
+            asset_type='EQUITY_INTRADAY' if is_target_eq else 'COMMODITY_FUTURES',
+            action=action,
+            entry_price=entry,
+            exit_price=stop,
+            quantity=lot_size
+        )
+        est_charges = dhan_est.get("total_charges", 0.0)
+
         res = {
             "passed": True,
             "reason": risk_note or "RISK_PASSED: Movement-first trade criteria cleared.",
             "reward_risk_ratio": rrr,
             "loss_at_stop_inr": loss_at_stop,
-            "potential_gain_inr": round(reward_pts * lot_size, 2)
+            "potential_gain_inr": round(reward_pts * lot_size, 2),
+            "broker": "Dhan",
+            "est_charges_inr": est_charges,
+            "net_loss_at_stop_inr": round(loss_at_stop + est_charges, 2)
         }
         if risk_note:
             res["risk_warning"] = risk_note
