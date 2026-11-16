@@ -17,6 +17,12 @@ def generate_and_send_6pm_advisory(force=False):
     day_name = now_dt.strftime('%A')
     timing = get_us_aligned_session_times(now_dt)
     val_time_str = timing["conf_str"]
+    cur_hm = (now_dt.hour, now_dt.minute)
+
+    # Time gate: do not dispatch before scheduled pit open cutoff unless explicitly forced
+    if not force and cur_hm < timing["pit_cutoff"]:
+        print(f"Current time ({cur_hm[0]:02d}:{cur_hm[1]:02d} IST) is before US Pit Open ({timing['pit_str']}). Skipping.")
+        return False
     
     # Deduplication check: only send once per day unless forced
     state_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
@@ -519,6 +525,14 @@ def generate_and_send_8pm_advisory(force=False):
         except Exception:
             state = {}
             
+    timing_8pm = get_us_aligned_session_times(now_dt)
+    cur_hm = (now_dt.hour, now_dt.minute)
+
+    # Time gate: do not dispatch before scheduled evening cutoff unless explicitly forced
+    if not force and cur_hm < timing_8pm["evening_cutoff"]:
+        print(f"Current time ({cur_hm[0]:02d}:{cur_hm[1]:02d} IST) is before Evening/EIA advisory ({timing_8pm['evening_str']}). Skipping.")
+        return False
+
     last_8pm_date = state.get('DAILY_8PM_ADVISORY', {}).get('last_alert_date')
     if not force and last_8pm_date == today_ist:
         print(f"Daily 8:00 PM advisory already dispatched for today ({today_ist}). Skipping.")
@@ -921,14 +935,14 @@ def run_auto_session(force=False):
         print(f"Time is >= {timing['pit_cutoff'][0]}:00 IST ({timing['pit_str']}) and US Pit Open advisory not sent today. Dispatching US Pit Open Advisory.")
         return generate_and_send_6pm_advisory(force=force)
 
-    # 5. 1:30 PM IST or later -> London Breakout Advisory
-    if cur_hm >= (13, 30) and (not sent_130pm or force):
-        print("Time is >= 1:30 PM IST and 1:30 PM advisory not sent today. Dispatching 1:30 PM Advisory.")
+    # 5. 1:30 PM IST London Breakout Advisory (Window: 1:30 PM - 5:00 PM IST)
+    if cur_hm >= (13, 30) and cur_hm < (17, 0) and (not sent_130pm or force):
+        print("Time is within 1:30 PM - 5:00 PM IST window and 1:30 PM advisory not sent today. Dispatching 1:30 PM Advisory.")
         return generate_and_send_130pm_advisory(force=force)
 
-    # 6. 9:01 AM IST or later -> Morning Pulse Advisory
-    if cur_hm >= (9, 1) and (not sent_9am or force):
-        print("Time is >= 9:01 AM IST and 9:01 AM advisory not sent today. Dispatching 9:01 AM Advisory.")
+    # 6. 9:01 AM IST Morning Pulse Advisory (Window: 9:01 AM - 12:00 PM IST)
+    if cur_hm >= (9, 1) and cur_hm < (12, 0) and (not sent_9am or force):
+        print("Time is within 9:01 AM - 12:00 PM IST window and 9:01 AM advisory not sent today. Dispatching 9:01 AM Advisory.")
         generate_and_send_9am_advisory(force=force)
 
     # 7. 9:15 AM IST or later (Market Hours) -> Check and trigger Daily Stock Investment (~₹30k Allocation)

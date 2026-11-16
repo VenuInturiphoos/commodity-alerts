@@ -2881,6 +2881,13 @@ def check_and_execute_615_confirmation(checker, alerter):
     now_dt = datetime.now(pytz.timezone('Asia/Kolkata'))
     today_str = now_dt.strftime('%d %b %Y')
     timing = get_us_aligned_session_times(now_dt)
+    cur_hm = (now_dt.hour, now_dt.minute)
+
+    # Time gate: do not run confirmation before scheduled confirmation window (6:15 PM Summer / 7:15 PM Winter)
+    if cur_hm < timing["conf_start"]:
+        print(f"Current time ({cur_hm[0]:02d}:{cur_hm[1]:02d} IST) is before confirmation window ({timing['conf_str']}). Skipping.")
+        return False
+
     sent_key = 'check_715_sent_date' if not is_us_dst_active(now_dt) else 'check_615_sent_date'
     
     pending_trades = [t for t in trades if t.get('date') == today_str and t.get('check_615', {}).get('status') == 'PENDING_615']

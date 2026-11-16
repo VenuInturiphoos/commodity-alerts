@@ -150,46 +150,39 @@ def main():
     except Exception as e:
         print(f"Error checking 3:20 PM intraday square-off: {e}")
 
-    # Check and trigger Daily 6:00 PM IST Action Advisory (Monday - Friday)
+    # Dynamic US market aligned timings (Summer EDT vs Winter EST)
     try:
+        from advisory_tracker import get_us_aligned_session_times
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
-        if now_ist.weekday() < 5 and (now_ist.hour >= 18 and now_ist.hour < 20):
-            print("\n--- Checking Daily 6:00 PM IST Action Advisory ---")
+        timing = get_us_aligned_session_times(now_ist)
+        cur_hm = (now_ist.hour, now_ist.minute)
+
+        # Check and trigger US Pit Open Action Advisory (6:00 PM Summer EDT / 7:00 PM Winter EST)
+        if now_ist.weekday() < 5 and cur_hm >= timing["pit_cutoff"] and cur_hm < (timing["pit_cutoff"][0] + 1, 30):
+            print(f"\n--- Checking US Pit Open Action Advisory ({timing['pit_str']}) ---")
             from daily_6pm_advisory import generate_and_send_6pm_advisory
             generate_and_send_6pm_advisory()
-    except Exception as e:
-        print(f"Error checking daily 6 PM advisory: {e}")
 
-    # Check and trigger 6:15 PM IST Confirmation Check (Monday - Friday)
-    try:
-        now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
-        if now_ist.weekday() < 5 and (now_ist.hour > 18 or (now_ist.hour == 18 and now_ist.minute >= 14)):
-            print("\n--- Checking 6:15 PM IST Confirmation & Paper Trade Execution ---")
+        # Check and trigger 15-Minute Confirmation Check (6:15 PM Summer EDT / 7:15 PM Winter EST)
+        if now_ist.weekday() < 5 and cur_hm >= timing["conf_start"] and cur_hm < timing["conf_end"]:
+            print(f"\n--- Checking 15-Minute Confirmation & Execution ({timing['conf_str']}) ---")
             from advisory_tracker import check_and_execute_615_confirmation
             check_and_execute_615_confirmation(checker, alerter)
-    except Exception as e:
-        print(f"Error checking 6:15 PM confirmation: {e}")
 
-    # Check and trigger 8:00 PM IST EIA Inventory & US Evening Advisory (Mon - Fri)
-    try:
-        now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
-        if now_ist.weekday() < 5 and (now_ist.hour >= 20 and now_ist.hour < 23):
-            print("\n--- Checking 8:00 PM IST US Evening & EIA Inventory Advisory ---")
+        # Check and trigger EIA Inventory & US Evening Advisory (8:00 PM Summer EDT / 9:00 PM Winter EST)
+        if now_ist.weekday() < 5 and cur_hm >= timing["evening_cutoff"] and cur_hm < (timing["evening_cutoff"][0] + 2, 0):
+            print(f"\n--- Checking US Evening & EIA Inventory Advisory ({timing['evening_str']}) ---")
             from daily_6pm_advisory import generate_and_send_8pm_advisory
             generate_and_send_8pm_advisory()
-    except Exception as e:
-        print(f"Error checking 8:00 PM advisory: {e}")
 
-    # Check and trigger EOD Session Close Exit & Evaluation (11:30 PM IST or overnight sweep)
-    try:
-        now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
-        is_eod_sweep_window = (now_ist.hour == 23 and now_ist.minute >= 15) or (now_ist.hour >= 0 and now_ist.hour < 9)
+        # Check and trigger EOD Session Close Exit & Evaluation (11:20 PM Summer EDT / 11:45 PM Winter EST)
+        is_eod_sweep_window = cur_hm >= timing["eod_cutoff"] or (now_ist.hour >= 0 and now_ist.hour < 9)
         if is_eod_sweep_window:
-            print("\n--- Checking EOD Advisory Session Close Exit & Settlement ---")
+            print(f"\n--- Checking EOD Advisory Session Close Exit & Settlement ({timing['eod_str']}) ---")
             from advisory_tracker import exit_and_evaluate_eod_trades
             exit_and_evaluate_eod_trades(checker, alerter)
     except Exception as e:
-        print(f"Error executing EOD exit: {e}")
+        print(f"Error checking US-aligned evening session advisories: {e}")
         
     print("\nCheck complete. Exiting.")
 
