@@ -6923,6 +6923,94 @@ function isIntradayStockTrade(t) {
     return !isFuturesTrade(t);
 }
 
+// 🏛️ Official Dhan Brokerage & Regulatory Taxes Calculator (Raise Financial Services / DhanHQ)
+function calculateDhanCharges(trade, overrideCurPrice) {
+    if (!trade || !trade.paper_trade) return null;
+    const pt = trade.paper_trade;
+    const action = pt.action;
+    if (!action || action === 'STAND_ASIDE') return null;
+    
+    const entryP = Number(pt.entry_price || trade.suggestion_6pm?.reference_price || 0);
+    const exitP = Number(overrideCurPrice || pt.exit_price || trade.eod_outcome?.session_close || 0);
+    const qty = Number(pt.quantity || trade.lot_size || 1);
+    
+    if (entryP <= 0 || exitP <= 0 || qty <= 0) return null;
+    
+    const sym = trade.symbol || '';
+    const isEq = isIntradayStockTrade(trade) || sym.includes('.NS') || sym.includes('-FUT');
+    const isFut = sym.includes('-FUT') || trade.asset_type === 'STOCK_FUTURES';
+    const isCommodity = !isEq;
+    
+    let buyTurnover, sellTurnover, grossPnl;
+    if (action === 'BUY') {
+        buyTurnover = Math.round(entryP * qty * 100) / 100;
+        sellTurnover = Math.round(exitP * qty * 100) / 100;
+        grossPnl = Math.round((exitP - entryP) * qty * 100) / 100;
+    } else {
+        buyTurnover = Math.round(exitP * qty * 100) / 100;
+        sellTurnover = Math.round(entryP * qty * 100) / 100;
+        grossPnl = Math.round((entryP - exitP) * qty * 100) / 100;
+    }
+    const totalTurnover = Math.round((buyTurnover + sellTurnover) * 100) / 100;
+    
+    // Dhan Brokerage: min(₹20, 0.03%) per executed order
+    const buyBrok = Math.min(20.0, Math.round(0.0003 * buyTurnover * 100) / 100);
+    const sellBrok = Math.min(20.0, Math.round(0.0003 * sellTurnover * 100) / 100);
+    const brokerage = Math.round((buyBrok + sellBrok) * 100) / 100;
+    
+    // STT / CTT (Sell side)
+    let sttCtt = 0;
+    if (isCommodity) {
+        sttCtt = Math.round(0.0001 * sellTurnover * 100) / 100; // MCX 0.01%
+    } else if (isFut) {
+        sttCtt = Math.round(0.0002 * sellTurnover * 100) / 100; // NSE Futures 0.02%
+    } else {
+        sttCtt = Math.round(0.00025 * sellTurnover * 100) / 100; // NSE Intraday 0.025%
+    }
+    
+    // Exchange Turnover Charges
+    let exchangeCharges = 0;
+    if (isCommodity) {
+        exchangeCharges = Math.round(0.000021 * totalTurnover * 100) / 100; // MCX 0.0021%
+    } else if (isFut) {
+        exchangeCharges = Math.round(0.0000173 * totalTurnover * 100) / 100; // NSE Futures 0.00173%
+    } else {
+        exchangeCharges = Math.round(0.0000297 * totalTurnover * 100) / 100; // NSE Cash 0.00297%
+    }
+    
+    // SEBI Turnover Charges: ₹10 per crore (0.000001)
+    const sebiCharges = Math.round(0.000001 * totalTurnover * 100) / 100;
+    
+    // Stamp Duty (BUY side)
+    let stampDuty = 0;
+    if (isCommodity || isFut) {
+        stampDuty = Math.round(0.00002 * buyTurnover * 100) / 100; // 0.002%
+    } else {
+        stampDuty = Math.round(0.00003 * buyTurnover * 100) / 100; // 0.003%
+    }
+    
+    // GST: 18% on (Brokerage + Exchange Charges + SEBI Charges)
+    const gst = Math.round(0.18 * (brokerage + exchangeCharges + sebiCharges) * 100) / 100;
+    
+    const totalCharges = Math.round((brokerage + sttCtt + exchangeCharges + sebiCharges + stampDuty + gst) * 100) / 100;
+    const netPnl = Math.round((grossPnl - totalCharges) * 100) / 100;
+    
+    return {
+        broker: 'Dhan',
+        brokerage,
+        buy_brokerage: buyBrok,
+        sell_brokerage: sellBrok,
+        stt_ctt: sttCtt,
+        exchange_charges: exchangeCharges,
+        sebi_charges: sebiCharges,
+        stamp_duty: stampDuty,
+        gst,
+        total_charges: totalCharges,
+        gross_pnl: grossPnl,
+        net_pnl: netPnl
+    };
+}
+
 function switchTradingSubTab(subtab) {
     if (subtab === 'commodities') subtab = 'futures';
     if (subtab === 'stocks') subtab = 'intraday';
@@ -7675,7 +7763,13 @@ function renderAdvisorySummaryCards() {
             const uColor = unrealizedPnl >= 0 ? '#4ade80' : '#fb7185';
             pnlSubEl.innerHTML = `Realized: <strong style="color:${rColor};">${rSign}₹${Math.abs(realizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · Unrealized: <strong style="color:${uColor};">${uSign}₹${Math.abs(unrealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong>`;
         } else {
-            pnlSubEl.textContent = 'Actual forward paper trading return';
+            const totGross = summary.total_gross_pnl_inr !== undefined ? Number(summary.total_gross_pnl_inr) : realizedPnl;
+            const totCharges = summary.total_charges_inr !== undefined ? Number(summary.total_charges_inr) : 0;
+            if (totCharges > 0) {
+                pnlSubEl.innerHTML = `Gross: <strong>${totGross >= 0 ? '+' : '-'}₹${Math.abs(totGross).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · Dhan: <strong style="color:#fb7185;">-₹${totCharges.toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong>`;
+            } else {
+                pnlSubEl.textContent = 'Actual forward paper trading return (Net of Dhan fees)';
+            }
         }
     }
 
@@ -7687,6 +7781,8 @@ function renderAdvisorySummaryCards() {
     });
 
     let todayRealizedPnl = 0;
+    let todayGrossPnl = 0;
+    let todayCharges = 0;
     let todayUnrealizedPnl = 0;
     let todayActiveCount = 0;
     let todayWonCount = 0;
@@ -7696,7 +7792,12 @@ function renderAdvisorySummaryCards() {
         const pt = t.paper_trade || {};
         if (pt.status === 'CLOSED') {
             const pnl = Number(pt.pnl_inr || 0);
+            const gross = pt.gross_pnl_inr !== undefined ? Number(pt.gross_pnl_inr) : pnl;
+            const chargesObj = pt.charges || calculateDhanCharges(t);
+            const chg = chargesObj?.total_charges !== undefined ? Number(chargesObj.total_charges) : Math.max(0, gross - pnl);
             todayRealizedPnl += pnl;
+            todayGrossPnl += gross;
+            todayCharges += chg;
             if (pnl > 0) todayWonCount++;
             else if (pnl < 0) todayLostCount++;
         } else if (pt.status === 'ACTIVE' && pt.entry_price && Number(pt.entry_price) > 0) {
@@ -7708,7 +7809,11 @@ function renderAdvisorySummaryCards() {
             if (curPrice && !isNaN(curPrice)) {
                 const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
                 const lot = pt.quantity || t.lot_size || 1;
-                todayUnrealizedPnl += pts * lot;
+                const estCharges = calculateDhanCharges(t, curPrice);
+                const estChgVal = estCharges ? estCharges.total_charges : 0;
+                todayUnrealizedPnl += (pts * lot) - estChgVal;
+                todayGrossPnl += (pts * lot);
+                todayCharges += estChgVal;
             }
         }
     });
@@ -7724,7 +7829,7 @@ function renderAdvisorySummaryCards() {
     if (todayTitleEl) {
         const todayDateStr = todayTrades.length > 0 && todayTrades[0].date ? todayTrades[0].date : '';
         const dateSuffix = todayDateStr ? ` (${todayDateStr.split(' ').slice(0, 2).join(' ')})` : '';
-        todayTitleEl.innerHTML = `<i class="fa-regular fa-calendar-check" style="margin-right: 4px;"></i> Today's Returns${dateSuffix}`;
+        todayTitleEl.innerHTML = `<i class="fa-regular fa-calendar-check" style="margin-right: 4px;"></i> Today's Returns${dateSuffix} <span style="font-size:0.62rem; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); padding:1px 5px; border-radius:3px; font-weight:700; margin-left:4px;">DHAN TARIFF</span>`;
     }
     if (todayPnlEl) {
         const sign = todayTotalPnl >= 0 ? '+' : '-';
@@ -7738,9 +7843,11 @@ function renderAdvisorySummaryCards() {
             const uSign = todayUnrealizedPnl >= 0 ? '+' : '-';
             const rColor = todayRealizedPnl >= 0 ? '#4ade80' : '#fb7185';
             const uColor = todayUnrealizedPnl >= 0 ? '#4ade80' : '#fb7185';
-            todaySubEl.innerHTML = `Realized: <strong style="color:${rColor};">${rSign}₹${Math.abs(todayRealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · MTM: <strong style="color:${uColor};">${uSign}₹${Math.abs(todayUnrealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong>`;
+            todaySubEl.innerHTML = `Realized: <strong style="color:${rColor};">${rSign}₹${Math.abs(todayRealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · MTM: <strong style="color:${uColor};">${uSign}₹${Math.abs(todayUnrealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · Dhan: <strong style="color:#fb7185;">-₹${todayCharges.toFixed(2)}</strong>`;
         } else {
-            todaySubEl.textContent = `${todayWonCount} Won · ${todayLostCount} Lost (${todayTrades.length} signals today)`;
+            const gSign = todayGrossPnl >= 0 ? '+' : '-';
+            const gColor = todayGrossPnl >= 0 ? '#4ade80' : '#fb7185';
+            todaySubEl.innerHTML = `Gross: <strong style="color:${gColor};">${gSign}₹${Math.abs(todayGrossPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · Dhan Charges: <strong style="color:#fb7185;">-₹${todayCharges.toFixed(2)}</strong> · ${todayWonCount}W / ${todayLostCount}L`;
         }
     }
     
@@ -8097,6 +8204,9 @@ function renderAdvisoryTradesTable() {
             const pVal = Number(pt.pnl_inr);
             const lot = pt.quantity || t.lot_size || 1;
             const pts = pt.pnl_points !== undefined ? Number(pt.pnl_points) : (lot > 0 ? (pVal / lot) : 0);
+            const charges = pt.charges || calculateDhanCharges(t);
+            const gVal = pt.gross_pnl_inr !== undefined ? Number(pt.gross_pnl_inr) : (charges ? charges.gross_pnl : pVal);
+
             if (pVal > 0) {
                 pnlColor = '#4ade80';
                 pnlText = `+₹${pVal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -8109,6 +8219,19 @@ function renderAdvisoryTradesTable() {
                 pnlColor = '#94a3b8';
                 pnlText = `₹0.00 <span style="font-size:0.7rem; color:#60a5fa; display:block; font-weight:400;">(Breakeven)</span>`;
                 ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(0.00 pts × ₹${lot})</span>`;
+            }
+
+            if (charges && charges.total_charges > 0) {
+                const gColor = gVal >= 0 ? '#4ade80' : '#fb7185';
+                const gSign = gVal >= 0 ? '+' : '-';
+                const tip = `Dhan Brokerage & Taxes Breakdown:\n• Brokerage: ₹${charges.brokerage.toFixed(2)}\n• CTT/STT: ₹${charges.stt_ctt.toFixed(2)}\n• Exchange Charges: ₹${charges.exchange_charges.toFixed(2)}\n• SEBI Charges: ₹${charges.sebi_charges.toFixed(2)}\n• Stamp Duty: ₹${charges.stamp_duty.toFixed(2)}\n• GST (18%): ₹${charges.gst.toFixed(2)}\n• Total Deducted: ₹${charges.total_charges.toFixed(2)}`;
+                ptsFormulaHtml += `
+                    <div style="font-size:0.67rem; color:#94a3b8; margin-top:3px; background:rgba(15,23,42,0.65); padding:2px 6px; border-radius:4px; border:1px solid rgba(255,255,255,0.08); display:inline-flex; align-items:center; gap:4px; cursor:help;" title="${tip}">
+                        <span>Gross: <strong style="color:${gColor};">${gSign}₹${Math.abs(gVal).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong></span>
+                        <span style="color:#64748b;">·</span>
+                        <span style="color:#f43f5e; font-weight:600;">Dhan: -₹${charges.total_charges.toFixed(2)}</span>
+                    </div>
+                `;
             }
         }
 
@@ -8496,6 +8619,9 @@ function renderAdvisoryTradesTable() {
                 const pVal = Number(pt.pnl_inr);
                 const lot = pt.quantity || t.lot_size || 1;
                 const pts = pt.pnl_points !== undefined ? Number(pt.pnl_points) : (lot > 0 ? (pVal / lot) : 0);
+                const charges = pt.charges || calculateDhanCharges(t);
+                const gVal = pt.gross_pnl_inr !== undefined ? Number(pt.gross_pnl_inr) : (charges ? charges.gross_pnl : pVal);
+
                 if (pVal > 0) {
                     pnlColor = '#4ade80';
                     pnlText = `+₹${pVal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -8508,6 +8634,18 @@ function renderAdvisoryTradesTable() {
                     pnlColor = '#94a3b8';
                     pnlText = `₹0.00 <small style="font-size:0.68rem; color:#60a5fa; display:block; font-weight:400;">(Breakeven)</small>`;
                     mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(0.00 pts × ${lot})</div>`;
+                }
+
+                if (charges && charges.total_charges > 0) {
+                    const gColor = gVal >= 0 ? '#4ade80' : '#fb7185';
+                    const gSign = gVal >= 0 ? '+' : '-';
+                    mobilePtsFormulaHtml += `
+                        <div style="font-size:0.64rem; color:#94a3b8; margin-top:2px;">
+                            <span>Gross: <strong style="color:${gColor};">${gSign}₹${Math.abs(gVal).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong></span>
+                            <span>·</span>
+                            <span style="color:#f43f5e; font-weight:600;">Dhan: -₹${charges.total_charges.toFixed(2)}</span>
+                        </div>
+                    `;
                 }
             }
 
