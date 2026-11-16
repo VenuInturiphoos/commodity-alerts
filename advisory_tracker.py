@@ -3040,6 +3040,10 @@ def check_and_execute_615_confirmation(checker, alerter):
             trade['paper_trade']['entry_time'] = f"{conf_label} IST"
             trade['paper_trade']['target'] = tgt
             trade['paper_trade']['stop_loss'] = sl
+            trade['paper_trade']['initial_stop_loss'] = sl
+            trade['paper_trade']['original_sl'] = sl
+            trade['paper_trade']['peak_high'] = cur_p
+            trade['paper_trade']['trough_low'] = cur_p
             trade['paper_trade']['margin_required_inr'] = req_margin
             
             trade['eod_outcome']['outcome'] = "ACTIVE"
@@ -3254,6 +3258,10 @@ def check_and_execute_615_confirmation(checker, alerter):
                     trade['paper_trade']['entry_time'] = "06:15 PM IST"
                     trade['paper_trade']['target'] = tgt
                     trade['paper_trade']['stop_loss'] = sl
+                    trade['paper_trade']['initial_stop_loss'] = sl
+                    trade['paper_trade']['original_sl'] = sl
+                    trade['paper_trade']['peak_high'] = cur_p
+                    trade['paper_trade']['trough_low'] = cur_p
                     trade['paper_trade']['margin_required_inr'] = req_margin
                     
                     trade['eod_outcome']['outcome'] = "ACTIVE"
@@ -3510,6 +3518,14 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
         if pt.get('initial_stop_loss') is None and stop_loss is not None:
             pt['initial_stop_loss'] = stop_loss
 
+        # Enforce initial stop loss baseline: stop_loss can NEVER start worse than initial_stop_loss
+        initial_sl_entry = float(pt.get('initial_stop_loss')) if pt.get('initial_stop_loss') is not None else stop_loss
+        if initial_sl_entry is not None and stop_loss is not None:
+            if action == 'BUY' and stop_loss < initial_sl_entry:
+                stop_loss = initial_sl_entry
+            elif action == 'SELL' and stop_loss > initial_sl_entry:
+                stop_loss = initial_sl_entry
+
         # Post-entry peak and trough tracking: initialized at entry price, updated only on post-entry ticks
         effective_high = round(max(float(pt.get('peak_high', cur_p)), cur_p), 2)
         effective_low = round(min(float(pt.get('trough_low', cur_p)), cur_p), 2)
@@ -3739,6 +3755,21 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                     trade['eod_outcome']['badge'] = f"Active (Trailing Stop @ ₹{ratchet_sl:,.2f} | 65% Locked 🚀)"
                     trade['eod_outcome']['summary'] = f"Dynamic Trailing Stop active: 65% peak profit locked @ ₹{ratchet_sl:,.2f} (Max 35% pullback from trough ₹{effective_low:,.2f})."
                     updated_any = True
+
+        # HARD INVARIANT: Stop-Loss must be strictly ONE-WAY (Ratchet only).
+        # A stop-loss once set can NEVER move backwards or widen to take additional loss.
+        initial_sl_lock = float(pt.get('initial_stop_loss')) if pt.get('initial_stop_loss') is not None else stop_loss
+        prev_sl_lock = float(pt.get('stop_loss')) if pt.get('stop_loss') is not None else stop_loss
+        if action == 'BUY':
+            if initial_sl_lock is not None and stop_loss is not None and stop_loss < initial_sl_lock:
+                stop_loss = initial_sl_lock
+            if prev_sl_lock is not None and stop_loss is not None and stop_loss < prev_sl_lock:
+                stop_loss = prev_sl_lock
+        elif action == 'SELL':
+            if initial_sl_lock is not None and stop_loss is not None and stop_loss > initial_sl_lock:
+                stop_loss = initial_sl_lock
+            if prev_sl_lock is not None and stop_loss is not None and stop_loss > prev_sl_lock:
+                stop_loss = prev_sl_lock
 
         # Ensure paper_trade object has target and stop_loss stored
         if pt.get('target_scrapped'):
