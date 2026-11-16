@@ -1,5 +1,5 @@
 {
-  "last_updated": "16 Nov 2026, 09:40 AM IST",
+  "last_updated": "16 Nov 2026, 09:41 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -18,19 +18,19 @@
     "active_trades_count": 3,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 352430.67,
-    "used_margin_inr": 200962.67,
-    "available_cash_inr": 151468.0,
+    "used_margin_inr": 200933.85,
+    "available_cash_inr": 151496.82,
     "net_worth_inr": 352430.67
   },
   "trades": [
     {
-      "id": "ADV-16Nov2026-0940-TITAN",
+      "id": "ADV-16Nov2026-0941-TITAN",
       "date": "16 Nov 2026",
       "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
-      "time_trigger": "09:40 AM IST",
-      "time_6pm": "09:40 AM IST",
-      "time_validation": "09:40 AM IST",
-      "time_615": "09:40 AM IST",
+      "time_trigger": "09:41 AM IST",
+      "time_6pm": "09:41 AM IST",
+      "time_validation": "09:41 AM IST",
+      "time_615": "09:41 AM IST",
       "time_exit": "03:25 PM IST",
       "symbol": "TITAN.NS",
       "name": "Titan Company Limited",
@@ -44,7 +44,7 @@
         "color": "#34d399",
         "bg_color": "rgba(52, 211, 153, 0.12)",
         "border_color": "rgba(52, 211, 153, 0.35)",
-        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 62.2). Favorable for Golden Cross accumulation & swing longs.",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 62.1). Favorable for Golden Cross accumulation & swing longs.",
         "allowed_strategies": [
           "GOLDEN_CROSS_BUY",
           "PULLBACK_LONG",
@@ -56,8 +56,8 @@
         ],
         "icon": "fa-solid fa-arrow-trend-up",
         "adx": 20.0,
-        "rsi": 62.2,
-        "bb_width_pct": 21.72,
+        "rsi": 62.1,
+        "bb_width_pct": 21.77,
         "daily_vol_pct": 1.5
       },
       "time_machine": {
@@ -65,26 +65,26 @@
         "passed": true,
         "verdict": "POSITIVE_EXPECTANCY",
         "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
-        "p_target_pct": 13.7,
-        "p_stop_pct": 10.1,
-        "p_neither_pct": 76.1,
-        "resolved_win_rate_pct": 57.5,
-        "expected_r": 0.063,
+        "p_target_pct": 13.6,
+        "p_stop_pct": 10.3,
+        "p_neither_pct": 76.0,
+        "resolved_win_rate_pct": 56.9,
+        "expected_r": 0.06,
         "target_r": 1.2,
-        "sample_bars": 661,
-        "summary": "3,000 Replays: 13.7% Target | 10.1% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+        "sample_bars": 663,
+        "summary": "3,000 Replays: 13.6% Target | 10.3% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "risk_check": {
         "passed": true,
         "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
         "reward_risk_ratio": 1.2,
-        "loss_at_stop_inr": 933.24,
-        "potential_gain_inr": 1119.91
+        "loss_at_stop_inr": 930.71,
+        "potential_gain_inr": 1116.83
       },
       "orb_check": {
         "passed": true,
         "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close \u20b94,918.00 breaking above range high \u20b94,918.00."
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b94,904.90 breaking above range high \u20b94,904.90."
       },
       "event_check": {
         "passed": true,
@@ -94,37 +94,37 @@
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ \u20b94,918.00",
-        "rationale": "High-Beta breakout momentum (Chg: +0.97%) with healthy RSI (62.2) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 13.7% Target | 10.1% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
-        "reference_price": 4918.0,
-        "stop_loss": 4833.16,
-        "target": 5019.81
+        "action_text": "BUY @ \u20b94,904.90",
+        "rationale": "High-Beta breakout momentum (Chg: +0.93%) with healthy RSI (62.1) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 13.6% Target | 10.3% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 4904.9,
+        "stop_loss": 4820.29,
+        "target": 5006.43
       },
       "check_615": {
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
-        "price_615": 4918.0,
-        "action_taken": "Entered BUY 11 shares @ \u20b94,918.00",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.97%) with healthy RSI (62.2) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 13.7% Target | 10.1% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+        "price_615": 4904.9,
+        "action_taken": "Entered BUY 11 shares @ \u20b94,904.90",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.93%) with healthy RSI (62.1) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 13.6% Target | 10.3% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "BUY",
         "quantity": 11,
-        "entry_price": 4918.0,
-        "entry_time": "09:40 AM IST",
+        "entry_price": 4904.9,
+        "entry_time": "09:41 AM IST",
         "exit_price": null,
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
         "status": "ACTIVE",
-        "target": 5019.81,
-        "stop_loss": 4833.16,
-        "initial_stop_loss": 4833.16,
-        "original_sl": 4833.16,
-        "peak_high": 4918.0,
-        "trough_low": 4918.0,
-        "margin_required_inr": 10819.6,
+        "target": 5006.43,
+        "stop_loss": 4820.29,
+        "initial_stop_loss": 4820.29,
+        "original_sl": 4820.29,
+        "peak_high": 4904.9,
+        "trough_low": 4904.9,
+        "margin_required_inr": 10790.78,
         "product_type": "MIS_INTRADAY"
       },
       "eod_outcome": {
@@ -133,7 +133,7 @@
         "outcome": "PENDING",
         "badge": "Active Trigger \u26a1",
         "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b94,918.00 (Target: \u20b95,019.81, SL: \u20b94,833.16) | 3,000 Replays: 13.7% Target | 10.1% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b94,904.90 (Target: \u20b95,006.43, SL: \u20b94,820.29) | 3,000 Replays: 13.6% Target | 10.3% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       }
     },
     {
