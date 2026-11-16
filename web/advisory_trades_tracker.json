@@ -1,20 +1,20 @@
 {
-  "last_updated": "16 Nov 2026, 04:35 PM IST",
+  "last_updated": "16 Nov 2026, 04:37 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 117,
-    "executed_count": 31,
+    "total_signals": 116,
+    "executed_count": 30,
     "correct_count": 8,
-    "wrong_count": 11,
+    "wrong_count": 10,
     "protected_count": 86,
-    "win_rate_pct": 42.1,
+    "win_rate_pct": 44.4,
     "total_pnl_inr": 38634.47,
     "commodity_pnl_inr": 38297.55,
     "intraday_pnl_inr": 336.92,
     "intraday_booked_profit_inr": 336.92,
     "intraday_pool_balance_inr": 30336.92,
-    "avg_trade_pnl_inr": 1246.27,
+    "avg_trade_pnl_inr": 1287.82,
     "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 338634.47,
@@ -104,153 +104,35 @@
         "entry_time": "03:20 PM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": 4.6,
-        "pnl_inr": 12650.0,
+        "pnl_points": 2.9,
+        "pnl_inr": 7975.0,
         "status": "ACTIVE",
         "margin_required_inr": 144490.5,
         "target": null,
-        "stop_loss": 295.5,
+        "stop_loss": 294.31,
         "initial_stop_loss": 289.03,
         "original_sl": 289.03,
-        "peak_high": 296.5,
-        "trough_low": 296.1,
+        "peak_high": 295.2,
+        "trough_low": 294.6,
         "entry_day_high": 291.9,
         "entry_day_low": 291.9,
         "trailing_sl_active": true,
         "stage_2_profit_locked": true,
         "stage_3_target_approaching": true,
         "target_scrapped": true,
-        "original_target": 295.34,
-        "target_runner_active": true,
-        "target_runner_activated_at": "04:32 PM IST"
+        "original_target": 295.34
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PENDING",
-        "badge": "Active (Trailing Stop @ \u20b9295.50 | 65% Locked \ud83d\ude80)",
+        "badge": "Active (Trailing Stop @ \u20b9294.31)",
         "pnl_display": "Ticking Live...",
-        "summary": "Dynamic Trailing Stop active: 65% peak profit locked @ \u20b9295.50 (Max 35% pullback from peak \u20b9296.50)."
+        "summary": "Target removed \u2014 Trailing Profit Stop (+65% profit locked @ \u20b9294.31) active. Relying entirely on trailing stoploss."
       },
       "live_price_data": {
-        "current_price": 296.5,
-        "change_pct": 1.58
-      }
-    },
-    {
-      "id": "ADV-16Nov2026-1520-ULTRACEMCO",
-      "date": "16 Nov 2026",
-      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
-      "time_trigger": "03:20 PM IST",
-      "time_6pm": "03:20 PM IST",
-      "time_validation": "03:20 PM IST",
-      "time_615": "03:20 PM IST",
-      "time_exit": "03:25 PM IST",
-      "symbol": "ULTRACEMCO.NS",
-      "name": "UltraTech Cement Limited",
-      "lot_size": 4,
-      "asset_type": "INTRADAY_STOCK",
-      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
-      "regime": {
-        "regime": "BULL_TREND",
-        "badge": "\ud83d\ude80 Bull Trend",
-        "short_tag": "Bull Trend",
-        "color": "#34d399",
-        "bg_color": "rgba(52, 211, 153, 0.12)",
-        "border_color": "rgba(52, 211, 153, 0.35)",
-        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 65.5). Favorable for Golden Cross accumulation & swing longs.",
-        "allowed_strategies": [
-          "GOLDEN_CROSS_BUY",
-          "PULLBACK_LONG",
-          "BULL_PUT_SPREAD"
-        ],
-        "blocked_strategies": [
-          "NAKED_CALL_SELLING",
-          "SHORTING"
-        ],
-        "icon": "fa-solid fa-arrow-trend-up",
-        "adx": 20.0,
-        "rsi": 65.5,
-        "bb_width_pct": 20.13,
-        "daily_vol_pct": 1.5
-      },
-      "time_machine": {
-        "replays": 3000,
-        "passed": true,
-        "verdict": "POSITIVE_EXPECTANCY",
-        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
-        "p_target_pct": 29.6,
-        "p_stop_pct": 23.0,
-        "p_neither_pct": 47.4,
-        "resolved_win_rate_pct": 56.3,
-        "expected_r": 0.125,
-        "target_r": 1.2,
-        "sample_bars": 727,
-        "summary": "3,000 Replays: 29.6% Target | 23.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
-      },
-      "risk_check": {
-        "passed": true,
-        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
-        "reward_risk_ratio": 1.2,
-        "loss_at_stop_inr": 478.56,
-        "potential_gain_inr": 574.28
-      },
-      "orb_check": {
-        "passed": true,
-        "status": "ORB_BREAKOUT_CONFIRMED",
-        "reason": "ORB BUY Confirmed: Solid bar close \u20b912,270.00 breaking above range high \u20b912,270.00 with volume confirmation."
-      },
-      "event_check": {
-        "passed": true,
-        "status": "CLEAR",
-        "event_name": null,
-        "reason": "No high-impact event risk active."
-      },
-      "suggestion_6pm": {
-        "status": "REALTIME_TRIGGER",
-        "action_text": "BUY @ \u20b912,270.00",
-        "rationale": "High-Beta breakout momentum (Chg: +1.50%) with healthy RSI (65.5) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 29.6% Target | 23.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
-        "reference_price": 12270.0,
-        "stop_loss": 12150.36,
-        "target": 12413.57
-      },
-      "check_615": {
-        "checked": true,
-        "status": "TECHNICAL_TRIGGER_ENTERED",
-        "price_615": 12270.0,
-        "action_taken": "Entered BUY 4 shares @ \u20b912,270.00",
-        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.50%) with healthy RSI (65.5) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 29.6% Target | 23.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
-      },
-      "paper_trade": {
-        "user": "venu.photos1@gmail.com",
-        "action": "BUY",
-        "quantity": 4,
-        "entry_price": 12270.0,
-        "entry_time": "03:20 PM IST",
-        "exit_price": 12270.0,
-        "exit_time": "03:20 PM IST",
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "CLOSED",
-        "target": 12413.57,
-        "stop_loss": 12150.36,
-        "initial_stop_loss": 12150.36,
-        "original_sl": 12150.36,
-        "peak_high": 12270.0,
-        "trough_low": 12270.0,
-        "margin_required_inr": 9816.0,
-        "product_type": "MIS_INTRADAY",
-        "exit_trigger": "INTRADAY_320_SQUAREOFF"
-      },
-      "eod_outcome": {
-        "session_close": 12270.0,
-        "circuit_limit": null,
-        "outcome": "WRONG",
-        "badge": "Wrong \u274c (03:20 PM)",
-        "pnl_display": "+\u20b90.00",
-        "summary": "03:20 PM IST session close exit. Entry: \u20b912,270.00 -> Exit: \u20b912,270.00 (+0.00 pts | +\u20b90.00). Margin released.",
-        "exit_time": "03:20 PM IST",
-        "exit_trigger": "INTRADAY_320_SQUAREOFF"
+        "current_price": 294.8,
+        "change_pct": 0.99
       }
     },
     {

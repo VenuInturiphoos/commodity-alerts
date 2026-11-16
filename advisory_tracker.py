@@ -4635,12 +4635,13 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
     # =========================================================================
     # PART 2: REAL-TIME NIFTY 100 (NIFTY 50 + MIDCAP 50) CONTINUOUS SCANNER (Phase 1 & Phase 2)
-    # Active Window: Mon-Fri, 09:15 AM to 03:20 PM IST
-    # Scans all 100 Nifty 50 and premier liquid Midcap F&O stocks (excluding corporate demergers like TATAMOTORS)
-    # Strictly sized <= ₹3,000 risk (1% of ₹3L Trading pool) with 03:25 PM EOD square-off
+    # Active Window: Mon-Fri, 09:30 AM to 02:45 PM IST
+    # Strictly enforces 02:45 PM IST hard cutoff for any new stock or stock future entries.
+    # New intraday entries after 02:45 PM are prohibited since brokers auto square-off MIS orders by 03:15-03:20 PM.
+    # Sized <= ₹3,000 risk (1% of ₹3L Trading pool) with 03:20 PM EOD square-off
     # =========================================================================
     ENABLE_EQUITY_DERIVATIVES_SCANNER = True
-    is_equity_window = (hour == 9 and minute >= 15) or (10 <= hour < 15) or (hour == 15 and minute <= 20)
+    is_equity_window = ((hour == 9 and minute >= 30) or (10 <= hour < 14) or (hour == 14 and minute <= 45))
     cur_equity_positions = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'])
 
     if ENABLE_EQUITY_DERIVATIVES_SCANNER and is_equity_window and cur_equity_positions < MAX_CONCURRENT_EQUITIES:
