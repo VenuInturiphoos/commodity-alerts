@@ -817,7 +817,7 @@ class PositionSizer:
         - ZINCMINI: 4 lots / 4000 units (~₹1.44L margin)
         - ALUMINI: 6 lots / 6000 units (~₹1.35L margin)
         """
-        if entry <= 0 or stop <= 0 or entry == stop:
+        if entry <= 0 or not stop or stop <= 0 or entry == stop:
             return symbol, name, default_lot
 
         # 1. Route to canonical ~₹1.5L Mini/Micro contract

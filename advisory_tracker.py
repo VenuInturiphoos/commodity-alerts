@@ -2048,22 +2048,70 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
                 )
                 if not pullback_eval.get('passed'):
                     print(f"🛡️ US Pit Open Pullback Gate Blocked {sym} {action}: {pullback_eval.get('reason')}")
-                    action = "STAND_ASIDE"
-                    entry_text = f"PULLBACK REQUIRED: {pullback_eval.get('reason')}"
-                    rationale = f"Option 2 discipline: Price extended from structural anchor. Standing aside until pullback retest into support/resistance."
-                else:
-                    # Technical Invalidation Stop and Realistic 1.1R-1.25R Target
-                    sl, tgt = calculate_technical_bracket(
-                        action, cur_p,
-                        day_h=item.get('day_high', cur_p),
-                        day_l=item.get('day_low', cur_p),
-                        ema20=item.get('ema_20'),
-                        ema50=item.get('ema_50'),
-                        atr=item.get('atr_14'),
-                        min_rrr=1.1,
-                        is_intraday=True,
-                        symbol=sym
-                    )
+                    entry = {
+                        "id": trade_id,
+                        "date": today_str,
+                        "session_name": session_title,
+                        "time_trigger": time_trigger_str,
+                        "time_6pm": time_trigger_str,
+                        "time_validation": time_val_str,
+                        "time_615": time_val_str,
+                        "time_exit": time_exit_str,
+                        "symbol": sym,
+                        "name": name,
+                        "lot_size": lot_size,
+                        "event_context": "Option 2: Pullback Required Before Entry",
+                        "suggestion_6pm": {
+                            "status": "STAND_ASIDE",
+                            "action_text": "STAND ASIDE / PULLBACK REQUIRED",
+                            "rationale": f"{pullback_eval.get('reason')} Standing aside to avoid chasing at range extremes.",
+                            "reference_price": cur_p,
+                            "stop_loss": None,
+                            "target": None
+                        },
+                        "check_615": {
+                            "checked": True,
+                            "status": "PULLBACK_REQUIRED_STAND_ASIDE",
+                            "price_615": cur_p,
+                            "action_taken": "Stood Aside (0 Units)",
+                            "detail": pullback_eval.get('reason')
+                        },
+                        "paper_trade": {
+                            "user": USER_ACCOUNT,
+                            "action": "STAND_ASIDE",
+                            "quantity": 0,
+                            "entry_price": cur_p,
+                            "entry_time": time_trigger_str,
+                            "exit_price": cur_p,
+                            "exit_time": time_exit_str,
+                            "pnl_points": 0.0,
+                            "pnl_inr": 0.0,
+                            "status": "STAND_ASIDE"
+                        },
+                        "eod_outcome": {
+                            "session_close": None,
+                            "circuit_limit": None,
+                            "outcome": "PROTECTED",
+                            "badge": "Pullback Guard 🛡️",
+                            "pnl_display": "₹0.00 (Protected)",
+                            "summary": f"Option 2 discipline: Price extended from resistance. Stood aside until pullback into supply."
+                        }
+                    }
+                    new_entries.append(entry)
+                    continue
+
+                # Technical Invalidation Stop and Realistic 1.1R-1.25R Target
+                sl, tgt = calculate_technical_bracket(
+                    action, cur_p,
+                    day_h=item.get('day_high', cur_p),
+                    day_l=item.get('day_low', cur_p),
+                    ema20=item.get('ema_20'),
+                    ema50=item.get('ema_50'),
+                    atr=item.get('atr_14'),
+                    min_rrr=1.1,
+                    is_intraday=True,
+                    symbol=sym
+                )
                 contract_sym, contract_name, adaptive_lot = PositionSizer.resolve_contract_and_lot(
                     sym, name, cur_p, sl, lot_size, max_risk_inr=MAX_LOSS_PER_TRADE_INR
                 )
