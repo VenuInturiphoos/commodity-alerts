@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    <link rel="stylesheet" href="styles.css?v=highlight5">
+    <link rel="stylesheet" href="styles.css?v=smooth4">
     <script>
         var activeSummary = '';
         var mobActiveSummary = '';
@@ -2439,24 +2439,7 @@ function renderCircuitsTable() {
         `;
     }).join('');
     
-    const isCircuitsHovered = Boolean(tbody.matches(':hover') || (document.activeElement && tbody.contains(document.activeElement)));
-    if (!isCircuitsHovered) {
-        if (tbody.innerHTML !== rowsHtml) {
-            tbody.innerHTML = rowsHtml;
-        }
-    } else {
-        tbody.dataset.pendingHtml = rowsHtml;
-    }
-
-    if (!tbody.dataset.hoverBound) {
-        tbody.dataset.hoverBound = 'true';
-        tbody.addEventListener('mouseleave', () => {
-            if (tbody.dataset.pendingHtml && tbody.dataset.pendingHtml !== tbody.innerHTML) {
-                tbody.innerHTML = tbody.dataset.pendingHtml;
-                delete tbody.dataset.pendingHtml;
-            }
-        });
-    }
+    tbody.innerHTML = rowsHtml;
 }
 
 // ==========================================
@@ -7814,7 +7797,7 @@ function renderAdvisoryTradesTable() {
     var activeSummary = '';
     var mobActiveSummary = '';
 
-    const newRowsHtml = filtered.map(t => {
+    tbody.innerHTML = filtered.map(t => {
         const pt = t.paper_trade || {};
         const s6 = t.suggestion_6pm || {};
         const c15 = t.check_615 || {};
@@ -8260,29 +8243,10 @@ function renderAdvisoryTradesTable() {
         `;
     }).join('');
 
-    const isTbodyHovered = Boolean(tbody.matches(':hover') || (document.activeElement && tbody.contains(document.activeElement)));
-    if (!isTbodyHovered) {
-        if (tbody.innerHTML !== newRowsHtml) {
-            tbody.innerHTML = newRowsHtml;
-        }
-    } else {
-        tbody.dataset.pendingHtml = newRowsHtml;
-    }
-
-    if (!tbody.dataset.hoverBound) {
-        tbody.dataset.hoverBound = 'true';
-        tbody.addEventListener('mouseleave', () => {
-            if (tbody.dataset.pendingHtml && tbody.dataset.pendingHtml !== tbody.innerHTML) {
-                tbody.innerHTML = tbody.dataset.pendingHtml;
-                delete tbody.dataset.pendingHtml;
-            }
-        });
-    }
-
     // Dedicated Native Mobile Cards Rendering
     const cardsFeed = document.getElementById('advisory-cards-feed');
     if (cardsFeed) {
-        const newCardsHtml = filtered.map(t => {
+        cardsFeed.innerHTML = filtered.map(t => {
             const pt = t.paper_trade || {};
             const s6 = t.suggestion_6pm || {};
             const c15 = t.check_615 || {};
@@ -8616,25 +8580,6 @@ function renderAdvisoryTradesTable() {
                 </div>
             `;
         }).join('');
-
-        const isCardsHovered = Boolean(cardsFeed.matches(':hover') || (document.activeElement && cardsFeed.contains(document.activeElement)));
-        if (!isCardsHovered) {
-            if (cardsFeed.innerHTML !== newCardsHtml) {
-                cardsFeed.innerHTML = newCardsHtml;
-            }
-        } else {
-            cardsFeed.dataset.pendingHtml = newCardsHtml;
-        }
-
-        if (!cardsFeed.dataset.hoverBound) {
-            cardsFeed.dataset.hoverBound = 'true';
-            cardsFeed.addEventListener('mouseleave', () => {
-                if (cardsFeed.dataset.pendingHtml && cardsFeed.dataset.pendingHtml !== cardsFeed.innerHTML) {
-                    cardsFeed.innerHTML = cardsFeed.dataset.pendingHtml;
-                    delete cardsFeed.dataset.pendingHtml;
-                }
-            });
-        }
     }
 }
 

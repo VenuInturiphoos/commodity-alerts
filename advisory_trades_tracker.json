@@ -1,28 +1,134 @@
 {
-  "last_updated": "16 Nov 2026, 09:49 AM IST",
+  "last_updated": "16 Nov 2026, 11:02 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 104,
-    "executed_count": 27,
+    "total_signals": 105,
+    "executed_count": 28,
     "correct_count": 8,
-    "wrong_count": 6,
+    "wrong_count": 7,
     "protected_count": 77,
-    "win_rate_pct": 57.1,
-    "total_pnl_inr": 52430.67,
-    "commodity_pnl_inr": 51325.05,
+    "win_rate_pct": 53.3,
+    "total_pnl_inr": 40190.67,
+    "commodity_pnl_inr": 39085.05,
     "intraday_pnl_inr": 1105.62,
     "intraday_booked_profit_inr": 1105.62,
     "intraday_pool_balance_inr": 31105.62,
-    "avg_trade_pnl_inr": 1941.88,
+    "avg_trade_pnl_inr": 1435.38,
     "active_trades_count": 3,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 352430.67,
-    "used_margin_inr": 201378.18,
-    "available_cash_inr": 151052.49,
-    "net_worth_inr": 352430.67
+    "current_cash_inr": 340190.67,
+    "used_margin_inr": 203337.78,
+    "available_cash_inr": 136852.89,
+    "net_worth_inr": 340190.67
   },
   "trades": [
+    {
+      "id": "ADV-16Nov2026-1102-ALUMINI",
+      "date": "16 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (Pre-Ignition Volatility Coil)",
+      "time_trigger": "11:02 AM IST",
+      "time_6pm": "11:02 AM IST",
+      "time_validation": "11:02 AM IST",
+      "time_615": "11:02 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 6000,
+      "event_context": "Indicator Confluence: Pre-Ignition Volatility Coil",
+      "regime": {
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 21.5, RSI: 46.6). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "SHORT_FUTURES"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 21.5,
+        "rsi": 46.6,
+        "bb_width_pct": 7.96,
+        "daily_vol_pct": 1.37
+      },
+      "time_machine": {
+        "replays": 1000,
+        "passed": true,
+        "verdict": "PARAMETRIC_STATISTICAL_PASS",
+        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
+        "p_target_pct": 36.5,
+        "p_stop_pct": 47.6,
+        "p_neither_pct": 15.9,
+        "resolved_win_rate": 43.4,
+        "resolved_win_rate_pct": 43.4,
+        "expected_r": 0.648,
+        "target_r": 3.08,
+        "sample_bars": 0,
+        "summary": "Parametric Model: 36.5% Target | 47.6% Stop | Expected: +0.65R"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 3.08,
+        "loss_at_stop_inr": 7020.0,
+        "potential_gain_inr": 21600.0
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b9329.25",
+        "rationale": "Pre-Move Readiness Index: 100.0/100. Intraday Range Coiled: Day range is only 0.91% (3.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.26x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9329.28), building downward coil pressure.. Early coil entry prior to breakout expansion. Parametric Model: 36.5% Target | 47.6% Stop | Expected: +0.65R",
+        "reference_price": 329.25,
+        "stop_loss": 330.42,
+        "target": 325.65,
+        "original_stop_loss": 330.42,
+        "original_target": 325.65
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 329.25,
+        "action_taken": "Entered SELL 6000 units @ \u20b9329.25",
+        "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 100.0/100. Intraday Range Coiled: Day range is only 0.91% (3.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.26x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9329.28), building downward coil pressure.. Early coil entry prior to breakout expansion. | Parametric Model: 36.5% Target | 47.6% Stop | Expected: +0.65R"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 6000,
+        "entry_price": 329.25,
+        "entry_time": "11:02 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "margin_required_inr": 181746.0,
+        "target": 325.65,
+        "stop_loss": 330.42,
+        "initial_stop_loss": 330.42,
+        "original_sl": 330.42,
+        "peak_high": 329.25,
+        "trough_low": 329.25,
+        "entry_day_high": 329.25,
+        "entry_day_low": 329.25
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b9329.25 (Target: \u20b9325.65, SL: \u20b9330.42) | Parametric Model: 36.5% Target | 47.6% Stop | Expected: +0.65R"
+      }
+    },
     {
       "id": "ADV-16Nov2026-0949-EICHERMOT",
       "date": "16 Nov 2026",
@@ -123,7 +229,7 @@
         "initial_stop_loss": 7581.91,
         "original_sl": 7581.91,
         "peak_high": 7715.0,
-        "trough_low": 7715.0,
+        "trough_low": 7621.5,
         "margin_required_inr": 10801.0,
         "product_type": "MIS_INTRADAY"
       },
@@ -134,6 +240,10 @@
         "badge": "Active Trigger \u26a1",
         "pnl_display": "Ticking Live...",
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b97,715.00 (Target: \u20b97,874.71, SL: \u20b97,581.91) | 3,000 Replays: 19.3% Target | 18.4% Stop | Expected: +0.05R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
+      },
+      "live_price_data": {
+        "current_price": 7621.5,
+        "change_pct": -1.21
       }
     },
     {
@@ -236,7 +346,7 @@
         "initial_stop_loss": 4820.29,
         "original_sl": 4820.29,
         "peak_high": 4904.9,
-        "trough_low": 4903.5,
+        "trough_low": 4862.2,
         "margin_required_inr": 10790.78,
         "product_type": "MIS_INTRADAY"
       },
@@ -249,8 +359,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b94,904.90 (Target: \u20b95,006.43, SL: \u20b94,820.29) | 3,000 Replays: 13.6% Target | 10.3% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "live_price_data": {
-        "current_price": 4903.5,
-        "change_pct": -0.03
+        "current_price": 4862.2,
+        "change_pct": -0.87
       }
     },
     {
@@ -382,7 +492,7 @@
       "time_6pm": "09:06 AM IST",
       "time_validation": "09:06 AM IST",
       "time_615": "09:06 AM IST",
-      "time_exit": "11:45 PM IST",
+      "time_exit": "11:02 AM IST",
       "symbol": "ALUMINI",
       "name": "Aluminium Mini",
       "lot_size": 6000,
@@ -456,32 +566,35 @@
         "quantity": 6000,
         "entry_price": 326.9,
         "entry_time": "09:06 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 328.94,
+        "exit_time": "11:02 AM IST",
+        "pnl_points": -2.04,
+        "pnl_inr": -12240.0,
+        "status": "CLOSED",
         "margin_required_inr": 180448.8,
         "target": 322.82,
         "stop_loss": 328.94,
         "initial_stop_loss": 328.94,
         "original_sl": 328.94,
-        "peak_high": 326.9,
+        "peak_high": 329.25,
         "trough_low": 326.45,
         "entry_day_high": 326.9,
-        "entry_day_low": 326.45
+        "entry_day_low": 326.45,
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 328.94,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b9326.90 (Target: \u20b9322.82, SL: \u20b9328.94) | Parametric Model: 45.3% Target | 41.0% Stop | Expected: +0.50R"
+        "outcome": "WRONG",
+        "badge": "Stop Loss Hit \ud83d\uded1 (11:02 AM IST)",
+        "pnl_display": "\u20b9-12,240.00",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 11:02 AM IST. Entry: \u20b9326.90 -> Exit: \u20b9328.94 (\u20b9-12,240.00).",
+        "exit_time": "11:02 AM IST",
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "live_price_data": {
-        "current_price": 326.65,
-        "change_pct": -0.59
+        "current_price": 329.25,
+        "change_pct": 0.72
       }
     },
     {

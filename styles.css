@@ -9,7 +9,7 @@
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-border-inner: rgba(255, 255, 255, 0.05);
     --alert-color: #f43f5e;
-    --table-hover: rgba(99, 102, 241, 0.12);
+    --table-hover: rgba(255, 255, 255, 0.04);
     --shadow-color: rgba(0, 0, 0, 0.4);
     --card-shadow: 0 15px 35px -10px var(--shadow-color), inset 0 1px 0 0 var(--glass-border-inner);
     --header-bg: rgba(11, 15, 25, 0.85);
@@ -26,7 +26,7 @@ body.light-theme {
     --glass-border: rgba(0, 0, 0, 0.1);
     --glass-border-inner: rgba(255, 255, 255, 0.5);
     --alert-color: #e11d48;
-    --table-hover: rgba(99, 102, 241, 0.08);
+    --table-hover: rgba(0, 0, 0, 0.03);
     --shadow-color: rgba(0, 0, 0, 0.08);
     --card-shadow: 0 15px 35px -10px var(--shadow-color), inset 0 1px 0 0 var(--glass-border-inner);
     --header-bg: rgba(248, 250, 252, 0.85);
@@ -427,19 +427,11 @@ body.light-theme .market-table th {
 }
 
 .market-table tbody tr {
-    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    transition: background-color 0.15s ease;
 }
 
 .market-table tbody tr:hover {
-    background-color: var(--table-hover) !important;
-}
-
-.market-table tbody tr:hover td:first-child {
-    box-shadow: inset 4px 0 0 #818cf8;
-}
-
-body.light-theme .market-table tbody tr:hover td:first-child {
-    box-shadow: inset 4px 0 0 #6366f1;
+    background-color: var(--table-hover);
 }
 
 .loading {
@@ -801,13 +793,6 @@ body.light-theme .market-table tbody tr:hover td:first-child {
         display: flex !important;
         flex-direction: column !important;
         gap: 0.7rem !important;
-        transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .mobile-trading-card:hover {
-        background: linear-gradient(145deg, rgba(38, 51, 74, 0.95), rgba(20, 30, 54, 0.98)) !important;
-        border-color: rgba(129, 140, 248, 0.45) !important;
-        box-shadow: 0 6px 18px rgba(99, 102, 241, 0.22) !important;
     }
 
     .mobile-card-top {
