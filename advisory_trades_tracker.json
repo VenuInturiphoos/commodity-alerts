@@ -1,26 +1,26 @@
 {
-  "last_updated": "16 Nov 2026, 01:28 PM IST",
+  "last_updated": "16 Nov 2026, 01:50 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 115,
     "executed_count": 29,
     "correct_count": 8,
-    "wrong_count": 7,
+    "wrong_count": 8,
     "protected_count": 86,
-    "win_rate_pct": 53.3,
-    "total_pnl_inr": 40190.67,
+    "win_rate_pct": 50.0,
+    "total_pnl_inr": 39462.67,
     "commodity_pnl_inr": 39085.05,
-    "intraday_pnl_inr": 1105.62,
-    "intraday_booked_profit_inr": 1105.62,
-    "intraday_pool_balance_inr": 31105.62,
-    "avg_trade_pnl_inr": 1385.89,
-    "active_trades_count": 4,
+    "intraday_pnl_inr": 377.62,
+    "intraday_booked_profit_inr": 377.62,
+    "intraday_pool_balance_inr": 30377.62,
+    "avg_trade_pnl_inr": 1360.78,
+    "active_trades_count": 3,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 340190.67,
-    "used_margin_inr": 334524.48,
-    "available_cash_inr": 5666.19,
-    "net_worth_inr": 340190.67
+    "current_cash_inr": 339462.67,
+    "used_margin_inr": 323723.48,
+    "available_cash_inr": 15739.19,
+    "net_worth_inr": 339462.67
   },
   "trades": [
     {
@@ -563,7 +563,7 @@
         "stop_loss": 8675.0,
         "initial_stop_loss": 8675.0,
         "original_sl": 8675.0,
-        "peak_high": 8740.0,
+        "peak_high": 8756.5,
         "trough_low": 8730.0,
         "margin_required_inr": 131407.5,
         "product_type": "NRML_FUTURES"
@@ -577,8 +577,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b98,760.50 (Target: \u20b98,862.00, SL: \u20b98,675.00) | Parametric Model: 44.4% Target | 30.5% Stop | Expected: +0.23R"
       },
       "live_price_data": {
-        "current_price": 8756.0,
-        "change_pct": 2.43
+        "current_price": 8756.5,
+        "change_pct": -0.05
       },
       "contract_ticker": "NSE:APOLLOHOSP1!"
     },
@@ -675,7 +675,7 @@
         "initial_stop_loss": 330.53,
         "original_sl": 330.53,
         "peak_high": 327.9,
-        "trough_low": 327.9,
+        "trough_low": 326.65,
         "entry_day_high": 328.85,
         "entry_day_low": 328.85,
         "trailing_sl_active": true
@@ -689,8 +689,8 @@
         "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b9328.85 (Target: \u20b9325.25, SL: \u20b9330.53) | Parametric Model: 43.8% Target | 42.1% Stop | Expected: +0.52R"
       },
       "live_price_data": {
-        "current_price": 327.3,
-        "change_pct": -0.4
+        "current_price": 326.65,
+        "change_pct": -0.67
       }
     },
     {
@@ -701,7 +701,7 @@
       "time_6pm": "09:49 AM IST",
       "time_validation": "09:49 AM IST",
       "time_615": "09:49 AM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "01:50 PM IST",
       "symbol": "EICHERMOT.NS",
       "name": "Eicher Motors Limited",
       "lot_size": 7,
@@ -783,31 +783,34 @@
         "quantity": 7,
         "entry_price": 7715.0,
         "entry_time": "09:49 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 7611.0,
+        "exit_time": "01:50 PM IST",
+        "pnl_points": -104.0,
+        "pnl_inr": -728.0,
+        "status": "CLOSED",
         "target": 7874.71,
         "stop_loss": 7581.91,
         "initial_stop_loss": 7581.91,
         "original_sl": 7581.91,
         "peak_high": 7715.0,
-        "trough_low": 7621.5,
+        "trough_low": 7611.0,
         "margin_required_inr": 10801.0,
-        "product_type": "MIS_INTRADAY"
+        "product_type": "MIS_INTRADAY",
+        "exit_trigger": "STAGNATION_EXIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 7611.0,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b97,715.00 (Target: \u20b97,874.71, SL: \u20b97,581.91) | 3,000 Replays: 19.3% Target | 18.4% Stop | Expected: +0.05R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
+        "outcome": "WRONG",
+        "badge": "Stagnation Exit \u23f1\ufe0f (01:50 PM IST)",
+        "pnl_display": "\u20b9-728.00",
+        "summary": "Smart Stagnation Exit \u23f1\ufe0f (240m cutoff: 241m open | Down 1.35% | Lost VWAP \u20b97,674.4 | Thesis Decayed) at 01:50 PM IST. Entry: \u20b97,715.00 -> Exit: \u20b97,611.00 (\u20b9-728.00).",
+        "exit_time": "01:50 PM IST",
+        "exit_trigger": "STAGNATION_EXIT"
       },
       "live_price_data": {
-        "current_price": 7621.5,
-        "change_pct": -1.21
+        "current_price": 7611.0,
+        "change_pct": -1.35
       }
     },
     {
@@ -923,8 +926,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b94,904.90 (Target: \u20b95,006.43, SL: \u20b94,820.29) | 3,000 Replays: 13.6% Target | 10.3% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "live_price_data": {
-        "current_price": 4857.9,
-        "change_pct": -0.96
+        "current_price": 4883.9,
+        "change_pct": -0.43
       }
     },
     {
