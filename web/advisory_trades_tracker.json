@@ -1,28 +1,247 @@
 {
-  "last_updated": "16 Nov 2026, 02:22 PM IST",
+  "last_updated": "16 Nov 2026, 03:20 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 115,
-    "executed_count": 29,
+    "total_signals": 117,
+    "executed_count": 31,
     "correct_count": 8,
-    "wrong_count": 8,
+    "wrong_count": 11,
     "protected_count": 86,
-    "win_rate_pct": 50.0,
-    "total_pnl_inr": 39462.67,
-    "commodity_pnl_inr": 39085.05,
-    "intraday_pnl_inr": 377.62,
-    "intraday_booked_profit_inr": 377.62,
-    "intraday_pool_balance_inr": 30377.62,
-    "avg_trade_pnl_inr": 1360.78,
-    "active_trades_count": 3,
+    "win_rate_pct": 42.1,
+    "total_pnl_inr": 38634.47,
+    "commodity_pnl_inr": 38297.55,
+    "intraday_pnl_inr": 336.92,
+    "intraday_booked_profit_inr": 336.92,
+    "intraday_pool_balance_inr": 30336.92,
+    "avg_trade_pnl_inr": 1246.27,
+    "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 339462.67,
-    "used_margin_inr": 323723.48,
-    "available_cash_inr": 15739.19,
-    "net_worth_inr": 339462.67
+    "current_cash_inr": 338634.47,
+    "used_margin_inr": 326015.7,
+    "available_cash_inr": 12618.77,
+    "net_worth_inr": 338634.47
   },
   "trades": [
+    {
+      "id": "ADV-16Nov2026-1520-NATURALGASM",
+      "date": "16 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (Circuit Floor Rebound (Mean Reversion))",
+      "time_trigger": "03:20 PM IST",
+      "time_6pm": "03:20 PM IST",
+      "time_validation": "03:20 PM IST",
+      "time_615": "03:20 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "NATURALGASM",
+      "name": "Natural Gas Mini",
+      "lot_size": 2750,
+      "event_context": "Indicator Confluence: Circuit Floor Rebound (Mean Reversion)",
+      "regime": {
+        "regime": "VOLATILE_EXPANSION",
+        "badge": "\u26a1 Volatile Expansion",
+        "short_tag": "High Volatility",
+        "color": "#fbbf24",
+        "bg_color": "rgba(251, 191, 36, 0.12)",
+        "border_color": "rgba(251, 191, 36, 0.35)",
+        "mandate": "Wide volatility band (BBW: 12.7%, Vol: 4.0%). High whipsaw risk. Reduce position sizing by 50%.",
+        "allowed_strategies": [
+          "DEFENSIVE_SCALPING",
+          "REDUCED_SIZING"
+        ],
+        "blocked_strategies": [
+          "AGGRESSIVE_ENTRIES",
+          "FULL_LEVERAGE"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 24.9,
+        "rsi": 43.2,
+        "bb_width_pct": 12.66,
+        "daily_vol_pct": 4.04
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 39.6,
+        "p_stop_pct": 39.6,
+        "p_neither_pct": 20.8,
+        "resolved_win_rate_pct": 50.0,
+        "expected_r": 0.079,
+        "target_r": 1.2,
+        "sample_bars": 1973,
+        "summary": "3,000 Replays: 39.6% Target | 39.6% Stop | Expected: +0.08R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 8610.0,
+        "potential_gain_inr": 10320.0
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b9291.90",
+        "rationale": "Price tested Lower Circuit zone (0.78% away) or oversold RSI (43.2 <= 26) and confirmed +0.25% bounce off day low \u20b9290.80. High probability mean-reversion. 3,000 Replays: 39.6% Target | 39.6% Stop | Expected: +0.08R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 291.9,
+        "stop_loss": 289.03,
+        "target": 295.34,
+        "original_stop_loss": 289.03,
+        "original_target": 295.34
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 291.9,
+        "action_taken": "Entered BUY 2750 units @ \u20b9291.90",
+        "detail": "Circuit Floor Rebound (Mean Reversion): Price tested Lower Circuit zone (0.78% away) or oversold RSI (43.2 <= 26) and confirmed +0.25% bounce off day low \u20b9290.80. High probability mean-reversion. | 3,000 Replays: 39.6% Target | 39.6% Stop | Expected: +0.08R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 2750,
+        "entry_price": 291.9,
+        "entry_time": "03:20 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "margin_required_inr": 144490.5,
+        "target": 295.34,
+        "stop_loss": 289.03,
+        "initial_stop_loss": 289.03,
+        "original_sl": 289.03,
+        "peak_high": 291.9,
+        "trough_low": 291.9,
+        "entry_day_high": 291.9,
+        "entry_day_low": 291.9
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Circuit Floor Rebound (Mean Reversion) active: BUY @ \u20b9291.90 (Target: \u20b9295.34, SL: \u20b9289.03) | 3,000 Replays: 39.6% Target | 39.6% Stop | Expected: +0.08R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
+    {
+      "id": "ADV-16Nov2026-1520-ULTRACEMCO",
+      "date": "16 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "03:20 PM IST",
+      "time_6pm": "03:20 PM IST",
+      "time_validation": "03:20 PM IST",
+      "time_615": "03:20 PM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "ULTRACEMCO.NS",
+      "name": "UltraTech Cement Limited",
+      "lot_size": 4,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 65.5). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 65.5,
+        "bb_width_pct": 20.13,
+        "daily_vol_pct": 1.5
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 29.6,
+        "p_stop_pct": 23.0,
+        "p_neither_pct": 47.4,
+        "resolved_win_rate_pct": 56.3,
+        "expected_r": 0.125,
+        "target_r": 1.2,
+        "sample_bars": 727,
+        "summary": "3,000 Replays: 29.6% Target | 23.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 478.56,
+        "potential_gain_inr": 574.28
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b912,270.00 breaking above range high \u20b912,270.00 with volume confirmation."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b912,270.00",
+        "rationale": "High-Beta breakout momentum (Chg: +1.50%) with healthy RSI (65.5) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 29.6% Target | 23.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 12270.0,
+        "stop_loss": 12150.36,
+        "target": 12413.57
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 12270.0,
+        "action_taken": "Entered BUY 4 shares @ \u20b912,270.00",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.50%) with healthy RSI (65.5) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 29.6% Target | 23.0% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 4,
+        "entry_price": 12270.0,
+        "entry_time": "03:20 PM IST",
+        "exit_price": 12270.0,
+        "exit_time": "03:20 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED",
+        "target": 12413.57,
+        "stop_loss": 12150.36,
+        "initial_stop_loss": 12150.36,
+        "original_sl": 12150.36,
+        "peak_high": 12270.0,
+        "trough_low": 12270.0,
+        "margin_required_inr": 9816.0,
+        "product_type": "MIS_INTRADAY",
+        "exit_trigger": "INTRADAY_320_SQUAREOFF"
+      },
+      "eod_outcome": {
+        "session_close": 12270.0,
+        "circuit_limit": null,
+        "outcome": "WRONG",
+        "badge": "Wrong \u274c (03:20 PM)",
+        "pnl_display": "+\u20b90.00",
+        "summary": "03:20 PM IST session close exit. Entry: \u20b912,270.00 -> Exit: \u20b912,270.00 (+0.00 pts | +\u20b90.00). Margin released.",
+        "exit_time": "03:20 PM IST",
+        "exit_trigger": "INTRADAY_320_SQUAREOFF"
+      }
+    },
     {
       "id": "ADV-16Nov2026-1330-GOLDM",
       "date": "16 Nov 2026",
@@ -472,7 +691,7 @@
       "time_6pm": "12:23 PM IST",
       "time_validation": "12:23 PM IST",
       "time_615": "12:23 PM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "03:20 PM IST",
       "symbol": "APOLLOHOSP-FUT",
       "name": "Apollo Hospitals Futures",
       "lot_size": 75,
@@ -554,11 +773,11 @@
         "quantity": 75,
         "entry_price": 8760.5,
         "entry_time": "12:23 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": -4.5,
-        "pnl_inr": -337.5,
-        "status": "ACTIVE",
+        "exit_price": 8750.0,
+        "exit_time": "03:20 PM IST",
+        "pnl_points": -10.5,
+        "pnl_inr": -787.5,
+        "status": "CLOSED",
         "target": 8862.0,
         "stop_loss": 8675.0,
         "initial_stop_loss": 8675.0,
@@ -566,19 +785,22 @@
         "peak_high": 8756.5,
         "trough_low": 8729.5,
         "margin_required_inr": 131407.5,
-        "product_type": "NRML_FUTURES"
+        "product_type": "NRML_FUTURES",
+        "exit_trigger": "EOD_SQUAREOFF"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 8750.0,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b98,760.50 (Target: \u20b98,862.00, SL: \u20b98,675.00) | Parametric Model: 44.4% Target | 30.5% Stop | Expected: +0.23R"
+        "outcome": "WRONG",
+        "badge": "EOD Square-off \u23f0 (03:20 PM IST)",
+        "pnl_display": "\u20b9-787.50",
+        "summary": "Intraday EOD Square-off (03:20 PM) \u23f0 at 03:20 PM IST. Entry: \u20b98,760.50 -> Exit: \u20b98,750.00 (\u20b9-787.50).",
+        "exit_time": "03:20 PM IST",
+        "exit_trigger": "EOD_SQUAREOFF"
       },
       "live_price_data": {
-        "current_price": 8729.5,
-        "change_pct": -0.35
+        "current_price": 8750.0,
+        "change_pct": -0.12
       },
       "contract_ticker": "NSE:APOLLOHOSP1!"
     },
@@ -674,7 +896,7 @@
         "stop_loss": 327.41,
         "initial_stop_loss": 330.53,
         "original_sl": 330.53,
-        "peak_high": 326.05,
+        "peak_high": 326.2,
         "trough_low": 326.05,
         "entry_day_high": 328.85,
         "entry_day_low": 328.85,
@@ -690,8 +912,8 @@
         "summary": "Trailing Profit Stop (+40% profit locked @ \u20b9327.41) active. Position running towards Target."
       },
       "live_price_data": {
-        "current_price": 326.05,
-        "change_pct": -0.85
+        "current_price": 326.2,
+        "change_pct": -0.81
       }
     },
     {
@@ -822,7 +1044,7 @@
       "time_6pm": "09:41 AM IST",
       "time_validation": "09:41 AM IST",
       "time_615": "09:41 AM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "03:20 PM IST",
       "symbol": "TITAN.NS",
       "name": "Titan Company Limited",
       "lot_size": 11,
@@ -904,11 +1126,11 @@
         "quantity": 11,
         "entry_price": 4904.9,
         "entry_time": "09:41 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 4901.2,
+        "exit_time": "03:20 PM IST",
+        "pnl_points": -3.7,
+        "pnl_inr": -40.7,
+        "status": "CLOSED",
         "target": 5006.43,
         "stop_loss": 4820.29,
         "initial_stop_loss": 4820.29,
@@ -916,19 +1138,22 @@
         "peak_high": 4904.9,
         "trough_low": 4857.9,
         "margin_required_inr": 10790.78,
-        "product_type": "MIS_INTRADAY"
+        "product_type": "MIS_INTRADAY",
+        "exit_trigger": "EOD_SQUAREOFF"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 4901.2,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b94,904.90 (Target: \u20b95,006.43, SL: \u20b94,820.29) | 3,000 Replays: 13.6% Target | 10.3% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+        "outcome": "WRONG",
+        "badge": "EOD Square-off \u23f0 (03:20 PM IST)",
+        "pnl_display": "\u20b9-40.70",
+        "summary": "Intraday EOD Square-off (03:20 PM) \u23f0 at 03:20 PM IST. Entry: \u20b94,904.90 -> Exit: \u20b94,901.20 (\u20b9-40.70).",
+        "exit_time": "03:20 PM IST",
+        "exit_trigger": "EOD_SQUAREOFF"
       },
       "live_price_data": {
-        "current_price": 4884.3,
-        "change_pct": -0.42
+        "current_price": 4901.2,
+        "change_pct": -0.08
       }
     },
     {
