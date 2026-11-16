@@ -117,13 +117,15 @@ class PreTradeRiskEngine:
                 "reward_risk_ratio": rrr
             }
 
-        # 6. Max Loss Per Trade Guard (INR) - Movement-First Mandate
-        # Prioritize capturing high-conviction market movement over arbitrary stop-loss caps.
-        # If potential loss exceeds max_loss_per_trade_inr, log note and accept risk.
+        # 6. Strict Max Loss Per Trade Guard (INR)
+        # Strictly enforce maximum risk per trade (<= ₹3,000 cap). Reject any contract where loss at stop exceeds cap.
         loss_at_stop = round(risk_pts * lot_size, 2)
-        risk_note = None
         if max_loss_per_trade_inr and loss_at_stop > max_loss_per_trade_inr:
-            risk_note = f"High-conviction movement risk accepted: Potential loss ₹{loss_at_stop:,.2f} exceeds standard cap ₹{max_loss_per_trade_inr:,.2f}."
+            return {
+                "passed": False,
+                "reason": f"MAX_LOSS_EXCEEDED: Potential loss at stop (₹{loss_at_stop:,.2f}) exceeds strict limit (₹{max_loss_per_trade_inr:,.2f}). Trade blocked.",
+                "loss_at_stop_inr": loss_at_stop
+            }
 
         # 7. Portfolio Daily Loss Circuit Breaker
         # Segregated by Asset Class so commodity risk caps don't falsely choke intraday stock trading and vice-versa
