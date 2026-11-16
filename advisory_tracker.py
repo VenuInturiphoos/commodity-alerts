@@ -316,6 +316,86 @@ def resolve_commodity_item(sym, commodities_map):
         return commodities_map[sym + 'MINI']
     return None
 
+def get_authoritative_contract_price(symbol, asset_type='EQUITY', timeout=6):
+    """
+    Fetches the 0-second authoritative real-time execution price for the EXACT contract:
+    - Stock Futures (e.g. APOLLOHOSP-FUT): Queries TradingView Futures Scanner for NSE:{CLEAN_SYM}1!
+      to get the true front-month futures price (including basis premium/discount).
+    - Commodities (e.g. ALUMINI, CRUDEOILM, GOLDM): Queries TradingView Futures Scanner for MCX:{EXACT_ROOT}1!
+      so Mini contracts NEVER inherit main contract prices.
+    - Intraday Equities (e.g. TITAN.NS): Queries TradingView India Scanner for real-time NSE spot price.
+    Returns (price, contract_ticker) or (None, None) on failure.
+    """
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+    clean = symbol.replace('.NS', '').replace('-FUT', '').upper() if symbol else ''
+    if not clean:
+        return None, None
+    
+    # 1. Stock Futures
+    if asset_type in ['FUTURES', 'STOCK_FUTURES'] or '-FUT' in symbol:
+        url = 'https://scanner.tradingview.com/futures/scan'
+        fut_tick = f"{clean}1!"
+        payload = {
+            'filter': [{'left': 'name', 'operation': 'equal', 'right': fut_tick}],
+            'columns': ['name', 'close', 'open', 'high', 'low', 'change']
+        }
+        try:
+            resp = requests.post(url, json=payload, headers=headers, timeout=timeout)
+            if resp.status_code == 200:
+                data = resp.json().get('data', [])
+                if data:
+                    p = float(data[0]['d'][1])
+                    if p > 0:
+                        return p, f"NSE:{fut_tick}"
+        except Exception as e:
+            print(f"Notice: Could not fetch real-time futures price for {symbol}: {e}")
+
+    # 2. Commodity Mini & Main Contracts
+    elif asset_type in ['COMMODITY', 'COMMODITY_FUTURES'] or clean in [
+        'ALUMINI', 'ALUMINIUM', 'COPPERM', 'COPPER', 'CRUDEOILM', 'CRUDEOIL',
+        'GOLDM', 'GOLD', 'SILVERMIC', 'SILVERM', 'SILVER', 'ZINCMINI', 'ZINC',
+        'NATURALGASM', 'NATURALGAS', 'NATGASMINI'
+    ]:
+        url = 'https://scanner.tradingview.com/futures/scan'
+        tv_root = clean
+        if clean == 'NATURALGASM':
+            tv_root = 'NATGASMINI'
+        fut_tick = f"{tv_root}1!"
+        payload = {
+            'filter': [{'left': 'name', 'operation': 'equal', 'right': fut_tick}],
+            'columns': ['name', 'close', 'open', 'high', 'low', 'change']
+        }
+        try:
+            resp = requests.post(url, json=payload, headers=headers, timeout=timeout)
+            if resp.status_code == 200:
+                data = resp.json().get('data', [])
+                if data:
+                    p = float(data[0]['d'][1])
+                    if p > 0:
+                        return p, f"MCX:{fut_tick}"
+        except Exception as e:
+            print(f"Notice: Could not fetch real-time commodity contract price for {symbol}: {e}")
+
+    # 3. Cash Equities
+    else:
+        url = 'https://scanner.tradingview.com/india/scan'
+        payload = {
+            'filter': [{'left': 'exchange', 'operation': 'equal', 'right': 'NSE'}, {'left': 'name', 'operation': 'equal', 'right': clean}],
+            'columns': ['name', 'close', 'open', 'high', 'low', 'change']
+        }
+        try:
+            resp = requests.post(url, json=payload, headers=headers, timeout=timeout)
+            if resp.status_code == 200:
+                data = resp.json().get('data', [])
+                if data:
+                    p = float(data[0]['d'][1])
+                    if p > 0:
+                        return p, f"NSE:{clean}"
+        except Exception as e:
+            print(f"Notice: Could not fetch real-time equity price for {symbol}: {e}")
+            
+    return None, None
+
 DEFAULT_STARTING_CASH = 300000.0  # ₹3,00,000 (3 Lakhs Virtual Cash)
 
 class IntradayStockSelector:
@@ -3363,17 +3443,23 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
         else:
             continue
 
-        # Real-time authoritative live quote & candle fetch for all active equity positions
+        # Real-time authoritative live contract price fetch for exact traded asset (0s latency)
+        trade_asset_type = 'STOCK_FUTURES' if is_stock_future else (trade.get('asset_type') or ('COMMODITY' if c_item else 'EQUITY'))
+        auth_p, auth_tick = get_authoritative_contract_price(sym, asset_type=trade_asset_type)
+        if auth_p and auth_p > 0:
+            cur_p = auth_p
+
+        # Real-time candle fetch for equity/futures intraday positions to check high/low bounds
         if is_equity or (sym and '.NS' in sym):
             try:
                 import yfinance as yf
                 yf_sym = sym if sym.endswith('.NS') else f"{clean_sym}.NS"
                 t_obj = yf.Ticker(yf_sym)
                 fast_p = getattr(t_obj.fast_info, 'last_price', None)
-                if fast_p and float(fast_p) > 0:
+                if fast_p and float(fast_p) > 0 and (not auth_p or auth_p <= 0):
                     cur_p = round(float(fast_p), 2)
-                    day_h = max(day_h, round(float(getattr(t_obj.fast_info, 'day_high', cur_p) or cur_p), 2))
-                    day_l = min(day_l, round(float(getattr(t_obj.fast_info, 'day_low', cur_p) or cur_p), 2))
+                day_h = max(day_h, round(float(getattr(t_obj.fast_info, 'day_high', cur_p) or cur_p), 2))
+                day_l = min(day_l, round(float(getattr(t_obj.fast_info, 'day_low', cur_p) or cur_p), 2))
                 
                 # Fetch recent 1-minute intraday bars to check intra-interval stop breaches
                 hist_1m = t_obj.history(period='1d', interval='1m')
@@ -4599,9 +4685,9 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
                 name = s.get('full_name') or s.get('name', clean_sym)
                 cur_p = float(s.get('close') or 0)
-                # Fetch authoritative real-time execution price at this exact moment
-                live_eq_p = None
-                if checker and getattr(checker, 'angel_active', False):
+                # Fetch authoritative real-time execution price at this exact moment (0s latency)
+                live_eq_p, eq_tick = get_authoritative_contract_price(clean_sym, 'EQUITY')
+                if not live_eq_p and checker and getattr(checker, 'angel_active', False):
                     try:
                         sec_id = checker.get_angel_token(sym)
                         if sec_id:
@@ -4839,8 +4925,15 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                     fut_risk_per_share = abs(cur_p - fut_sl)
 
                             if can_enter_futures:
+                                # Fetch live authoritative futures contract price (0s latency front-month quote)
+                                fut_live_p, fut_tick = get_authoritative_contract_price(fut_sym, 'STOCK_FUTURES')
+                                fut_entry_p = fut_live_p if (fut_live_p and fut_live_p > 0) else cur_p
+                                basis_spread = round(fut_entry_p - cur_p, 2)
+                                fut_sl = round(fut_sl + basis_spread, 2)
+                                fut_tgt = round(fut_tgt + basis_spread, 2)
+
                                 regime_info = inst_fut_check.get('regime_info') or s.get('regime') or MarketRegimeDetector.classify_regime(
-                                    symbol=clean_sym, close=cur_p, ema50=ema50, ema200=float(s.get('ema_200') or cur_p),
+                                    symbol=clean_sym, close=fut_entry_p, ema50=ema50, ema200=float(s.get('ema_200') or cur_p),
                                     adx=float(s.get('adx') or 20.0), rsi=rsi, bb_lower=bb_lower, bb_upper=float(s.get('bb_upper') or cur_p * 1.05),
                                     atr=atr
                                 )
@@ -4848,13 +4941,13 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                 # 14-Point Pre-Trade Risk Engine Check for Stock Futures
                                 all_existing = new_trades + trades
                                 risk_metrics = PreTradeRiskEngine.check_risk(
-                                    fut_sym, eq_action, cur_p, fut_sl, fut_tgt, fut_lot, all_existing,
+                                    fut_sym, eq_action, fut_entry_p, fut_sl, fut_tgt, fut_lot, all_existing,
                                     max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR,
                                     max_daily_loss_inr=MAX_DAILY_LOSS_INR
                                 )
                                 if risk_metrics.get('passed'):
                                     # Monte Carlo Time Machine simulation (3,000 replays)
-                                    sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, fut_sl, fut_tgt, action=eq_action.lower(), replays=3000)
+                                    sim_metrics = MonteCarloTimeMachine.run_simulation(sym, fut_entry_p, fut_sl, fut_tgt, action=eq_action.lower(), replays=3000)
                                     if sim_metrics.get('passed'):
                                         # Rigorous Profitability Verification Gate (Long & Short):
                                         exp_r = float(sim_metrics.get('expected_r', 0.0) or 0.0)
@@ -4866,7 +4959,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
                                         # Multi-Agent Consensus Deliberation (TradingAgents)
                                         if TradingAgentsOrchestrator and TradingAgentsOrchestrator.is_available():
-                                            ta_check = TradingAgentsOrchestrator.deliberate_intraday(clean_sym, cur_p, action=eq_action)
+                                            ta_check = TradingAgentsOrchestrator.deliberate_intraday(clean_sym, fut_entry_p, action=eq_action)
                                             if not ta_check.get('passed') and not ta_check.get('approved', True):
                                                 print(f"🤖 TradingAgents AI Guard Vetoed Stock Future {fut_sym} {eq_action}: {ta_check.get('reason')}")
                                                 can_enter_futures = False
@@ -4874,7 +4967,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
                                         trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{clean_sym}FUT"
                                         if not any(t.get('id') == trade_id for t in (trades + new_trades)):
-                                            has_margin, req_margin, avail_margin, fut_lot = check_margin_availability(tracker, fut_sym, cur_p, fut_lot, is_equity=False, sl=fut_sl)
+                                            has_margin, req_margin, avail_margin, fut_lot = check_margin_availability(tracker, fut_sym, fut_entry_p, fut_lot, is_equity=False, sl=fut_sl)
                                             if not has_margin:
                                                 entry_obj = {
                                                     "id": trade_id,
@@ -4889,6 +4982,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                                     "name": sfc['name'],
                                                     "lot_size": fut_lot,
                                                     "asset_type": "FUTURES",
+                                                    "contract_ticker": fut_tick or f"NSE:{clean_sym}1!",
                                                     "event_context": f"NSE Stock Future ({sfc['sector']}): {eq_setup}",
                                                     "regime": regime_info,
                                                     "time_machine": sim_metrics,
@@ -4897,16 +4991,16 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                                     "event_check": event_metrics,
                                                     "suggestion_6pm": {
                                                         "status": "REALTIME_TRIGGER",
-                                                        "action_text": f"{eq_action} 1 Lot @ ₹{cur_p:,.2f}",
+                                                        "action_text": f"{eq_action} 1 Lot @ ₹{fut_entry_p:,.2f}",
                                                         "rationale": f"{eq_rationale} {sim_metrics.get('summary', '')}",
-                                                        "reference_price": cur_p,
+                                                        "reference_price": fut_entry_p,
                                                         "stop_loss": fut_sl,
                                                         "target": fut_tgt
                                                     },
                                                     "check_615": {
                                                         "checked": True,
                                                         "status": "INSUFFICIENT_MARGIN_STAND_ASIDE",
-                                                        "price_615": cur_p,
+                                                        "price_615": fut_entry_p,
                                                         "action_taken": f"Execution Skipped: Insufficient Margin (Req: ₹{req_margin:,.2f} > Avail: ₹{avail_margin:,.2f}). Alert Sent.",
                                                         "detail": f"{eq_setup}: Setup confirmed, but available futures cash ₹{avail_margin:,.2f} is insufficient for margin ₹{req_margin:,.2f}."
                                                     },
@@ -4914,9 +5008,9 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                                         "user": USER_ACCOUNT,
                                                         "action": "STAND_ASIDE",
                                                         "quantity": 0,
-                                                        "entry_price": cur_p,
+                                                        "entry_price": fut_entry_p,
                                                         "entry_time": now_time_str,
-                                                        "exit_price": cur_p,
+                                                        "exit_price": fut_entry_p,
                                                         "exit_time": "03:25 PM IST",
                                                         "pnl_points": 0.0,
                                                         "pnl_inr": 0.0,
@@ -4936,13 +5030,13 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                                 new_trades.append(entry_obj)
                                                 active_sectors.add(sfc['sector'])
                                                 mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
-                                                subject = f"📢 [STOCK FUTURE MARGIN EXHAUSTED - DISCRETIONARY ALERT] {sfc['name']} {eq_action} @ ₹{cur_p:,.2f} ({now_time_str})"
+                                                subject = f"📢 [STOCK FUTURE MARGIN EXHAUSTED - DISCRETIONARY ALERT] {sfc['name']} {eq_action} @ ₹{fut_entry_p:,.2f} ({now_time_str})"
                                                 body = (
                                                     f"📢 <b>REAL-TIME NSE STOCK FUTURE TRIGGER (MARGIN EXHAUSTED)</b>\n"
                                                     f"📅 <i>{today_str}, {now_time_str}</i>\n"
                                                     f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
-                                                    f"• <b>Contract</b>: <b>{sfc['name']} ({fut_sym})</b>\n"
-                                                    f"• <b>Signal</b>: <b>{eq_action} 1 Lot ({fut_lot} units) @ ₹{cur_p:,.2f}</b>\n"
+                                                    f"• <b>Contract</b>: <b>{sfc['name']} ({fut_sym})</b> [Ticker: {fut_tick or f'NSE:{clean_sym}1!'}]\n"
+                                                    f"• <b>Signal</b>: <b>{eq_action} 1 Lot ({fut_lot} units) @ ₹{fut_entry_p:,.2f}</b>\n"
                                                     f"• <b>Setup</b>: {eq_setup}\n"
                                                     f"• <b>Technical Rationale</b>: {eq_rationale}\n"
                                                     f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
@@ -4953,7 +5047,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                                     f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
                                                 )
                                                 alerts_to_send.append({'subject': subject, 'body': body})
-                                                print(f"📢 Discretionary Alert Queued (Futures Margin Exhausted): {sfc['name']} {eq_action} @ ₹{cur_p:,.2f}")
+                                                print(f"📢 Discretionary Alert Queued (Futures Margin Exhausted): {sfc['name']} {eq_action} @ ₹{fut_entry_p:,.2f}")
                                                 can_enter_futures = False
                                                 continue
 
@@ -4970,6 +5064,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                                 "name": sfc['name'],
                                                 "lot_size": fut_lot,
                                                 "asset_type": "FUTURES",
+                                                "contract_ticker": fut_tick or f"NSE:{clean_sym}1!",
                                                 "event_context": f"NSE Stock Future ({sfc['sector']}): {eq_setup}",
                                                 "regime": regime_info,
                                                 "time_machine": sim_metrics,
@@ -4978,24 +5073,24 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                                 "event_check": event_metrics,
                                                 "suggestion_6pm": {
                                                     "status": "REALTIME_TRIGGER",
-                                                    "action_text": f"{eq_action} 1 Lot @ ₹{cur_p:,.2f}",
+                                                    "action_text": f"{eq_action} 1 Lot @ ₹{fut_entry_p:,.2f}",
                                                     "rationale": f"{eq_rationale} {sim_metrics.get('summary', '')}",
-                                                    "reference_price": cur_p,
+                                                    "reference_price": fut_entry_p,
                                                     "stop_loss": fut_sl,
                                                     "target": fut_tgt
                                                 },
                                                 "check_615": {
                                                     "checked": True,
                                                     "status": "TECHNICAL_TRIGGER_ENTERED",
-                                                    "price_615": cur_p,
-                                                    "action_taken": f"Entered {eq_action} 1 Lot ({fut_lot} units) @ ₹{cur_p:,.2f}",
+                                                    "price_615": fut_entry_p,
+                                                    "action_taken": f"Entered {eq_action} 1 Lot ({fut_lot} units) @ ₹{fut_entry_p:,.2f}",
                                                     "detail": f"{eq_setup}: {eq_rationale} | {sim_metrics.get('summary', '')}"
                                                 },
                                                 "paper_trade": {
                                                     "user": USER_ACCOUNT,
                                                     "action": eq_action,
                                                     "quantity": fut_lot,
-                                                    "entry_price": cur_p,
+                                                    "entry_price": fut_entry_p,
                                                     "entry_time": now_time_str,
                                                     "exit_price": None,
                                                     "exit_time": None,
@@ -5006,8 +5101,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                                     "stop_loss": fut_sl,
                                                     "initial_stop_loss": fut_sl,
                                                     "original_sl": fut_sl,
-                                                    "peak_high": cur_p,
-                                                    "trough_low": cur_p,
+                                                    "peak_high": fut_entry_p,
+                                                    "trough_low": fut_entry_p,
                                                     "margin_required_inr": fut_margin_req,
                                                     "product_type": "NRML_FUTURES"
                                                 },
@@ -5017,30 +5112,30 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                                     "outcome": "PENDING",
                                                     "badge": "Active Trigger ⚡",
                                                     "pnl_display": "Ticking Live...",
-                                                    "summary": f"{eq_setup} active: {eq_action} @ ₹{cur_p:,.2f} (Target: ₹{fut_tgt:,.2f}, SL: ₹{fut_sl:,.2f}) | {sim_metrics.get('summary', '')}"
+                                                    "summary": f"{eq_setup} active: {eq_action} @ ₹{fut_entry_p:,.2f} (Target: ₹{fut_tgt:,.2f}, SL: ₹{fut_sl:,.2f}) | {sim_metrics.get('summary', '')}"
                                                 }
                                             }
                                             new_trades.append(entry_obj)
                                             active_sectors.add(sfc['sector'])
                                             mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
-                                            subject = f"🎯 [NSE STOCK FUTURE TRIGGER] {sfc['name']} {eq_action} @ ₹{cur_p:,.2f} ({now_time_str})"
+                                            subject = f"🎯 [NSE STOCK FUTURE TRIGGER] {sfc['name']} {eq_action} @ ₹{fut_entry_p:,.2f} ({now_time_str})"
                                             body = (
                                                 f"🎯 <b>REAL-TIME NSE STOCK FUTURE TRIGGER</b>\n"
                                                 f"📅 <i>{today_str}, {now_time_str}</i>\n"
                                                 f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
-                                                f"• <b>Contract</b>: <b>{sfc['name']} ({fut_sym})</b>\n"
-                                                f"• <b>Action</b>: <b>{eq_action} 1 Lot ({fut_lot} units) @ ₹{cur_p:,.2f}</b>\n"
+                                                f"• <b>Contract</b>: <b>{sfc['name']} ({fut_sym})</b> [Ticker: {fut_tick or f'NSE:{clean_sym}1!'}]\n"
+                                                f"• <b>Action</b>: <b>{eq_action} 1 Lot ({fut_lot} units) @ ₹{fut_entry_p:,.2f}</b>\n"
                                                 f"• <b>Technical Setup</b>: {eq_setup}\n"
                                                 f"• <b>Technical Rationale</b>: {eq_rationale}\n"
                                                 f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
                                                 f"• <b>Stop-Loss</b>: <b>₹{fut_sl:,.2f}</b> (Max loss strictly ₹{round(fut_risk_per_share * fut_lot, 2):,.2f} <= ₹{MAX_LOSS_PER_TRADE_INR:,.0f})\n"
                                                 f"• <b>Target (2.0R)</b>: <b>₹{fut_tgt:,.2f}</b>\n"
-                                                f"• <b>Contract Value</b>: ₹{cur_p * fut_lot:,.2f} (Margin Required: ₹{fut_margin_req:,.2f})\n"
+                                                f"• <b>Contract Value</b>: ₹{fut_entry_p * fut_lot:,.2f} (Margin Required: ₹{fut_margin_req:,.2f})\n"
                                                 f"• <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit\n\n"
                                                 f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
                                             )
                                             alerts_to_send.append({'subject': subject, 'body': body})
-                                            print(f"🎯 NSE Stock Future Trigger Fired: {sfc['name']} {eq_action} @ ₹{cur_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
+                                            print(f"🎯 NSE Stock Future Trigger Fired: {sfc['name']} {eq_action} @ ₹{fut_entry_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
                                             can_enter_futures = False
                                             continue
 
