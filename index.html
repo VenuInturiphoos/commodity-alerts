@@ -7179,22 +7179,22 @@ function getAdvisoryTradeLivePriceData(t) {
     if (!t) return null;
     const cleanSym = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
 
-    // Priority 1: Real-time 1-second dynamic tick from TradingView WebStream
-    if (t.live_price_data && t.live_price_data.current_price !== undefined && t.live_price_data.current_price !== null && !isNaN(Number(t.live_price_data.current_price)) && t._is_live_streamed) {
+    // Priority 1: Real-time 1-second tick data from TradingView WebStream
+    if (t.live_price_data && t.live_price_data.current_price !== undefined && t.live_price_data.current_price !== null && !isNaN(Number(t.live_price_data.current_price))) {
         return {
             current_price: Number(t.live_price_data.current_price),
             change_pct: Number(t.live_price_data.change_pct || 0)
         };
     }
 
-    // Priority 2: Authoritative MCX circuits live data
+    // Strict contract isolation: NEVER fallback to a parent/different contract expiry or standard commodity!
+    // A Silver Micro position MUST evaluate against Silver Micro quotes only.
     if (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData)) {
         const item = rawCircuitsData.find(c => {
             const cs = (c.symbol || '').toUpperCase();
             if (cs === cleanSym || cs === (t.symbol || '').toUpperCase()) return true;
             if ((cleanSym === 'ZINCMINI' && cs === 'ZINCM') || (cleanSym === 'ZINCM' && cs === 'ZINCMINI')) return true;
             if ((cleanSym === 'ALUMINI' && cs === 'ALUMINIUMM') || (cleanSym === 'ALUMINIUMM' && cs === 'ALUMINI')) return true;
-            if ((cleanSym === 'NATURALGASM' && cs === 'NATGASMINI') || (cleanSym === 'NATGASMINI' && cs === 'NATURALGASM')) return true;
             return false;
         });
         if (item && item.current_price !== undefined && item.current_price !== null && !isNaN(Number(item.current_price))) {
@@ -7208,7 +7208,6 @@ function getAdvisoryTradeLivePriceData(t) {
             if (ms === (t.symbol || '').toUpperCase() || ms === cleanSym) return true;
             if ((cleanSym === 'ZINCMINI' && ms === 'ZINCM') || (cleanSym === 'ZINCM' && ms === 'ZINCMINI')) return true;
             if ((cleanSym === 'ALUMINI' && ms === 'ALUMINIUMM') || (cleanSym === 'ALUMINIUMM' && ms === 'ALUMINI')) return true;
-            if ((cleanSym === 'NATURALGASM' && ms === 'NATGASMINI') || (cleanSym === 'NATGASMINI' && ms === 'NATURALGASM')) return true;
             return false;
         });
         if (item && item.current_price !== undefined && item.current_price !== null && !isNaN(Number(item.current_price))) {
@@ -7230,7 +7229,7 @@ function getAdvisoryTradeLivePriceData(t) {
         }
     }
 
-    if (t.live_price_data && t.live_price_data.current_price !== undefined && t.live_price_data.current_price !== null && !isNaN(Number(t.live_price_data.current_price))) {
+    if (t.live_price_data && t.live_price_data.current_price) {
         return {
             current_price: Number(t.live_price_data.current_price),
             change_pct: Number(t.live_price_data.change_pct || 0)
@@ -8804,39 +8803,30 @@ class TradingViewWebStreamManager {
             'MCX:ZINC1!', 'MCX:ZINCMINI1!',
             'MCX:GOLD1!', 'MCX:GOLDM1!',
             'MCX:CRUDEOIL1!', 'MCX:CRUDEOILM1!',
-            'MCX:NATURALGAS1!', 'MCX:NATGASMINI1!',
+            'MCX:NATURALGAS1!', 'MCX:NATURALGASM1!',
             'MCX:COPPER1!', 'MCX:COPPERM1!',
             'MCX:ALUMINIUM1!', 'MCX:ALUMINI1!'
         ];
 
         const equityTickers = [];
-        const checkTradeForSym = (t) => {
-            const sym = t.symbol || '';
-            const clean = sym.replace('.NS', '').replace('-FUT', '').toUpperCase();
-            if (!clean) return;
-            if (sym.includes('-FUT') || t.asset_type === 'FUTURES') {
-                const tk = `NSE:${clean}1!`;
-                if (!futuresTickers.includes(tk)) futuresTickers.push(tk);
-            } else if (sym.includes('.NS') || t.asset_type === 'INTRADAY_STOCK' || t.asset_type === 'EQUITY') {
+        const checkTradeForEq = (t) => {
+            if (t.symbol && (t.symbol.includes('.NS') || t.asset_type === 'INTRADAY_STOCK')) {
+                const clean = t.symbol.replace('.NS', '').toUpperCase();
                 const tk = `NSE:${clean}`;
                 if (!equityTickers.includes(tk)) equityTickers.push(tk);
-            } else {
-                let commTk = `MCX:${clean}1!`;
-                if (clean === 'NATURALGASM') commTk = 'MCX:NATGASMINI1!';
-                if (!futuresTickers.includes(commTk)) futuresTickers.push(commTk);
             }
         };
         if (typeof advisoryTrackerData !== 'undefined' && Array.isArray(advisoryTrackerData?.trades)) {
-            advisoryTrackerData.trades.forEach(checkTradeForSym);
+            advisoryTrackerData.trades.forEach(checkTradeForEq);
         }
         if (typeof activeTrackerCache !== 'undefined' && Array.isArray(activeTrackerCache?.trades)) {
-            activeTrackerCache.trades.forEach(checkTradeForSym);
+            activeTrackerCache.trades.forEach(checkTradeForEq);
         }
         if (!equityTickers.includes('NSE:AUROPHARMA')) equityTickers.push('NSE:AUROPHARMA');
         if (!equityTickers.includes('NSE:GRASIM')) equityTickers.push('NSE:GRASIM');
 
         try {
-            // High-frequency TradingView Futures Scanner (MCX Commodities & NSE Stock Futures)
+            // High-frequency TradingView Futures Scanner (MCX)
             const futPromise = fetch('https://scanner.tradingview.com/futures/scan', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
@@ -8877,12 +8867,12 @@ class TradingViewWebStreamManager {
                 targetTradeLists.forEach(trades => {
                     trades.forEach(t => {
                         const clean = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
-                        let match = futMap[`MCX:${clean}1!`] || futMap[`NSE:${clean}1!`];
+                        let match = futMap[`MCX:${clean}1!`];
                         if (!match && clean === 'SILVERMIC') match = futMap['MCX:SILVERMIC1!'] || futMap['MCX:SILVER1!'];
                         if (!match && (clean === 'ZINCMINI' || clean === 'ZINCM')) match = futMap['MCX:ZINCMINI1!'] || futMap['MCX:ZINC1!'];
                         if (!match && clean === 'GOLDM') match = futMap['MCX:GOLDM1!'] || futMap['MCX:GOLD1!'];
                         if (!match && clean === 'CRUDEOILM') match = futMap['MCX:CRUDEOILM1!'] || futMap['MCX:CRUDEOIL1!'];
-                        if (!match && clean === 'NATURALGASM') match = futMap['MCX:NATGASMINI1!'] || futMap['MCX:NATURALGAS1!'];
+                        if (!match && clean === 'NATURALGASM') match = futMap['MCX:NATURALGASM1!'] || futMap['MCX:NATURALGAS1!'];
                         if (!match && (clean === 'ALUMINI' || clean === 'ALUMINIUMM')) match = futMap['MCX:ALUMINI1!'] || futMap['MCX:ALUMINIUM1!'];
                         if (!match && clean === 'COPPERM') match = futMap['MCX:COPPERM1!'] || futMap['MCX:COPPER1!'];
 
@@ -8890,11 +8880,8 @@ class TradingViewWebStreamManager {
                             t.live_price_data = t.live_price_data || {};
                             t.live_price_data.current_price = match.close;
                             t.live_price_data.change_pct = match.chg_pct;
-                            t._is_live_streamed = true;
                             changed = true;
                         }
-                    });
-                });
                     });
                 });
 
