@@ -1,5 +1,5 @@
 {
-  "last_updated": "16 Nov 2026, 12:23 PM IST",
+  "last_updated": "16 Nov 2026, 12:26 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -119,21 +119,27 @@
         "pnl_inr": 0.0,
         "status": "ACTIVE",
         "target": 8766.39,
-        "stop_loss": 8580.51,
+        "stop_loss": 8705.56,
         "initial_stop_loss": 8580.51,
         "original_sl": 8580.51,
-        "peak_high": 8665.0,
-        "trough_low": 8665.0,
+        "peak_high": 8743.0,
+        "trough_low": 8743.0,
         "margin_required_inr": 129975.0,
-        "product_type": "NRML_FUTURES"
+        "product_type": "NRML_FUTURES",
+        "trailing_sl_active": true,
+        "stage_2_profit_locked": true
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
+        "badge": "Active (Trailing Stop @ \u20b98,705.56)",
         "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b98,665.00 (Target: \u20b98,766.39, SL: \u20b98,580.51) | 3,000 Replays: 44.4% Target | 30.5% Stop | Expected: +0.23R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+        "summary": "Trailing Profit Stop (+40% profit locked @ \u20b98,705.56) active. Position running towards Target."
+      },
+      "live_price_data": {
+        "current_price": 8743.0,
+        "change_pct": 0.9
       }
     },
     {
@@ -249,8 +255,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b97,715.00 (Target: \u20b97,874.71, SL: \u20b97,581.91) | 3,000 Replays: 19.3% Target | 18.4% Stop | Expected: +0.05R (Movement Opportunity \ud83d\udfe2 (Risk Accepted))"
       },
       "live_price_data": {
-        "current_price": 7621.5,
-        "change_pct": -1.21
+        "current_price": 7638.5,
+        "change_pct": -0.99
       }
     },
     {
@@ -366,8 +372,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b94,904.90 (Target: \u20b95,006.43, SL: \u20b94,820.29) | 3,000 Replays: 13.6% Target | 10.3% Stop | Expected: +0.06R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "live_price_data": {
-        "current_price": 4857.9,
-        "change_pct": -0.96
+        "current_price": 4867.0,
+        "change_pct": -0.77
       }
     },
     {
