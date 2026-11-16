@@ -216,6 +216,21 @@ def get_defense_contract_and_lot(sym, default_name=None):
     lot = LOT_SIZES.get(sym, LOT_SIZES.get(clean, 1))
     return sym, name, lot
 
+def resolve_defense_contract_and_quote(raw_sym, item, commodities_map=None):
+    """
+    Given an incoming commodity symbol and item dictionary from circuits_data,
+    resolves the exact execution contract (e.g. ALUMINIUM -> ALUMINI, SILVER -> SILVERMIC)
+    AND guarantees that price, high, low, close, and technical indicators are strictly
+    derived from that exact execution contract, preventing any cross-contract price shadowing.
+    """
+    exec_sym, exec_name, lot_size = get_defense_contract_and_lot(raw_sym, item.get('name', raw_sym) if isinstance(item, dict) else raw_sym)
+    quote_item = item
+    if exec_sym != raw_sym and commodities_map and exec_sym in commodities_map:
+        target_item = commodities_map[exec_sym]
+        if target_item and target_item.get('current_price') and float(target_item['current_price']) > 0:
+            quote_item = target_item
+    return exec_sym, exec_name, lot_size, quote_item
+
 def resolve_commodity_item(sym, commodities_map):
     """
     Safely resolves a commodity dictionary from circuits commodities_map
@@ -756,6 +771,7 @@ def record_live_9am_advisory(commodities_list):
     existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str and ('09:00' in t.get('time_trigger', '') or '09:01' in t.get('time_trigger', ''))}
     new_entries = []
 
+    commodities_map = {c.get('symbol'): c for c in commodities_list if c.get('symbol')}
     seen_bases = set()
     for item in commodities_list:
         raw_sym = item['symbol']
@@ -764,12 +780,12 @@ def record_live_9am_advisory(commodities_list):
             continue
         seen_bases.add(base)
 
-        sym, name, lot_size = get_defense_contract_and_lot(raw_sym, item['name'])
-        cur_p = item['current_price']
-        day_h = item.get('day_high', cur_p)
-        day_l = item.get('day_low', cur_p)
-        p_close = item.get('prev_close', cur_p)
-        chg_pct = item.get('change_pct', 0.0)
+        sym, name, lot_size, quote_item = resolve_defense_contract_and_quote(raw_sym, item, commodities_map)
+        cur_p = quote_item['current_price']
+        day_h = quote_item.get('day_high', cur_p)
+        day_l = quote_item.get('day_low', cur_p)
+        p_close = quote_item.get('prev_close', cur_p)
+        chg_pct = quote_item.get('change_pct', 0.0)
 
         trade_id = f"ADV-{today_str.replace(' ', '')}-0901-{sym}"
         trade_id_alt = f"ADV-{today_str.replace(' ', '')}-0900-{sym}"
@@ -1195,6 +1211,7 @@ def record_live_130pm_advisory(commodities_list):
     existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str}
     new_entries = []
 
+    commodities_map = {c.get('symbol'): c for c in commodities_list if c.get('symbol')}
     seen_bases = set()
     for item in commodities_list:
         raw_sym = item['symbol']
@@ -1203,19 +1220,19 @@ def record_live_130pm_advisory(commodities_list):
             continue
         seen_bases.add(base)
 
-        sym, name, lot_size = get_defense_contract_and_lot(raw_sym, item['name'])
-        cur_p = item['current_price']
-        day_h = item.get('day_high', cur_p)
-        day_l = item.get('day_low', cur_p)
-        p_close = item['prev_close']
-        chg_pct = item['change_pct']
+        sym, name, lot_size, quote_item = resolve_defense_contract_and_quote(raw_sym, item, commodities_map)
+        cur_p = quote_item['current_price']
+        day_h = quote_item.get('day_high', cur_p)
+        day_l = quote_item.get('day_low', cur_p)
+        p_close = quote_item['prev_close']
+        chg_pct = quote_item['change_pct']
 
         # Technical Indicators from Scanner (RSI, ADX, ATR, Volume)
-        rsi = item.get('rsi_14')
-        adx = item.get('adx_14')
-        atr = item.get('atr_14')
-        vol = item.get('volume', 0) or 0
-        avg_vol = item.get('avg_volume_10d', 0) or 0
+        rsi = quote_item.get('rsi_14')
+        adx = quote_item.get('adx_14')
+        atr = quote_item.get('atr_14')
+        vol = quote_item.get('volume', 0) or 0
+        avg_vol = quote_item.get('avg_volume_10d', 0) or 0
         vol_ratio = round(vol / avg_vol, 2) if (avg_vol > 0 and vol > 0) else None
 
         trade_id = f"ADV-{today_str.replace(' ', '')}-1330-{sym}"
@@ -1691,6 +1708,7 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
     existing_today_ids = {t['id'] for t in trades if t.get('date') == today_str}
     new_entries = []
 
+    commodities_map = {c.get('symbol'): c for c in commodities_list if c.get('symbol')}
     seen_bases = set()
     for item in commodities_list:
         raw_sym = item['symbol']
@@ -1699,13 +1717,13 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
             continue
         seen_bases.add(base)
 
-        sym, name, lot_size = get_defense_contract_and_lot(raw_sym, item['name'])
-        cur_p = item['current_price']
-        p_close = item['prev_close']
-        chg_pct = item['change_pct']
-        status = item['status']
-        lc_price = item['lower_circuit']
-        uc_price = item['upper_circuit']
+        sym, name, lot_size, quote_item = resolve_defense_contract_and_quote(raw_sym, item, commodities_map)
+        cur_p = quote_item['current_price']
+        p_close = quote_item['prev_close']
+        chg_pct = quote_item['change_pct']
+        status = quote_item.get('status', item.get('status'))
+        lc_price = quote_item.get('lower_circuit', item.get('lower_circuit'))
+        uc_price = quote_item.get('upper_circuit', item.get('upper_circuit'))
 
         trade_id = f"ADV-{today_str.replace(' ', '')}-{time_tag}-{sym}"
         trade_id_alt = f"ADV-{today_str.replace(' ', '')}-{sym}"
@@ -2392,6 +2410,7 @@ def record_live_8pm_advisory(commodities_list, day_name):
                         new_entries.append(entry)
 
     # General US Evening Follow-through for other commodities
+    commodities_map = {c.get('symbol'): c for c in commodities_list if c.get('symbol')}
     seen_underlyings = set()
     for item in commodities_list:
         sym = item['symbol']
@@ -2402,21 +2421,21 @@ def record_live_8pm_advisory(commodities_list, day_name):
             continue
         seen_underlyings.add(clean_underlying)
 
-        c_sym, c_name, def_lot = get_defense_contract_and_lot(sym, item['name'])
+        c_sym, c_name, def_lot, quote_item = resolve_defense_contract_and_quote(sym, item, commodities_map)
         trade_id = f"ADV-{today_str.replace(' ', '')}-{time_tag}-{clean_underlying}"
         if trade_id in existing_today_ids:
             continue
 
-        status = item['status']
+        status = quote_item.get('status', item['status'])
         if 'LOCKED' in status or 'HIT' in status or 'NEAR' in status:
             direction = 'LOWER' if 'LOWER' in status else 'UPPER'
-            cur_p = item['current_price']
-            lc_price = item['lower_circuit']
-            uc_price = item['upper_circuit']
-            day_h = float(item.get('day_high', cur_p))
-            day_l = float(item.get('day_low', cur_p))
-            chg_pct = float(item.get('change_pct') or item.get('pct_change') or 0.0)
-            tgt = item['prev_close']
+            cur_p = quote_item['current_price']
+            lc_price = quote_item.get('lower_circuit', item['lower_circuit'])
+            uc_price = quote_item.get('upper_circuit', item['upper_circuit'])
+            day_h = float(quote_item.get('day_high', cur_p))
+            day_l = float(quote_item.get('day_low', cur_p))
+            chg_pct = float(quote_item.get('change_pct') or quote_item.get('pct_change') or 0.0)
+            tgt = quote_item.get('prev_close', item['prev_close'])
             lot_size = def_lot
 
             # 🛡️ COUNTER-TREND KNIFE-CATCHING & DIRECTION GUARD:
@@ -3938,6 +3957,7 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
     # =========================================================================
     circuits_res = checker.generate_circuits_data() if checker else {}
     commodities = circuits_res.get('commodities', []) if (checker and len(active_commodity_trades) < MAX_CONCURRENT_COMMODITIES) else []
+    commodities_map = {c.get('symbol'): c for c in commodities if c.get('symbol')}
 
     # 🎯 Institutional Directional Movement Ranking for Commodities:
     # Prioritizes commodities displaying the highest directional impulse (ADX Trend Strength + Absolute % Move + Volume Expansion).
@@ -4047,7 +4067,20 @@ def evaluate_realtime_technical_triggers(checker, alerter=None):
             continue
 
         atr_val = atr if (atr and atr > 0) else (cur_p * 0.008)
-        sym, name, lot_size = get_defense_contract_and_lot(sym, item.get('name', sym))
+        sym, name, lot_size, quote_item = resolve_defense_contract_and_quote(sym, item, commodities_map)
+        if quote_item is not item:
+            cur_p = float(quote_item.get('current_price') or cur_p)
+            day_h = float(quote_item.get('day_high') or cur_p)
+            day_l = float(quote_item.get('day_low') or cur_p)
+            p_close = float(quote_item.get('prev_close') or cur_p)
+            chg_pct = float(quote_item.get('change_pct') or chg_pct)
+            if quote_item.get('rsi_14'): rsi = quote_item['rsi_14']
+            if quote_item.get('adx_14'): adx = quote_item['adx_14']
+            if quote_item.get('atr_14'): atr = quote_item['atr_14']
+            vol = quote_item.get('volume', 0) or vol
+            avg_vol = quote_item.get('avg_volume_10d', 0) or avg_vol
+            vol_ratio = (vol / avg_vol) if (avg_vol > 0 and vol > 0) else vol_ratio
+            atr_val = atr if (atr and atr > 0) else (cur_p * 0.008)
 
         triggered = False
         action = None
