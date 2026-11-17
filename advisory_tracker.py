@@ -415,12 +415,27 @@ class IntradayStockSelector:
         ranked = []
         for s in raw_stocks:
             cur_p = float(s.get('close') or 0.0)
-            if cur_p <= 0 or s.get('is_false_signal'):
+            if cur_p <= 0:
+                continue
+
+            # Pillar 1: False signal suppression applies strictly to BUY (protects long buyers from falling knives)
+            # Breakdown stocks are valid and prime candidates for high-velocity shorting!
+            if action.upper() == "BUY" and s.get('is_false_signal'):
                 continue
 
             vol = float(s.get('volume') or 0)
             turnover_cr = (vol * cur_p) / 10000000.0  # Turnover in INR Crores
-            if turnover_cr < 15.0:  # Must have active institutional liquidity
+            # Pillar 4: Institutional Turnover Filter (>= ₹20 Crores minimum turnover)
+            if turnover_cr < 20.0:
+                continue
+
+            # Pillar 4: High-Beta / Volatility Filter (>= 1.4% ATR / Daily Range)
+            # Kills sluggish low-beta giants that trigger 120-minute stagnation exits and bleed brokerage/taxes.
+            regime_meta = s.get('market_regime') or {}
+            daily_vol_pct = float(regime_meta.get('daily_vol_pct') or 0.0)
+            atr_val = float(s.get('atr_14') or s.get('atr') or 0.0)
+            atr_pct = (atr_val / cur_p * 100.0) if (cur_p > 0 and atr_val > 0) else daily_vol_pct
+            if atr_pct > 0 and atr_pct < 1.4:
                 continue
 
             chg_pct = float(s.get('change_pct') or 0.0)
@@ -464,7 +479,9 @@ class IntradayStockSelector:
                 # Liquidity bonus (institutions driving the tape)
                 score += min(turnover_cr / 20.0, 15.0)
 
-                ranked.append((s, round(score, 1)))
+                s_cand = dict(s)
+                s_cand['_selector_action'] = 'BUY'
+                ranked.append((s_cand, round(score, 1)))
 
             elif action.upper() == "SELL":
                 # SHORT CRITERIA:
@@ -491,7 +508,9 @@ class IntradayStockSelector:
                     score += 25.0
                 score += min(turnover_cr / 20.0, 15.0)
 
-                ranked.append((s, round(score, 1)))
+                s_cand = dict(s)
+                s_cand['_selector_action'] = 'SELL'
+                ranked.append((s_cand, round(score, 1)))
 
         ranked.sort(key=lambda x: x[1], reverse=True)
         return [item[0] for item in ranked]
@@ -4845,30 +4864,46 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 print(f"⏱️ Opening Bell Range Forming (09:15-09:30 AM IST): Intraday breakout scans paused until 15m range is established.")
                 equity_stocks = []
 
+            # Pillar 2: Nifty 50 Market Breadth Gate (Trade WITH the Tide)
+            # Calculate broad market breadth across the 100-stock universe before candidate curation
+            all_nifty_stocks = nifty_data.get('stocks', [])
+            nifty_benchmark_chg = round(sum(float(st.get('change_pct', 0.0) or 0.0) for st in all_nifty_stocks) / max(len(all_nifty_stocks), 1), 2)
+
             # Institutional Intraday Stock Selection Engine:
-            # Selects the premier Relative Strength leaders (for BUY) and premier Relative Weakness breakdowns (for SELL).
-            # Eliminates sluggish 52-week discount value traps; targets stocks with institutional turnover and clean momentum.
-            long_candidates = IntradayStockSelector.rank_candidates(equity_stocks, action="BUY")
-            short_candidates = IntradayStockSelector.rank_candidates(equity_stocks, action="SELL")
-            
-            # Interleave curated leaders and laggards so engine has balanced, high-conviction candidates
-            curated_intraday_stocks = []
-            max_cand = max(len(long_candidates), len(short_candidates))
-            for idx in range(max_cand):
-                if idx < len(long_candidates):
-                    curated_intraday_stocks.append(long_candidates[idx])
-                if idx < len(short_candidates):
-                    curated_intraday_stocks.append(short_candidates[idx])
+            # When broad market is negative (< -0.15%), block BUY breakouts and prioritize high-velocity shorts.
+            # When broad market is positive (> +0.15%), block SHORT breakdowns and prioritize high-momentum longs.
+            # When neutral (-0.15% to +0.15%), allow both but require robust volume confirmation.
+            if nifty_benchmark_chg < -0.15:
+                long_candidates = []
+                short_candidates = IntradayStockSelector.rank_candidates(equity_stocks, action="SELL")
+                curated_intraday_stocks = short_candidates
+                print(f"🌊 Nifty Breadth Gate (BEARISH TIDE {nifty_benchmark_chg:+.2f}%): Long breakouts blocked. Curated {len(short_candidates)} prime breakdown short candidates.")
+            elif nifty_benchmark_chg > 0.15:
+                long_candidates = IntradayStockSelector.rank_candidates(equity_stocks, action="BUY")
+                short_candidates = []
+                curated_intraday_stocks = long_candidates
+                print(f"🌊 Nifty Breadth Gate (BULLISH TIDE {nifty_benchmark_chg:+.2f}%): Short breakdowns blocked. Curated {len(long_candidates)} prime breakout long candidates.")
+            else:
+                long_candidates = IntradayStockSelector.rank_candidates(equity_stocks, action="BUY")
+                short_candidates = IntradayStockSelector.rank_candidates(equity_stocks, action="SELL")
+                curated_intraday_stocks = []
+                max_cand = max(len(long_candidates), len(short_candidates))
+                for idx in range(max_cand):
+                    if idx < len(long_candidates):
+                        curated_intraday_stocks.append(long_candidates[idx])
+                    if idx < len(short_candidates):
+                        curated_intraday_stocks.append(short_candidates[idx])
+                print(f"🌊 Nifty Breadth Gate (NEUTRAL TIDE {nifty_benchmark_chg:+.2f}%): Balanced selection ({len(long_candidates)} Longs, {len(short_candidates)} Shorts).")
             
             equity_stocks = curated_intraday_stocks
-            nifty_benchmark_chg = round(sum(float(st.get('change_pct', 0.0) or 0.0) for st in nifty_data.get('stocks', [])) / max(len(nifty_data.get('stocks', [])), 1), 2)
             if equity_stocks:
-                top_syms = [s.get('symbol', '').replace('.NS', '') for s in equity_stocks[:5]]
-                print(f"🎯 Intraday Stock Selection Engine Curated {len(equity_stocks)} Institutional Candidates across 100-Stock Universe (Nifty Breadth: {nifty_benchmark_chg:+.2f}%): {', '.join(top_syms)}")
+                top_syms = [f"{s.get('symbol', '').replace('.NS', '')} ({s.get('_selector_action', 'BUY')})" for s in equity_stocks[:5]]
+                print(f"🎯 Intraday Curated Institutional Candidates (Nifty Breadth: {nifty_benchmark_chg:+.2f}%): {', '.join(top_syms)}")
 
             for s in equity_stocks:
-                # Guard A: Hard False Signal Invalidation Guard
-                if s.get('is_false_signal'):
+                cand_action = s.get('_selector_action') or 'BUY'
+                # Guard A: Hard False Signal Invalidation Guard (applies to BUY signals; breakdown stocks are valid for SHORT)
+                if cand_action == 'BUY' and s.get('is_false_signal'):
                     continue
 
                 # Guard B: Conviction Thresholds (Win Prob >= 55%, Safety >= 40%)
@@ -5010,7 +5045,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 vwap = round((day_h + day_l + cur_p) / 3.0, 2)
 
                 # Setup A: High-Beta Intraday Momentum Breakout (BUY - Controlled Momentum, not Overextended)
-                if (cur_p >= high_52 * 0.985 or cur_p >= day_h * 0.998 or (0.75 <= chg_pct <= 2.5 and vol_ratio >= 1.0)) and (52.0 <= rsi <= 66.0) and (cur_p >= vwap * 0.998):
+                if (cur_p >= high_52 * 0.985 or (0.75 <= chg_pct <= 2.5 and vol_ratio >= 1.0)) and (52.0 <= rsi <= 66.0) and (cur_p >= vwap * 0.998):
                     eq_action = "BUY"
                     eq_setup = "20-Day / High-Beta Volatility Breakout"
                     
@@ -5025,7 +5060,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                         continue
 
                     # 3. Structural Invalidation Stop & Realistic Intraday Target (trader-exit skill)
-                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True, symbol=clean_sym)
                     eq_sl = calc_sl or round(cur_p * 0.988, 2)
                     eq_tgt = calc_tgt or round(cur_p + (1.2 * (cur_p - eq_sl)), 2)
                     eq_triggered = True
@@ -5036,7 +5071,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 elif (rsi <= 36.0) and (rsi_curling_up or near_bb or cur_p <= bb_lower * 1.01) and (discount_pct >= 15.0):
                     eq_action = "BUY"
                     eq_setup = "Oversold Mean Reversion Bounce"
-                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=min(bb_lower, day_l), ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=min(bb_lower, day_l), ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True, symbol=clean_sym)
                     eq_sl = calc_sl or round(min(bb_lower, cur_p * 0.985), 2)
                     eq_tgt = calc_tgt or round(cur_p + (1.3 * (cur_p - eq_sl)), 2)
                     eq_triggered = True
@@ -5047,7 +5082,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 elif is_golden and (35.0 <= rsi <= 52.0) and (cur_p >= vwap * 0.995):
                     eq_action = "BUY"
                     eq_setup = "EMA 50/200 Golden Cross Trend Pullback"
-                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True, symbol=clean_sym)
                     eq_sl = calc_sl or round(cur_p * 0.988, 2)
                     eq_tgt = calc_tgt or round(cur_p + (1.2 * (cur_p - eq_sl)), 2)
                     eq_triggered = True
@@ -5055,7 +5090,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                     f"Trend continuation entry targeting realistic intraday 1.2R upside.")
 
                 # Setup D: Intraday Breakdown / Weakness Expansion (SELL - High Velocity Short)
-                elif (cur_p <= day_l * 1.008 or (-2.0 <= chg_pct <= -0.85)) and (34.0 <= rsi <= 48.0) and (cur_p <= ema20 * 1.002) and (cur_p <= vwap * 1.002):
+                elif ((-2.5 <= chg_pct <= -0.60 and vol_ratio >= 1.0) or (cur_p <= day_l * 1.015 and chg_pct <= -0.60)) and (32.0 <= rsi <= 48.0) and (cur_p <= ema20 * 1.005) and (cur_p <= vwap * 1.002):
                     eq_action = "SELL"
                     eq_setup = "Intraday Breakdown / Weakness Expansion"
                     orb_metrics = ORBTimer.check_orb_confirmation(
@@ -5066,7 +5101,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     if not orb_metrics.get('passed'):
                         print(f"⏱️ ORB Timer Blocked {clean_sym} {eq_action}: {orb_metrics.get('reason')}")
                         continue
-                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True, symbol=clean_sym)
                     eq_sl = calc_sl or round(cur_p * 1.015, 2)
                     eq_tgt = calc_tgt or round(cur_p - (1.2 * abs(eq_sl - cur_p)), 2)
                     eq_triggered = True
@@ -5077,7 +5112,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 elif (rsi >= 68.0) and (rsi_curling_down or near_bb_upper or cur_p >= bb_upper * 0.99):
                     eq_action = "SELL"
                     eq_setup = "Overbought Mean Reversion Rejection"
-                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=max(bb_upper, day_h), day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=max(bb_upper, day_h), day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True, symbol=clean_sym)
                     eq_sl = calc_sl or round(max(bb_upper, cur_p * 1.025), 2)
                     eq_tgt = calc_tgt or round(cur_p - (1.3 * abs(eq_sl - cur_p)), 2)
                     eq_triggered = True
@@ -5088,7 +5123,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 elif is_death and (48.0 <= rsi <= 62.0) and (cur_p <= ema50 * 1.008) and (cur_p <= vwap * 1.002):
                     eq_action = "SELL"
                     eq_setup = "EMA 50/200 Death Cross Trend Continuation"
-                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True)
+                    calc_sl, calc_tgt = calculate_technical_bracket(eq_action, cur_p, day_h=day_h, day_l=day_l, ema20=ema20, ema50=ema50, atr=atr, min_rrr=1.2, is_intraday=True, symbol=clean_sym)
                     eq_sl = calc_sl or round(cur_p * 1.025, 2)
                     eq_tgt = calc_tgt or round(cur_p - (1.2 * abs(eq_sl - cur_p)), 2)
                     eq_triggered = True
@@ -5096,12 +5131,30 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                     f"Trend continuation short entry targeting realistic intraday 1.2R downside.")
 
                 if eq_triggered and eq_action and eq_sl and eq_tgt:
+                    # Pillar 2 Gate Check: Nifty Market Breadth Gate (Trade WITH the Tide)
+                    if eq_action == "BUY" and nifty_benchmark_chg < -0.15:
+                        print(f"🌊 Nifty Breadth Gate Blocked {clean_sym} BUY: Broad market tide is negative ({nifty_benchmark_chg:+.2f}%). Counter-trend long forbidden.")
+                        continue
+                    if eq_action == "SELL" and nifty_benchmark_chg > 0.15:
+                        print(f"🌊 Nifty Breadth Gate Blocked {clean_sym} SELL: Broad market tide is positive ({nifty_benchmark_chg:+.2f}%). Counter-trend short forbidden.")
+                        continue
+                    if (-0.15 <= nifty_benchmark_chg <= 0.15) and (vol_ratio < 1.25):
+                        print(f"🌊 Nifty Breadth Gate Blocked {clean_sym} {eq_action}: In neutral market ({nifty_benchmark_chg:+.2f}%), volume ratio {vol_ratio:.2f}x < 1.25x minimum.")
+                        continue
+
                     # Guard D1: Regime Blocked Strategy Filter
                     if eq_action == "BUY" and any(strat in blocked_strategies for strat in ['BREAKOUT_BUY', 'BUY_EQUITY', 'GOLDEN_CROSS_BUY', 'TREND_BREAKOUT_BUY']):
                         print(f"🛡️ Market Regime Blocked {clean_sym} BUY: In {regime_data.get('regime')} regime where breakout buying is blocked.")
                         continue
                     if eq_action == "SELL" and any(strat in blocked_strategies for strat in ['SHORT_FUTURES', 'SELL_EQUITY']):
                         print(f"🛡️ Market Regime Blocked {clean_sym} SELL: In {regime_data.get('regime')} regime where shorting is blocked.")
+                        continue
+
+                    # Pillar 3: Option 2 Pullback-Only Retest Sniping Gate (Anti-Chasing & Structural Proximity)
+                    # Forbids buying near day high / shorting near day low; mandates completed pullback to VWAP / 20 EMA
+                    pullback_eval = PullbackRetestGate.validate_retest_entry(clean_sym, eq_action, cur_p, day_h, day_l, ema20=ema20, atr=atr)
+                    if not pullback_eval.get('passed'):
+                        print(f"🛡️ Option 2 Pullback Gate Blocked {clean_sym} {eq_action}: {pullback_eval.get('reason')}")
                         continue
 
                     # Guard D2: Anti-Chasing Overextension Guard (Stop buying at day highs / panic selling at day lows)
@@ -5231,6 +5284,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                                     "risk_check": risk_metrics,
                                                     "orb_check": orb_metrics,
                                                     "event_check": event_metrics,
+                                                    "pullback_check": pullback_eval,
                                                     "suggestion_6pm": {
                                                         "status": "REALTIME_TRIGGER",
                                                         "action_text": f"{eq_action} 1 Lot @ ₹{fut_entry_p:,.2f}",
@@ -5313,6 +5367,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                                 "risk_check": risk_metrics,
                                                 "orb_check": orb_metrics,
                                                 "event_check": event_metrics,
+                                                "pullback_check": pullback_eval,
                                                 "suggestion_6pm": {
                                                     "status": "REALTIME_TRIGGER",
                                                     "action_text": f"{eq_action} 1 Lot @ ₹{fut_entry_p:,.2f}",
@@ -5495,6 +5550,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                 "risk_check": risk_metrics,
                                 "orb_check": orb_metrics,
                                 "event_check": event_metrics,
+                                "pullback_check": pullback_eval,
                                 "suggestion_6pm": {
                                     "status": "REALTIME_TRIGGER",
                                     "action_text": f"{eq_action} @ ₹{cur_p:,.2f}",
@@ -5576,6 +5632,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                             "risk_check": risk_metrics,
                             "orb_check": orb_metrics,
                             "event_check": event_metrics,
+                            "pullback_check": pullback_eval,
                             "suggestion_6pm": {
                                 "status": "REALTIME_TRIGGER",
                                 "action_text": f"{eq_action} @ ₹{cur_p:,.2f}",
