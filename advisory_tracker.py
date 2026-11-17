@@ -4311,8 +4311,13 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         if not sym or sym not in LOT_SIZES:
             continue
 
-        # Prevent duplicate active positions in the same symbol
-        if any(t.get('symbol') == sym and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT'] for t in (trades + new_trades)):
+        # Prevent duplicate active positions in the same symbol (matches parent, Mini, and Micro contracts)
+        clean_base = sym.replace('MIC', '').rstrip('M')
+        if any(
+            (t.get('symbol') == sym or t.get('symbol') == f"{sym}M" or str(t.get('symbol', '')).replace('MIC', '').rstrip('M') == clean_base)
+            and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT'] 
+            for t in (trades + new_trades)
+        ):
             continue
 
         item_sector = SECTORS.get(sym, 'OTHER')

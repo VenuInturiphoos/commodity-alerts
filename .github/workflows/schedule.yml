@@ -47,8 +47,8 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # Execute 1-minute interval checks within the runner
-          for i in 1 2 3 4; do
+          # Execute 1-minute interval checks within the runner (3 iterations to ensure clean finish before next 5m cron)
+          for i in 1 2 3; do
             echo "=== Intraday 1-Minute Check #$i at $(date -u) ==="
             python main.py
             
@@ -61,7 +61,7 @@ jobs:
               echo "No changes to commit in run #$i."
             fi
             
-            if [ $i -lt 4 ]; then
+            if [ $i -lt 3 ]; then
               echo "Waiting 60 seconds for next 1-minute check..."
               sleep 60
             fi

@@ -1,7 +1,10 @@
 import os
 import ssl
 import smtplib
+import json
+import re
 import requests
+from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -200,6 +203,68 @@ class EmailAlerter:
 
         return False
 
+    def _is_duplicate_trade_alert(self, subject, channel="EMAIL", window_minutes=15):
+        """
+        Guards against sending duplicate trade execution alerts across overlapping
+        cron cycles or runner loops within a 15-minute window.
+        Strips dynamic timestamps and price fractions to create a deterministic signature.
+        e.g. '⚡ [REAL-TIME TECHNICAL TRIGGER] Copper Mini SELL @ ₹1,277.65 (02:35 PM IST)'
+        -> key: '⚡ [REAL-TIME TECHNICAL TRIGGER] COPPER MINI SELL'
+        """
+        try:
+            norm_key = re.sub(r'\(.*?\)', '', subject)
+            norm_key = re.sub(r'@\s*₹?[\d,.]+', '', norm_key)
+            norm_key = f"{channel}_" + re.sub(r'\s+', ' ', norm_key).strip().upper()
+
+            now = datetime.now()
+            local_state_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
+            if os.path.exists(local_state_path):
+                with open(local_state_path, 'r') as f:
+                    state = json.load(f)
+                dedup_store = state.get('__email_dedup_cache__', {})
+                if norm_key in dedup_store:
+                    last_sent_str = dedup_store[norm_key]
+                    last_sent_dt = datetime.fromisoformat(last_sent_str)
+                    elapsed = (now - last_sent_dt).total_seconds()
+                    if elapsed < (window_minutes * 60):
+                        return True
+        except Exception as e:
+            print(f"Warning: Exception in _is_duplicate_trade_alert: {e}")
+        return False
+
+    def _record_trade_alert_sent(self, subject, channel="EMAIL"):
+        """
+        Records dispatched trade alert signature in web/alerts_state.json cache.
+        Auto-purges entries older than 24 hours.
+        """
+        try:
+            norm_key = re.sub(r'\(.*?\)', '', subject)
+            norm_key = re.sub(r'@\s*₹?[\d,.]+', '', norm_key)
+            norm_key = f"{channel}_" + re.sub(r'\s+', ' ', norm_key).strip().upper()
+
+            now = datetime.now()
+            local_state_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
+            state = {}
+            if os.path.exists(local_state_path):
+                try:
+                    with open(local_state_path, 'r') as f:
+                        state = json.load(f)
+                except Exception:
+                    state = {}
+
+            dedup_store = state.setdefault('__email_dedup_cache__', {})
+            dedup_store[norm_key] = now.isoformat()
+
+            # Purge entries older than 24 hours
+            keys_to_del = [k for k, v in dedup_store.items() if (now - datetime.fromisoformat(v)).total_seconds() > 86400]
+            for k in keys_to_del:
+                dedup_store.pop(k, None)
+
+            with open(local_state_path, 'w') as f:
+                json.dump(state, f, indent=2)
+        except Exception as e:
+            print(f"Warning: Exception in _record_trade_alert_sent: {e}")
+
     def send_alerts(self, alerts):
         if not alerts:
             return False, []
@@ -208,8 +273,13 @@ class EmailAlerter:
         # 1. Send Telegram notifications
         for idx, alert in enumerate(alerts):
             try:
-                if self._send_telegram(alert['subject'], alert['body']):
+                sub = alert.get('subject', '')
+                if self._is_duplicate_trade_alert(sub, channel="TELEGRAM", window_minutes=15):
+                    print(f"🛡️ [TELEGRAM DEDUP] Suppressing duplicate Telegram alert (dispatched < 15m ago): {sub}")
+                    continue
+                if self._send_telegram(sub, alert['body']):
                     telegram_sent_indices.add(idx)
+                    self._record_trade_alert_sent(sub, channel="TELEGRAM")
             except Exception as e:
                 print(f"Error dispatching Telegram alert {idx}: {e}")
 
@@ -228,11 +298,14 @@ class EmailAlerter:
             for idx, alert in enumerate(alerts):
                 subject = alert.get('subject', '')
                 body = alert.get('body', '')
-                if self.is_trade_execution_alert(subject, body):
-                    email_alerts_to_send.append((idx, alert))
-                else:
+                if not self.is_trade_execution_alert(subject, body):
                     print(f"📧 [EMAIL FILTER] Suppressing non-trade alert per user rule: {subject}")
                     email_filtered_indices.add(idx)
+                elif self._is_duplicate_trade_alert(subject, channel="EMAIL", window_minutes=15):
+                    print(f"🛡️ [EMAIL DEDUP] Suppressing duplicate trade email (dispatched < 15m ago): {subject}")
+                    email_filtered_indices.add(idx)
+                else:
+                    email_alerts_to_send.append((idx, alert))
 
             if email_alerts_to_send:
                 server = None
@@ -275,6 +348,7 @@ class EmailAlerter:
 
                         if alert_dispatched_successfully:
                             email_sent_indices.add(idx)
+                            self._record_trade_alert_sent(subject, channel="EMAIL")
 
                 except Exception as e:
                     print(f"SMTP Dispatch Error: {e}")
