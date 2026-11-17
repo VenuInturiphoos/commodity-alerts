@@ -1,28 +1,28 @@
 {
-  "last_updated": "17 Nov 2026, 03:16 PM IST",
+  "last_updated": "17 Nov 2026, 03:17 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 147,
     "executed_count": 40,
     "correct_count": 14,
-    "wrong_count": 12,
+    "wrong_count": 13,
     "protected_count": 107,
-    "win_rate_pct": 53.8,
+    "win_rate_pct": 51.9,
     "broker": "Dhan",
-    "total_gross_pnl_inr": 67575.19,
-    "total_charges_inr": 6390.81,
-    "total_pnl_inr": 61184.38,
+    "total_gross_pnl_inr": 67116.79,
+    "total_charges_inr": 6442.79,
+    "total_pnl_inr": 60674.0,
     "commodity_pnl_inr": 61393.13,
-    "intraday_pnl_inr": -208.75,
+    "intraday_pnl_inr": -719.13,
     "intraday_booked_profit_inr": 0.0,
     "intraday_pool_balance_inr": 30000.0,
-    "avg_trade_pnl_inr": 1529.61,
-    "active_trades_count": 3,
+    "avg_trade_pnl_inr": 1516.85,
+    "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 361393.13,
-    "used_margin_inr": 220861.64,
-    "available_cash_inr": 140531.49,
+    "used_margin_inr": 211002.24,
+    "available_cash_inr": 150390.89,
     "net_worth_inr": 361393.13
   },
   "trades": [
@@ -112,8 +112,8 @@
         "entry_time": "03:13 PM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": 14.0,
-        "pnl_inr": 1400.0,
+        "pnl_points": 13.0,
+        "pnl_inr": 1300.0,
         "status": "ACTIVE",
         "margin_required_inr": 201025.0,
         "target": 7981.0,
@@ -134,8 +134,8 @@
         "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b98,041.00 (Target: \u20b97,981.00, SL: \u20b98,091.00) | 3,000 Replays: 45.8% Target | 47.8% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "live_price_data": {
-        "current_price": 8027.0,
-        "change_pct": -0.17
+        "current_price": 8028.0,
+        "change_pct": -0.16
       }
     },
     {
@@ -1069,7 +1069,7 @@
       "time_6pm": "09:40 AM IST",
       "time_validation": "09:40 AM IST",
       "time_615": "09:40 AM IST",
-      "time_exit": "03:25 PM IST",
+      "time_exit": "03:17 PM IST",
       "symbol": "TITAN.NS",
       "name": "Titan Company Limited",
       "lot_size": 10,
@@ -1154,31 +1154,78 @@
         "quantity": 10,
         "entry_price": 4929.7,
         "entry_time": "09:40 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": -42.0,
-        "pnl_inr": -420.0,
-        "status": "ACTIVE",
+        "exit_price": 4883.86,
+        "exit_time": "03:17 PM IST",
+        "pnl_points": -45.84,
+        "pnl_inr": -510.38,
+        "status": "CLOSED",
         "target": 4984.71,
         "stop_loss": 4883.86,
         "initial_stop_loss": 4883.86,
         "original_sl": 4883.86,
         "peak_high": 4936.0,
-        "trough_low": 4887.7,
+        "trough_low": 4883.8,
         "margin_required_inr": 9859.4,
-        "product_type": "MIS_INTRADAY"
+        "product_type": "MIS_INTRADAY",
+        "gross_pnl_inr": -458.4,
+        "charges": {
+          "broker": "Dhan",
+          "segment": "EQUITY_INTRADAY",
+          "buy_turnover": 49297.0,
+          "sell_turnover": 48838.6,
+          "total_turnover": 98135.6,
+          "brokerage": 29.44,
+          "buy_brokerage": 14.79,
+          "sell_brokerage": 14.65,
+          "stt_ctt": 12.21,
+          "exchange_charges": 2.91,
+          "sebi_charges": 0.1,
+          "stamp_duty": 1.48,
+          "gst": 5.84,
+          "dp_charges": 0.0,
+          "total_charges": 51.98,
+          "gross_pnl": -458.4,
+          "net_pnl": -510.38,
+          "summary_text": "Gross: \u20b9-458.40 | Dhan Charges: -\u20b951.98 (Brok \u20b929.44 + Taxes \u20b922.54) | Net: \u20b9-510.38"
+        },
+        "net_pnl_inr": -510.38,
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 4883.86,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b94,929.70 (Target: \u20b94,984.71, SL: \u20b94,883.86) | 3,000 Replays: 44.2% Target | 28.0% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+        "outcome": "WRONG",
+        "badge": "Stop Loss Hit \ud83d\uded1 (03:17 PM IST)",
+        "pnl_display": "\u20b9-510.38",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 (Exit \u20b94,883.86) at 03:17 PM IST. Entry: \u20b94,929.70 -> Exit: \u20b94,883.86 (Gross: \u20b9-458.40 | Dhan: -\u20b951.98 | Net: \u20b9-510.38).",
+        "exit_time": "03:17 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT",
+        "gross_pnl_inr": -458.4,
+        "charges": {
+          "broker": "Dhan",
+          "segment": "EQUITY_INTRADAY",
+          "buy_turnover": 49297.0,
+          "sell_turnover": 48838.6,
+          "total_turnover": 98135.6,
+          "brokerage": 29.44,
+          "buy_brokerage": 14.79,
+          "sell_brokerage": 14.65,
+          "stt_ctt": 12.21,
+          "exchange_charges": 2.91,
+          "sebi_charges": 0.1,
+          "stamp_duty": 1.48,
+          "gst": 5.84,
+          "dp_charges": 0.0,
+          "total_charges": 51.98,
+          "gross_pnl": -458.4,
+          "net_pnl": -510.38,
+          "summary_text": "Gross: \u20b9-458.40 | Dhan Charges: -\u20b951.98 (Brok \u20b929.44 + Taxes \u20b922.54) | Net: \u20b9-510.38"
+        },
+        "net_pnl_inr": -510.38
       },
       "live_price_data": {
-        "current_price": 4887.7,
-        "change_pct": -0.85
+        "current_price": 4883.8,
+        "change_pct": -0.93
       }
     },
     {
@@ -1276,8 +1323,8 @@
         "entry_time": "09:31 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": -0.3,
-        "pnl_inr": -7.8,
+        "pnl_points": -0.2,
+        "pnl_inr": -5.2,
         "status": "ACTIVE",
         "target": 1940.11,
         "stop_loss": 1900.86,
@@ -1297,8 +1344,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b91,918.70 (Target: \u20b91,940.11, SL: \u20b91,900.86) | 3,000 Replays: 36.1% Target | 31.3% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "live_price_data": {
-        "current_price": 1918.4,
-        "change_pct": -0.02
+        "current_price": 1918.5,
+        "change_pct": -0.01
       }
     },
     {
