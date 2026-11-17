@@ -21,8 +21,8 @@
     "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 363961.77,
-    "used_margin_inr": 202716.5,
-    "available_cash_inr": 161245.27,
+    "used_margin_inr": 304920.5,
+    "available_cash_inr": 59041.27,
     "net_worth_inr": 363961.77
   },
   "trades": [
@@ -37,7 +37,7 @@
       "time_exit": "11:45 PM IST",
       "symbol": "COPPERM",
       "name": "Copper Mini",
-      "lot_size": 1000,
+      "lot_size": 2000,
       "event_context": "Indicator Confluence: Pre-Ignition Volatility Coil",
       "regime": {
         "regime": "CHOP_CONSOLIDATION",
@@ -100,43 +100,42 @@
         "checked": true,
         "status": "TECHNICAL_TRIGGER_ENTERED",
         "price_615": 1277.55,
-        "action_taken": "Entered SELL 1000 units @ \u20b91,277.55",
+        "action_taken": "Entered SELL 2000 units @ \u20b91,277.55",
         "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 1.03% (13.15 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.59x average indicates supply exhaustion before move. | Price capped below baseline (\u20b91,346.59), building downward coil pressure.. Early coil entry prior to breakout expansion. | 3,000 Replays: 50.7% Target | 49.3% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "SELL",
-        "quantity": 1000,
+        "quantity": 2000,
         "entry_price": 1277.55,
         "entry_time": "03:21 PM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": 2.85,
-        "pnl_inr": 2850.0,
+        "pnl_points": 2.3,
+        "pnl_inr": 4600.0,
         "status": "ACTIVE",
-        "margin_required_inr": 102204.0,
+        "margin_required_inr": 204408.0,
         "target": 1274.55,
-        "stop_loss": 1276.05,
+        "stop_loss": 1277.15,
         "initial_stop_loss": 1280.05,
         "original_sl": 1280.05,
-        "peak_high": 1274.7,
-        "trough_low": 1274.65,
+        "peak_high": 1275.25,
+        "trough_low": 1275.25,
         "entry_day_high": 1277.55,
         "entry_day_low": 1277.55,
-        "trailing_sl_active": true,
-        "stage_2_profit_locked": true
+        "trailing_sl_active": true
       },
       "eod_outcome": {
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PENDING",
-        "badge": "Active (Trailing Stop @ \u20b91,276.05)",
+        "badge": "Active Trigger \u26a1",
         "pnl_display": "Ticking Live...",
-        "summary": "Trailing Profit Stop (+50% profit locked @ \u20b91,276.05) active. Running to full Target."
+        "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b91,277.55 (Target: \u20b91,274.55, SL: \u20b91,280.05) | 3,000 Replays: 50.7% Target | 49.3% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "live_price_data": {
-        "current_price": 1274.7,
-        "change_pct": -0.22
+        "current_price": 1275.25,
+        "change_pct": -0.18
       }
     },
     {
@@ -225,15 +224,15 @@
         "entry_time": "03:13 PM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": -1.0,
-        "pnl_inr": -50.0,
+        "pnl_points": 5.0,
+        "pnl_inr": 250.0,
         "status": "ACTIVE",
         "margin_required_inr": 100512.5,
         "target": 7981.0,
         "stop_loss": 8091.0,
         "initial_stop_loss": 8091.0,
         "original_sl": 8091.0,
-        "peak_high": 8042.0,
+        "peak_high": 8041.0,
         "trough_low": 8026.0,
         "entry_day_high": 8041.0,
         "entry_day_low": 8041.0
@@ -247,8 +246,8 @@
         "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b98,041.00 (Target: \u20b97,981.00, SL: \u20b98,091.00) | 3,000 Replays: 45.8% Target | 47.8% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "live_price_data": {
-        "current_price": 8042.0,
-        "change_pct": 0.01
+        "current_price": 8036.0,
+        "change_pct": -0.06
       }
     },
     {
@@ -466,11 +465,11 @@
         "passed": true,
         "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
         "reward_risk_ratio": 1.2,
-        "loss_at_stop_inr": 5000.0,
-        "potential_gain_inr": 6000.0,
+        "loss_at_stop_inr": 2500.0,
+        "potential_gain_inr": 3000.0,
         "broker": "Dhan",
-        "est_charges_inr": 184.5,
-        "net_loss_at_stop_inr": 5184.5
+        "est_charges_inr": 115.86,
+        "net_loss_at_stop_inr": 2615.86
       },
       "suggestion_6pm": {
         "status": "REALTIME_TRIGGER",
@@ -538,8 +537,8 @@
         "circuit_limit": null,
         "outcome": "WRONG",
         "badge": "Stop Loss Hit \ud83d\uded1 (02:36 PM IST)",
-        "pnl_display": "\u20b9-5,184.50",
-        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:36 PM IST. Entry: \u20b97,973.00 -> Exit: \u20b98,023.00 (Gross: \u20b9-5,000.00 | Dhan: -\u20b9184.50 | Net: \u20b9-5,184.50).",
+        "pnl_display": "-\u20b92,615.86",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 at 02:36 PM IST. Entry: \u20b97,973.00 -> Exit: \u20b98,023.00 (Gross: -\u20b92,500.00 | Dhan: -\u20b9115.86 | Net: -\u20b92,615.86).",
         "exit_time": "02:36 PM IST",
         "exit_trigger": "STOP_LOSS_HIT",
         "gross_pnl_inr": -2500.0,
