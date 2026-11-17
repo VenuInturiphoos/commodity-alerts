@@ -56,6 +56,36 @@ def get_us_aligned_session_times(dt=None):
         "market_close_str": "11:30 PM IST" if is_dst else "11:55 PM IST",
     }
 
+def parse_ist_timestamp(time_str: str, date_str: str = None) -> datetime:
+    """
+    Authoritative IST Timestamp Parser.
+    Converts time strings ('02:36 PM IST', '17 Nov 2026, 03:13 PM IST', '14:36')
+    to proper timezone-aware datetime objects localized to 'Asia/Kolkata'.
+    Prevents pytz LMT (+05:53) offset injection bug.
+    """
+    if not time_str:
+        return None
+    ist = pytz.timezone('Asia/Kolkata')
+    clean = str(time_str).replace(' IST', '').strip()
+    formats = [
+        "%d %b %Y, %I:%M %p",
+        "%d %b %Y %I:%M %p",
+        "%d %b %Y, %H:%M",
+        "%d %b %Y %H:%M",
+        "%I:%M %p",
+        "%H:%M",
+    ]
+    for fmt in formats:
+        try:
+            dt = datetime.strptime(clean, fmt)
+            if fmt in ["%I:%M %p", "%H:%M"] and date_str:
+                base_dt = datetime.strptime(date_str, "%d %b %Y")
+                dt = dt.replace(year=base_dt.year, month=base_dt.month, day=base_dt.day)
+            return ist.localize(dt)
+        except Exception:
+            continue
+    return None
+
 # MCX Risk-Parity Lot Sizes (Calibrated to match ~₹1.2 Lakh to ₹1.5 Lakh Purchase/Margin Capital per Trade)
 LOT_SIZES = {
     'CRUDEOIL': 100,    # Crude Oil Standard (100 bbl) - 1 pt = ₹100
@@ -218,9 +248,9 @@ COMMODITY_SPECS_150K = {
     'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
     'SILVERM': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
     'SILVERMIC': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
-    'GOLD': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 20},
-    'GOLDM': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 20},
-    'GOLDTEN': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 20},
+    'GOLD': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 10},
+    'GOLDM': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 10},
+    'GOLDTEN': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 10},
     'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
     'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
     'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
@@ -272,10 +302,10 @@ def get_defense_contract_and_lot(sym, default_name=None):
     """
     Returns (exec_sym, exec_name, lot_size) calibrated strictly for ~₹1.5 Lakhs target margin per trade:
     - Silver: Silver Micro (SILVERMIC) 5 units (~₹1.36L margin)
-    - Gold: Gold Mini (GOLDM) 2 lots / 20 units (~₹1.56L margin)
+    - Gold: Gold Mini (GOLDM) 1 lot / 10 units (~₹1.35L margin)
     - Zinc: Zinc Mini (ZINCMINI) 4 lots / 4000 units (~₹1.54L margin)
     - Copper: Copper Mini (COPPERM) 2 lots / 2000 units (~₹1.36L margin)
-    - Crude Oil: Crude Oil Mini (CRUDEOILM) 10 lots / 100 units (~₹1.50L margin)
+    - Crude Oil: Crude Oil Mini (CRUDEOILM) 5 lots / 50 units (~₹1.25L margin)
     - Natural Gas: Natural Gas Mini (NATURALGASM) 12 lots / 3000 units (~₹1.51L margin)
     - Aluminium: Aluminium Mini (ALUMINI) 6 lots / 6000 units (~₹1.32L margin)
     """
@@ -856,6 +886,39 @@ def save_tracker(tracker_data):
                 pnl = round(pts * 50, 2)
                 pt['pnl_points'] = round(pts, 2)
                 pt['pnl_inr'] = pnl
+
+        if t.get('symbol') == 'GOLDM' and (t.get('lot_size') == 20 or pt.get('quantity') == 20):
+            t['lot_size'] = 10
+            pt['quantity'] = 10
+            if pt.get('entry_price'):
+                pt['margin_required_inr'] = round(float(pt['entry_price']) * 10 * 0.10, 2)
+            if t.get('check_615', {}).get('action_taken'):
+                t['check_615']['action_taken'] = t['check_615']['action_taken'].replace('20 units', '10 units')
+            if pt.get('entry_price') and pt.get('exit_price'):
+                pts = (pt['entry_price'] - pt['exit_price']) if pt.get('action') == 'SELL' else (pt['exit_price'] - pt['entry_price'])
+                gross_pnl = round(pts * 10, 2)
+                pt['pnl_points'] = round(pts, 2)
+                pt['gross_pnl_inr'] = gross_pnl
+                try:
+                    calc = DhanBrokerageCalculator()
+                    chg = calc.calculate_trade_charges(
+                        symbol='GOLDM',
+                        asset_type='COMMODITY_FUTURES',
+                        action=pt.get('action', 'SELL'),
+                        entry_price=float(pt['entry_price']),
+                        exit_price=float(pt['exit_price']),
+                        quantity=10
+                    )
+                    pt['charges'] = chg
+                    pt['net_pnl_inr'] = chg.get('net_pnl', gross_pnl)
+                    pt['pnl_inr'] = chg.get('net_pnl', gross_pnl)
+                    eod['gross_pnl_inr'] = gross_pnl
+                    eod['charges'] = chg
+                    eod['net_pnl_inr'] = chg.get('net_pnl', gross_pnl)
+                    eod['pnl_display'] = f"{'+' if chg['net_pnl'] >= 0 else ''}₹{chg['net_pnl']:,.2f}"
+                    eod['summary'] = f"Stop-Loss Triggered 🛑 (Exit ₹{pt['exit_price']:,.2f}) at {pt.get('exit_time', '09:06 PM IST')}. Entry: ₹{pt['entry_price']:,.2f} -> Exit: ₹{pt['exit_price']:,.2f} (Gross: {'+' if gross_pnl >= 0 else ''}₹{gross_pnl:,.2f} | Dhan: -₹{chg['total_charges']:,.2f} | Net: {'+' if chg['net_pnl'] >= 0 else ''}₹{chg['net_pnl']:,.2f})."
+                except Exception:
+                    pt['pnl_inr'] = gross_pnl
 
         # 2. ACTIVE trades past their trading session (past day or current day past session cut-off)
         timing_now = get_us_aligned_session_times(now_dt)
@@ -4352,27 +4415,33 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
         # Check cooldown from last closed/entered trade on this symbol
         if sym_today_trades:
-            # Sort or find the most recent trade by taking the latest entry
-            last_t = sym_today_trades[-1]
+            # Sort chronologically using authoritative IST parser to get the true most recent trade
+            def _trade_sort_key(tr):
+                pt_tr = tr.get('paper_trade', {})
+                t_str = pt_tr.get('exit_time') or pt_tr.get('entry_time') or tr.get('time_trigger') or ''
+                dt_obj = parse_ist_timestamp(t_str, today_str)
+                return dt_obj if dt_obj else datetime.min.replace(tzinfo=pytz.timezone('Asia/Kolkata'))
+
+            sorted_sym_trades = sorted(sym_today_trades, key=_trade_sort_key)
+            last_t = sorted_sym_trades[-1]
             last_pt = last_t.get('paper_trade', {})
             # Cooldown MUST be measured from exit_time if trade closed, or entry_time if still pending/active
             last_time_str = last_pt.get('exit_time') or last_pt.get('entry_time') or last_t.get('time_trigger')
             if last_time_str:
                 try:
-                    clean_time = last_time_str.replace(' IST', '').strip()
-                    t_struct = datetime.strptime(f"{today_str} {clean_time}", "%d %b %Y %I:%M %p").replace(tzinfo=pytz.timezone('Asia/Kolkata'))
-                    diff_mins = (now_dt - t_struct).total_seconds() / 60.0
-                    
-                    # Post-Stop-Loss Guard:
-                    # If the last trade on this symbol ended in STOP LOSS, enforce strict 60m cooldown.
-                    # Entering immediately in the same direction right after a stop-loss is an invalid whipsaw trap.
-                    last_exit_trigger = str(last_pt.get('exit_trigger') or last_t.get('eod_outcome', {}).get('exit_trigger', ''))
-                    is_sl_hit = 'STOP_LOSS' in last_exit_trigger or (last_pt.get('pnl_inr', 0.0) < 0)
-                    required_cooldown = 60.0 if is_sl_hit else 30.0
-                    
-                    if diff_mins < required_cooldown:
-                        print(f"⏱️ Cooldown Active for {sym}: Most recent trade exited {int(diff_mins)}m ago (required: {int(required_cooldown)}m{' [Post-Stop-Loss Guard]' if is_sl_hit else ''}). Skipping.")
-                        continue
+                    t_struct = parse_ist_timestamp(last_time_str, today_str)
+                    if t_struct:
+                        diff_mins = (now_dt - t_struct).total_seconds() / 60.0
+                        
+                        # Post-Stop-Loss Guard:
+                        # If the last trade on this symbol ended in STOP LOSS, enforce strict minimum cooldown.
+                        last_exit_trigger = str(last_pt.get('exit_trigger') or last_t.get('eod_outcome', {}).get('exit_trigger', ''))
+                        is_sl_hit = 'STOP_LOSS' in last_exit_trigger or (last_pt.get('pnl_inr', 0.0) < 0)
+                        required_cooldown = 45.0 if is_sl_hit else 30.0
+                        
+                        if diff_mins < required_cooldown:
+                            print(f"⏱️ Cooldown Active for {sym}: Most recent trade exited {int(diff_mins)}m ago (required: {int(required_cooldown)}m{' [Post-Stop-Loss Guard]' if is_sl_hit else ''}). Skipping.")
+                            continue
                 except Exception:
                     pass
 
@@ -4536,6 +4605,41 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                              f"RSI {f'{rsi:.1f}' if rsi else 'N/A'}. Capturing aggressive trend expansion.")
 
         if triggered and action:
+            # 🛡️ Consecutive Directional Loss Guard (trader-risk skill / Anti-Whipsaw Freeze):
+            # If the last trade on this symbol today stopped out, enforce a strict 90-minute cooldown
+            # and price structure invalidation check before allowing another trade in the SAME direction.
+            if sym_today_trades:
+                def _trade_ts_key(tr):
+                    pt_tr = tr.get('paper_trade', {})
+                    t_str = pt_tr.get('exit_time') or pt_tr.get('entry_time') or tr.get('time_trigger') or ''
+                    dt_obj = parse_ist_timestamp(t_str, today_str)
+                    return dt_obj if dt_obj else datetime.min.replace(tzinfo=pytz.timezone('Asia/Kolkata'))
+
+                sorted_sym_trades = sorted(sym_today_trades, key=_trade_ts_key)
+                recent_t = sorted_sym_trades[-1]
+                recent_pt = recent_t.get('paper_trade', {})
+                recent_exit_trigger = str(recent_pt.get('exit_trigger') or recent_t.get('eod_outcome', {}).get('exit_trigger', ''))
+                recent_sl_hit = 'STOP_LOSS' in recent_exit_trigger or (recent_pt.get('pnl_inr', 0.0) < 0)
+                
+                if recent_sl_hit:
+                    recent_action = recent_pt.get('action')
+                    recent_time_str = recent_pt.get('exit_time') or recent_pt.get('entry_time') or recent_t.get('time_trigger')
+                    recent_dt = parse_ist_timestamp(recent_time_str, today_str)
+                    elapsed_m = ((now_dt - recent_dt).total_seconds() / 60.0) if recent_dt else 999.0
+                    
+                    if recent_action == action:
+                        if elapsed_m < 90.0:
+                            print(f"🚫 Directional Loss Guard: Blocked {sym} {action}. Previous {recent_action} stopped out {int(elapsed_m)}m ago (<90m required for same-direction re-entry). Anti-whipsaw freeze active.")
+                            continue
+                        recent_entry_p = float(recent_pt.get('entry_price') or 0.0)
+                        if elapsed_m < 120.0 and recent_entry_p > 0.0:
+                            if action == 'SELL' and cur_p > recent_entry_p:
+                                print(f"🚫 Directional Loss Guard: Blocked {sym} SELL at ₹{cur_p:,.2f} because price is still above prior failed entry ₹{recent_entry_p:,.2f} ({int(elapsed_m)}m elapsed < 120m).")
+                                continue
+                            elif action == 'BUY' and cur_p < recent_entry_p:
+                                print(f"🚫 Directional Loss Guard: Blocked {sym} BUY at ₹{cur_p:,.2f} because price is still below prior failed entry ₹{recent_entry_p:,.2f} ({int(elapsed_m)}m elapsed < 120m).")
+                                continue
+
             # 🛡️ Multi-Timeframe Trend Confirmation Guard:
             # Never take a BUY if price is below 50 EMA with strong downward momentum (ADX >= 25).
             # Never take a SELL if price is above 50 EMA with strong upward momentum (ADX >= 25).
@@ -4820,10 +4924,11 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 if nifty_last_updated_str:
                     try:
                         clean_dt_str = nifty_last_updated_str.replace(' IST', '').strip()
-                        dt_nifty = datetime.strptime(clean_dt_str, "%d %b %Y, %I:%M %p").replace(tzinfo=pytz.timezone('Asia/Kolkata'))
-                        age_mins = (now_dt - dt_nifty).total_seconds() / 60.0
-                        if age_mins > 8.0:
-                            is_nifty_data_fresh = False
+                        dt_nifty = parse_ist_timestamp(clean_dt_str)
+                        if dt_nifty:
+                            age_mins = (now_dt - dt_nifty).total_seconds() / 60.0
+                            if age_mins > 8.0:
+                                is_nifty_data_fresh = False
                     except Exception:
                         pass
             except Exception as e:
@@ -4917,18 +5022,25 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     and t.get('paper_trade', {}).get('quantity', 0) > 0
                 ]
                 if eq_today_trades:
-                    last_eq_t = eq_today_trades[-1]
+                    def _eq_trade_sort_key(tr):
+                        pt_tr = tr.get('paper_trade', {})
+                        t_str = pt_tr.get('exit_time') or pt_tr.get('entry_time') or tr.get('time_trigger') or ''
+                        dt_obj = parse_ist_timestamp(t_str, today_str)
+                        return dt_obj if dt_obj else datetime.min.replace(tzinfo=pytz.timezone('Asia/Kolkata'))
+
+                    sorted_eq_trades = sorted(eq_today_trades, key=_eq_trade_sort_key)
+                    last_eq_t = sorted_eq_trades[-1]
                     last_eq_pt = last_eq_t.get('paper_trade', {})
                     last_eq_time_str = last_eq_pt.get('exit_time') or last_eq_pt.get('entry_time') or last_eq_t.get('time_trigger')
                     if last_eq_time_str:
                         try:
-                            clean_t_str = last_eq_time_str.replace(' IST', '').strip()
-                            eq_t_struct = datetime.strptime(f"{today_str} {clean_t_str}", "%d %b %Y %I:%M %p").replace(tzinfo=pytz.timezone('Asia/Kolkata'))
-                            eq_diff_mins = (now_dt - eq_t_struct).total_seconds() / 60.0
-                            is_eq_sl_hit = 'STOP_LOSS' in str(last_eq_pt.get('exit_trigger', '')) or (last_eq_pt.get('pnl_inr', 0.0) < 0)
-                            req_eq_cooldown = 60.0 if is_eq_sl_hit else 30.0
-                            if eq_diff_mins < req_eq_cooldown:
-                                continue
+                            eq_t_struct = parse_ist_timestamp(last_eq_time_str, today_str)
+                            if eq_t_struct:
+                                eq_diff_mins = (now_dt - eq_t_struct).total_seconds() / 60.0
+                                is_eq_sl_hit = 'STOP_LOSS' in str(last_eq_pt.get('exit_trigger', '')) or (last_eq_pt.get('pnl_inr', 0.0) < 0)
+                                req_eq_cooldown = 60.0 if is_eq_sl_hit else 30.0
+                                if eq_diff_mins < req_eq_cooldown:
+                                    continue
                         except Exception:
                             pass
 
