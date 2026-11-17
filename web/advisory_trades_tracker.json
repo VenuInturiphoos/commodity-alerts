@@ -1,13 +1,13 @@
 {
-  "last_updated": "17 Nov 2026, 06:51 PM IST",
+  "last_updated": "17 Nov 2026, 07:01 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 149,
-    "executed_count": 42,
+    "total_signals": 158,
+    "executed_count": 45,
     "correct_count": 15,
     "wrong_count": 15,
-    "protected_count": 107,
+    "protected_count": 113,
     "win_rate_pct": 50.0,
     "broker": "Dhan",
     "total_gross_pnl_inr": 71462.19,
@@ -17,7 +17,7 @@
     "intraday_pnl_inr": -826.61,
     "intraday_booked_profit_inr": 0.0,
     "intraday_pool_balance_inr": 30000.0,
-    "avg_trade_pnl_inr": 1527.47,
+    "avg_trade_pnl_inr": 1425.64,
     "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 364980.55,
@@ -26,6 +26,453 @@
     "net_worth_inr": 364980.55
   },
   "trades": [
+    {
+      "id": "ADV-17Nov2026-1900-GOLDM",
+      "date": "17 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "GOLDM",
+      "name": "Gold Mini",
+      "lot_size": 20,
+      "event_context": "Option 2: Pullback Required Before Entry",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / PULLBACK REQUIRED",
+        "rationale": "PULLBACK_REQUIRED: Chasing day low (Price \u20b9134,124.00 is within 124.00 pts of Day Low \u20b9134,000.00). Option 2 mandates waiting for pullback into resistance before shorting. Standing aside to avoid chasing at range extremes.",
+        "reference_price": 134124.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "PULLBACK_REQUIRED_STAND_ASIDE",
+        "price_615": 134124.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "PULLBACK_REQUIRED: Chasing day low (Price \u20b9134,124.00 is within 124.00 pts of Day Low \u20b9134,000.00). Option 2 mandates waiting for pullback into resistance before shorting."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 134124.0,
+        "entry_time": "07:00 PM IST",
+        "exit_price": 134124.0,
+        "exit_time": "11:45 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Pullback Guard \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Option 2 discipline: Price extended from resistance. Stood aside until pullback into supply."
+      }
+    },
+    {
+      "id": "ADV-17Nov2026-1900-SILVERMIC",
+      "date": "17 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "SILVERMIC",
+      "name": "Silver Micro",
+      "lot_size": 5,
+      "event_context": "Safe Normal Range (Range-Bound Chop)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
+        "rationale": "Asset within tight range (+0.75%). Conflict: HTF is Bearish but price (\u20b9170,933.0) is trading above Session VWAP (\u20b9170,178.4). Counter-trend short blocked.. Capital preserved in cash.",
+        "reference_price": 170933.0,
+        "stop_loss": 162872.64,
+        "target": 169659.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 170933.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Tight non-trending consolidation. Capital preserved."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 170933.0,
+        "entry_time": "07:00 PM IST",
+        "exit_price": 170933.0,
+        "exit_time": "11:45 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 162872.64,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
+      }
+    },
+    {
+      "id": "ADV-17Nov2026-1900-CRUDEOILM",
+      "date": "17 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "CRUDEOILM",
+      "name": "Crude Oil Mini",
+      "lot_size": 50,
+      "event_context": "Safe Normal Range (Range-Bound Chop)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
+        "rationale": "Asset within tight range (+0.79%). Conflict: HTF is Bearish but price (\u20b98,140.0) is trading above Session VWAP (\u20b98,064.6). Counter-trend short blocked.. Capital preserved in cash.",
+        "reference_price": 8140.0,
+        "stop_loss": 7752.96,
+        "target": 8076.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 8140.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Tight non-trending consolidation. Capital preserved."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 8140.0,
+        "entry_time": "07:00 PM IST",
+        "exit_price": 8140.0,
+        "exit_time": "11:45 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 7752.96,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
+      }
+    },
+    {
+      "id": "ADV-17Nov2026-1900-NATURALGASM",
+      "date": "17 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "NATURALGASM",
+      "name": "Natural Gas Mini",
+      "lot_size": 3000,
+      "event_context": "Option 2: Pullback Required Before Entry",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / PULLBACK REQUIRED",
+        "rationale": "PULLBACK_REQUIRED: Extended from resistance (Gap: 4.10 pts > Max Allowed: 2.00 pts from \u20b9297.30). Wait for price to bounce closer to resistance before shorting. Standing aside to avoid chasing at range extremes.",
+        "reference_price": 293.2,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "PULLBACK_REQUIRED_STAND_ASIDE",
+        "price_615": 293.2,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "PULLBACK_REQUIRED: Extended from resistance (Gap: 4.10 pts > Max Allowed: 2.00 pts from \u20b9297.30). Wait for price to bounce closer to resistance before shorting."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 293.2,
+        "entry_time": "07:00 PM IST",
+        "exit_price": 293.2,
+        "exit_time": "11:45 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Pullback Guard \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Option 2 discipline: Price extended from resistance. Stood aside until pullback into supply."
+      }
+    },
+    {
+      "id": "ADV-17Nov2026-1900-COPPERM",
+      "date": "17 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "COPPERM",
+      "name": "Copper Mini",
+      "lot_size": 2000,
+      "event_context": "US Pit Open Trend Momentum Sell (NYMEX/COMEX Open)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 07:15 PM IST CANDLE CLOSE before entering SELL COPPERM",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b91,372.4) & trading below Session VWAP (\u20b91,279.8). Target 1.2R calibrated to ATR.",
+        "reference_price": 1277.8,
+        "stop_loss": 1280.3,
+        "target": 1275.05
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615",
+        "price_615": null,
+        "action_taken": "Awaiting 07:15 PM IST candle close to confirm SELL trend holds...",
+        "detail": "15-minute verification scheduled for 07:15 PM IST (Reference: \u20b91,277.80)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 2000,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "PENDING_615",
+        "target": 1275.05,
+        "stop_loss": 1280.3
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 1280.3,
+        "outcome": "PENDING",
+        "badge": "Awaiting 07:15 \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "US Pit Open SELL momentum setup awaiting 07:15 PM IST candle close."
+      }
+    },
+    {
+      "id": "ADV-17Nov2026-1900-ZINCMINI",
+      "date": "17 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 4000,
+      "event_context": "Option 2: Pullback Required Before Entry",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / PULLBACK REQUIRED",
+        "rationale": "PULLBACK_REQUIRED: Extended from resistance (Gap: 2.70 pts > Max Allowed: 1.50 pts from \u20b9404.50). Wait for price to bounce closer to resistance before shorting. Standing aside to avoid chasing at range extremes.",
+        "reference_price": 401.8,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "PULLBACK_REQUIRED_STAND_ASIDE",
+        "price_615": 401.8,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "PULLBACK_REQUIRED: Extended from resistance (Gap: 2.70 pts > Max Allowed: 1.50 pts from \u20b9404.50). Wait for price to bounce closer to resistance before shorting."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 401.8,
+        "entry_time": "07:00 PM IST",
+        "exit_price": 401.8,
+        "exit_time": "11:45 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Pullback Guard \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Option 2 discipline: Price extended from resistance. Stood aside until pullback into supply."
+      }
+    },
+    {
+      "id": "ADV-17Nov2026-1900-ALUMINI",
+      "date": "17 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 6000,
+      "event_context": "US Pit Open Trend Momentum Sell (NYMEX/COMEX Open)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 07:15 PM IST CANDLE CLOSE before entering SELL ALUMINI",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9332.9) & trading below Session VWAP (\u20b9327.7). Target 1.2R calibrated to ATR.",
+        "reference_price": 328.05,
+        "stop_loss": 329.05,
+        "target": 326.95
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615",
+        "price_615": null,
+        "action_taken": "Awaiting 07:15 PM IST candle close to confirm SELL trend holds...",
+        "detail": "15-minute verification scheduled for 07:15 PM IST (Reference: \u20b9328.05)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 6000,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "PENDING_615",
+        "target": 326.95,
+        "stop_loss": 329.05
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 329.05,
+        "outcome": "PENDING",
+        "badge": "Awaiting 07:15 \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "US Pit Open SELL momentum setup awaiting 07:15 PM IST candle close."
+      }
+    },
+    {
+      "id": "ADV-17Nov2026-1900-ZINCMINI",
+      "date": "17 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 4000,
+      "event_context": "Option 2: Pullback Required Before Entry",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / PULLBACK REQUIRED",
+        "rationale": "PULLBACK_REQUIRED: Extended from resistance (Gap: 2.35 pts > Max Allowed: 1.50 pts from \u20b9404.15). Wait for price to bounce closer to resistance before shorting. Standing aside to avoid chasing at range extremes.",
+        "reference_price": 401.8,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "PULLBACK_REQUIRED_STAND_ASIDE",
+        "price_615": 401.8,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "PULLBACK_REQUIRED: Extended from resistance (Gap: 2.35 pts > Max Allowed: 1.50 pts from \u20b9404.15). Wait for price to bounce closer to resistance before shorting."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 401.8,
+        "entry_time": "07:00 PM IST",
+        "exit_price": 401.8,
+        "exit_time": "11:45 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Pullback Guard \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Option 2 discipline: Price extended from resistance. Stood aside until pullback into supply."
+      }
+    },
+    {
+      "id": "ADV-17Nov2026-1900-ALUMINI",
+      "date": "17 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 6000,
+      "event_context": "US Pit Open Trend Momentum Sell (NYMEX/COMEX Open)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 07:15 PM IST CANDLE CLOSE before entering SELL ALUMINI",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9333.8) & trading below Session VWAP (\u20b9328.2). Target 1.2R calibrated to ATR.",
+        "reference_price": 328.05,
+        "stop_loss": 329.05,
+        "target": 326.95
+      },
+      "check_615": {
+        "checked": false,
+        "status": "PENDING_615",
+        "price_615": null,
+        "action_taken": "Awaiting 07:15 PM IST candle close to confirm SELL trend holds...",
+        "detail": "15-minute verification scheduled for 07:15 PM IST (Reference: \u20b9328.05)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 6000,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "PENDING_615",
+        "target": 326.95,
+        "stop_loss": 329.05
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 329.05,
+        "outcome": "PENDING",
+        "badge": "Awaiting 07:15 \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "US Pit Open SELL momentum setup awaiting 07:15 PM IST candle close."
+      }
+    },
     {
       "id": "ADV-17Nov2026-1721-GOLDM",
       "date": "17 Nov 2026",
