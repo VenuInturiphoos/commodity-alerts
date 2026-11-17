@@ -1,10 +1,10 @@
 {
-  "last_updated": "17 Nov 2026, 03:12 PM IST",
+  "last_updated": "17 Nov 2026, 03:13 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 146,
-    "executed_count": 39,
+    "total_signals": 147,
+    "executed_count": 40,
     "correct_count": 14,
     "wrong_count": 12,
     "protected_count": 107,
@@ -17,15 +17,123 @@
     "intraday_pnl_inr": -208.75,
     "intraday_booked_profit_inr": 0.0,
     "intraday_pool_balance_inr": 30000.0,
-    "avg_trade_pnl_inr": 1568.83,
-    "active_trades_count": 2,
+    "avg_trade_pnl_inr": 1529.61,
+    "active_trades_count": 3,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 361393.13,
-    "used_margin_inr": 19836.64,
-    "available_cash_inr": 341556.49,
+    "used_margin_inr": 220861.64,
+    "available_cash_inr": 140531.49,
     "net_worth_inr": 361393.13
   },
   "trades": [
+    {
+      "id": "ADV-17Nov2026-1513-CRUDEOILM",
+      "date": "17 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (Pre-Ignition Volatility Coil)",
+      "time_trigger": "03:13 PM IST",
+      "time_6pm": "03:13 PM IST",
+      "time_validation": "03:13 PM IST",
+      "time_615": "03:13 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "CRUDEOILM",
+      "name": "Crude Oil Mini",
+      "lot_size": 100,
+      "event_context": "Indicator Confluence: Pre-Ignition Volatility Coil",
+      "regime": {
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 32.0, RSI: 37.3). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "SHORT_FUTURES"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 32.0,
+        "rsi": 37.3,
+        "bb_width_pct": 8.04,
+        "daily_vol_pct": 4.44
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 45.8,
+        "p_stop_pct": 47.8,
+        "p_neither_pct": 6.3,
+        "resolved_win_rate_pct": 48.9,
+        "expected_r": 0.072,
+        "target_r": 1.2,
+        "sample_bars": 1974,
+        "summary": "3,000 Replays: 45.8% Target | 47.8% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 5000.0,
+        "potential_gain_inr": 6000.0,
+        "broker": "Dhan",
+        "est_charges_inr": 185.67,
+        "net_loss_at_stop_inr": 5185.67
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b98,041.00",
+        "rationale": "Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 1.67% (134.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.24x average indicates supply exhaustion before move. | Price capped below baseline (\u20b98,598.05), building downward coil pressure.. Early coil entry prior to breakout expansion. 3,000 Replays: 45.8% Target | 47.8% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 8041.0,
+        "stop_loss": 8091.0,
+        "target": 7981.0,
+        "original_stop_loss": 8091.0,
+        "original_target": 7981.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 8041.0,
+        "action_taken": "Entered SELL 100 units @ \u20b98,041.00",
+        "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 90.0/100. Intraday Range Coiled: Day range is only 1.67% (134.00 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.24x average indicates supply exhaustion before move. | Price capped below baseline (\u20b98,598.05), building downward coil pressure.. Early coil entry prior to breakout expansion. | 3,000 Replays: 45.8% Target | 47.8% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 100,
+        "entry_price": 8041.0,
+        "entry_time": "03:13 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "margin_required_inr": 201025.0,
+        "target": 7981.0,
+        "stop_loss": 8091.0,
+        "initial_stop_loss": 8091.0,
+        "original_sl": 8091.0,
+        "peak_high": 8041.0,
+        "trough_low": 8041.0,
+        "entry_day_high": 8041.0,
+        "entry_day_low": 8041.0
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b98,041.00 (Target: \u20b97,981.00, SL: \u20b98,091.00) | 3,000 Replays: 45.8% Target | 47.8% Stop | Expected: +0.07R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
     {
       "id": "ADV-17Nov2026-1436-COPPERM",
       "date": "17 Nov 2026",
@@ -1044,8 +1152,8 @@
         "entry_time": "09:40 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": -41.3,
-        "pnl_inr": -413.0,
+        "pnl_points": -40.4,
+        "pnl_inr": -404.0,
         "status": "ACTIVE",
         "target": 4984.71,
         "stop_loss": 4883.86,
@@ -1065,8 +1173,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b94,929.70 (Target: \u20b94,984.71, SL: \u20b94,883.86) | 3,000 Replays: 44.2% Target | 28.0% Stop | Expected: +0.25R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
       },
       "live_price_data": {
-        "current_price": 4888.4,
-        "change_pct": -0.84
+        "current_price": 4889.3,
+        "change_pct": -0.82
       }
     },
     {
@@ -1164,8 +1272,8 @@
         "entry_time": "09:31 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": 1.3,
-        "pnl_inr": 33.8,
+        "pnl_points": 1.6,
+        "pnl_inr": 41.6,
         "status": "ACTIVE",
         "target": 1940.11,
         "stop_loss": 1900.86,
@@ -1185,8 +1293,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b91,918.70 (Target: \u20b91,940.11, SL: \u20b91,900.86) | 3,000 Replays: 36.1% Target | 31.3% Stop | Expected: +0.12R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "live_price_data": {
-        "current_price": 1920.0,
-        "change_pct": 0.07
+        "current_price": 1920.3,
+        "change_pct": 0.08
       }
     },
     {
