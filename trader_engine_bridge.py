@@ -305,6 +305,23 @@ class PreTradeRiskEngine:
         if now_ist.hour > 22 or (now_ist.hour == 22 and now_ist.minute >= 45):
             return {"passed": False, "reason": "LATE_SESSION_RESTRICTION: No new entries permitted after 10:45 PM IST."}
 
+        # 10. One-and-Done Target Lockout Rule:
+        # If any prior trade on this symbol today already secured a TARGET or net positive gain (> ₹500),
+        # lock in profits and prohibit re-entry on this asset for the rest of the day.
+        clean_target_sym = symbol.replace('MIC', '').rstrip('M').replace('.NS', '').replace('-FUT', '')
+        for t in existing_trades:
+            if t.get('date') == today_str:
+                t_sym = str(t.get('symbol', '')).replace('MIC', '').rstrip('M').replace('.NS', '').replace('-FUT', '')
+                if t_sym == clean_target_sym:
+                    pt = t.get('paper_trade', {})
+                    pnl = pt.get('net_pnl_inr', pt.get('pnl_inr', 0.0))
+                    is_target = ('TARGET' in str(pt.get('exit_trigger', ''))) or (t.get('eod_outcome', {}).get('outcome') == 'CORRECT') or (pnl > 500.0)
+                    if is_target:
+                        return {
+                            "passed": False,
+                            "reason": f"ONE_AND_DONE_TARGET_LOCK: {symbol} already secured target (+₹{pnl:,.2f}) today. Gains locked for session."
+                        }
+
         # Estimate round-trip Dhan broker charges at stop-loss
         dhan_est = DhanBrokerageCalculator.calculate_trade_charges(
             symbol=symbol,
