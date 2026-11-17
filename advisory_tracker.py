@@ -226,8 +226,8 @@ COMMODITY_SPECS_150K = {
     'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
     'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 2000},
     'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 2000},
-    'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 100},
-    'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 100},
+    'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 50},
+    'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 50},
     'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 3000},
     'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 3000},
     'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 6000},
@@ -843,6 +843,19 @@ def save_tracker(tracker_data):
                     eod['summary'] = f"Trailing Profit Stop Triggered 💰 (Exit ₹{pt['exit_price']:,.2f} | +35% Target Gains Secured) at {pt.get('exit_time', '08:32 PM IST')}. Entry: ₹{pt['entry_price']:,.2f} -> Exit: ₹{pt['exit_price']:,.2f} ({'+' if pnl >= 0 else ''}₹{pnl:,.2f})."
                 if t.get('check_615', {}).get('action_taken'):
                     t['check_615']['action_taken'] = t['check_615']['action_taken'].replace('2000 units', '3000 units')
+
+        if t.get('symbol') == 'CRUDEOILM' and (t.get('lot_size') == 100 or pt.get('quantity') == 100):
+            t['lot_size'] = 50
+            pt['quantity'] = 50
+            if pt.get('entry_price'):
+                pt['margin_required_inr'] = round(float(pt['entry_price']) * 50 * 0.25, 2)
+            if t.get('check_615', {}).get('action_taken'):
+                t['check_615']['action_taken'] = t['check_615']['action_taken'].replace('100 units', '50 units')
+            if pt.get('entry_price') and pt.get('exit_price'):
+                pts = (pt['entry_price'] - pt['exit_price']) if pt.get('action') == 'SELL' else (pt['exit_price'] - pt['entry_price'])
+                pnl = round(pts * 50, 2)
+                pt['pnl_points'] = round(pts, 2)
+                pt['pnl_inr'] = pnl
 
         # 2. ACTIVE trades past their trading session (past day or current day past session cut-off)
         timing_now = get_us_aligned_session_times(now_dt)

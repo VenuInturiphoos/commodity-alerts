@@ -799,8 +799,8 @@ class PositionSizer:
         'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
         'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 2000},
         'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 2000},
-        'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 100},
-        'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 100},
+        'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 50},
+        'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 50},
         'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 3000},
         'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 3000},
         'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 6000},
@@ -853,6 +853,15 @@ class PositionSizer:
 
         # Preferred canonical lot for ~₹1.5L target
         canonical_lot = spec_150k['lot'] if spec_150k else (default_lot if default_lot > 0 else base_unit)
+
+        # For Crude Oil Mini, dynamically scale lots if price is elevated so broker margin never exceeds ₹1.5L
+        if resolved_sym == 'CRUDEOILM' and entry > 0:
+            broker_m_rate = max(m_rate, 0.28)
+            dhan_margin_per_lot = (base_unit * entry) * broker_m_rate
+            if dhan_margin_per_lot > 0:
+                max_allowed_lots = max(1, int(target_margin_inr // dhan_margin_per_lot))
+                canonical_lot = min(canonical_lot, max_allowed_lots * base_unit)
+
         canonical_margin = (canonical_lot * entry) * m_rate
 
         # If available margin is constrained, size maximum whole lots that fit available cash
