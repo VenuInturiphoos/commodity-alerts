@@ -107,9 +107,60 @@ class DhanLiveExecutor:
             pass
         return None, None
 
+    # Automated Monthly Futures Contract Roll-Over Map (MCX Commodities)
+    # Guarantees that when the front-month contract expires or enters the <= 3d tender window,
+    # the executor automatically shifts execution to the active next-month contract.
+    ROLLOVER_CHAIN = {
+        'CRUDEOILM': [
+            {'security_id': '573423', 'custom_symbol': 'CRUDEOILM NOV FUT', 'trading_symbol': 'CRUDEOILM-19Nov2026-FUT', 'expiry': '2026-11-19 23:30:00'},
+            {'security_id': '576265', 'custom_symbol': 'CRUDEOILM DEC FUT', 'trading_symbol': 'CRUDEOILM-18Dec2026-FUT', 'expiry': '2026-12-18 23:30:00'}
+        ],
+        'ALUMINI': [
+            {'security_id': '578632', 'custom_symbol': 'ALUMINI NOV FUT', 'trading_symbol': 'ALUMINI-30Nov2026-FUT', 'expiry': '2026-11-30 23:30:00'},
+            {'security_id': '581710', 'custom_symbol': 'ALUMINI DEC FUT', 'trading_symbol': 'ALUMINI-31Dec2026-FUT', 'expiry': '2026-12-31 23:30:00'}
+        ],
+        'ZINCMINI': [
+            {'security_id': '578639', 'custom_symbol': 'ZINCMINI NOV FUT', 'trading_symbol': 'ZINCMINI-30Nov2026-FUT', 'expiry': '2026-11-30 23:30:00'},
+            {'security_id': '581721', 'custom_symbol': 'ZINCMINI DEC FUT', 'trading_symbol': 'ZINCMINI-31Dec2026-FUT', 'expiry': '2026-12-31 23:30:00'}
+        ],
+        'SILVERMIC': [
+            {'security_id': '562058', 'custom_symbol': 'SILVERMIC NOV FUT', 'trading_symbol': 'SILVERMIC-30Nov2026-FUT', 'expiry': '2026-11-30 23:30:00'},
+            {'security_id': '574843', 'custom_symbol': 'SILVERMIC FEB FUT', 'trading_symbol': 'SILVERMIC-26Feb2027-FUT', 'expiry': '2027-02-26 23:30:00'}
+        ],
+        'GOLDM': [
+            {'security_id': '575011', 'custom_symbol': 'GOLDM DEC FUT', 'trading_symbol': 'GOLDM-04Dec2026-FUT', 'expiry': '2026-12-04 23:30:00'},
+            {'security_id': '578779', 'custom_symbol': 'GOLDM JAN FUT', 'trading_symbol': 'GOLDM-05Jan2027-FUT', 'expiry': '2027-01-05 23:30:00'}
+        ]
+    }
+
     def resolve_scrip(self, symbol, asset_type='COMMODITY'):
-        """Resolves raw symbol (e.g. COPPERM, CRUDEOILM, EICHERMOT.NS) to Dhan Security ID."""
+        """Resolves raw symbol (e.g. COPPERM, CRUDEOILM, EICHERMOT.NS) to Dhan Security ID with dynamic front-month roll-over."""
         clean_sym = symbol.strip().upper()
+
+        # Check Automated Roll-Over Chain for Commodities first
+        base_comm = clean_sym.replace('-FUT', '').replace('.NS', '').replace('.BO', '')
+        if base_comm in self.ROLLOVER_CHAIN:
+            chain = self.ROLLOVER_CHAIN[base_comm]
+            now_ist = datetime.now(pytz.timezone('Asia/Kolkata')).date()
+            for contract in chain:
+                try:
+                    exp_date = datetime.strptime(contract['expiry'][:10], '%Y-%m-%d').date()
+                    days_left = (exp_date - now_ist).days
+                    if days_left > self.expiry_safety_days:
+                        c_dict = dict(contract)
+                        c_dict['symbol_name'] = base_comm
+                        c_dict['lot_size'] = 1
+                        c_dict['exchange_segment'] = 'MCX_COMM'
+                        return c_dict
+                except Exception:
+                    continue
+            # Fallback to the latest contract in chain
+            last_c = dict(chain[-1])
+            last_c['symbol_name'] = base_comm
+            last_c['lot_size'] = 1
+            last_c['exchange_segment'] = 'MCX_COMM'
+            return last_c
+
         # Direct lookup in cached scrip map
         if clean_sym in self.scrip_cache:
             return self.scrip_cache[clean_sym]
