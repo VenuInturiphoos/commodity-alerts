@@ -5275,8 +5275,16 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 rsi_curling_down = bool(s.get('rsi_curling_down') or (float(s.get('rsi_prev') or rsi) > rsi))
                 near_bb = bool(s.get('near_bb_lower'))
                 near_bb_upper = bool(s.get('near_bb_upper') or (cur_p >= bb_upper * 0.99))
-                day_h = float(s.get('day_high') or s.get('high') or (high_52 if cur_p >= high_52 * 0.985 else cur_p))
-                day_l = float(s.get('day_low') or s.get('low') or (cur_p * 0.985))
+                day_h = float(s.get('day_high') or s.get('high') or 0)
+                day_l = float(s.get('day_low') or s.get('low') or 0)
+                if day_h <= 0 or day_l <= 0:
+                    p_close = round(cur_p / (1.0 + chg_pct / 100.0), 2) if chg_pct != 0 else cur_p
+                    if chg_pct < 0:
+                        day_h = max(cur_p, p_close)
+                        day_l = cur_p
+                    else:
+                        day_h = cur_p
+                        day_l = min(cur_p, p_close)
                 vol_ratio = float(s.get('volume_ratio') or 1.15)
                 atr = float(s.get('atr_14') or (cur_p * 0.015))
                 ema20 = float(s.get('ema_20') or cur_p)
@@ -5337,7 +5345,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                     f"Trend continuation entry targeting realistic intraday 1.2R upside.")
 
                 # Setup D: Intraday Breakdown / Weakness Expansion (SELL - High Velocity Short)
-                elif ((-2.5 <= chg_pct <= -0.60 and vol_ratio >= 1.0) or (cur_p <= day_l * 1.015 and chg_pct <= -0.60)) and (32.0 <= rsi <= 48.0) and (cur_p <= ema20 * 1.005) and (cur_p <= vwap * 1.002):
+                elif ((chg_pct <= -0.60 and vol_ratio >= 1.0) or (cur_p <= day_l * 1.015 and chg_pct <= -0.60)) and (26.0 <= rsi <= 52.0) and (cur_p <= ema20 * 1.005) and (cur_p <= vwap * 1.002):
                     eq_action = "SELL"
                     eq_setup = "Intraday Breakdown / Weakness Expansion"
                     orb_metrics = ORBTimer.check_orb_confirmation(
