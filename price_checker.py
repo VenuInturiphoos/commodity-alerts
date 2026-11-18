@@ -820,11 +820,22 @@ class PriceChecker:
                     monthly_contracts.sort(key=lambda x: x['exp'])
                     
                     # Determine active front-month contract:
-                    # If nearest contract expires in <= 3 days and 2nd contract has higher liquidity, roll to 2nd contract
+                    # 🔄 Institutional Tender & Liquidity Roll-Over:
+                    # 1. Tender Guard: If nearest contract expires in <= 3 calendar days, ALWAYS roll to the 2nd contract.
+                    # 2. Volume Shift: Or if the 2nd contract has higher or equal volume, roll to the 2nd contract.
                     front_contract = None
                     if monthly_contracts:
-                        if len(monthly_contracts) > 1 and (monthly_contracts[0]['exp'] - today_int <= 3) and (monthly_contracts[1]['vol'] > monthly_contracts[0]['vol'] * 1.5):
+                        days_left = 999
+                        try:
+                            exp_date = datetime.strptime(str(monthly_contracts[0]['exp']), '%Y%m%d').date()
+                            now_ist_d = datetime.now(pytz.timezone('Asia/Kolkata')).date()
+                            days_left = (exp_date - now_ist_d).days
+                        except Exception:
+                            days_left = monthly_contracts[0]['exp'] - today_int
+
+                        if len(monthly_contracts) > 1 and (days_left <= 3 or monthly_contracts[1]['vol'] >= monthly_contracts[0]['vol']):
                             front_contract = monthly_contracts[1]
+                            print(f"🔄 [ROLLOVER ACTIVE] {sym}: Front contract {monthly_contracts[0]['ticker']} ({days_left}d left, Vol: {monthly_contracts[0]['vol']}) auto-rolled to {front_contract['ticker']} (Vol: {front_contract['vol']}).")
                         else:
                             front_contract = monthly_contracts[0]
                             
