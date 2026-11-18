@@ -50,6 +50,8 @@ class DhanLiveExecutor:
         self.focus_commodities_only = os.environ.get('FOCUS_COMMODITIES_ONLY', 'true').lower() in ['true', '1', 'yes']
         # 2. Exclude trade executions if commodity contract is nearing expiry (<= 3 calendar days by default)
         self.expiry_safety_days = int(os.environ.get('COMMODITY_EXPIRY_SAFETY_DAYS', 3))
+        # 3. Explicitly excluded unsupported commodities on Dhan (e.g. Copper Mini)
+        self.unsupported_commodities = {'COPPERM', 'COPPER'}
 
     def _load_scrip_cache(self):
         if os.path.exists(SCRIP_CACHE_FILE):
@@ -135,6 +137,16 @@ class DhanLiveExecutor:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
         today_str = now_ist.strftime('%d %b %Y')
         action = action.upper()
+
+        # Rule 0: Exclude unsupported commodities on Dhan (e.g. Copper Mini)
+        sym_clean = symbol.strip().upper().replace('-FUT', '').replace('.NS', '').replace('.BO', '')
+        if sym_clean in self.unsupported_commodities or sym_clean.startswith('COPPER'):
+            print(f"🛑 [AUTOPILOT EXCLUDED] {symbol}: Unsupported contract on Dhan (Copper Mini). Trade execution excluded per user preference.")
+            return {
+                'status': 'EXCLUDED_UNSUPPORTED_COMMODITY',
+                'symbol': symbol,
+                'reason': 'Dhan does not support Copper Mini contracts. Excluded from live broker execution.'
+            }
 
         # Rule 1: Focus strictly on Commodities (Exclude equities, stock futures, and options from live broker orders)
         if self.focus_commodities_only:
