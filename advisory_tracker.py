@@ -3710,6 +3710,27 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
     now_time_str = now_dt.strftime('%I:%M %p IST')
     
     relevant_trades = [t for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']]
+    
+    # ⏱️ 3-Minute Limit Order TTL Check on Dhan: Cancel any pending limit order older than 3 minutes (180s)
+    if os.environ.get('DHAN_AUTOPILOT_ENABLED', 'true').lower() in ['true', '1', 'yes']:
+        try:
+            from dhan_live_executor import DhanLiveExecutor
+            dhan_exec = DhanLiveExecutor()
+            stale_cancels = dhan_exec.check_and_cancel_stale_limit_orders(max_age_seconds=180)
+            if stale_cancels:
+                cancelled_ids = {str(c['order_id']) for c in stale_cancels}
+                for t in relevant_trades:
+                    pt = t.get('paper_trade', {})
+                    if str(pt.get('dhan_order_id')) in cancelled_ids:
+                        pt['status'] = 'CANCELLED_UNFILLED'
+                        if 'eod_outcome' in t:
+                            t['eod_outcome']['outcome'] = 'PROTECTED'
+                            t['eod_outcome']['badge'] = 'Limit Expired (Unfilled) ⏱️'
+                            t['eod_outcome']['summary'] = "Limit order on Dhan not executed within 3 minutes. Cancelled automatically to prevent stale slippage."
+                save_tracker(tracker)
+        except Exception as e:
+            pass
+
     if not relevant_trades:
         return False
 

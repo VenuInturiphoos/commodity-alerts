@@ -321,6 +321,61 @@ class DhanLiveExecutor:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def check_and_cancel_stale_limit_orders(self, max_age_seconds=180):
+        """
+        Scans all orders on Dhan and cancels any pending LIMIT orders that have not executed 
+        within max_age_seconds (3 minutes = 180s by default).
+        Prevents stale limit orders from sitting on the book when momentum has faded.
+        Returns: list of cancelled order details.
+        """
+        cancelled_orders = []
+        try:
+            order_res = self.dhan.get_order_list()
+            if not isinstance(order_res, dict) or order_res.get('status') != 'success':
+                return cancelled_orders
+
+            orders = order_res.get('data', [])
+            if not isinstance(orders, list):
+                return cancelled_orders
+
+            now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
+            
+            for o in orders:
+                status = str(o.get('orderStatus', '')).upper()
+                order_type = str(o.get('orderType', '')).upper()
+                # Only check open/unfilled limit orders
+                if status in ['TRANSIT', 'PENDING', 'OPEN']:
+                    create_time_str = o.get('createTime')
+                    order_id = str(o.get('orderId'))
+                    symbol = o.get('tradingSymbol', '')
+                    
+                    if not create_time_str or not order_id:
+                        continue
+                        
+                    try:
+                        create_dt = datetime.strptime(create_time_str, '%Y-%m-%d %H:%M:%S')
+                        create_dt = pytz.timezone('Asia/Kolkata').localize(create_dt)
+                        age_sec = (now_ist - create_dt).total_seconds()
+                        
+                        if age_sec >= max_age_seconds:
+                            print(f"⏱️ [3-MIN TTL LIMIT EXPIRY] Order {order_id} ({symbol}) created at {create_time_str} has been pending for {int(age_sec)}s (>= {max_age_seconds}s limit). Cancelling order on Dhan...")
+                            cancel_res = self.cancel_pending_order(order_id)
+                            cancelled_orders.append({
+                                'order_id': order_id,
+                                'symbol': symbol,
+                                'create_time': create_time_str,
+                                'age_seconds': age_sec,
+                                'cancel_response': cancel_res
+                            })
+                            print(f"✅ Order {order_id} ({symbol}) successfully cancelled on Dhan.")
+                    except Exception as parse_err:
+                        print(f"⚠️ Error parsing order time for {order_id}: {parse_err}")
+                        
+        except Exception as e:
+            print(f"⚠️ Error checking stale limit orders: {e}")
+            
+        return cancelled_orders
+
     def get_order_status(self, order_id):
         """Retrieves real-time status of a specific order."""
         try:
