@@ -4708,26 +4708,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             rationale = (f"Pre-Move Readiness Index: {pm_signal.pmri_score:.1f}/100. "
                          f"{' | '.join(pm_signal.reasons[:3])}. Early coil entry prior to breakout expansion.")
 
-        # --- SETUP 1: Circuit Boundary Rebound / Mean Reversion ---
-        # A. Bullish Reversal at Lower Band (Permitted ONLY if overall trend is Bullish / Price >= 50 EMA)
-        elif (dist_lc <= 1.0 or (rsi is not None and rsi <= 26.0)) and (cur_p >= day_l * 1.0025) and (ema50 is None or cur_p >= ema50 * 0.998):
-            triggered = True
-            action = "BUY"
-            setup_name = "Circuit Floor Rebound (Mean Reversion)"
-            sl = round(min(day_l, lc) * 0.997, 2)
-            tgt = round(cur_p + max(1.8 * atr_val, abs(p_close - cur_p) * 0.5), 2)
-            rationale = (f"Price tested Lower Circuit zone ({dist_lc:.2f}% away) or oversold RSI ({rsi:.1f} <= 26) "
-                         f"and confirmed +0.25% bounce off day low ₹{day_l:,.2f} with HTF trend alignment. Mean-reversion retest.")
-
-        # B. Bearish Rejection at Upper Band (Permitted ONLY if overall trend is Bearish / Price <= 50 EMA)
-        elif (dist_uc <= 1.0 or (rsi is not None and rsi >= 74.0)) and (cur_p <= day_h * 0.9975) and (ema50 is None or cur_p <= ema50 * 1.002):
-            triggered = True
-            action = "SELL"
-            setup_name = "Circuit Ceiling Rejection (Mean Reversion)"
-            sl = round(max(day_h, uc) * 1.003, 2)
-            tgt = round(cur_p - max(1.8 * atr_val, abs(cur_p - p_close) * 0.5), 2)
-            rationale = (f"Price tested Upper Circuit zone ({dist_uc:.2f}% away) or overbought RSI ({rsi:.1f} >= 74) "
-                         f"and confirmed -0.25% pullback off day high ₹{day_h:,.2f} with HTF trend alignment. Exhaustion fade retest.")
+        # --- SETUP 1: PERMANENTLY DEACTIVATED (Circuit Boundary Rebounds / Falling Knife Fades Prohibited) ---
+        # Fading circuit extremes or buying oversold panics is strictly banned to prevent repeated falling knife losses.
 
         # --- SETUP 2: Volatility Breakout with ADX Momentum ---
         # A. Bullish Day-High Breakout
@@ -4914,7 +4896,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             risk_metrics = PreTradeRiskEngine.check_risk(
                 contract_sym, action, cur_p, sl, tgt, adaptive_lot, all_existing,
                 max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR,
-                day_h=day_h, day_l=day_l, ema20=ema20, atr=atr_val
+                day_h=day_h, day_l=day_l, ema20=ema20, atr=atr_val,
+                ema50=ema50, vwap=session_vwap, chg_pct=chg_pct
             )
             if not risk_metrics.get('passed'):
                 print(f"🛡️ Pre-Trade Risk Engine Blocked {contract_sym} {action}: {risk_metrics.get('reason')}")

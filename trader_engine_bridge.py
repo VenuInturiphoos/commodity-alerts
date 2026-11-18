@@ -205,9 +205,11 @@ class PreTradeRiskEngine:
     def check_risk(symbol, action, entry, stop, target, lot_size, existing_trades,
                    max_loss_per_trade_inr=6000.0, max_daily_loss_inr=12000.0,
                    min_reward_risk=1.1, max_active_positions=3,
-                   day_h=None, day_l=None, ema20=None, atr=None):
+                   day_h=None, day_l=None, ema20=None, atr=None,
+                   ema50=None, vwap=None, chg_pct=None):
         """
         Runs comprehensive pre-trade risk validation:
+        0. Zero-Tolerance Falling Knife & Counter-Trend Ban (Mandatory)
         1. Stop loss presence and direction
         2. Minimum reward-to-risk ratio (Calibrated to 1.1R for realistic intraday equity & futures)
         3. Maximum allowable rupee loss per trade (Strictly capped at max_loss_per_trade_inr <= ₹6,000)
@@ -220,6 +222,43 @@ class PreTradeRiskEngine:
         now_ist = datetime.now(pytz.timezone('Asia/Kolkata'))
         today_str = now_ist.strftime('%d %b %Y')
         risk_note = ""
+        act_upper = action.upper()
+
+        # 0. ABSOLUTE ZERO-KNIFE-CATCHING HARD MANDATE:
+        # Never catch falling knives. Strict trend alignment required across all setups.
+        if act_upper == 'BUY':
+            if ema50 is not None and entry < (float(ema50) * 0.998):
+                return {
+                    "passed": False,
+                    "reason": f"FALLING_KNIFE_BLOCKED: BUY rejected because price (₹{entry:,.2f}) is below 50 EMA (₹{float(ema50):,.2f}). Knife catching strictly prohibited."
+                }
+            if vwap is not None and float(vwap) > 0 and entry < (float(vwap) * 0.998):
+                return {
+                    "passed": False,
+                    "reason": f"FALLING_KNIFE_BLOCKED: BUY rejected because price (₹{entry:,.2f}) is below Session VWAP (₹{float(vwap):,.2f}). Knife catching strictly prohibited."
+                }
+            if chg_pct is not None and float(chg_pct) <= -1.2:
+                return {
+                    "passed": False,
+                    "reason": f"FALLING_KNIFE_BLOCKED: BUY rejected because asset is in a sell-off ({float(chg_pct):.2f}% <= -1.2%). Knife catching strictly prohibited."
+                }
+
+        if act_upper == 'SELL':
+            if ema50 is not None and entry > (float(ema50) * 1.002):
+                return {
+                    "passed": False,
+                    "reason": f"COUNTER_TREND_BLOCKED: SELL rejected because price (₹{entry:,.2f}) is above 50 EMA (₹{float(ema50):,.2f}). Counter-trend shorting into bull trend prohibited."
+                }
+            if vwap is not None and float(vwap) > 0 and entry > (float(vwap) * 1.002):
+                return {
+                    "passed": False,
+                    "reason": f"COUNTER_TREND_BLOCKED: SELL rejected because price (₹{entry:,.2f}) is above Session VWAP (₹{float(vwap):,.2f}). Counter-trend shorting into bull trend prohibited."
+                }
+            if chg_pct is not None and float(chg_pct) >= 1.2:
+                return {
+                    "passed": False,
+                    "reason": f"COUNTER_TREND_BLOCKED: SELL rejected because asset is in a strong rally ({float(chg_pct):.2f}% >= +1.2%). Counter-trend shorting prohibited."
+                }
         
         # 1. Mandatory Stop-Loss Guard
         if stop is None or stop <= 0:
