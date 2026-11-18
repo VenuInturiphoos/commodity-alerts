@@ -1123,10 +1123,10 @@ def dispatch_autonomous_limit_order(trade_entry, asset_type='COMMODITY'):
                 print(f"🛑 [COMMODITY ONLY BROKER GUARD] {symbol}: Non-commodity asset. Live Dhan execution excluded (Trade Analyser tracking remains active).")
                 return {'status': 'EXCLUDED_NON_COMMODITY', 'reason': 'Dhan execution restricted to MCX Commodities only'}
 
-        # 2. Enforce Expiry Risk Rule (Exclude commodities nearing expiry <= 3 days)
+        # 2. Enforce Expiry Risk Rule (Only exclude if ALL contracts in rollover chain are expired/in tender window)
         is_near, days_left, exp_date = dhan_exec.is_nearing_expiry(symbol)
         if is_near:
-            print(f"🛑 [EXPIRY RISK GUARD] {symbol} expires in {days_left} day(s) on {exp_date} (<= {dhan_exec.expiry_safety_days}d). Trade execution excluded per user preference.")
+            print(f"🛑 [EXPIRY RISK GUARD] {symbol}: All contracts expired/in tender ({days_left}d left on {exp_date}). No forward contract available to roll over.")
             pt['status'] = 'STAND_ASIDE'
             pt['action'] = 'STAND_ASIDE'
             pt['entry_price'] = None
@@ -1134,8 +1134,8 @@ def dispatch_autonomous_limit_order(trade_entry, asset_type='COMMODITY'):
             if 'eod_outcome' in trade_entry:
                 trade_entry['eod_outcome']['outcome'] = 'PROTECTED'
                 trade_entry['eod_outcome']['badge'] = 'Expiry Excluded 🛡️'
-                trade_entry['eod_outcome']['summary'] = f"Contract {symbol} is nearing expiry on {exp_date} ({days_left}d remaining <= {dhan_exec.expiry_safety_days}d). Execution excluded to avoid physical delivery/tender margin risk."
-            return {'status': 'EXCLUDED_NEARING_EXPIRY', 'reason': f'Nearing expiry on {exp_date}'}
+                trade_entry['eod_outcome']['summary'] = f"Contract {symbol} is nearing expiry on {exp_date} ({days_left}d remaining) and no active forward rollover contract is available."
+            return {'status': 'EXCLUDED_NEARING_EXPIRY', 'reason': f'Nearing expiry on {exp_date} and no forward roll available'}
 
         # 3. Dispatch Strict Limit Order on Dhan
         res = dhan_exec.place_autonomous_limit_order(
@@ -4879,13 +4879,13 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 print(f"🛡️ Pre-Trade Risk Engine Blocked {contract_sym} {action}: {risk_metrics.get('reason')}")
                 continue
 
-            # Expiry Risk Check: Exclude trade executions if commodity contract is nearing expiry (<= 3 calendar days)
+            # Expiry Risk Check: Only exclude if no active forward-month contract is available in rollover chain
             try:
                 from dhan_live_executor import DhanLiveExecutor
                 _dhan_chk = DhanLiveExecutor()
                 is_near_exp, days_left, exp_date = _dhan_chk.is_nearing_expiry(contract_sym)
                 if is_near_exp:
-                    print(f"🛑 Expiry Risk Guard Blocked {contract_sym} {action}: Contract expires in {days_left} day(s) on {exp_date} (<= {_dhan_chk.expiry_safety_days}d threshold). Trade execution excluded to prevent physical delivery / tender volatility.")
+                    print(f"🛑 Expiry Risk Guard Blocked {contract_sym} {action}: All contracts nearing expiry on {exp_date} ({days_left}d left <= {_dhan_chk.expiry_safety_days}d threshold) with no active forward contract available.")
                     continue
             except Exception:
                 pass

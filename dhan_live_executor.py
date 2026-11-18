@@ -134,31 +134,56 @@ class DhanLiveExecutor:
     }
 
     def resolve_scrip(self, symbol, asset_type='COMMODITY'):
-        """Resolves raw symbol (e.g. COPPERM, CRUDEOILM, EICHERMOT.NS) to Dhan Security ID with dynamic front-month roll-over."""
+        """Resolves raw symbol (e.g. COPPERM, CRUDEOIL, CRUDEOILM, EICHERMOT.NS) to Dhan Security ID with dynamic front-month roll-over."""
         clean_sym = symbol.strip().upper()
 
-        # Check Automated Roll-Over Chain for Commodities first
-        base_comm = clean_sym.replace('-FUT', '').replace('.NS', '').replace('.BO', '')
-        if base_comm in self.ROLLOVER_CHAIN:
-            chain = self.ROLLOVER_CHAIN[base_comm]
+        # Check Automated Roll-Over Chain for Commodities first (with canonical alias matching)
+        clean_comm = clean_sym.replace('-FUT', '').replace('.NS', '').replace('.BO', '').strip()
+        if clean_comm.startswith('CRUDEOIL'):
+            canonical_comm = 'CRUDEOILM'
+        elif clean_comm.startswith('ALUMIN'):
+            canonical_comm = 'ALUMINI'
+        elif clean_comm.startswith('ZINC'):
+            canonical_comm = 'ZINCMINI'
+        elif clean_comm.startswith('SILVER'):
+            canonical_comm = 'SILVERMIC'
+        elif clean_comm.startswith('GOLD'):
+            canonical_comm = 'GOLDM'
+        elif clean_comm.startswith('NATURALGAS'):
+            canonical_comm = 'NATURALGASM'
+        else:
+            canonical_comm = clean_comm
+
+        if canonical_comm in self.ROLLOVER_CHAIN:
+            chain = self.ROLLOVER_CHAIN[canonical_comm]
             now_ist = datetime.now(pytz.timezone('Asia/Kolkata')).date()
-            for contract in chain:
+            for idx, contract in enumerate(chain):
                 try:
                     exp_date = datetime.strptime(contract['expiry'][:10], '%Y-%m-%d').date()
                     days_left = (exp_date - now_ist).days
                     if days_left > self.expiry_safety_days:
                         c_dict = dict(contract)
-                        c_dict['symbol_name'] = base_comm
+                        c_dict['symbol_name'] = canonical_comm
                         c_dict['lot_size'] = 1
                         c_dict['exchange_segment'] = 'MCX_COMM'
+                        c_dict['rolled_over'] = (idx > 0)
+                        c_dict['days_left'] = days_left
+                        if idx > 0:
+                            print(f"🔄 [AUTO ROLLOVER ACTIVE] {canonical_comm}: Front contract nearing expiry. Auto-routed to high-liquidity next month contract {c_dict['custom_symbol']} (Expires: {exp_date}, {days_left}d left).")
                         return c_dict
                 except Exception:
                     continue
-            # Fallback to the latest contract in chain
+            # Fallback to the latest contract in chain if all are within safety window
             last_c = dict(chain[-1])
-            last_c['symbol_name'] = base_comm
+            last_c['symbol_name'] = canonical_comm
             last_c['lot_size'] = 1
             last_c['exchange_segment'] = 'MCX_COMM'
+            last_c['rolled_over'] = True
+            try:
+                exp_date = datetime.strptime(last_c['expiry'][:10], '%Y-%m-%d').date()
+                last_c['days_left'] = (exp_date - now_ist).days
+            except Exception:
+                last_c['days_left'] = 0
             return last_c
 
         # Direct lookup in cached scrip map
@@ -173,15 +198,16 @@ class DhanLiveExecutor:
             return self.scrip_cache[base_eq]
 
         # Commodity fallback
-        clean_comm = clean_sym.replace('MIC', '').replace('MINI', '').rstrip('M')
-        if clean_comm in self.scrip_cache:
-            return self.scrip_cache[clean_comm]
+        clean_fallback = clean_sym.replace('MIC', '').replace('MINI', '').rstrip('M')
+        if clean_fallback in self.scrip_cache:
+            return self.scrip_cache[clean_fallback]
 
         return None
 
     def is_nearing_expiry(self, symbol, threshold_days=None):
         """
-        Checks if a commodity contract is nearing expiry (<= threshold_days calendar days).
+        Checks if a commodity contract is nearing expiry (<= threshold_days calendar days)
+        AND no active forward-month contract is available in the rollover chain.
         Returns: (is_nearing: bool, days_left: int, expiry_date: date)
         """
         threshold = threshold_days if threshold_days is not None else self.expiry_safety_days
@@ -194,6 +220,7 @@ class DhanLiveExecutor:
         try:
             exp_date = datetime.strptime(exp_str[:10], '%Y-%m-%d').date()
             days_left = (exp_date - now_ist).days
+            # Only true if even the rolled-over contract is <= threshold days
             is_nearing = (days_left <= threshold)
             return is_nearing, days_left, exp_date
         except Exception:
@@ -253,18 +280,21 @@ class DhanLiveExecutor:
         segment = scrip_info.get('exchange_segment', self.dhan.MCX if asset_type == 'COMMODITY' else self.dhan.NSE)
         custom_sym = scrip_info.get('custom_symbol', symbol)
 
-        # Rule 2: Exclude commodity contract if nearing expiry (<= expiry_safety_days)
+        # Rule 2: Exclude commodity contract ONLY IF all contracts in rollover chain are expired/in tender window
         is_near, days_left, exp_date = self.is_nearing_expiry(symbol)
         if is_near:
-            print(f"🛑 [AUTOPILOT EXCLUDED] {symbol} ({custom_sym}): Nearing expiry on {exp_date} ({days_left} day(s) left <= {self.expiry_safety_days}d threshold). Trade execution excluded to prevent delivery/tender volatility.")
+            print(f"🛑 [AUTOPILOT EXCLUDED] {symbol} ({custom_sym}): All available contracts nearing expiry on {exp_date} ({days_left} day(s) left <= {self.expiry_safety_days}d threshold). No active forward contract in rollover chain.")
             return {
                 'status': 'EXCLUDED_NEARING_EXPIRY',
                 'symbol': symbol,
                 'custom_symbol': custom_sym,
                 'days_to_expiry': days_left,
                 'expiry_date': str(exp_date),
-                'reason': f"NEARING_EXPIRY: Contract {custom_sym} expires in {days_left} day(s) on {exp_date}. Trade execution excluded per risk mandate."
+                'reason': f"NEARING_EXPIRY: Contract {custom_sym} expires in {days_left} day(s) on {exp_date}. No active forward contract available."
             }
+
+        if scrip_info.get('rolled_over'):
+            print(f"🔄 [AUTO ROLLOVER ACTIVE] {symbol}: Executing on high-liquidity next month contract {custom_sym} (Sec ID: {sec_id}) to bypass tender period.")
         
         # For commodities: Dhan API accepts quantity in lots (1 lot per order for mini/micro contracts)
         # For equities: Dhan API accepts whole shares
