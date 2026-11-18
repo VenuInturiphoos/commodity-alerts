@@ -1059,6 +1059,87 @@ def save_tracker(tracker_data):
         print(f"Error saving tracker file: {e}")
         return False
 
+def dispatch_autonomous_limit_order(trade_entry, asset_type='COMMODITY'):
+    """
+    Autonomous Autopilot Execution Bridge (DhanHQ).
+    Dispatches strict LIMIT orders for active advisory trades.
+    Strictly enforces:
+    1. Focus on MCX Commodities only (excludes equities and stock futures).
+    2. Exclude trade executions for any commodity nearing expiry (<= 3 calendar days).
+    3. Strictly LIMIT orders only (never market orders, eliminating slippage).
+    """
+    if os.environ.get('DHAN_AUTOPILOT_ENABLED', 'true').lower() not in ['true', '1', 'yes']:
+        return None
+        
+    pt = trade_entry.get('paper_trade', {})
+    if pt.get('status') != 'ACTIVE' or pt.get('action') == 'STAND_ASIDE':
+        return None
+        
+    symbol = trade_entry.get('symbol')
+    action = pt.get('action')
+    entry_p = pt.get('entry_price')
+    sl_p = pt.get('stop_loss') or pt.get('initial_stop_loss')
+    tgt_p = pt.get('target')
+    qty = pt.get('quantity', 1)
+    
+    if not symbol or not action or not entry_p or not sl_p:
+        return None
+
+    try:
+        from dhan_live_executor import DhanLiveExecutor
+        dhan_exec = DhanLiveExecutor()
+        
+        # 1. Enforce Expiry Risk Rule (Exclude commodities nearing expiry)
+        is_near, days_left, exp_date = dhan_exec.is_nearing_expiry(symbol)
+        if is_near:
+            print(f"🛑 [EXPIRY RISK GUARD] {symbol} expires in {days_left} day(s) on {exp_date} (<= {dhan_exec.expiry_safety_days}d). Trade execution excluded per user preference.")
+            pt['status'] = 'STAND_ASIDE'
+            pt['action'] = 'STAND_ASIDE'
+            pt['entry_price'] = None
+            pt['quantity'] = 0
+            if 'eod_outcome' in trade_entry:
+                trade_entry['eod_outcome']['outcome'] = 'PROTECTED'
+                trade_entry['eod_outcome']['badge'] = 'Expiry Excluded 🛡️'
+                trade_entry['eod_outcome']['summary'] = f"Contract {symbol} is nearing expiry on {exp_date} ({days_left}d remaining <= {dhan_exec.expiry_safety_days}d). Execution excluded to avoid physical delivery/tender margin risk."
+            return {'status': 'EXCLUDED_NEARING_EXPIRY', 'reason': f'Nearing expiry on {exp_date}'}
+
+        # 2. Enforce Commodity-Only Rule (Exclude equities and stock futures)
+        if dhan_exec.focus_commodities_only:
+            if asset_type != 'COMMODITY' or symbol.endswith('.NS'):
+                print(f"🛑 [COMMODITY ONLY GUARD] {symbol}: Non-commodity asset. Trade execution excluded per user preference.")
+                return {'status': 'EXCLUDED_NON_COMMODITY'}
+
+        # 3. Dispatch Strict Limit Order on Dhan
+        res = dhan_exec.place_autonomous_limit_order(
+            symbol=symbol,
+            action=action,
+            limit_price=entry_p,
+            stop_loss_price=sl_p,
+            target_price=tgt_p,
+            quantity=qty,
+            asset_type=asset_type
+        )
+        pt['live_broker_order'] = res
+        if res.get('status') == 'PLACED':
+            pt['dhan_order_id'] = res.get('order_id')
+            pt['order_type'] = 'LIMIT'
+            print(f"✅ Autonomous Autopilot: Dhan Limit Order Placed for {symbol} (Order ID: {res.get('order_id')})")
+        elif res.get('status') in ['EXCLUDED_NEARING_EXPIRY', 'EXCLUDED_NON_COMMODITY']:
+            pt['status'] = 'STAND_ASIDE'
+            pt['action'] = 'STAND_ASIDE'
+            pt['entry_price'] = None
+            pt['quantity'] = 0
+            if 'eod_outcome' in trade_entry:
+                trade_entry['eod_outcome']['outcome'] = 'PROTECTED'
+                trade_entry['eod_outcome']['badge'] = 'Excluded 🛡️'
+                trade_entry['eod_outcome']['summary'] = res.get('reason')
+        else:
+            print(f"⚠️ Autonomous Autopilot notice: {res.get('status')} - {res.get('reason')}")
+        return res
+    except Exception as e:
+        print(f"⚠️ Error in dispatch_autonomous_limit_order: {e}")
+        return None
+
 def record_live_9am_advisory(commodities_list):
     """
     Called at 09:01 AM IST by generate_and_send_9am_advisory (after MCX opening auction settles).
@@ -1499,6 +1580,8 @@ def record_live_9am_advisory(commodities_list):
             new_entries.append(entry)
 
     if new_entries:
+        for e in new_entries:
+            dispatch_autonomous_limit_order(e, asset_type='COMMODITY')
         tracker['trades'] = new_entries + trades
         save_tracker(tracker)
         print(f"Recorded {len(new_entries)} live 09:01 AM Morning Pulse advisory signals for today.")
@@ -1990,6 +2073,8 @@ def record_live_130pm_advisory(commodities_list):
             new_entries.append(entry)
 
     if new_entries:
+        for e in new_entries:
+            dispatch_autonomous_limit_order(e, asset_type='COMMODITY')
         tracker['trades'] = new_entries + trades
         save_tracker(tracker)
         print(f"Recorded {len(new_entries)} live 1:30 PM London breakout session records for today.")
@@ -2399,6 +2484,8 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
             new_entries.append(entry)
 
     if new_entries:
+        for e in new_entries:
+            dispatch_autonomous_limit_order(e, asset_type='COMMODITY')
         # Prepend new entries so newest appears at the top
         tracker['trades'] = new_entries + trades
         save_tracker(tracker)
@@ -3097,6 +3184,8 @@ def record_live_8pm_advisory(commodities_list, day_name):
             new_entries.append(entry)
 
     if new_entries:
+        for e in new_entries:
+            dispatch_autonomous_limit_order(e, asset_type='COMMODITY')
         tracker['trades'] = new_entries + trades
         save_tracker(tracker)
         print(f"Recorded {len(new_entries)} live 8:00 PM evening advisory trades for today.")
@@ -4219,6 +4308,19 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
             pt['pnl_inr'] = pnl_inr
             pt['status'] = "CLOSED"
             
+            # Live Dhan Broker Square-off if live order was placed
+            if pt.get('dhan_order_id'):
+                try:
+                    from dhan_live_executor import DhanLiveExecutor
+                    dhan_exec = DhanLiveExecutor()
+                    scrip_info = dhan_exec.resolve_scrip(sym)
+                    if scrip_info:
+                        sec_id = str(scrip_info['security_id'])
+                        seg = scrip_info.get('exchange_segment', 'MCX_COMM')
+                        dhan_exec.square_off_position(sec_id, seg, action, pt.get('quantity', 1), price=exit_p)
+                except Exception as dex:
+                    print(f"⚠️ Live Broker Square-Off Notice: {dex}")
+            
             trade['time_exit'] = now_time_str
             trade['eod_outcome']['session_close'] = exit_p
             trade['eod_outcome']['exit_time'] = now_time_str
@@ -4733,6 +4835,17 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 print(f"🛡️ Pre-Trade Risk Engine Blocked {contract_sym} {action}: {risk_metrics.get('reason')}")
                 continue
 
+            # Expiry Risk Check: Exclude trade executions if commodity contract is nearing expiry (<= 3 calendar days)
+            try:
+                from dhan_live_executor import DhanLiveExecutor
+                _dhan_chk = DhanLiveExecutor()
+                is_near_exp, days_left, exp_date = _dhan_chk.is_nearing_expiry(contract_sym)
+                if is_near_exp:
+                    print(f"🛑 Expiry Risk Guard Blocked {contract_sym} {action}: Contract expires in {days_left} day(s) on {exp_date} (<= {_dhan_chk.expiry_safety_days}d threshold). Trade execution excluded to prevent physical delivery / tender volatility.")
+                    continue
+            except Exception:
+                pass
+
             # Run Monte Carlo Time Machine simulation (3,000 replays)
             sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, sl, tgt, action=action.lower(), replays=3000)
             if not sim_metrics.get('passed'):
@@ -4896,6 +5009,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 }
             }
             new_trades.append(entry_obj)
+            dispatch_autonomous_limit_order(entry_obj, asset_type='COMMODITY')
             active_sectors.add(item_sector)
 
             # Real-time notification email
@@ -4925,7 +5039,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
     # New intraday entries after 02:45 PM are prohibited since brokers auto square-off MIS orders by 03:15-03:20 PM.
     # Sized <= ₹3,000 risk (1% of ₹3L Trading pool) with 03:20 PM EOD square-off
     # =========================================================================
-    ENABLE_EQUITY_DERIVATIVES_SCANNER = True
+    ENABLE_EQUITY_DERIVATIVES_SCANNER = False  # Disabled per user mandate: strictly focus on commodities, excluding intraday equities and stock futures.
     is_equity_window = ((hour == 9 and minute >= 30) or (10 <= hour < 14) or (hour == 14 and minute <= 45))
     cur_equity_positions = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'])
 
