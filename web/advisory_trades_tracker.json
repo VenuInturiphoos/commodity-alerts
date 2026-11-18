@@ -1,13 +1,13 @@
 {
-  "last_updated": "18 Nov 2026, 12:17 PM IST",
+  "last_updated": "18 Nov 2026, 01:32 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 163,
+    "total_signals": 172,
     "executed_count": 47,
     "correct_count": 19,
     "wrong_count": 16,
-    "protected_count": 116,
+    "protected_count": 125,
     "win_rate_pct": 54.3,
     "broker": "Dhan",
     "total_gross_pnl_inr": 88462.19,
@@ -26,6 +26,447 @@
     "net_worth_inr": 380802.67
   },
   "trades": [
+    {
+      "id": "ADV-18Nov2026-1330-GOLDM",
+      "date": "18 Nov 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "GOLDM",
+      "name": "Gold Mini",
+      "lot_size": 10,
+      "event_context": "Range-Bound Asian Range [\u20b9131,005.00 \u2013 \u20b9133,000.00]",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b9131,005.00 \u2013 \u20b9133,000.00]. Standing aside awaiting range breakout.",
+        "reference_price": 131226.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 131226.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Inside Asian morning range. Awaiting breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside on range-bound asset. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-18Nov2026-1330-SILVERMIC",
+      "date": "18 Nov 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "SILVERMIC",
+      "name": "Silver Micro",
+      "lot_size": 5,
+      "event_context": "Range-Bound Asian Range [\u20b9164,888.00 \u2013 \u20b9170,200.00]",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b9164,888.00 \u2013 \u20b9170,200.00]. Standing aside awaiting range breakout.",
+        "reference_price": 165334.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 165334.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Inside Asian morning range. Awaiting breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside on range-bound asset. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-18Nov2026-1330-CRUDEOILM",
+      "date": "18 Nov 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "CRUDEOILM",
+      "name": "Crude Oil Mini",
+      "lot_size": 50,
+      "event_context": "Range-Bound Asian Range [\u20b97,825.00 \u2013 \u20b97,999.00]",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b97,825.00 \u2013 \u20b97,999.00]. Standing aside awaiting range breakout.",
+        "reference_price": 7843.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 7843.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Inside Asian morning range. Awaiting breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside on range-bound asset. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-18Nov2026-1330-NATURALGASM",
+      "date": "18 Nov 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "NATURALGASM",
+      "name": "Natural Gas Mini",
+      "lot_size": 3000,
+      "event_context": "Range-Bound Asian Range [\u20b9294.90 \u2013 \u20b9299.30]",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b9294.90 \u2013 \u20b9299.30]. Standing aside awaiting range breakout.",
+        "reference_price": 298.7,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 298.7,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Inside Asian morning range. Awaiting breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside on range-bound asset. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-18Nov2026-1330-COPPERM",
+      "date": "18 Nov 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "COPPERM",
+      "name": "Copper Mini",
+      "lot_size": 2000,
+      "event_context": "Range-Bound Asian Range [\u20b91,230.60 \u2013 \u20b91,268.20]",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b91,230.60 \u2013 \u20b91,268.20]. Standing aside awaiting range breakout.",
+        "reference_price": 1233.45,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 1233.45,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Inside Asian morning range. Awaiting breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside on range-bound asset. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-18Nov2026-1330-ZINCMINI",
+      "date": "18 Nov 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 4000,
+      "event_context": "Range-Bound Asian Range [\u20b9392.20 \u2013 \u20b9400.90]",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b9392.20 \u2013 \u20b9400.90]. Standing aside awaiting range breakout.",
+        "reference_price": 392.8,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 392.8,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Inside Asian morning range. Awaiting breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside on range-bound asset. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-18Nov2026-1330-ALUMINI",
+      "date": "18 Nov 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 6000,
+      "event_context": "ORB Bar-Close & Wick Trap Guard",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / WICK TRAP GUARD",
+        "rationale": "ORB Timer Block: Low volume breakdown: Volume ratio (0.79x) is below 1.0x institutional volume threshold.",
+        "reference_price": 317.2,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "WICK_TRAP_STAND_ASIDE",
+        "price_615": 317.2,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Low volume breakdown: Volume ratio (0.79x) is below 1.0x institutional volume threshold."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Trap Avoided \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Low volume breakdown: Volume ratio (0.79x) is below 1.0x institutional volume threshold."
+      }
+    },
+    {
+      "id": "ADV-18Nov2026-1330-ZINCMINI",
+      "date": "18 Nov 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 4000,
+      "event_context": "Range-Bound Asian Range [\u20b9392.20 \u2013 \u20b9400.90]",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b9392.20 \u2013 \u20b9400.90]. Standing aside awaiting range breakout.",
+        "reference_price": 392.8,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 392.8,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Inside Asian morning range. Awaiting breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside on range-bound asset. Capital protected."
+      }
+    },
+    {
+      "id": "ADV-18Nov2026-1330-ALUMINI",
+      "date": "18 Nov 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 6000,
+      "event_context": "ORB Bar-Close & Wick Trap Guard",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / WICK TRAP GUARD",
+        "rationale": "ORB Timer Block: Low volume breakdown: Volume ratio (0.79x) is below 1.0x institutional volume threshold.",
+        "reference_price": 317.2,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "WICK_TRAP_STAND_ASIDE",
+        "price_615": 317.2,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Low volume breakdown: Volume ratio (0.79x) is below 1.0x institutional volume threshold."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Trap Avoided \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Low volume breakdown: Volume ratio (0.79x) is below 1.0x institutional volume threshold."
+      }
+    },
     {
       "id": "ADV-18Nov2026-1101-GOLDM",
       "date": "18 Nov 2026",
