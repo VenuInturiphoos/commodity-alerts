@@ -136,10 +136,12 @@ class DhanLiveExecutor:
         today_str = now_ist.strftime('%d %b %Y')
         action = action.upper()
 
-        # Rule 1: Focus strictly on Commodities (Exclude equities and stock futures)
+        # Rule 1: Focus strictly on Commodities (Exclude equities, stock futures, and options from live broker orders)
         if self.focus_commodities_only:
-            is_comm = (asset_type == 'COMMODITY' or not symbol.strip().upper().endswith('.NS'))
-            # Check scrip cache segment
+            is_comm = (asset_type == 'COMMODITY')
+            sym_upper = symbol.strip().upper()
+            if sym_upper.endswith('.NS') or sym_upper.endswith('.BO') or '-FUT' in sym_upper or asset_type in ['EQUITY', 'FUTURES', 'INTRADAY_STOCK', 'STOCK_FUTURES', 'OPTIONS']:
+                is_comm = False
             resolved = self.resolve_scrip(symbol, asset_type)
             if resolved and resolved.get('exchange_segment') != 'MCX_COMM':
                 is_comm = False
@@ -148,7 +150,7 @@ class DhanLiveExecutor:
                 return {
                     'status': 'EXCLUDED_NON_COMMODITY',
                     'symbol': symbol,
-                    'reason': 'Autopilot is restricted to MCX Commodities only. Intraday and stock futures execution are disabled.'
+                    'reason': 'Autopilot is restricted to MCX Commodities only. Intraday equities, stock futures, and options execution on Dhan are disabled.'
                 }
 
         # 1. Resolve Instrument

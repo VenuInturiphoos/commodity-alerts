@@ -1089,7 +1089,14 @@ def dispatch_autonomous_limit_order(trade_entry, asset_type='COMMODITY'):
         from dhan_live_executor import DhanLiveExecutor
         dhan_exec = DhanLiveExecutor()
         
-        # 1. Enforce Expiry Risk Rule (Exclude commodities nearing expiry)
+        # 1. Enforce Commodity-Only Rule (Live broker execution restricted strictly to MCX Commodities)
+        sym_clean = symbol.strip().upper()
+        if dhan_exec.focus_commodities_only:
+            if asset_type != 'COMMODITY' or sym_clean.endswith('.NS') or sym_clean.endswith('.BO') or '-FUT' in sym_clean or asset_type in ['EQUITY', 'FUTURES', 'INTRADAY_STOCK', 'STOCK_FUTURES', 'OPTIONS']:
+                print(f"🛑 [COMMODITY ONLY BROKER GUARD] {symbol}: Non-commodity asset. Live Dhan execution excluded (Trade Analyser tracking remains active).")
+                return {'status': 'EXCLUDED_NON_COMMODITY', 'reason': 'Dhan execution restricted to MCX Commodities only'}
+
+        # 2. Enforce Expiry Risk Rule (Exclude commodities nearing expiry <= 3 days)
         is_near, days_left, exp_date = dhan_exec.is_nearing_expiry(symbol)
         if is_near:
             print(f"🛑 [EXPIRY RISK GUARD] {symbol} expires in {days_left} day(s) on {exp_date} (<= {dhan_exec.expiry_safety_days}d). Trade execution excluded per user preference.")
@@ -1102,12 +1109,6 @@ def dispatch_autonomous_limit_order(trade_entry, asset_type='COMMODITY'):
                 trade_entry['eod_outcome']['badge'] = 'Expiry Excluded 🛡️'
                 trade_entry['eod_outcome']['summary'] = f"Contract {symbol} is nearing expiry on {exp_date} ({days_left}d remaining <= {dhan_exec.expiry_safety_days}d). Execution excluded to avoid physical delivery/tender margin risk."
             return {'status': 'EXCLUDED_NEARING_EXPIRY', 'reason': f'Nearing expiry on {exp_date}'}
-
-        # 2. Enforce Commodity-Only Rule (Exclude equities and stock futures)
-        if dhan_exec.focus_commodities_only:
-            if asset_type != 'COMMODITY' or symbol.endswith('.NS'):
-                print(f"🛑 [COMMODITY ONLY GUARD] {symbol}: Non-commodity asset. Trade execution excluded per user preference.")
-                return {'status': 'EXCLUDED_NON_COMMODITY'}
 
         # 3. Dispatch Strict Limit Order on Dhan
         res = dhan_exec.place_autonomous_limit_order(
@@ -5060,7 +5061,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
     # New intraday entries after 02:45 PM are prohibited since brokers auto square-off MIS orders by 03:15-03:20 PM.
     # Sized <= ₹3,000 risk (1% of ₹3L Trading pool) with 03:20 PM EOD square-off
     # =========================================================================
-    ENABLE_EQUITY_DERIVATIVES_SCANNER = False  # Disabled per user mandate: strictly focus on commodities, excluding intraday equities and stock futures.
+    ENABLE_EQUITY_DERIVATIVES_SCANNER = True  # Active for Trade Analyser tracking & paper testing (Dhan broker orders remain strictly Commodity-only)
     is_equity_window = ((hour == 9 and minute >= 30) or (10 <= hour < 14) or (hour == 14 and minute <= 45))
     cur_equity_positions = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'])
 
