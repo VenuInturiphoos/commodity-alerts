@@ -305,8 +305,16 @@ class DhanLiveExecutor:
         funds = self.get_fund_limits()
         if funds.get('status') == 'success':
             avail_bal = funds['available_balance']
-            # Commodity mini margin estimation
-            est_margin = 135000.0 if is_commodity else (float(limit_price) * order_qty * 0.20)
+            # Accurate Commodity mini margin estimation
+            comm_margin_map = {
+                'CRUDEOILM': 105000.0,
+                'ALUMINI': 35000.0,
+                'ZINCMINI': 40000.0,
+                'SILVERMIC': 35000.0,
+                'GOLDM': 85000.0,
+            }
+            clean_lookup = scrip_info.get('symbol_name', symbol).strip().upper()
+            est_margin = comm_margin_map.get(clean_lookup, 135000.0) if is_commodity else (float(limit_price) * order_qty * 0.20)
             if avail_bal < est_margin * 0.85:
                 return {
                     'status': 'BLOCKED',
