@@ -430,6 +430,23 @@ def get_authoritative_contract_price(symbol, asset_type='EQUITY', timeout=6):
         if clean == 'NATURALGASM':
             tv_root = 'NATGASMINI'
         fut_tick = f"{tv_root}1!"
+
+        # Precision Rollover Pricing: When rolled over to next month, query exact forward contract ticker
+        try:
+            from dhan_live_executor import DhanLiveExecutor
+            d_chk = DhanLiveExecutor()
+            scrip_info = d_chk.resolve_scrip(clean, asset_type='COMMODITY')
+            if scrip_info and scrip_info.get('rolled_over') and scrip_info.get('expiry'):
+                TV_MONTH_CODES = {
+                    1: 'F', 2: 'G', 3: 'H', 4: 'J', 5: 'K', 6: 'M',
+                    7: 'N', 8: 'Q', 9: 'U', 10: 'V', 11: 'X', 12: 'Z'
+                }
+                exp_dt = datetime.strptime(scrip_info['expiry'][:10], '%Y-%m-%d')
+                m_code = TV_MONTH_CODES.get(exp_dt.month, 'Z')
+                fut_tick = f"{scrip_info.get('symbol_name', tv_root)}{m_code}{exp_dt.year}"
+        except Exception:
+            pass
+
         payload = {
             'filter': [{'left': 'name', 'operation': 'equal', 'right': fut_tick}],
             'columns': ['name', 'close', 'open', 'high', 'low', 'change']
@@ -442,6 +459,19 @@ def get_authoritative_contract_price(symbol, asset_type='EQUITY', timeout=6):
                     p = float(data[0]['d'][1])
                     if p > 0:
                         return p, f"MCX:{fut_tick}"
+            # Fallback to continuous 1! if exact contract query had no data
+            if fut_tick != f"{tv_root}1!":
+                fb_payload = {
+                    'filter': [{'left': 'name', 'operation': 'equal', 'right': f"{tv_root}1!"}],
+                    'columns': ['name', 'close', 'open', 'high', 'low', 'change']
+                }
+                fb_resp = requests.post(url, json=fb_payload, headers=headers, timeout=timeout)
+                if fb_resp.status_code == 200:
+                    fb_data = fb_resp.json().get('data', [])
+                    if fb_data:
+                        p = float(fb_data[0]['d'][1])
+                        if p > 0:
+                            return p, f"MCX:{tv_root}1!"
         except Exception as e:
             print(f"Notice: Could not fetch real-time commodity contract price for {symbol}: {e}")
 
