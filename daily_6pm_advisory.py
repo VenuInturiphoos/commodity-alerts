@@ -828,22 +828,56 @@ def generate_and_send_9am_advisory(force=False):
                 f"  • Key Levels: Central Pivot ₹{pivot:,.2f} | R1: ₹{r1:,.2f} | S1: ₹{s1:,.2f}"
             )
 
+    # 4. Load Top Focus Stocks from Nifty F&O / Equities Scanner
+    stock_focus_lines = []
+    nifty_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'nifty_crossover_oversold.json')
+    if os.path.exists(nifty_file):
+        try:
+            with open(nifty_file, 'r') as nf:
+                nifty_data = json.load(nf)
+            n_stocks = nifty_data.get('stocks', [])
+            # Prioritize high capital safety score (>= 70) and high win probability (>= 85%)
+            top_stocks = [s for s in n_stocks if s.get('capital_safety_score', 0) >= 70][:5]
+            if not top_stocks:
+                top_stocks = n_stocks[:5]
+            for s in top_stocks:
+                stk_sym = s.get('symbol', '').replace('.NS', '')
+                stk_name = s.get('name', stk_sym)
+                close_p = float(s.get('close', 0.0))
+                rsi_val = float(s.get('rsi', 0.0))
+                safety_score = float(s.get('capital_safety_score', 0.0))
+                win_pct = s.get('win_probability', 0)
+                is_golden = s.get('is_golden', False)
+                setup_tag = "Golden Crossover ✨" if is_golden else ("Oversold Bounce 🔄" if rsi_val < 40 else "Value Reversion 📈")
+                regime = s.get('regime_badge') or s.get('regime_tag') or 'F&O Momentum'
+                
+                stock_focus_lines.append(
+                    f"• <b>{stk_sym} ({stk_name})</b>: CMP ₹{close_p:,.2f} | RSI: {rsi_val:.1f} | Safety: {safety_score:.1f}/100 | Win Rate: {win_pct}%\n"
+                    f"  Setup: <b>{setup_tag}</b> ({regime}) | Focus: 5x MIS Pullback Retest to Value Support"
+                )
+        except Exception as e:
+            print(f"Error reading nifty_crossover_oversold.json: {e}")
+
+    stock_focus_text = "\n\n".join(stock_focus_lines) if stock_focus_lines else "• Scanners warming up for 09:15 AM NSE market opening."
     overview_text = "\n\n".join(overview_lines)
     action_text = "\n\n".join(action_items)
 
-    subject = f"🎯 [9:01 AM IST ADVISORY] Morning Market Pulse, CPR & Opening Gap Playbook ({day_name})"
+    subject = f"🎯 [MORNING FOCUS] Stocks & Commodities To Focus On Today ({day_name}, {now_dt.strftime('%d %b')})"
     body = (
-        f"🎯 <b>DAILY 09:01 AM IST MORNING MARKET PULSE ADVISORY</b>\n"
+        f"🎯 <b>DAILY MORNING FOCUS BRIEFING: STOCKS & COMMODITIES</b>\n"
         f"📅 <i>{today_time_ist}</i>\n\n"
+        f"<b>📈 TOP FOCUS STOCKS FOR TODAY (NSE F&O / INTRADAY MIS):</b>\n"
+        f"{stock_focus_text}\n\n"
         f"<b>📊 MCX COMMODITIES OPENING & CPR OVERVIEW:</b>\n"
         f"{overview_text}\n\n"
-        f"<b>⚡ OPENING ACTION PLAYBOOK & GAP SETUPS:</b>\n"
+        f"<b>⚡ COMMODITY ACTION PLAYBOOK & GAP SETUPS:</b>\n"
         f"{action_text}\n\n"
-        f"<b>🛡️ RISK MANAGEMENT & EXECUTION RULES:</b>\n"
-        f"1. <b>09:01 AM Live MCX Match Rule</b>: Morning trades are taken at 09:01 AM IST to ensure live MCX auction matching is settled and executed at real market prices.\n"
-        f"2. <b>Gap Fill Rule (Wide CPR)</b>: Fade large gaps only when the 09:15 AM 15-minute candle closes in the direction of the gap fill.\n"
-        f"3. <b>Gap & Go Rule (Narrow CPR)</b>: Never fade a narrow CPR gap; narrow CPRs indicate institutional trend days.\n"
-        f"4. <b>Hard EOD Exit</b>: All intraday positions auto-square-off at {timing['eod_str']} before settlement.\n\n"
+        f"<b>🛡️ DISCIPLINED EXECUTION RULES FOR TODAY:</b>\n"
+        f"1. <b>One-and-Done Target Lockout Rule</b>: Once Trade #1 on any asset hits target or secures profit, gains are locked for the day. No afternoon churn.\n"
+        f"2. <b>90-Minute Directional Loss Guard</b>: If Trade #1 stops out, re-entry in that same direction is strictly frozen for 90 minutes.\n"
+        f"3. <b>Margin Parity Sizing</b>: Strictly 1-lot mini sizing (50 units Crude Oil Mini, 10 units Gold Mini, 2000 units Copper Mini) to cap risk at ≤ ₹2,500 – ₹3,000.\n"
+        f"4. <b>09:01 AM Live MCX Match Rule</b>: Trades execute after 09:01 AM IST to ensure live order matching settles.\n"
+        f"5. <b>3:20 PM NSE / 11:45 PM MCX Hard Close</b>: All intraday positions auto-square-off before market close.\n\n"
         f"🌐 <b>Live Interactive Dashboard</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
     )
 
