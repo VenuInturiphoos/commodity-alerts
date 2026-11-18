@@ -375,6 +375,8 @@ def resolve_commodity_item(sym, commodities_map):
 def get_authoritative_contract_price(symbol, asset_type='EQUITY', timeout=6):
     """
     Fetches the 0-second authoritative real-time execution price for the EXACT contract:
+    - Tier 1 (Direct Broker Feed): Queries DhanHQ API (/marketfeed/ltp) directly if active.
+    - Tier 2 (Exchange Scanner Feed): Reverts seamlessly to TradingView / AngelOne feeds if Dhan Data API is unavailable.
     - Stock Futures (e.g. APOLLOHOSP-FUT): Queries TradingView Futures Scanner for NSE:{CLEAN_SYM}1!
       to get the true front-month futures price (including basis premium/discount).
     - Commodities (e.g. ALUMINI, CRUDEOILM, GOLDM): Queries TradingView Futures Scanner for MCX:{EXACT_ROOT}1!
@@ -382,6 +384,17 @@ def get_authoritative_contract_price(symbol, asset_type='EQUITY', timeout=6):
     - Intraday Equities (e.g. TITAN.NS): Queries TradingView India Scanner for real-time NSE spot price.
     Returns (price, contract_ticker) or (None, None) on failure.
     """
+    # Tier 1: Attempt direct DhanHQ live market quote
+    try:
+        from dhan_live_executor import DhanLiveExecutor
+        dhan_exec = DhanLiveExecutor()
+        dhan_p, dhan_src = dhan_exec.get_live_price(symbol, asset_type)
+        if dhan_p and dhan_p > 0:
+            return dhan_p, dhan_src
+    except Exception:
+        pass
+
+    # Tier 2: Seamless fallback to primary exchange scanner feed
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     clean = symbol.replace('.NS', '').replace('-FUT', '').upper() if symbol else ''
     if not clean:

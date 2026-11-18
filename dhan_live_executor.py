@@ -82,6 +82,31 @@ class DhanLiveExecutor:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def get_live_price(self, symbol, asset_type='COMMODITY'):
+        """
+        Tier 1 Price Feed: Queries real-time LTP directly from DhanHQ API (/marketfeed/ltp).
+        Returns (price: float, source: str) if successful, or (None, None) if Dhan Data API is inactive/unavailable.
+        Allows seamless, instantaneous fallback to secondary exchange feeds.
+        """
+        try:
+            scrip = self.resolve_scrip(symbol, asset_type)
+            if not scrip or not scrip.get('security_id'):
+                return None, None
+            sec_id = int(scrip['security_id'])
+            seg = scrip.get('exchange_segment') or ('MCX_COMM' if asset_type == 'COMMODITY' else 'NSE_EQ')
+            res = self.dhan.ticker_data({seg: [sec_id]})
+            if res and res.get('status') == 'success':
+                price_data = res.get('data', {})
+                if isinstance(price_data, dict):
+                    seg_data = price_data.get(seg, {})
+                    item_data = seg_data.get(str(sec_id)) or seg_data.get(sec_id) or {}
+                    ltp = float(item_data.get('last_price') or item_data.get('ltp') or 0.0)
+                    if ltp > 0:
+                        return ltp, f"DHAN:{scrip.get('custom_symbol', symbol)}"
+        except Exception:
+            pass
+        return None, None
+
     def resolve_scrip(self, symbol, asset_type='COMMODITY'):
         """Resolves raw symbol (e.g. COPPERM, CRUDEOILM, EICHERMOT.NS) to Dhan Security ID."""
         clean_sym = symbol.strip().upper()
