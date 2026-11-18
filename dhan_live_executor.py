@@ -13,9 +13,17 @@ validation, mandatory protective stop-loss attachment, and institutional safegua
 
 import os
 import json
+import socket
 import pytz
 from datetime import datetime
 from dotenv import load_dotenv
+import urllib3.util.connection as urllib_conn
+
+# Force IPv4 routing for Dhan API requests to strictly match whitelisted Primary Static IP
+try:
+    urllib_conn.allowed_gai_family = lambda: socket.AF_INET
+except Exception:
+    pass
 
 # Load environment variables
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
