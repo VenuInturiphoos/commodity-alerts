@@ -4564,23 +4564,6 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         if len(sym_today_trades) >= MAX_TRADES_PER_SYMBOL_DAY:
             continue  # Max 3 trades per commodity per day
 
-        # 🎯 One-and-Done Target Lockout Rule (Commodities):
-        # If any prior trade on this symbol today already secured a TARGET or net profit > ₹500,
-        # lock in gains and disable further trades on this asset for the rest of the day.
-        # Historical data confirms Trade #1 captures 94.7% of all commodity profits; re-entries
-        # experience a 93% collapse in profitability and high whipsaw trap rates.
-        winning_prior = [
-            t for t in sym_today_trades
-            if (t.get('paper_trade', {}).get('net_pnl_inr', t.get('paper_trade', {}).get('pnl_inr', 0.0)) > 500.0)
-            or ('TARGET' in str(t.get('paper_trade', {}).get('exit_trigger', '')))
-            or (t.get('eod_outcome', {}).get('outcome') == 'CORRECT')
-        ]
-        if winning_prior:
-            win_t = winning_prior[0]
-            win_pnl = win_t.get('paper_trade', {}).get('net_pnl_inr', win_t.get('paper_trade', {}).get('pnl_inr', 0.0))
-            print(f"🔒 One-and-Done Lockout for {sym}: Today's Trade #1 already hit TARGET (+₹{win_pnl:,.2f}). Gains locked for session. Standing aside.")
-            continue
-
         # Check cooldown from last closed/entered trade on this symbol
         if sym_today_trades:
             # Sort chronologically using authoritative IST parser to get the true most recent trade
@@ -4601,15 +4584,27 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     if t_struct:
                         diff_mins = (now_dt - t_struct).total_seconds() / 60.0
                         
-                        # Post-Stop-Loss Guard:
-                        # If the last trade on this symbol ended in STOP LOSS, enforce strict minimum cooldown.
+                        # Option B: Session Cooldown (90 mins after Target Hit, 45 mins after Stop Loss, 30 mins standard)
                         last_exit_trigger = str(last_pt.get('exit_trigger') or last_t.get('eod_outcome', {}).get('exit_trigger', ''))
-                        is_sl_hit = 'STOP_LOSS' in last_exit_trigger or (last_pt.get('pnl_inr', 0.0) < 0)
-                        required_cooldown = 45.0 if is_sl_hit else 30.0
+                        is_target_hit = ('TARGET' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) > 500.0) or (last_t.get('eod_outcome', {}).get('outcome') == 'CORRECT')
+                        is_sl_hit = ('STOP_LOSS' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) < 0)
+                        
+                        if is_target_hit:
+                            required_cooldown = 90.0  # Option B: 90m session cooldown after securing target
+                            guard_label = " [Option B: 90m Post-Target Cooldown]"
+                        elif is_sl_hit:
+                            required_cooldown = 45.0
+                            guard_label = " [Post-Stop-Loss Guard]"
+                        else:
+                            required_cooldown = 30.0
+                            guard_label = ""
                         
                         if diff_mins < required_cooldown:
-                            print(f"⏱️ Cooldown Active for {sym}: Most recent trade exited {int(diff_mins)}m ago (required: {int(required_cooldown)}m{' [Post-Stop-Loss Guard]' if is_sl_hit else ''}). Skipping.")
+                            print(f"⏱️ Cooldown Active for {sym}: Prior trade exited {int(diff_mins)}m ago (required: {int(required_cooldown)}m{guard_label}). Skipping.")
                             continue
+                        else:
+                            if is_target_hit:
+                                print(f"🔓 Option B Cooldown Expired for {sym}: Prior target hit {int(diff_mins)}m ago (>= 90m required). Contract unlocked for new setups!")
                 except Exception:
                     pass
 
@@ -5201,16 +5196,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
                     and t.get('paper_trade', {}).get('quantity', 0) > 0
                 ]
-                # 🎯 One-and-Done Target Lockout Rule (Equities):
-                # If an intraday stock trade already hit its target today, lock in profits and don't re-enter.
-                winning_eq_prior = [
-                    t for t in eq_today_trades
-                    if (t.get('paper_trade', {}).get('net_pnl_inr', t.get('paper_trade', {}).get('pnl_inr', 0.0)) > 100.0)
-                    or ('TARGET' in str(t.get('paper_trade', {}).get('exit_trigger', '')))
-                    or (t.get('eod_outcome', {}).get('outcome') == 'CORRECT')
-                ]
-                if winning_eq_prior:
-                    continue
+                # Option B: Session Cooldown for Equities (90 mins after Target Hit, 60 mins after Stop Loss, 30 mins standard)
                 if eq_today_trades:
                     def _eq_trade_sort_key(tr):
                         pt_tr = tr.get('paper_trade', {})
@@ -5227,8 +5213,9 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                             eq_t_struct = parse_ist_timestamp(last_eq_time_str, today_str)
                             if eq_t_struct:
                                 eq_diff_mins = (now_dt - eq_t_struct).total_seconds() / 60.0
+                                is_eq_target = ('TARGET' in str(last_eq_pt.get('exit_trigger', ''))) or (last_eq_pt.get('net_pnl_inr', last_eq_pt.get('pnl_inr', 0.0)) > 100.0) or (last_eq_t.get('eod_outcome', {}).get('outcome') == 'CORRECT')
                                 is_eq_sl_hit = 'STOP_LOSS' in str(last_eq_pt.get('exit_trigger', '')) or (last_eq_pt.get('pnl_inr', 0.0) < 0)
-                                req_eq_cooldown = 60.0 if is_eq_sl_hit else 30.0
+                                req_eq_cooldown = 90.0 if is_eq_target else (60.0 if is_eq_sl_hit else 30.0)
                                 if eq_diff_mins < req_eq_cooldown:
                                     continue
                         except Exception:

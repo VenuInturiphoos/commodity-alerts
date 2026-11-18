@@ -305,9 +305,9 @@ class PreTradeRiskEngine:
         if now_ist.hour > 22 or (now_ist.hour == 22 and now_ist.minute >= 45):
             return {"passed": False, "reason": "LATE_SESSION_RESTRICTION: No new entries permitted after 10:45 PM IST."}
 
-        # 10. One-and-Done Target Lockout Rule:
-        # If any prior trade on this symbol today already secured a TARGET or net positive gain (> ₹500),
-        # lock in profits and prohibit re-entry on this asset for the rest of the day.
+        # 10. Option B: 90-Minute Session Cooldown after Target Hit
+        # After securing a TARGET, enforce a 90-minute cooldown to avoid choppy immediate re-entries,
+        # but re-open the contract for high-conviction setups and subsequent major sessions (6:00 PM / 8:00 PM).
         clean_target_sym = symbol.replace('MIC', '').rstrip('M').replace('.NS', '').replace('-FUT', '')
         for t in existing_trades:
             if t.get('date') == today_str:
@@ -317,10 +317,32 @@ class PreTradeRiskEngine:
                     pnl = pt.get('net_pnl_inr', pt.get('pnl_inr', 0.0))
                     is_target = ('TARGET' in str(pt.get('exit_trigger', ''))) or (t.get('eod_outcome', {}).get('outcome') == 'CORRECT') or (pnl > 500.0)
                     if is_target:
-                        return {
-                            "passed": False,
-                            "reason": f"ONE_AND_DONE_TARGET_LOCK: {symbol} already secured target (+₹{pnl:,.2f}) today. Gains locked for session."
-                        }
+                        exit_t_str = pt.get('exit_time') or pt.get('entry_time') or t.get('time_trigger')
+                        diff_mins = None
+                        if exit_t_str:
+                            try:
+                                clean_t = exit_t_str.replace(' IST', '').strip()
+                                for fmt in ["%d %b %Y %I:%M %p", "%I:%M %p", "%H:%M:%S", "%Y-%m-%d %H:%M:%S"]:
+                                    try:
+                                        if "%d %b %Y" not in fmt and "%Y-%m-%d" not in fmt:
+                                            dt_obj = datetime.strptime(f"{today_str} {clean_t}", f"%d %b %Y {fmt}")
+                                        else:
+                                            dt_obj = datetime.strptime(clean_t, fmt)
+                                        dt_ist = pytz.timezone('Asia/Kolkata').localize(dt_obj)
+                                        diff_mins = (now_ist - dt_ist).total_seconds() / 60.0
+                                        break
+                                    except Exception:
+                                        continue
+                            except Exception:
+                                pass
+                        
+                        # If exit time is within 90 minutes, enforce cooldown
+                        if diff_mins is not None and 0.0 <= diff_mins < 90.0:
+                            rem = 90.0 - diff_mins
+                            return {
+                                "passed": False,
+                                "reason": f"OPTION_B_COOLDOWN_ACTIVE: {symbol} secured target (+₹{pnl:,.2f}) {diff_mins:.0f}m ago. 90m session cooldown active ({rem:.0f}m remaining)."
+                            }
 
         # Estimate round-trip Dhan broker charges at stop-loss
         dhan_est = DhanBrokerageCalculator.calculate_trade_charges(
