@@ -92,6 +92,9 @@ jobs:
           ANGEL_CLIENT_ID: ${{ secrets.ANGEL_CLIENT_ID }}
           ANGEL_PASSWORD: ${{ secrets.ANGEL_PASSWORD }}
           ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+          DHAN_CLIENT_ID: ${{ secrets.DHAN_CLIENT_ID }}
+          DHAN_ACCESS_TOKEN: ${{ secrets.DHAN_ACCESS_TOKEN }}
+          DHAN_AUTOPILOT_ENABLED: ${{ secrets.DHAN_AUTOPILOT_ENABLED }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             case "${{ inputs.session }}" in
