@@ -4709,25 +4709,25 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                          f"{' | '.join(pm_signal.reasons[:3])}. Early coil entry prior to breakout expansion.")
 
         # --- SETUP 1: Circuit Boundary Rebound / Mean Reversion ---
-        # A. Bullish Reversal at Lower Band / Deep Oversold
-        elif (dist_lc <= 1.0 or (rsi is not None and rsi <= 26.0)) and (cur_p >= day_l * 1.0025):
+        # A. Bullish Reversal at Lower Band (Permitted ONLY if overall trend is Bullish / Price >= 50 EMA)
+        elif (dist_lc <= 1.0 or (rsi is not None and rsi <= 26.0)) and (cur_p >= day_l * 1.0025) and (ema50 is None or cur_p >= ema50 * 0.998):
             triggered = True
             action = "BUY"
             setup_name = "Circuit Floor Rebound (Mean Reversion)"
             sl = round(min(day_l, lc) * 0.997, 2)
             tgt = round(cur_p + max(1.8 * atr_val, abs(p_close - cur_p) * 0.5), 2)
             rationale = (f"Price tested Lower Circuit zone ({dist_lc:.2f}% away) or oversold RSI ({rsi:.1f} <= 26) "
-                         f"and confirmed +0.25% bounce off day low ₹{day_l:,.2f}. High probability mean-reversion.")
+                         f"and confirmed +0.25% bounce off day low ₹{day_l:,.2f} with HTF trend alignment. Mean-reversion retest.")
 
-        # B. Bearish Rejection at Upper Band / Deep Overbought
-        elif (dist_uc <= 1.0 or (rsi is not None and rsi >= 74.0)) and (cur_p <= day_h * 0.9975):
+        # B. Bearish Rejection at Upper Band (Permitted ONLY if overall trend is Bearish / Price <= 50 EMA)
+        elif (dist_uc <= 1.0 or (rsi is not None and rsi >= 74.0)) and (cur_p <= day_h * 0.9975) and (ema50 is None or cur_p <= ema50 * 1.002):
             triggered = True
             action = "SELL"
             setup_name = "Circuit Ceiling Rejection (Mean Reversion)"
             sl = round(max(day_h, uc) * 1.003, 2)
             tgt = round(cur_p - max(1.8 * atr_val, abs(cur_p - p_close) * 0.5), 2)
             rationale = (f"Price tested Upper Circuit zone ({dist_uc:.2f}% away) or overbought RSI ({rsi:.1f} >= 74) "
-                         f"and confirmed -0.25% pullback off day high ₹{day_h:,.2f}. High probability exhaustion fade.")
+                         f"and confirmed -0.25% pullback off day high ₹{day_h:,.2f} with HTF trend alignment. Exhaustion fade retest.")
 
         # --- SETUP 2: Volatility Breakout with ADX Momentum ---
         # A. Bullish Day-High Breakout
@@ -4833,15 +4833,26 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                 print(f"🚫 Directional Loss Guard: Blocked {sym} BUY at ₹{cur_p:,.2f} because price is still below prior failed entry ₹{recent_entry_p:,.2f} ({int(elapsed_m)}m elapsed < 120m).")
                                 continue
 
-            # 🛡️ Multi-Timeframe Trend Confirmation Guard:
-            # Never take a BUY if price is below 50 EMA with strong downward momentum (ADX >= 25).
-            # Never take a SELL if price is above 50 EMA with strong upward momentum (ADX >= 25).
-            if action == "BUY" and ema50 is not None and cur_p < ema50 and (adx is not None and adx >= 25.0):
-                print(f"🚫 Trend Guard: Blocked {sym} BUY because price (₹{cur_p:,.2f}) is below 50 EMA in strong downtrend (ADX {adx:.1f}).")
-                continue
-            if action == "SELL" and ema50 is not None and cur_p > ema50 and (adx is not None and adx >= 25.0):
-                print(f"🚫 Trend Guard: Blocked {sym} SELL because price (₹{cur_p:,.2f}) is above 50 EMA in strong uptrend (ADX {adx:.1f}).")
-                continue
+            # 🛡️ Institutional Trend & Session VWAP Directional Mandate:
+            # 1. Never BUY if price is below 50 EMA OR below Session VWAP (falling knife / counter-trend trap).
+            # 2. Never SELL if price is above 50 EMA OR above Session VWAP (counter-trend shorting into bull trend).
+            # Enforced strictly across ALL setups regardless of ADX/RSI.
+            session_vwap = round((float(item.get('open') or cur_p) + day_h + day_l + (2.0 * cur_p)) / 5.0, 2)
+            if action == "BUY":
+                if ema50 is not None and cur_p < (ema50 * 0.998):
+                    print(f"🚫 Directional Trend Guard: Blocked {sym} BUY. Price (₹{cur_p:,.2f}) is below 50 EMA (₹{ema50:,.2f}). Counter-trend buying strictly prohibited.")
+                    continue
+                if session_vwap > 0 and cur_p < (session_vwap * 0.998):
+                    print(f"🚫 Directional VWAP Guard: Blocked {sym} BUY. Price (₹{cur_p:,.2f}) is below Session VWAP (₹{session_vwap:,.2f}). Counter-trend buying strictly prohibited.")
+                    continue
+
+            if action == "SELL":
+                if ema50 is not None and cur_p > (ema50 * 1.002):
+                    print(f"🚫 Directional Trend Guard: Blocked {sym} SELL. Price (₹{cur_p:,.2f}) is above 50 EMA (₹{ema50:,.2f}). Counter-trend shorting strictly prohibited.")
+                    continue
+                if session_vwap > 0 and cur_p > (session_vwap * 1.002):
+                    print(f"🚫 Directional VWAP Guard: Blocked {sym} SELL. Price (₹{cur_p:,.2f}) is above Session VWAP (₹{session_vwap:,.2f}). Counter-trend shorting strictly prohibited.")
+                    continue
 
             # 🛡️ Option 2: Pullback-Only Retest Sniping Gate (Anti-Chasing & Structural Proximity)
             pullback_eval = PullbackRetestGate.validate_retest_entry(sym, action, cur_p, day_h, day_l, ema20=ema20, atr=atr_val)

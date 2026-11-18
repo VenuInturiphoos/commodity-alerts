@@ -1330,7 +1330,10 @@ class MarketRegimeDetector:
             "adx": round(adx, 1),
             "rsi": round(rsi, 1),
             "bb_width_pct": bb_width_pct,
-            "daily_vol_pct": round(daily_vol, 2)
+            "daily_vol_pct": round(daily_vol, 2),
+            "close": close,
+            "ema50": ema50,
+            "ema200": ema200
         }
 
     @classmethod
@@ -1358,6 +1361,24 @@ class MarketRegimeDetector:
                     "regime": "CHOP_CONSOLIDATION",
                     "filter_tag": "CHOP_WHIPSAW_GUARD"
                 }
+            # Strictly prevent counter-trend fades against 50 EMA even during consolidation
+            cls_p = float(regime_info.get('close') or 0.0)
+            e50 = float(regime_info.get('ema50') or 0.0)
+            if cls_p > 0 and e50 > 0:
+                if act_upper == "BUY" and cls_p < e50 * 0.998:
+                    return {
+                        "passed": False,
+                        "reason": f"FALSE SIGNAL FILTER: Blocked BUY '{setup_name}' in CHOP regime: Price (₹{cls_p:,.2f}) is below 50 EMA (₹{e50:,.2f}). Counter-trend buying strictly prohibited.",
+                        "regime": "CHOP_CONSOLIDATION",
+                        "filter_tag": "COUNTER_TREND_GUARD"
+                    }
+                elif act_upper == "SELL" and cls_p > e50 * 1.002:
+                    return {
+                        "passed": False,
+                        "reason": f"FALSE SIGNAL FILTER: Blocked SELL '{setup_name}' in CHOP regime: Price (₹{cls_p:,.2f}) is above 50 EMA (₹{e50:,.2f}). Counter-trend shorting strictly prohibited.",
+                        "regime": "CHOP_CONSOLIDATION",
+                        "filter_tag": "COUNTER_TREND_GUARD"
+                    }
 
         elif regime in ["BREAKDOWN", "BEAR_TREND"]:
             # In structural breakdown, never buy falling knives or long crossovers
