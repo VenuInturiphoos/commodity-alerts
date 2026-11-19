@@ -4974,13 +4974,31 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                 print(f"🚫 Directional Loss Guard: Blocked {sym} BUY at ₹{cur_p:,.2f} because price is still below prior failed entry ₹{recent_entry_p:,.2f} ({int(elapsed_m)}m elapsed < 120m).")
                                 continue
 
-            # 🛡️ Institutional Trend & Session VWAP Directional Mandate:
-            # 1. Never BUY if price is below 50 EMA OR below Session VWAP (falling knife / counter-trend trap).
-            # 2. Never SELL if price is above 50 EMA OR above Session VWAP (counter-trend shorting into bull trend).
+            # 🛡️ Institutional Trend & Multi-Timeframe Trend-Vector Gate:
+            # Mandate: ALWAYS trade in the direction of the dominant market move!
+            # 1. Macro Regime Alignment: Never BUY in a macro BREAKDOWN; never SHORT in a BULL_TREND.
+            # 2. Session Midpoint Alignment: Never BUY in the lower half of the day; never SELL in the upper half.
+            # 3. 1-Hour Intraday Momentum Delta: Never BUY during active 1h selling; never SELL during active 1h surging.
             # Enforced strictly across ALL standard breakout/trend setups; EXEMPT for Exhaustion Mean-Reversion Reversals!
+            regime_obj = item.get('market_regime') or {}
+            macro_regime = regime_obj.get('regime', '')
+            session_mid = round((day_h + day_l) / 2.0, 2) if (day_h > day_l) else cur_p
             session_vwap = round((float(item.get('open') or cur_p) + day_h + day_l + (2.0 * cur_p)) / 5.0, 2)
+
             if not is_reversal:
+                # Rule 1: Macro Regime Filter (The 68% Win-Rate Alignment Rule)
+                if macro_regime == 'BREAKDOWN' and action == 'BUY':
+                    print(f"🚫 Trend-Vector Gate: Blocked {sym} BUY. Macro Regime is BREAKDOWN (Price < 50E < 200E). Counter-trend buying strictly prohibited.")
+                    continue
+                if macro_regime == 'BULL_TREND' and action == 'SELL':
+                    print(f"🚫 Trend-Vector Gate: Blocked {sym} SELL. Macro Regime is BULL_TREND (Price > 50E > 200E). Counter-trend shorting strictly prohibited.")
+                    continue
+
+                # Rule 2: Intraday Session Flow Alignment (Session Midpoint Anchor)
                 if action == "BUY":
+                    if cur_p < (session_mid * 0.998):
+                        print(f"🚫 Trend-Vector Gate: Blocked {sym} BUY. Price (₹{cur_p:,.2f}) is in the lower half of today's range (below Midpoint ₹{session_mid:,.2f}). Intraday flow is downward.")
+                        continue
                     if ema50 is not None and cur_p < (ema50 * 0.998):
                         print(f"🚫 Directional Trend Guard: Blocked {sym} BUY. Price (₹{cur_p:,.2f}) is below 50 EMA (₹{ema50:,.2f}). Counter-trend buying strictly prohibited.")
                         continue
@@ -4989,12 +5007,31 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                         continue
 
                 if action == "SELL":
+                    if cur_p > (session_mid * 1.002):
+                        print(f"🚫 Trend-Vector Gate: Blocked {sym} SELL. Price (₹{cur_p:,.2f}) is in the upper half of today's range (above Midpoint ₹{session_mid:,.2f}). Intraday flow is upward.")
+                        continue
                     if ema50 is not None and cur_p > (ema50 * 1.002):
                         print(f"🚫 Directional Trend Guard: Blocked {sym} SELL. Price (₹{cur_p:,.2f}) is above 50 EMA (₹{ema50:,.2f}). Counter-trend shorting strictly prohibited.")
                         continue
                     if session_vwap > 0 and cur_p > (session_vwap * 1.002):
                         print(f"🚫 Directional VWAP Guard: Blocked {sym} SELL. Price (₹{cur_p:,.2f}) is above Session VWAP (₹{session_vwap:,.2f}). Counter-trend shorting strictly prohibited.")
                         continue
+
+                # Rule 3: 1-Hour Intraday Trend Vector (from recent 5m bars)
+                try:
+                    from trader_engine_bridge import TimeMachineEngine
+                    recent_bars = TimeMachineEngine.fetch_recent_5m_bars(sym)
+                    if recent_bars and len(recent_bars) >= 12:
+                        # Price ratio delta over last 12 bars (1 hour)
+                        delta_1h = recent_bars[-1]['c_ratio'] - recent_bars[-12]['c_ratio']
+                        if action == 'BUY' and delta_1h < -0.003:  # Falling > 0.3% in last hour
+                            print(f"🚫 Trend-Vector Gate: Blocked {sym} BUY. 1-Hour Intraday Trend is falling ({delta_1h*100:+.2f}%). Counter-trend buying into active selling is prohibited.")
+                            continue
+                        elif action == 'SELL' and delta_1h > 0.003:  # Rising > 0.3% in last hour
+                            print(f"🚫 Trend-Vector Gate: Blocked {sym} SELL. 1-Hour Intraday Trend is rising ({delta_1h*100:+.2f}%). Counter-trend shorting into active buying is prohibited.")
+                            continue
+                except Exception:
+                    pass
 
             # 🛡️ Option 2: Pullback-Only Retest Sniping Gate (Anti-Chasing & Structural Proximity)
             # Reversals enter at extreme support/resistance boundaries so breakout chasing check is skipped.

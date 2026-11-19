@@ -427,16 +427,25 @@ class PreMoveDetector:
         elif vol_ratio < 0.90:
             pmri_score += 10.0
 
-        # Momentum vector from EMA alignment and change %
+        # Intraday Session Midpoint Anchor
+        session_mid = round((day_high + day_low) / 2.0, 2) if (day_high > day_low) else current_price
+
+        # Momentum vector from EMA alignment, session midpoint, and change %
         ema_ref = ema20 or ema50 or prev_close
-        if current_price >= ema_ref and (change_pct >= -0.20):
+        if current_price >= ema_ref and current_price >= (session_mid * 0.998) and (change_pct >= -0.20):
             mom_dir = "BULLISH_EXPANDING"
             pmri_score += 25.0
-            reasons.append(f"Price holding above baseline (₹{ema_ref:,.2f}), building upward coil pressure.")
-        elif current_price <= ema_ref and (change_pct <= 0.20):
+            reasons.append(f"Price holding above baseline (₹{ema_ref:,.2f}) and session midpoint (₹{session_mid:,.2f}), building upward coil pressure.")
+        elif current_price <= ema_ref and current_price <= (session_mid * 1.002) and (change_pct <= 0.20):
             mom_dir = "BEARISH_EXPANDING"
             pmri_score += 25.0
-            reasons.append(f"Price capped below baseline (₹{ema_ref:,.2f}), building downward coil pressure.")
+            reasons.append(f"Price capped below baseline (₹{ema_ref:,.2f}) and session midpoint (₹{session_mid:,.2f}), building downward coil pressure.")
+        elif current_price < session_mid:
+            # Below midpoint: flow leans bearish
+            mom_dir = "BEARISH_EXPANDING" if current_price <= ema_ref else "FLAT"
+        elif current_price > session_mid:
+            # Above midpoint: flow leans bullish
+            mom_dir = "BULLISH_EXPANDING" if current_price >= ema_ref else "FLAT"
         else:
             mom_dir = "FLAT"
 
