@@ -1102,6 +1102,13 @@ def save_tracker(tracker_data):
         print(f"Error saving tracker file: {e}")
         return False
 
+def is_autopilot_enabled():
+    """Returns True if Dhan Autopilot is enabled (defaults to True unless explicitly disabled)."""
+    val = os.environ.get('DHAN_AUTOPILOT_ENABLED', 'true').strip()
+    if not val:
+        val = 'true'
+    return val.lower() in ['true', '1', 'yes']
+
 def dispatch_autonomous_limit_order(trade_entry, asset_type='COMMODITY'):
     """
     Autonomous Autopilot Execution Bridge (DhanHQ).
@@ -1111,7 +1118,7 @@ def dispatch_autonomous_limit_order(trade_entry, asset_type='COMMODITY'):
     2. Exclude trade executions for any commodity nearing expiry (<= 3 calendar days).
     3. Strictly LIMIT orders only (never market orders, eliminating slippage).
     """
-    if os.environ.get('DHAN_AUTOPILOT_ENABLED', 'true').lower() not in ['true', '1', 'yes']:
+    if not is_autopilot_enabled():
         return None
         
     pt = trade_entry.get('paper_trade', {})
@@ -3770,7 +3777,7 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
     relevant_trades = [t for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']]
     
     # ⏱️ 3-Minute Limit Order TTL Check on Dhan: Cancel any pending limit order older than 3 minutes (180s)
-    if os.environ.get('DHAN_AUTOPILOT_ENABLED', 'true').lower() in ['true', '1', 'yes']:
+    if is_autopilot_enabled():
         try:
             from dhan_live_executor import DhanLiveExecutor
             dhan_exec = DhanLiveExecutor()
