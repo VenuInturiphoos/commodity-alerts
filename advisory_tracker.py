@@ -5519,11 +5519,12 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                         continue
 
                     # Pillar 3: Option 2 Pullback-Only Retest Sniping Gate (Anti-Chasing & Structural Proximity)
-                    # Forbids buying near day high / shorting near day low; mandates completed pullback to VWAP / 20 EMA
-                    pullback_eval = PullbackRetestGate.validate_retest_entry(clean_sym, eq_action, cur_p, day_h, day_l, ema20=ema20, atr=atr)
-                    if not pullback_eval.get('passed'):
-                        print(f"🛡️ Option 2 Pullback Gate Blocked {clean_sym} {eq_action}: {pullback_eval.get('reason')}")
-                        continue
+                    # Forbids buying near day high / shorting near day low on Pullback & Mean-Reversion setups
+                    if "Breakout" not in eq_setup:
+                        pullback_eval = PullbackRetestGate.validate_retest_entry(clean_sym, eq_action, cur_p, day_h, day_l, ema20=ema20, atr=atr)
+                        if not pullback_eval.get('passed'):
+                            print(f"🛡️ Option 2 Pullback Gate Blocked {clean_sym} {eq_action}: {pullback_eval.get('reason')}")
+                            continue
 
                     # Guard D2: Anti-Chasing Overextension Guard (Stop buying at day highs / panic selling at day lows)
                     if eq_action == "BUY" and (chg_pct >= 2.5 or (day_h > 0 and cur_p >= day_h * 0.996 and rsi >= 66.0)):
