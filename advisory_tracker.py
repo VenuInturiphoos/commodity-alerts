@@ -235,8 +235,8 @@ MAX_CONCURRENT_COMMODITIES = 2    # Allows 2 concurrent active commodity trades 
 MAX_CONCURRENT_STOCK_FUTURES = 2  # Allows 2 concurrent active stock futures trades (e.g. RELIANCE-FUT, INFY-FUT)
 MAX_CONCURRENT_EQUITIES = 3       # Diversify into 3 distinct intraday stocks (₹10,000 margin each within ₹30,000 margin)
 MAX_CONCURRENT_TOTAL = 6          # Max concurrent active trades across portfolio (2 commodities + 2 stock futures + 2-3 intraday equities)
-MAX_TRADES_PER_SYMBOL_DAY = 3     # Allows up to 3 trades per symbol per day (expanded from 2)
-COOLDOWN_MINUTES_BETWEEN_TRADES = 60 # 60-min spacing between trades on the same symbol (streamlined from 120m)
+MAX_TRADES_PER_SYMBOL_DAY = 2     # Max 2 trades per symbol per day to prevent over-trading
+COOLDOWN_MINUTES_BETWEEN_TRADES = 120 # Strict 120-min (2 hours) spacing between trades on the same symbol
 INTRADAY_STAGNATION_MINUTES = 210.0  # Extended to 210 minutes (3.5 hours) to give intraday trades ample room into afternoon trend
 STOCK_FUTURES_STAGNATION_MINUTES = 240.0 # 240 minutes (4.0 hours) for stock futures - never prematurely abort high-conviction futures
 COMMODITY_STAGNATION_MINUTES = 360.0  # 360 minutes (6.0 hours) for commodities; protected prior to US evening session
@@ -4637,15 +4637,17 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                         is_target_hit = ('TARGET' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) > 500.0) or (last_t.get('eod_outcome', {}).get('outcome') == 'CORRECT')
                         is_sl_hit = ('STOP_LOSS' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) < 0)
                         
+                        # Strict Multi-Hour Cooldown (Anti-Churning):
+                        # Enforces a minimum 120-minute (2 hours) lockout after any closed trade on the same commodity
                         if is_target_hit:
-                            required_cooldown = 90.0  # Option B: 90m session cooldown after securing target
-                            guard_label = " [Option B: 90m Post-Target Cooldown]"
+                            required_cooldown = 120.0
+                            guard_label = " [Post-Target 2-Hour Lockout]"
                         elif is_sl_hit:
-                            required_cooldown = 45.0
-                            guard_label = " [Post-Stop-Loss Guard]"
+                            required_cooldown = 120.0
+                            guard_label = " [Post-Stop-Loss 2-Hour Lockout]"
                         else:
-                            required_cooldown = 30.0
-                            guard_label = ""
+                            required_cooldown = 90.0
+                            guard_label = " [Standard 90m Lockout]"
                         
                         if diff_mins < required_cooldown:
                             print(f"⏱️ Cooldown Active for {sym}: Prior trade exited {int(diff_mins)}m ago (required: {int(required_cooldown)}m{guard_label}). Skipping.")
@@ -4712,28 +4714,63 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         sl = None
         tgt = None
 
-        # --- SETUP 0: Pre-Ignition Volatility Coil (Early Big Move Detector) ---
-        # ⚠️ Opening 30-Minute Noise Freeze (09:00 - 09:30 AM IST):
-        # Range compression & volume ratios cannot be reliably determined in the first 30 minutes of market open.
-        is_opening_noise = (now_dt.hour == 9 and now_dt.minute < 30)
-        if is_opening_noise:
-            pm_signal = None
-        else:
+        # --- SETUP 1: Exhaustion Mean-Reversion Reversal Engine ---
+        # Activates strictly at extreme oversold/overbought conditions where momentum is exhausted (>72% reversal edge).
+        # Replaces bottom-shorting with high-conviction support bounces targeting VWAP / 20 EMA.
+        bb_low = float(item.get('bb_lower') or (cur_p * 0.98))
+        bb_high = float(item.get('bb_upper') or (cur_p * 1.02))
+
+        # A. Extreme Oversold Exhaustion Reversal (BUY)
+        # Conditions: Daily RSI <= 30.0 OR (cur_p near Lower BB with RSI <= 34.0) OR (severe dump chg_pct <= -1.8% at day low)
+        if (rsi is not None and rsi <= 30.0) or (cur_p <= bb_low * 1.008 and rsi is not None and rsi <= 34.0) or (chg_pct <= -1.8 and day_l > 0 and cur_p <= day_l * 1.015 and rsi is not None and rsi <= 34.0):
+            if day_l > 0 and cur_p >= day_l:
+                triggered = True
+                action = "BUY"
+                setup_name = "Exhaustion Mean-Reversion Reversal (Oversold Bounce)"
+                sl = round(day_l - (0.5 * atr_val), 2)
+                revert_target = round(ema20 if (ema20 and ema20 > cur_p) else (cur_p + (1.8 * atr_val)), 2)
+                min_target = round(cur_p + (1.5 * abs(cur_p - sl)), 2)
+                tgt = max(revert_target, min_target)
+                rationale = (f"Extreme oversold exhaustion: RSI {rsi:.1f} <= 30 at support (Day Low: ₹{day_l:,.2f}). "
+                             f"Seller exhaustion confirmed; mean-reversion reversal targeting 20 EMA / VWAP (₹{tgt:,.2f}).")
+
+        # B. Extreme Overbought Exhaustion Reversal (SELL)
+        # Conditions: Daily RSI >= 70.0 OR (cur_p near Upper BB with RSI >= 66.0) OR (severe rally chg_pct >= +1.8% at day high)
+        elif (rsi is not None and rsi >= 70.0) or (cur_p >= bb_high * 0.992 and rsi is not None and rsi >= 66.0) or (chg_pct >= 1.8 and day_h > 0 and cur_p >= day_h * 0.985 and rsi is not None and rsi >= 66.0):
+            if day_h > 0 and cur_p <= day_h:
+                triggered = True
+                action = "SELL"
+                setup_name = "Exhaustion Mean-Reversion Reversal (Overbought Fade)"
+                sl = round(day_h + (0.5 * atr_val), 2)
+                revert_target = round(ema20 if (ema20 and ema20 < cur_p) else (cur_p - (1.8 * atr_val)), 2)
+                min_target = round(cur_p - (1.5 * abs(sl - cur_p)), 2)
+                tgt = min(revert_target, min_target)
+                rationale = (f"Extreme overbought exhaustion: RSI {rsi:.1f} >= 70 at resistance (Day High: ₹{day_h:,.2f}). "
+                             f"Buyer exhaustion confirmed; mean-reversion fade targeting 20 EMA / VWAP (₹{tgt:,.2f}).")
+
+        # --- SETUP 0: Pre-Ignition Volatility Coil (Restricted to Afternoon Trends) ---
+        # ⚠️ Strict Session & Regime Restrictions:
+        # 1. Blocked before 01:30 PM IST (Morning ranges are naturally narrow; fake coil trap).
+        # 2. Blocked if RSI is oversold (< 38) for SELL or overbought (> 62) for BUY.
+        elif not (now_dt.hour < 13 or (now_dt.hour == 13 and now_dt.minute < 30)):
             pm_signal = PreMoveDetector.evaluate_live_snapshot(
                 sym, cur_p, day_h, day_l, p_close, chg_pct, adx=adx, rsi=rsi,
                 atr=atr_val, ema20=ema20, ema50=ema50, volume=vol, avg_volume=avg_vol
             )
-        if pm_signal and pm_signal.status in ["PRE_MOVE_BUY_TRIGGER", "PRE_MOVE_SELL_TRIGGER"]:
-            triggered = True
-            action = pm_signal.action
-            setup_name = "Pre-Ignition Volatility Coil"
-            sl = pm_signal.stop_loss
-            tgt = pm_signal.target_1
-            rationale = (f"Pre-Move Readiness Index: {pm_signal.pmri_score:.1f}/100. "
-                         f"{' | '.join(pm_signal.reasons[:3])}. Early coil entry prior to breakout expansion.")
-
-        # --- SETUP 1: PERMANENTLY DEACTIVATED (Circuit Boundary Rebounds / Falling Knife Fades Prohibited) ---
-        # Fading circuit extremes or buying oversold panics is strictly banned to prevent repeated falling knife losses.
+            if pm_signal and pm_signal.status in ["PRE_MOVE_BUY_TRIGGER", "PRE_MOVE_SELL_TRIGGER"]:
+                coil_act = pm_signal.action
+                if coil_act == "SELL" and (rsi is not None and rsi < 38.0):
+                    pm_signal = None
+                elif coil_act == "BUY" and (rsi is not None and rsi > 62.0):
+                    pm_signal = None
+                else:
+                    triggered = True
+                    action = pm_signal.action
+                    setup_name = "Pre-Ignition Volatility Coil"
+                    sl = pm_signal.stop_loss
+                    tgt = pm_signal.target_1
+                    rationale = (f"Pre-Move Readiness Index: {pm_signal.pmri_score:.1f}/100. "
+                                 f"{' | '.join(pm_signal.reasons[:3])}. Early coil entry prior to breakout expansion.")
 
         # --- SETUP 2: Volatility Breakout with ADX Momentum ---
         # A. Bullish Day-High Breakout
@@ -4804,6 +4841,18 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                              f"RSI {f'{rsi:.1f}' if rsi else 'N/A'}. Capturing aggressive trend expansion.")
 
         if triggered and action:
+            is_reversal = ("Exhaustion Mean-Reversion" in setup_name)
+
+            # 🚫 Universal Anti-Bottom-Shorting / Anti-Top-Buying Guard:
+            # (Completely prevents selling into exhausted oversold floors or buying into overbought tops)
+            if action == "SELL" and (rsi is not None and rsi <= 32.0):
+                print(f"🚫 Universal Exhaustion Guard: Blocked {sym} SELL. RSI ({rsi:.1f}) is <= 32.0 (extreme oversold). Selling into exhausted floor strictly prohibited.")
+                continue
+
+            if action == "BUY" and (rsi is not None and rsi >= 68.0):
+                print(f"🚫 Universal Exhaustion Guard: Blocked {sym} BUY. RSI ({rsi:.1f}) is >= 68.0 (extreme overbought). Buying into exhausted ceiling strictly prohibited.")
+                continue
+
             # 🛡️ Consecutive Directional Loss Guard (trader-risk skill / Anti-Whipsaw Freeze):
             # If the last trade on this symbol today stopped out, enforce a strict 90-minute cooldown
             # and price structure invalidation check before allowing another trade in the SAME direction.
@@ -4842,32 +4891,38 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             # 🛡️ Institutional Trend & Session VWAP Directional Mandate:
             # 1. Never BUY if price is below 50 EMA OR below Session VWAP (falling knife / counter-trend trap).
             # 2. Never SELL if price is above 50 EMA OR above Session VWAP (counter-trend shorting into bull trend).
-            # Enforced strictly across ALL setups regardless of ADX/RSI.
+            # Enforced strictly across ALL standard breakout/trend setups; EXEMPT for Exhaustion Mean-Reversion Reversals!
             session_vwap = round((float(item.get('open') or cur_p) + day_h + day_l + (2.0 * cur_p)) / 5.0, 2)
-            if action == "BUY":
-                if ema50 is not None and cur_p < (ema50 * 0.998):
-                    print(f"🚫 Directional Trend Guard: Blocked {sym} BUY. Price (₹{cur_p:,.2f}) is below 50 EMA (₹{ema50:,.2f}). Counter-trend buying strictly prohibited.")
-                    continue
-                if session_vwap > 0 and cur_p < (session_vwap * 0.998):
-                    print(f"🚫 Directional VWAP Guard: Blocked {sym} BUY. Price (₹{cur_p:,.2f}) is below Session VWAP (₹{session_vwap:,.2f}). Counter-trend buying strictly prohibited.")
-                    continue
+            if not is_reversal:
+                if action == "BUY":
+                    if ema50 is not None and cur_p < (ema50 * 0.998):
+                        print(f"🚫 Directional Trend Guard: Blocked {sym} BUY. Price (₹{cur_p:,.2f}) is below 50 EMA (₹{ema50:,.2f}). Counter-trend buying strictly prohibited.")
+                        continue
+                    if session_vwap > 0 and cur_p < (session_vwap * 0.998):
+                        print(f"🚫 Directional VWAP Guard: Blocked {sym} BUY. Price (₹{cur_p:,.2f}) is below Session VWAP (₹{session_vwap:,.2f}). Counter-trend buying strictly prohibited.")
+                        continue
 
-            if action == "SELL":
-                if ema50 is not None and cur_p > (ema50 * 1.002):
-                    print(f"🚫 Directional Trend Guard: Blocked {sym} SELL. Price (₹{cur_p:,.2f}) is above 50 EMA (₹{ema50:,.2f}). Counter-trend shorting strictly prohibited.")
-                    continue
-                if session_vwap > 0 and cur_p > (session_vwap * 1.002):
-                    print(f"🚫 Directional VWAP Guard: Blocked {sym} SELL. Price (₹{cur_p:,.2f}) is above Session VWAP (₹{session_vwap:,.2f}). Counter-trend shorting strictly prohibited.")
-                    continue
+                if action == "SELL":
+                    if ema50 is not None and cur_p > (ema50 * 1.002):
+                        print(f"🚫 Directional Trend Guard: Blocked {sym} SELL. Price (₹{cur_p:,.2f}) is above 50 EMA (₹{ema50:,.2f}). Counter-trend shorting strictly prohibited.")
+                        continue
+                    if session_vwap > 0 and cur_p > (session_vwap * 1.002):
+                        print(f"🚫 Directional VWAP Guard: Blocked {sym} SELL. Price (₹{cur_p:,.2f}) is above Session VWAP (₹{session_vwap:,.2f}). Counter-trend shorting strictly prohibited.")
+                        continue
 
             # 🛡️ Option 2: Pullback-Only Retest Sniping Gate (Anti-Chasing & Structural Proximity)
-            pullback_eval = PullbackRetestGate.validate_retest_entry(sym, action, cur_p, day_h, day_l, ema20=ema20, atr=atr_val)
-            if not pullback_eval.get('passed'):
-                print(f"🛡️ Option 2 Pullback Gate Blocked {sym} {action}: {pullback_eval.get('reason')}")
-                continue
+            # Reversals enter at extreme support/resistance boundaries so breakout chasing check is skipped.
+            if not is_reversal:
+                pullback_eval = PullbackRetestGate.validate_retest_entry(sym, action, cur_p, day_h, day_l, ema20=ema20, atr=atr_val)
+                if not pullback_eval.get('passed'):
+                    print(f"🛡️ Option 2 Pullback Gate Blocked {sym} {action}: {pullback_eval.get('reason')}")
+                    continue
 
             # 📐 Structural Technical Bracket: Option 2 calibrated with contract-specific bounds
-            sl, tgt = calculate_technical_bracket(action, cur_p, day_h, day_l, ema20=ema20, ema50=ema50, atr=atr_val, min_rrr=1.2, is_intraday=True, symbol=sym)
+            if not is_reversal or not sl or not tgt:
+                calc_sl, calc_tgt = calculate_technical_bracket(action, cur_p, day_h, day_l, ema20=ema20, ema50=ema50, atr=atr_val, min_rrr=1.2, is_intraday=True, symbol=sym)
+                sl = calc_sl or sl
+                tgt = calc_tgt or tgt
 
             trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{sym}"
             if any(t.get('id') == trade_id for t in trades):
@@ -4921,7 +4976,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 contract_sym, action, cur_p, sl, tgt, adaptive_lot, all_existing,
                 max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR,
                 day_h=day_h, day_l=day_l, ema20=ema20, atr=atr_val,
-                ema50=ema50, vwap=session_vwap, chg_pct=chg_pct, rsi=rsi
+                ema50=ema50, vwap=session_vwap, chg_pct=chg_pct, rsi=rsi,
+                is_reversal=is_reversal
             )
             if not risk_metrics.get('passed'):
                 print(f"🛡️ Pre-Trade Risk Engine Blocked {contract_sym} {action}: {risk_metrics.get('reason')}")

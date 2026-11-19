@@ -206,7 +206,8 @@ class PreTradeRiskEngine:
                    max_loss_per_trade_inr=6000.0, max_daily_loss_inr=12000.0,
                    min_reward_risk=1.1, max_active_positions=3,
                    day_h=None, day_l=None, ema20=None, atr=None,
-                   ema50=None, vwap=None, chg_pct=None, rsi=None):
+                   ema50=None, vwap=None, chg_pct=None, rsi=None,
+                   is_reversal=False):
         """
         Runs comprehensive pre-trade risk validation:
         0. Zero-Tolerance Falling Knife & Counter-Trend Ban (Mandatory)
@@ -225,23 +226,25 @@ class PreTradeRiskEngine:
         act_upper = action.upper()
 
         # 0. ABSOLUTE ZERO-KNIFE-CATCHING HARD MANDATE:
-        # Never catch falling knives. Strict trend alignment required across all setups.
+        # Never catch falling knives. Strict trend alignment required across all standard setups.
+        # Genuine Exhaustion Reversal setups (RSI <= 30 at support) are permitted with tight structural stop.
         if act_upper == 'BUY':
-            if ema50 is not None and entry < (float(ema50) * 0.998):
-                return {
-                    "passed": False,
-                    "reason": f"FALLING_KNIFE_BLOCKED: BUY rejected because price (₹{entry:,.2f}) is below 50 EMA (₹{float(ema50):,.2f}). Knife catching strictly prohibited."
-                }
-            if vwap is not None and float(vwap) > 0 and entry < (float(vwap) * 0.998):
-                return {
-                    "passed": False,
-                    "reason": f"FALLING_KNIFE_BLOCKED: BUY rejected because price (₹{entry:,.2f}) is below Session VWAP (₹{float(vwap):,.2f}). Knife catching strictly prohibited."
-                }
-            if chg_pct is not None and float(chg_pct) <= -1.2:
-                return {
-                    "passed": False,
-                    "reason": f"FALLING_KNIFE_BLOCKED: BUY rejected because asset is in a sell-off ({float(chg_pct):.2f}% <= -1.2%). Knife catching strictly prohibited."
-                }
+            if not is_reversal:
+                if ema50 is not None and entry < (float(ema50) * 0.998):
+                    return {
+                        "passed": False,
+                        "reason": f"FALLING_KNIFE_BLOCKED: BUY rejected because price (₹{entry:,.2f}) is below 50 EMA (₹{float(ema50):,.2f}). Knife catching strictly prohibited."
+                    }
+                if vwap is not None and float(vwap) > 0 and entry < (float(vwap) * 0.998):
+                    return {
+                        "passed": False,
+                        "reason": f"FALLING_KNIFE_BLOCKED: BUY rejected because price (₹{entry:,.2f}) is below Session VWAP (₹{float(vwap):,.2f}). Knife catching strictly prohibited."
+                    }
+                if chg_pct is not None and float(chg_pct) <= -1.2:
+                    return {
+                        "passed": False,
+                        "reason": f"FALLING_KNIFE_BLOCKED: BUY rejected because asset is in a sell-off ({float(chg_pct):.2f}% <= -1.2%). Knife catching strictly prohibited."
+                    }
             if rsi is not None and float(rsi) > 65.0:
                 return {
                     "passed": False,
@@ -249,21 +252,22 @@ class PreTradeRiskEngine:
                 }
 
         if act_upper == 'SELL':
-            if ema50 is not None and entry > (float(ema50) * 1.002):
-                return {
-                    "passed": False,
-                    "reason": f"COUNTER_TREND_BLOCKED: SELL rejected because price (₹{entry:,.2f}) is above 50 EMA (₹{float(ema50):,.2f}). Counter-trend shorting into bull trend prohibited."
-                }
-            if vwap is not None and float(vwap) > 0 and entry > (float(vwap) * 1.002):
-                return {
-                    "passed": False,
-                    "reason": f"COUNTER_TREND_BLOCKED: SELL rejected because price (₹{entry:,.2f}) is above Session VWAP (₹{float(vwap):,.2f}). Counter-trend shorting into bull trend prohibited."
-                }
-            if chg_pct is not None and float(chg_pct) >= 1.2:
-                return {
-                    "passed": False,
-                    "reason": f"COUNTER_TREND_BLOCKED: SELL rejected because asset is in a strong rally ({float(chg_pct):.2f}% >= +1.2%). Counter-trend shorting prohibited."
-                }
+            if not is_reversal:
+                if ema50 is not None and entry > (float(ema50) * 1.002):
+                    return {
+                        "passed": False,
+                        "reason": f"COUNTER_TREND_BLOCKED: SELL rejected because price (₹{entry:,.2f}) is above 50 EMA (₹{float(ema50):,.2f}). Counter-trend shorting into bull trend prohibited."
+                    }
+                if vwap is not None and float(vwap) > 0 and entry > (float(vwap) * 1.002):
+                    return {
+                        "passed": False,
+                        "reason": f"COUNTER_TREND_BLOCKED: SELL rejected because price (₹{entry:,.2f}) is above Session VWAP (₹{float(vwap):,.2f}). Counter-trend shorting into bull trend prohibited."
+                    }
+                if chg_pct is not None and float(chg_pct) >= 1.2:
+                    return {
+                        "passed": False,
+                        "reason": f"COUNTER_TREND_BLOCKED: SELL rejected because asset is in a strong rally ({float(chg_pct):.2f}% >= +1.2%). Counter-trend shorting prohibited."
+                    }
             if rsi is not None and float(rsi) < 35.0:
                 return {
                     "passed": False,
@@ -1400,54 +1404,64 @@ class MarketRegimeDetector:
         regime = regime_info.get("regime") if isinstance(regime_info, dict) else str(regime_info)
         setup_lower = (setup_name or "").lower()
         act_upper = (action or "").upper()
+        is_reversal = any(term in setup_lower for term in ['reversal', 'mean-reversion', 'mean_reversion', 'rebound', 'oversold bounce', 'overbought fade'])
 
         if regime in ["CHOP_CONSOLIDATION", "COMPRESSED_RANGE"]:
-            # In chop/consolidation, breakout or crossover signals are high-probability whipsaws
-            if any(term in setup_lower for term in ['breakout', 'breakdown', 'crossover', 'cross', 'golden cross', 'high-beta']):
+            # In chop/consolidation, breakout, coil or crossover signals are high-probability whipsaws
+            if any(term in setup_lower for term in ['breakout', 'breakdown', 'crossover', 'cross', 'golden cross', 'high-beta', 'pre-ignition', 'coil', 'volatility coil']):
                 return {
                     "passed": False,
                     "reason": f"FALSE SIGNAL FILTER: Blocked {action} '{setup_name}' during CHOP_CONSOLIDATION (ADX {regime_info.get('adx', 'low')}). High whipsaw & fakeout risk.",
                     "regime": "CHOP_CONSOLIDATION",
                     "filter_tag": "CHOP_WHIPSAW_GUARD"
                 }
-            # Strictly prevent counter-trend fades against 50 EMA even during consolidation
-            cls_p = float(regime_info.get('close') or 0.0)
-            e50 = float(regime_info.get('ema50') or 0.0)
-            if cls_p > 0 and e50 > 0:
-                if act_upper == "BUY" and cls_p < e50 * 0.998:
-                    return {
-                        "passed": False,
-                        "reason": f"FALSE SIGNAL FILTER: Blocked BUY '{setup_name}' in CHOP regime: Price (₹{cls_p:,.2f}) is below 50 EMA (₹{e50:,.2f}). Counter-trend buying strictly prohibited.",
-                        "regime": "CHOP_CONSOLIDATION",
-                        "filter_tag": "COUNTER_TREND_GUARD"
-                    }
-                elif act_upper == "SELL" and cls_p > e50 * 1.002:
-                    return {
-                        "passed": False,
-                        "reason": f"FALSE SIGNAL FILTER: Blocked SELL '{setup_name}' in CHOP regime: Price (₹{cls_p:,.2f}) is above 50 EMA (₹{e50:,.2f}). Counter-trend shorting strictly prohibited.",
-                        "regime": "CHOP_CONSOLIDATION",
-                        "filter_tag": "COUNTER_TREND_GUARD"
-                    }
+            # Standard trend setups must follow 50 EMA. Genuine Exhaustion Mean-Reversion Reversals are explicitly permitted!
+            if not is_reversal:
+                cls_p = float(regime_info.get('close') or 0.0)
+                e50 = float(regime_info.get('ema50') or 0.0)
+                if cls_p > 0 and e50 > 0:
+                    if act_upper == "BUY" and cls_p < e50 * 0.998:
+                        return {
+                            "passed": False,
+                            "reason": f"FALSE SIGNAL FILTER: Blocked BUY '{setup_name}' in CHOP regime: Price (₹{cls_p:,.2f}) is below 50 EMA (₹{e50:,.2f}). Counter-trend buying strictly prohibited.",
+                            "regime": "CHOP_CONSOLIDATION",
+                            "filter_tag": "COUNTER_TREND_GUARD"
+                        }
+                    elif act_upper == "SELL" and cls_p > e50 * 1.002:
+                        return {
+                            "passed": False,
+                            "reason": f"FALSE SIGNAL FILTER: Blocked SELL '{setup_name}' in CHOP regime: Price (₹{cls_p:,.2f}) is above 50 EMA (₹{e50:,.2f}). Counter-trend shorting strictly prohibited.",
+                            "regime": "CHOP_CONSOLIDATION",
+                            "filter_tag": "COUNTER_TREND_GUARD"
+                        }
 
         elif regime in ["BREAKDOWN", "BEAR_TREND"]:
-            # In structural breakdown, never buy falling knives or long crossovers
+            # In structural breakdown, never buy falling knives unless extreme oversold exhaustion reversal (RSI <= 30 at floor)
             if act_upper == "BUY":
-                return {
-                    "passed": False,
-                    "reason": f"FALSE SIGNAL FILTER: Blocked BUY '{setup_name}' during BREAKDOWN regime (RSI {regime_info.get('rsi', 'low')}). Falling knife defense active.",
-                    "regime": "BREAKDOWN",
-                    "filter_tag": "FALLING_KNIFE_GUARD"
-                }
+                rsi_val = float(regime_info.get('rsi') or 50.0)
+                if is_reversal and rsi_val <= 30.0:
+                    pass  # Permitted: Extreme exhaustion bounce with structural invalidation stop
+                else:
+                    return {
+                        "passed": False,
+                        "reason": f"FALSE SIGNAL FILTER: Blocked BUY '{setup_name}' during BREAKDOWN regime (RSI {regime_info.get('rsi', 'low')}). Falling knife defense active.",
+                        "regime": "BREAKDOWN",
+                        "filter_tag": "FALLING_KNIFE_GUARD"
+                    }
 
         elif regime == "BULL_TREND":
-            # In structural bull trend, never short or fade
+            # In structural bull trend, never short or fade unless extreme overbought exhaustion reversal (RSI >= 70 at ceiling)
             if act_upper == "SELL":
-                return {
-                    "passed": False,
-                    "reason": f"FALSE SIGNAL FILTER: Blocked SELL '{setup_name}' during BULL_TREND regime (ADX {regime_info.get('adx', 'high')}). Counter-trend shorting blocked.",
-                    "regime": "BULL_TREND",
-                    "filter_tag": "COUNTER_TREND_GUARD"
-                }
+                rsi_val = float(regime_info.get('rsi') or 50.0)
+                if is_reversal and rsi_val >= 70.0:
+                    pass  # Permitted: Extreme exhaustion fade with structural invalidation stop
+                else:
+                    return {
+                        "passed": False,
+                        "reason": f"FALSE SIGNAL FILTER: Blocked SELL '{setup_name}' during BULL_TREND regime (ADX {regime_info.get('adx', 'high')}). Counter-trend shorting blocked.",
+                        "regime": "BULL_TREND",
+                        "filter_tag": "COUNTER_TREND_GUARD"
+                    }
 
         return {"passed": True, "reason": f"Signal aligned with {regime} regime.", "regime": regime}
 
