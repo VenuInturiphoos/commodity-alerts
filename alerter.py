@@ -201,6 +201,18 @@ class EmailAlerter:
             if sig in sub_upper or sig in bdy_upper:
                 return True
 
+        # 4. Critical Administrative & Broker Auth Alerts (Always allow email delivery)
+        admin_alert_signatures = [
+            "DHAN ACCESS TOKEN",
+            "DHAN TOKEN EXPIRED",
+            "[ACTION REQUIRED]",
+            "BROKER AUTHENTICATION",
+            "TOKEN EXPIRED",
+        ]
+        for sig in admin_alert_signatures:
+            if sig in sub_upper or sig in bdy_upper:
+                return True
+
         return False
 
     def _is_duplicate_trade_alert(self, subject, channel="EMAIL", window_minutes=15):

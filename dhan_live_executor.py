@@ -15,6 +15,8 @@ import os
 import json
 import socket
 import pytz
+import base64
+import time
 from datetime import datetime
 from dotenv import load_dotenv
 import urllib3.util.connection as urllib_conn
@@ -61,6 +63,140 @@ class DhanLiveExecutor:
             except Exception:
                 pass
         return {}
+
+    def get_token_details(self):
+        """Decodes the JWT Dhan Access Token and returns expiration and client metadata."""
+        if not self.access_token:
+            return None
+        try:
+            parts = self.access_token.strip().split('.')
+            if len(parts) >= 2:
+                payload_b64 = parts[1] + '=' * ((4 - len(parts[1]) % 4) % 4)
+                data = json.loads(base64.urlsafe_b64decode(payload_b64).decode('utf-8'))
+                exp = data.get('exp')
+                iat = data.get('iat')
+                client_id = data.get('dhanClientId') or self.client_id
+                now = time.time()
+                ist = pytz.timezone('Asia/Kolkata')
+                exp_dt = datetime.fromtimestamp(exp, tz=ist) if exp else None
+                iat_dt = datetime.fromtimestamp(iat, tz=ist) if iat else None
+                return {
+                    'exp': exp,
+                    'iat': iat,
+                    'client_id': client_id,
+                    'is_expired': (now >= exp) if exp else False,
+                    'remaining_seconds': (exp - now) if exp else 0,
+                    'exp_str': exp_dt.strftime('%d %b %Y, %I:%M:%S %p IST') if exp_dt else 'Unknown',
+                    'iat_str': iat_dt.strftime('%d %b %Y, %I:%M:%S %p IST') if iat_dt else 'Unknown'
+                }
+        except Exception as e:
+            print(f"Error parsing Dhan access token JWT: {e}")
+        return None
+
+    def check_token_validity_and_alert(self, alerter=None, force_api_check=False):
+        """
+        Monitors Dhan Access Token expiration.
+        If the token has expired (or is rejected by Dhan API), dispatches an immediate
+        action-required alert to the user via Email and Telegram.
+        Guarantees deduplication (alerts once per token expiry event).
+        """
+        token_info = self.get_token_details()
+        if not token_info:
+            return False, "NO_TOKEN"
+
+        is_expired = token_info.get('is_expired', False)
+        reason = None
+        if is_expired:
+            reason = f"Access token expired at {token_info.get('exp_str')}."
+        elif force_api_check:
+            # Verify live connectivity with Dhan API
+            try:
+                res = self.dhan.get_fund_limits()
+                if isinstance(res, dict) and res.get('status') == 'failure':
+                    remarks = res.get('remarks') or {}
+                    msg = str(remarks) if isinstance(remarks, dict) else str(remarks)
+                    if any(err in msg.lower() for err in ['401', '403', 'token', 'expired', 'invalid', 'unauthorized']):
+                        is_expired = True
+                        reason = f"Dhan API rejected token ({msg})."
+            except Exception as e:
+                err_str = str(e)
+                if any(err in err_str.lower() for err in ['401', '403', 'token', 'expired', 'invalid', 'unauthorized']):
+                    is_expired = True
+                    reason = f"Dhan API authentication error ({err_str})."
+
+        if is_expired:
+            self._send_token_expiry_alert(token_info, reason, alerter)
+            return False, reason
+
+        return True, "TOKEN_VALID"
+
+    def _send_token_expiry_alert(self, token_info, reason, alerter=None):
+        """Dispatches an urgent action-required email and Telegram alert when token expires."""
+        state_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
+        state = {}
+        if os.path.exists(state_file):
+            try:
+                with open(state_file, 'r') as f:
+                    state = json.load(f)
+            except Exception:
+                state = {}
+
+        token_sig = str(token_info.get('exp'))
+        last_alerted_sig = state.get('dhan_token_expiry_alert', {}).get('token_exp_sig')
+        # Dedup: only alert once per expired token
+        if last_alerted_sig == token_sig:
+            return
+
+        now_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d %b %Y, %I:%M %p IST')
+        subject = "🚨 [ACTION REQUIRED] Dhan Access Token Expired - Live Trading Autopilot Paused"
+        body = (
+            f"URGENT ACTION REQUIRED: DHAN ACCESS TOKEN EXPIRED\n"
+            f"--------------------------------------------------\n"
+            f"Alert Time: {now_ist}\n"
+            f"Dhan Client ID: {token_info.get('client_id', self.client_id)}\n"
+            f"Expired At: {token_info.get('exp_str', 'N/A')}\n"
+            f"Reason: {reason}\n\n"
+            f"⚠️ Autopilot Status: Live order placement and trailing stops are PAUSED to protect capital until a new token is provided.\n\n"
+            f"STEPS TO RE-ENABLE AUTOPILOT:\n"
+            f"1. Log in to Dhan Web (https://web.dhan.co) or the Dhan App.\n"
+            f"2. Go to Profile -> Access Token / DhanHQ APIs.\n"
+            f"3. Generate a new 24-hour Access Token.\n"
+            f"4. Provide the new token in .env (DHAN_ACCESS_TOKEN) or paste it in chat.\n"
+            f"5. If using GitHub Actions, update your repository secret DHAN_ACCESS_TOKEN at:\n"
+            f"   GitHub -> Settings -> Secrets and variables -> Actions -> DHAN_ACCESS_TOKEN.\n\n"
+            f"Once updated, live autopilot execution will resume automatically on the next minute check."
+        )
+
+        print(f"\n🚨 [DHAN TOKEN EXPIRED ALERT DISPATCHING] {subject}")
+        try:
+            if not alerter:
+                from alerter import EmailAlerter
+                cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json')
+                if os.path.exists(cfg_path):
+                    with open(cfg_path, 'r') as cf:
+                        alerter = EmailAlerter(json.load(cf))
+            
+            if alerter:
+                payload = [{
+                    'symbol': 'DHAN_AUTH',
+                    'name': 'Dhan Broker Gateway',
+                    'event_type': 'DHAN_TOKEN_EXPIRED',
+                    'today_ist': now_ist,
+                    'subject': subject,
+                    'body': body
+                }]
+                alerter.send_alerts(payload)
+                
+            state['dhan_token_expiry_alert'] = {
+                'token_exp_sig': token_sig,
+                'alerted_at': now_ist,
+                'client_id': token_info.get('client_id', self.client_id)
+            }
+            with open(state_file, 'w') as f:
+                json.dump(state, f, indent=2)
+            print("✅ Token expiry alert dispatched and recorded in alerts_state.json")
+        except Exception as e:
+            print(f"Error dispatching token expiry alert: {e}")
 
     def get_fund_limits(self):
         """Returns live cash balance and available margin from Dhan."""

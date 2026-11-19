@@ -71,6 +71,14 @@ def main():
             print("No levels triggered.")
     except Exception as e:
         print(f"Error during check_alerts loop: {e}")
+
+    # Check Dhan Access Token validity & send alert if expired
+    try:
+        from dhan_live_executor import DhanLiveExecutor
+        dhan_exec = DhanLiveExecutor()
+        dhan_exec.check_token_validity_and_alert(alerter=alerter)
+    except Exception as e:
+        pass
         
     try:
         print("Generating near alerts JSON for Web UI...")
