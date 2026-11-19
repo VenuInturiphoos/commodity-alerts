@@ -1202,7 +1202,12 @@ def dispatch_autonomous_limit_order(trade_entry, asset_type='COMMODITY'):
             print(f"⚠️ Autonomous Autopilot notice: {res.get('status')} - {res.get('reason')}")
         return res
     except Exception as e:
-        print(f"⚠️ Error in dispatch_autonomous_limit_order: {e}")
+        err_msg = str(e)
+        print(f"⚠️ Error in dispatch_autonomous_limit_order: {err_msg}")
+        pt['live_broker_order'] = {
+            'status': 'FAILED',
+            'reason': f"Dhan Autopilot Error: {err_msg}"
+        }
         return None
 
 def record_live_9am_advisory(commodities_list):
