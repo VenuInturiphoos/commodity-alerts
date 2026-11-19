@@ -504,6 +504,7 @@ class DhanLiveExecutor:
                 }
 
         # 3. Formulate Strict Limit Order Parameters
+        self.check_and_sync_ip()
         order_type = self.dhan.LIMIT
         product_type = self.dhan.MARGIN if is_commodity else self.dhan.INTRA
         txn_type = self.dhan.BUY if action == 'BUY' else self.dhan.SELL
@@ -528,6 +529,25 @@ class DhanLiveExecutor:
                 validity=self.dhan.DAY,
                 tag="AUTOPILOT"
             )
+
+            # Auto-Recovery Guard for DH-905 Invalid IP
+            err_str = str(order_res)
+            if 'DH-905' in err_str or 'Invalid IP' in err_str or 'ordersAllowed' in err_str:
+                print("⚠️ [DHAN IP AUTO-RECOVERY] Encountered DH-905 Invalid IP. Forcing immediate IP re-sync & retrying order placement...")
+                self.check_and_sync_ip()
+                import time
+                time.sleep(1)
+                order_res = self.dhan.place_order(
+                    security_id=sec_id,
+                    exchange_segment=segment,
+                    transaction_type=txn_type,
+                    quantity=order_qty,
+                    order_type=order_type,
+                    product_type=product_type,
+                    price=clean_limit_price,
+                    validity=self.dhan.DAY,
+                    tag="AUTOPILOT"
+                )
 
             if order_res.get('status') == 'success' or order_res.get('orderStatus') in ['TRANSIT', 'PENDING', 'TRADED']:
                 order_id = str(order_res.get('data', {}).get('orderId') or order_res.get('orderId', ''))
