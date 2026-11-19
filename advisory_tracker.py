@@ -5334,13 +5334,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 day_h = float(s.get('day_high') or s.get('high') or 0)
                 day_l = float(s.get('day_low') or s.get('low') or 0)
                 if day_h <= 0 or day_l <= 0:
-                    p_close = round(cur_p / (1.0 + chg_pct / 100.0), 2) if chg_pct != 0 else cur_p
-                    if chg_pct < 0:
-                        day_h = max(cur_p, p_close)
-                        day_l = cur_p
-                    else:
-                        day_h = cur_p
-                        day_l = min(cur_p, p_close)
+                    day_h = 0.0
+                    day_l = 0.0
                 vol_ratio = float(s.get('volume_ratio') or 1.15)
                 atr = float(s.get('atr_14') or (cur_p * 0.015))
                 ema20 = float(s.get('ema_20') or cur_p)
@@ -5469,10 +5464,10 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                         continue
 
                     # Guard D2: Anti-Chasing Overextension Guard (Stop buying at day highs / panic selling at day lows)
-                    if eq_action == "BUY" and (chg_pct >= 2.0 or (cur_p >= day_h * 0.996 and rsi >= 66.0)):
+                    if eq_action == "BUY" and (chg_pct >= 2.5 or (day_h > 0 and cur_p >= day_h * 0.996 and rsi >= 66.0)):
                         print(f"🛡️ Anti-Chase Guard Blocked {clean_sym} BUY: Stock already extended (+{chg_pct:.2f}%, RSI: {rsi:.1f}) near day high. Chasing forbidden; requires pullback to VWAP / 20 EMA.")
                         continue
-                    if eq_action == "SELL" and (chg_pct <= -2.0 or (cur_p <= day_l * 1.004 and rsi <= 34.0)):
+                    if eq_action == "SELL" and (chg_pct <= -2.5 or (day_l > 0 and cur_p <= day_l * 1.004 and rsi <= 34.0)):
                         print(f"🛡️ Anti-Chase Guard Blocked {clean_sym} SELL: Stock already dumped ({chg_pct:.2f}%, RSI: {rsi:.1f}) near day low. Selling into panic forbidden; requires pullback to VWAP / 20 EMA.")
                         continue
 

@@ -175,7 +175,7 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         query_symbols.append('TMPV')
 
     cols = [
-        'name', 'description', 'close', 'change', 'change_abs', 'volume',
+        'name', 'description', 'close', 'open', 'high', 'low', 'change', 'change_abs', 'volume',
         'price_52_week_high', 'price_52_week_low',
         'EMA50', 'EMA200', 'EMA50[1]', 'EMA200[1]',
         'SMA50', 'SMA200', 'SMA50[1]', 'SMA200[1]',
@@ -234,6 +234,9 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
         if close <= 0:
             continue
 
+        open_p = float(d.get('open') or close)
+        day_h = float(d.get('high') or close)
+        day_l = float(d.get('low') or close)
         change_pct = float(d.get('change') or 0.0)
         change_abs = float(d.get('change_abs') or 0.0)
         volume = int(d.get('volume') or 0)
@@ -594,6 +597,11 @@ def scan_nifty50_opportunities(output_path='web/nifty_crossover_oversold.json'):
             'cap_category': cap_category,
             'is_midcap': not is_large_cap,
             'close': round(close, 2),
+            'open_price': round(open_p, 2),
+            'day_high': round(day_h, 2),
+            'day_low': round(day_l, 2),
+            'high': round(day_h, 2),
+            'low': round(day_l, 2),
             'change_pct': round(change_pct, 2),
             'change_abs': round(change_abs, 2),
             'volume': volume,
