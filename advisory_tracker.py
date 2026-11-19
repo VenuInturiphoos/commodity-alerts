@@ -4925,6 +4925,21 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 sl = calc_sl or sl
                 tgt = calc_tgt or tgt
 
+            # Strict Invariant: Stop distance must NEVER exceed contract's max risk cap (<= ₹6,000 risk)
+            clean_sym_check = sym.replace('-FUT', '').replace('.NS', '').upper()
+            contract_max_stop = (
+                PullbackRetestGate.MAX_STOP_DISTANCE.get(clean_sym_check) or
+                PullbackRetestGate.MAX_STOP_DISTANCE.get(f"{clean_sym_check}M") or
+                PullbackRetestGate.MAX_STOP_DISTANCE.get(f"{clean_sym_check}MINI")
+            )
+            if contract_max_stop and sl:
+                if action.upper() == 'BUY' and (cur_p - sl) > contract_max_stop:
+                    sl = round(cur_p - contract_max_stop, 2)
+                    tgt = round(cur_p + max(1.5 * contract_max_stop, abs(tgt - cur_p) if tgt else contract_max_stop), 2)
+                elif action.upper() == 'SELL' and (sl - cur_p) > contract_max_stop:
+                    sl = round(cur_p + contract_max_stop, 2)
+                    tgt = round(cur_p - max(1.5 * contract_max_stop, abs(cur_p - tgt) if tgt else contract_max_stop), 2)
+
             trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{sym}"
             if any(t.get('id') == trade_id for t in trades):
                 continue
