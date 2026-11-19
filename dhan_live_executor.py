@@ -63,7 +63,11 @@ class DhanLiveExecutor:
         Validates Dhan API Static IP compliance using /v2/ip/getIP.
         If ipMatchStatus is MISMATCH or ordersAllowed is False,
         automatically calls /v2/ip/setIP with detectedIP to restore ordersAllowed: True.
+        GUARD: Cloud CI/CD environments (e.g. GitHub Actions) MUST NEVER overwrite
+        the user's registered local Mac static IP!
         """
+        if os.environ.get('GITHUB_ACTIONS') == 'true' or os.environ.get('CI') == 'true':
+            return {'status': 'SKIPPED_IN_CI', 'reason': 'Cloud CI cannot overwrite local trader static IP'}
         import requests
         try:
             url_get = "https://api.dhan.co/v2/ip/getIP"
