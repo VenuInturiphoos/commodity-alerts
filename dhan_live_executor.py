@@ -55,6 +55,48 @@ class DhanLiveExecutor:
         # 3. Explicitly excluded unsupported commodities on Dhan (e.g. Copper Mini)
         self.unsupported_commodities = {'COPPERM', 'COPPER'}
 
+        # 4. Proactive Static IP Compliance Check
+        self.check_and_sync_ip()
+
+    def check_and_sync_ip(self):
+        """
+        Validates Dhan API Static IP compliance using /v2/ip/getIP.
+        If ipMatchStatus is MISMATCH or ordersAllowed is False,
+        automatically calls /v2/ip/setIP with detectedIP to restore ordersAllowed: True.
+        """
+        import requests
+        try:
+            url_get = "https://api.dhan.co/v2/ip/getIP"
+            headers = {
+                'access-token': self.access_token,
+                'client-id': self.client_id,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+            resp = requests.get(url_get, headers=headers, timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                if data.get('ordersAllowed') is True and data.get('ipMatchStatus') in ['PRIMARY_MATCH', 'SECONDARY_MATCH']:
+                    return {'status': 'MATCHED', 'data': data}
+                
+                detected = data.get('detectedIP')
+                if detected:
+                    url_set = "https://api.dhan.co/v2/ip/setIP"
+                    payload = {
+                        'dhanClientId': self.client_id,
+                        'ip': detected,
+                        'ipFlag': 'SECONDARY'
+                    }
+                    set_resp = requests.post(url_set, headers=headers, json=payload, timeout=5)
+                    if set_resp.status_code == 200:
+                        print(f"✅ [STATIC IP AUTO-SYNC] Registered new detected IP ({detected}) on Dhan via setIP.")
+                        return {'status': 'UPDATED', 'detected_ip': detected, 'res': set_resp.json()}
+                    else:
+                        print(f"⚠️ [STATIC IP AUTO-SYNC] setIP returned: {set_resp.status_code} - {set_resp.text}")
+            return {'status': 'ERROR', 'response': resp.text}
+        except Exception as e:
+            return {'status': 'EXCEPTION', 'error': str(e)}
+
     def _load_scrip_cache(self):
         if os.path.exists(SCRIP_CACHE_FILE):
             try:
