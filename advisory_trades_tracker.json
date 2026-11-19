@@ -1,31 +1,164 @@
 {
-  "last_updated": "19 Nov 2026, 10:54 AM IST",
+  "last_updated": "19 Nov 2026, 10:58 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 190,
-    "executed_count": 52,
+    "total_signals": 191,
+    "executed_count": 53,
     "correct_count": 21,
     "wrong_count": 17,
     "protected_count": 138,
     "win_rate_pct": 55.3,
     "broker": "Dhan",
-    "total_gross_pnl_inr": 95712.19,
-    "total_charges_inr": 9087.45,
-    "total_pnl_inr": 86624.74,
-    "commodity_pnl_inr": 87451.35,
+    "total_gross_pnl_inr": 96112.19,
+    "total_charges_inr": 9402.73,
+    "total_pnl_inr": 86709.46,
+    "commodity_pnl_inr": 87536.07,
     "intraday_pnl_inr": -826.61,
     "intraday_booked_profit_inr": 0.0,
     "intraday_pool_balance_inr": 30000.0,
-    "avg_trade_pnl_inr": 1665.86,
+    "avg_trade_pnl_inr": 1636.03,
     "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 387451.35,
-    "used_margin_inr": 318273.3,
-    "available_cash_inr": 69178.05,
-    "net_worth_inr": 387451.35
+    "current_cash_inr": 387536.07,
+    "used_margin_inr": 318311.1,
+    "available_cash_inr": 69224.97,
+    "net_worth_inr": 387536.07
   },
   "trades": [
+    {
+      "id": "ADV-19Nov2026-1057-ZINCMINI",
+      "date": "19 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (Pre-Ignition Volatility Coil)",
+      "time_trigger": "10:57 AM IST",
+      "time_6pm": "10:57 AM IST",
+      "time_validation": "10:57 AM IST",
+      "time_615": "10:57 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 4000,
+      "event_context": "Indicator Confluence: Pre-Ignition Volatility Coil",
+      "regime": {
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
+        "color": "#c084fc",
+        "bg_color": "rgba(192, 132, 252, 0.12)",
+        "border_color": "rgba(192, 132, 252, 0.35)",
+        "mandate": "Non-trending chop (ADX: 17.6, BBW: 8.1%). Breakouts are prone to fakeouts. Favorable for range-bound mean reversion.",
+        "allowed_strategies": [
+          "MEAN_REVERSION",
+          "RANGE_BOUND_SUPPORT_BUY",
+          "STAGED_LIMITS"
+        ],
+        "blocked_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "HIGH_BETA_FUTURES",
+          "GOLDEN_CROSS"
+        ],
+        "icon": "fa-solid fa-arrows-left-right",
+        "adx": 17.6,
+        "rsi": 35.2,
+        "bb_width_pct": 8.05,
+        "daily_vol_pct": 2.09,
+        "close": 389.95,
+        "ema50": 401.87413765689826,
+        "ema200": 405.00954501038166
+      },
+      "time_machine": {
+        "replays": 1000,
+        "passed": true,
+        "verdict": "PARAMETRIC_STATISTICAL_PASS",
+        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
+        "p_target_pct": 57.5,
+        "p_stop_pct": 31.9,
+        "p_neither_pct": 10.6,
+        "resolved_win_rate": 64.3,
+        "resolved_win_rate_pct": 64.3,
+        "expected_r": 0.371,
+        "target_r": 1.2,
+        "sample_bars": 0,
+        "summary": "Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 3920.0,
+        "potential_gain_inr": 4720.0,
+        "broker": "Dhan",
+        "est_charges_inr": 315.53,
+        "net_loss_at_stop_inr": 4235.53
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b9389.95",
+        "rationale": "Pre-Move Readiness Index: 80.0/100. Intraday Range Coiled: Day range is only 1.72% (6.70 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.44x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9405.01), building downward coil pressure.. Early coil entry prior to breakout expansion. Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R",
+        "reference_price": 389.95,
+        "stop_loss": 390.93,
+        "target": 388.77,
+        "original_stop_loss": 390.93,
+        "original_target": 388.77
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 389.95,
+        "action_taken": "Entered SELL 4000 units @ \u20b9389.95",
+        "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 80.0/100. Intraday Range Coiled: Day range is only 1.72% (6.70 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.44x average indicates supply exhaustion before move. | Price capped below baseline (\u20b9405.01), building downward coil pressure.. Early coil entry prior to breakout expansion. | Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 4000,
+        "entry_price": 389.95,
+        "entry_time": "10:57 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": -0.15,
+        "pnl_inr": -600.0,
+        "status": "ACTIVE",
+        "margin_required_inr": 147401.1,
+        "target": 388.77,
+        "stop_loss": 390.93,
+        "initial_stop_loss": 390.93,
+        "original_sl": 390.93,
+        "peak_high": 390.1,
+        "trough_low": 389.95,
+        "entry_day_high": 389.95,
+        "entry_day_low": 389.95,
+        "live_broker_order": {
+          "status": "REJECTED",
+          "reason": {
+            "error_code": "DH-905",
+            "error_type": "Input_Exception",
+            "error_message": "Invalid IP"
+          },
+          "dhan_response": {
+            "status": "failure",
+            "remarks": {
+              "error_code": "DH-905",
+              "error_type": "Input_Exception",
+              "error_message": "Invalid IP"
+            },
+            "data": ""
+          }
+        }
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b9389.95 (Target: \u20b9388.77, SL: \u20b9390.93) | Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R"
+      },
+      "live_price_data": {
+        "current_price": 390.1,
+        "change_pct": 0.04
+      }
+    },
     {
       "id": "ADV-19Nov2026-1047-ZINCMINI",
       "date": "19 Nov 2026",
@@ -34,7 +167,7 @@
       "time_6pm": "10:47 AM IST",
       "time_validation": "10:47 AM IST",
       "time_615": "10:47 AM IST",
-      "time_exit": "11:45 PM IST",
+      "time_exit": "10:57 AM IST",
       "symbol": "ZINCMINI",
       "name": "Zinc Mini",
       "lot_size": 4000,
@@ -114,17 +247,17 @@
         "quantity": 4000,
         "entry_price": 389.85,
         "entry_time": "10:47 AM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 1.0,
-        "pnl_inr": 4000.0,
-        "status": "ACTIVE",
+        "exit_price": 389.75,
+        "exit_time": "10:57 AM IST",
+        "pnl_points": 0.1,
+        "pnl_inr": 84.72,
+        "status": "CLOSED",
         "margin_required_inr": 147363.3,
         "target": 388.55,
         "stop_loss": 389.75,
         "initial_stop_loss": 390.93,
         "original_sl": 390.93,
-        "peak_high": 388.85,
+        "peak_high": 389.95,
         "trough_low": 388.85,
         "entry_day_high": 389.85,
         "entry_day_low": 389.85,
@@ -132,19 +265,66 @@
           "status": "FAILED",
           "reason": "Dhan Autopilot Error: No module named 'dhanhq'"
         },
-        "trailing_sl_active": true
+        "trailing_sl_active": true,
+        "gross_pnl_inr": 400.0,
+        "charges": {
+          "broker": "Dhan",
+          "segment": "COMMODITY_FUTURES",
+          "buy_turnover": 1559000.0,
+          "sell_turnover": 1559400.0,
+          "total_turnover": 3118400.0,
+          "brokerage": 40.0,
+          "buy_brokerage": 20.0,
+          "sell_brokerage": 20.0,
+          "stt_ctt": 155.94,
+          "exchange_charges": 65.49,
+          "sebi_charges": 3.12,
+          "stamp_duty": 31.18,
+          "gst": 19.55,
+          "dp_charges": 0.0,
+          "total_charges": 315.28,
+          "gross_pnl": 400.0,
+          "net_pnl": 84.72,
+          "summary_text": "Gross: +\u20b9400.00 | Dhan Charges: -\u20b9315.28 (Brok \u20b940.00 + Taxes \u20b9275.28) | Net: +\u20b984.72"
+        },
+        "net_pnl_inr": 84.72,
+        "exit_trigger": "TRAILING_BREAKEVEN_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 389.75,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Pre-Ignition Volatility Coil active: SELL @ \u20b9389.85 (Target: \u20b9388.55, SL: \u20b9390.93) | Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R"
+        "outcome": "PROTECTED",
+        "badge": "Fee-Shielded Breakeven \ud83d\udee1\ufe0f (10:57 AM IST)",
+        "pnl_display": "+\u20b984.72",
+        "summary": "Fee-Shielded Breakeven Stop Triggered \ud83d\udee1\ufe0f (Exit \u20b9389.75 | Capital & Fees Protected) at 10:57 AM IST. Entry: \u20b9389.85 -> Exit: \u20b9389.75 (Gross: +\u20b9400.00 | Dhan: -\u20b9315.28 | Net: +\u20b984.72).",
+        "exit_time": "10:57 AM IST",
+        "exit_trigger": "TRAILING_BREAKEVEN_HIT",
+        "gross_pnl_inr": 400.0,
+        "charges": {
+          "broker": "Dhan",
+          "segment": "COMMODITY_FUTURES",
+          "buy_turnover": 1559000.0,
+          "sell_turnover": 1559400.0,
+          "total_turnover": 3118400.0,
+          "brokerage": 40.0,
+          "buy_brokerage": 20.0,
+          "sell_brokerage": 20.0,
+          "stt_ctt": 155.94,
+          "exchange_charges": 65.49,
+          "sebi_charges": 3.12,
+          "stamp_duty": 31.18,
+          "gst": 19.55,
+          "dp_charges": 0.0,
+          "total_charges": 315.28,
+          "gross_pnl": 400.0,
+          "net_pnl": 84.72,
+          "summary_text": "Gross: +\u20b9400.00 | Dhan Charges: -\u20b9315.28 (Brok \u20b940.00 + Taxes \u20b9275.28) | Net: +\u20b984.72"
+        },
+        "net_pnl_inr": 84.72
       },
       "live_price_data": {
-        "current_price": 388.85,
-        "change_pct": -0.26
+        "current_price": 389.95,
+        "change_pct": 0.03
       }
     },
     {
@@ -235,8 +415,8 @@
         "entry_time": "10:36 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": -0.7,
-        "pnl_inr": -2100.0,
+        "pnl_points": -1.2,
+        "pnl_inr": -3600.0,
         "status": "ACTIVE",
         "margin_required_inr": 170910.0,
         "target": 318.5,
@@ -261,8 +441,8 @@
         "summary": "Pre-Ignition Volatility Coil active: BUY @ \u20b9316.50 (Target: \u20b9318.50, SL: \u20b9314.83) | 3,000 Replays: 49.3% Target | 50.5% Stop | Expected: +0.09R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "live_price_data": {
-        "current_price": 315.8,
-        "change_pct": -0.22
+        "current_price": 315.3,
+        "change_pct": -0.38
       }
     },
     {
