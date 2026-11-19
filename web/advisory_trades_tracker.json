@@ -1,10 +1,10 @@
 {
-  "last_updated": "19 Nov 2026, 09:41 AM IST",
+  "last_updated": "19 Nov 2026, 10:36 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 188,
-    "executed_count": 50,
+    "total_signals": 189,
+    "executed_count": 51,
     "correct_count": 21,
     "wrong_count": 17,
     "protected_count": 138,
@@ -17,15 +17,129 @@
     "intraday_pnl_inr": -826.61,
     "intraday_booked_profit_inr": 0.0,
     "intraday_pool_balance_inr": 30000.0,
-    "avg_trade_pnl_inr": 1343.6,
-    "active_trades_count": 0,
+    "avg_trade_pnl_inr": 1698.52,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 387451.35,
-    "used_margin_inr": 0,
-    "available_cash_inr": 387451.35,
+    "used_margin_inr": 170910.0,
+    "available_cash_inr": 216541.35,
     "net_worth_inr": 387451.35
   },
   "trades": [
+    {
+      "id": "ADV-19Nov2026-1036-NATURALGASM",
+      "date": "19 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (Pre-Ignition Volatility Coil)",
+      "time_trigger": "10:36 AM IST",
+      "time_6pm": "10:36 AM IST",
+      "time_validation": "10:36 AM IST",
+      "time_615": "10:36 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "NATURALGASM",
+      "name": "Natural Gas Mini",
+      "lot_size": 3000,
+      "event_context": "Indicator Confluence: Pre-Ignition Volatility Coil",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 22.1, RSI: 57.3). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 22.1,
+        "rsi": 57.3,
+        "bb_width_pct": 11.88,
+        "daily_vol_pct": 3.74,
+        "close": 316.5,
+        "ema50": 313.25088605461406,
+        "ema200": 302.6007475134878
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 49.3,
+        "p_stop_pct": 50.5,
+        "p_neither_pct": 0.2,
+        "resolved_win_rate_pct": 49.4,
+        "expected_r": 0.087,
+        "target_r": 1.2,
+        "sample_bars": 2144,
+        "summary": "3,000 Replays: 49.3% Target | 50.5% Stop | Expected: +0.09R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 5010.0,
+        "potential_gain_inr": 6000.0,
+        "broker": "Dhan",
+        "est_charges_inr": 209.8,
+        "net_loss_at_stop_inr": 5219.8
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b9316.50",
+        "rationale": "Pre-Move Readiness Index: 100.0/100. Intraday Range Coiled: Day range is only 0.98% (3.10 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.06x average indicates supply exhaustion before move. | Price holding above baseline (\u20b9302.60), building upward coil pressure.. Early coil entry prior to breakout expansion. 3,000 Replays: 49.3% Target | 50.5% Stop | Expected: +0.09R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 316.5,
+        "stop_loss": 314.83,
+        "target": 318.5,
+        "original_stop_loss": 314.83,
+        "original_target": 318.5
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 316.5,
+        "action_taken": "Entered BUY 3000 units @ \u20b9316.50",
+        "detail": "Pre-Ignition Volatility Coil: Pre-Move Readiness Index: 100.0/100. Intraday Range Coiled: Day range is only 0.98% (3.10 pts <= 1.15x ATR). Volatility bottleneck. | Volume Contraction: Volume at 0.06x average indicates supply exhaustion before move. | Price holding above baseline (\u20b9302.60), building upward coil pressure.. Early coil entry prior to breakout expansion. | 3,000 Replays: 49.3% Target | 50.5% Stop | Expected: +0.09R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 3000,
+        "entry_price": 316.5,
+        "entry_time": "10:36 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "margin_required_inr": 170910.0,
+        "target": 318.5,
+        "stop_loss": 314.83,
+        "initial_stop_loss": 314.83,
+        "original_sl": 314.83,
+        "peak_high": 316.5,
+        "trough_low": 316.5,
+        "entry_day_high": 316.5,
+        "entry_day_low": 316.5,
+        "live_broker_order": {
+          "status": "FAILED",
+          "reason": "Dhan Autopilot Error: No module named 'dhanhq'"
+        }
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Pre-Ignition Volatility Coil active: BUY @ \u20b9316.50 (Target: \u20b9318.50, SL: \u20b9314.83) | 3,000 Replays: 49.3% Target | 50.5% Stop | Expected: +0.09R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
     {
       "id": "ADV-19Nov2026-0926-ALUMINI",
       "date": "19 Nov 2026",
