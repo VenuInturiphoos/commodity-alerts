@@ -4707,11 +4707,17 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         tgt = None
 
         # --- SETUP 0: Pre-Ignition Volatility Coil (Early Big Move Detector) ---
-        pm_signal = PreMoveDetector.evaluate_live_snapshot(
-            sym, cur_p, day_h, day_l, p_close, chg_pct, adx=adx, rsi=rsi,
-            atr=atr_val, ema20=ema20, ema50=ema50, volume=vol, avg_volume=avg_vol
-        )
-        if pm_signal.status in ["PRE_MOVE_BUY_TRIGGER", "PRE_MOVE_SELL_TRIGGER"]:
+        # ⚠️ Opening 30-Minute Noise Freeze (09:00 - 09:30 AM IST):
+        # Range compression & volume ratios cannot be reliably determined in the first 30 minutes of market open.
+        is_opening_noise = (now_dt.hour == 9 and now_dt.minute < 30)
+        if is_opening_noise:
+            pm_signal = None
+        else:
+            pm_signal = PreMoveDetector.evaluate_live_snapshot(
+                sym, cur_p, day_h, day_l, p_close, chg_pct, adx=adx, rsi=rsi,
+                atr=atr_val, ema20=ema20, ema50=ema50, volume=vol, avg_volume=avg_vol
+            )
+        if pm_signal and pm_signal.status in ["PRE_MOVE_BUY_TRIGGER", "PRE_MOVE_SELL_TRIGGER"]:
             triggered = True
             action = pm_signal.action
             setup_name = "Pre-Ignition Volatility Coil"
@@ -4909,7 +4915,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 contract_sym, action, cur_p, sl, tgt, adaptive_lot, all_existing,
                 max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR,
                 day_h=day_h, day_l=day_l, ema20=ema20, atr=atr_val,
-                ema50=ema50, vwap=session_vwap, chg_pct=chg_pct
+                ema50=ema50, vwap=session_vwap, chg_pct=chg_pct, rsi=rsi
             )
             if not risk_metrics.get('passed'):
                 print(f"🛡️ Pre-Trade Risk Engine Blocked {contract_sym} {action}: {risk_metrics.get('reason')}")

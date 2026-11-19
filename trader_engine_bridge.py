@@ -206,7 +206,7 @@ class PreTradeRiskEngine:
                    max_loss_per_trade_inr=6000.0, max_daily_loss_inr=12000.0,
                    min_reward_risk=1.1, max_active_positions=3,
                    day_h=None, day_l=None, ema20=None, atr=None,
-                   ema50=None, vwap=None, chg_pct=None):
+                   ema50=None, vwap=None, chg_pct=None, rsi=None):
         """
         Runs comprehensive pre-trade risk validation:
         0. Zero-Tolerance Falling Knife & Counter-Trend Ban (Mandatory)
@@ -242,6 +242,11 @@ class PreTradeRiskEngine:
                     "passed": False,
                     "reason": f"FALLING_KNIFE_BLOCKED: BUY rejected because asset is in a sell-off ({float(chg_pct):.2f}% <= -1.2%). Knife catching strictly prohibited."
                 }
+            if rsi is not None and float(rsi) > 65.0:
+                return {
+                    "passed": False,
+                    "reason": f"OVERBOUGHT_EXHAUSTION_BLOCKED: BUY rejected because RSI ({float(rsi):.1f}) is overbought (> 65.0). Chasing tops into exhausted buying is prohibited due to high risk of profit-taking reversal."
+                }
 
         if act_upper == 'SELL':
             if ema50 is not None and entry > (float(ema50) * 1.002):
@@ -258,6 +263,11 @@ class PreTradeRiskEngine:
                 return {
                     "passed": False,
                     "reason": f"COUNTER_TREND_BLOCKED: SELL rejected because asset is in a strong rally ({float(chg_pct):.2f}% >= +1.2%). Counter-trend shorting prohibited."
+                }
+            if rsi is not None and float(rsi) < 35.0:
+                return {
+                    "passed": False,
+                    "reason": f"OVERSOLD_EXHAUSTION_BLOCKED: SELL rejected because RSI ({float(rsi):.1f}) is deeply oversold (< 35.0). Shorting the bottom into exhausted selling is prohibited due to high risk of violent short-covering bounces."
                 }
         
         # 1. Mandatory Stop-Loss Guard

@@ -459,21 +459,31 @@ class PreMoveDetector:
 
         if pmri_score >= cls.MIN_PMRI_TRIGGER and is_compressed:
             if mom_dir == "BULLISH_EXPANDING":
-                action = "BUY"
-                status = "PRE_MOVE_BUY_TRIGGER"
-                sl = round(day_low - (0.25 * atr_val), 2)
-                risk_pts = max(current_price - sl, 0.40 * atr_val)
-                tgt1 = round(current_price + (2.0 * risk_pts), 2)
-                tgt2 = round(current_price + (3.5 * risk_pts), 2)
-                rrr = round((tgt1 - current_price) / risk_pts, 2)
+                # Hard Overbought Guard: Never BUY into exhausted overbought conditions
+                if rsi is not None and rsi > 65.0:
+                    status = "OVERBOUGHT_EXHAUSTION_BLOCKED"
+                    reasons.append(f"Hard Guard: BUY blocked because RSI ({rsi:.1f}) is overbought (> 65.0). Risk of profit-taking reversal.")
+                else:
+                    action = "BUY"
+                    status = "PRE_MOVE_BUY_TRIGGER"
+                    sl = round(day_low - (0.25 * atr_val), 2)
+                    risk_pts = max(current_price - sl, 0.40 * atr_val)
+                    tgt1 = round(current_price + (2.0 * risk_pts), 2)
+                    tgt2 = round(current_price + (3.5 * risk_pts), 2)
+                    rrr = round((tgt1 - current_price) / risk_pts, 2)
             elif mom_dir == "BEARISH_EXPANDING":
-                action = "SELL"
-                status = "PRE_MOVE_SELL_TRIGGER"
-                sl = round(day_high + (0.25 * atr_val), 2)
-                risk_pts = max(sl - current_price, 0.40 * atr_val)
-                tgt1 = round(current_price - (2.0 * risk_pts), 2)
-                tgt2 = round(current_price - (3.5 * risk_pts), 2)
-                rrr = round((current_price - tgt1) / risk_pts, 2)
+                # Hard Oversold Guard: Never SELL into exhausted oversold conditions
+                if rsi is not None and rsi < 35.0:
+                    status = "OVERSOLD_EXHAUSTION_BLOCKED"
+                    reasons.append(f"Hard Guard: SELL blocked because RSI ({rsi:.1f}) is oversold (< 35.0). High risk of sharp short-covering bounce.")
+                else:
+                    action = "SELL"
+                    status = "PRE_MOVE_SELL_TRIGGER"
+                    sl = round(day_high + (0.25 * atr_val), 2)
+                    risk_pts = max(sl - current_price, 0.40 * atr_val)
+                    tgt1 = round(current_price - (2.0 * risk_pts), 2)
+                    tgt2 = round(current_price - (3.5 * risk_pts), 2)
+                    rrr = round((current_price - tgt1) / risk_pts, 2)
 
         return PreMoveSignal(
             symbol=symbol,
