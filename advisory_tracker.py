@@ -4478,6 +4478,12 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
     if now_dt.weekday() >= 5:
         return False
 
+    # MASTER SAFETY HALT SWITCH (User-requested stop)
+    TRADING_PAUSED = True
+    if TRADING_PAUSED:
+        print(f"🛑 MASTER SAFETY HALT ACTIVE: All trading and triggers are suspended per user request.")
+        return False
+
     if alerter is None:
         try:
             from alerter import EmailAlerter
