@@ -4123,6 +4123,31 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                             pt['stop_loss'] = ratchet_sl
                             updated_any = True
 
+                # Target Runner Mode: Dynamically trail beyond 100% Target to capture explosive runaway trends
+                if pt.get('target_runner_active'):
+                    if action == 'BUY':
+                        target_floor = round(calc_target - atr_pad, 2)
+                        ema_anchor = round(c_ema20 - atr_pad, 2) if (c_ema20 and c_ema20 > target_floor) else target_floor
+                        trail_buffer = max(min_trail_buf * 1.5, round(target_dist * 0.35, 2))
+                        swing_anchor = round(effective_high - trail_buffer, 2)
+                        runner_sl = max(target_floor, ema_anchor, swing_anchor)
+                        if runner_sl > stop_loss:
+                            stop_loss = runner_sl
+                            pt['stop_loss'] = runner_sl
+                            trade['eod_outcome']['badge'] = f"Target Runner 🎯🚀 (Trail @ ₹{stop_loss:,.2f})"
+                            updated_any = True
+                    elif action == 'SELL':
+                        target_floor = round(calc_target + atr_pad, 2)
+                        ema_anchor = round(c_ema20 + atr_pad, 2) if (c_ema20 and c_ema20 < target_floor) else target_floor
+                        trail_buffer = max(min_trail_buf * 1.5, round(target_dist * 0.35, 2))
+                        swing_anchor = round(effective_low + trail_buffer, 2)
+                        runner_sl = min(target_floor, ema_anchor, swing_anchor)
+                        if runner_sl < stop_loss:
+                            stop_loss = runner_sl
+                            pt['stop_loss'] = runner_sl
+                            trade['eod_outcome']['badge'] = f"Target Runner 🎯🚀 (Trail @ ₹{stop_loss:,.2f})"
+                            updated_any = True
+
         # HARD INVARIANT: Stop-Loss must be strictly ONE-WAY (Ratchet only).
         # A stop-loss once set can NEVER move backwards or widen to take additional loss.
         initial_sl_lock = float(pt.get('initial_stop_loss')) if pt.get('initial_stop_loss') is not None else stop_loss
@@ -4294,18 +4319,46 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
 
         is_trailing = bool(pt.get('stage_2_profit_locked') or pt.get('trailing_sl_active'))
 
-        # FIRM TARGET HIT CHECK FIRST (Never scrap target; book 100% full profit!)
+        # TARGET HIT & UNCAPPED RUNNER MODE ACTIVATION:
+        # When 100% target is touched, do NOT cut the trade! Lock guaranteed 100% target profit floor & trail for bonus trend!
         if calc_target is not None:
+            target_reached = False
             if action == 'BUY' and (cur_p >= calc_target or (recent_high and recent_high >= calc_target) or (effective_high and effective_high >= calc_target)):
-                hit_exit = True
-                hit_target = True
-                exit_p = calc_target
-                reason = f"Target Achieved 🎯 (Price reached target ₹{calc_target:,.2f} | 100% Gains Secured)"
+                target_reached = True
             elif action == 'SELL' and (cur_p <= calc_target or (recent_low and recent_low <= calc_target) or (effective_low and effective_low <= calc_target)):
-                hit_exit = True
-                hit_target = True
-                exit_p = calc_target
-                reason = f"Target Achieved 🎯 (Price reached target ₹{calc_target:,.2f} | 100% Gains Secured)"
+                target_reached = True
+
+            if target_reached and not pt.get('target_runner_active'):
+                pt['target_runner_active'] = True
+                pt['target_hit_milestone'] = True
+                pt['target_hit_price'] = calc_target
+                pt['target_hit_time'] = now_time_str
+                # Guarantee 100% Target profit floor (cushioned by small ATR pad to avoid spread shakeouts)
+                c_atr = float(c_item.get('atr_14', 0) if c_item else (eq_item.get('atr_14', 0) if eq_item else (cur_p * 0.012)))
+                atr_pad = round(max(c_atr * 0.15, 0.05), 2)
+                target_floor = round(calc_target - atr_pad if action == 'BUY' else calc_target + atr_pad, 2)
+                if (action == 'BUY' and target_floor > stop_loss) or (action == 'SELL' and target_floor < stop_loss):
+                    pt['stop_loss'] = target_floor
+                    stop_loss = target_floor
+                trade['eod_outcome']['badge'] = f"Target Runner 🎯🚀 (Floor @ ₹{stop_loss:,.2f})"
+                trade['eod_outcome']['summary'] = f"100% Target Achieved! Uncapped Runner Active (Floor ₹{stop_loss:,.2f}). Trailing along 20 EMA / structure for bonus upside."
+                updated_any = True
+
+                subject = f"🎯🚀 [100% TARGET ACHIEVED — RUNNER MODE ACTIVE] {trade['name']} Hit Target @ ₹{calc_target:,.2f}!"
+                body = (
+                    f"🎯🚀 <b>100% TARGET ACHIEVED — UNCAPPED RUNNER ACTIVE</b>\n"
+                    f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                    f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                    f"• <b>Asset</b>: {trade['name']} ({sym})\n"
+                    f"• <b>Action</b>: {action} {lot_size} units\n"
+                    f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
+                    f"• <b>Target Milestone Reached</b>: <b>₹{calc_target:,.2f} (100% Target Profit Secured!)</b>\n"
+                    f"• <b>Guaranteed Trailing Floor</b>: <b>₹{stop_loss:,.2f}</b>\n"
+                    f"• <b>Current Peak</b>: ₹{effective_high if action == 'BUY' else effective_low:,.2f}\n\n"
+                    f"Position is now in <b>Target Runner Mode</b>. Full target profits are guaranteed while trailing along 20 EMA and market structure to capture runaway trend expansion!\n\n"
+                    f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                )
+                alerts_to_send.append({'subject': subject, 'body': body})
 
         if not hit_exit:
             if action == 'BUY':
@@ -4318,9 +4371,13 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                 if reached_sl:
                     hit_exit = True
                     exit_p = stop_loss
-                    if pt.get('stage_2_profit_locked'):
+                    if pt.get('target_runner_active'):
+                        hit_target_runner_exit = True
+                        captured_pct = round(((exit_p - entry_p) / target_dist) * 100, 1) if target_dist > 0 else 100.0
+                        reason = f"Target Runner Trailing Exit 🎯🚀 (Exit ₹{exit_p:,.2f} | Peak ₹{effective_high:,.2f} | +{captured_pct}% Target Gains Captured)"
+                    elif pt.get('stage_2_profit_locked'):
                         hit_trailing_profit = True
-                        reason = f"Trailing Profit Stop Triggered 💰 (Exit ₹{exit_p:,.2f} | +50% Target Gains Secured)"
+                        reason = f"Structural Trailing Profit Exit 💰 (Exit ₹{exit_p:,.2f} | Structure Support Retested)"
                     elif pt.get('trailing_sl_active'):
                         hit_breakeven = True
                         reason = f"Fee-Shielded Breakeven Stop Triggered 🛡️ (Exit ₹{exit_p:,.2f} | Capital & Fees Protected)"
@@ -4346,9 +4403,13 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                 if reached_sl:
                     hit_exit = True
                     exit_p = stop_loss
-                    if pt.get('stage_2_profit_locked'):
+                    if pt.get('target_runner_active'):
+                        hit_target_runner_exit = True
+                        captured_pct = round(((entry_p - exit_p) / target_dist) * 100, 1) if target_dist > 0 else 100.0
+                        reason = f"Target Runner Trailing Exit 🎯🚀 (Exit ₹{exit_p:,.2f} | Trough ₹{effective_low:,.2f} | +{captured_pct}% Target Gains Captured)"
+                    elif pt.get('stage_2_profit_locked'):
                         hit_trailing_profit = True
-                        reason = f"Trailing Profit Stop Triggered 💰 (Exit ₹{exit_p:,.2f} | +50% Target Gains Secured)"
+                        reason = f"Structural Trailing Profit Exit 💰 (Exit ₹{exit_p:,.2f} | Structure Resistance Retested)"
                     elif pt.get('trailing_sl_active'):
                         hit_breakeven = True
                         reason = f"Fee-Shielded Breakeven Stop Triggered 🛡️ (Exit ₹{exit_p:,.2f} | Capital & Fees Protected)"
