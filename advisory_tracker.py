@@ -4912,6 +4912,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
             # 🛡️ Option 2: Pullback-Only Retest Sniping Gate (Anti-Chasing & Structural Proximity)
             # Reversals enter at extreme support/resistance boundaries so breakout chasing check is skipped.
+            pullback_eval = {"passed": True, "status": "CONFIRMED", "reason": "Standard pullback confluence."}
             if not is_reversal:
                 pullback_eval = PullbackRetestGate.validate_retest_entry(sym, action, cur_p, day_h, day_l, ema20=ema20, atr=atr_val)
                 if not pullback_eval.get('passed'):
@@ -5410,6 +5411,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 eq_tgt = None
                 eq_rationale = ""
                 orb_metrics = {"passed": True, "status": "CONFIRMED", "reason": "Standard momentum confluence."}
+                pullback_eval = {"passed": True, "status": "CONFIRMED", "reason": "Standard pullback confluence."}
                 vwap = round((day_h + day_l + cur_p) / 3.0, 2)
 
                 # Setup A: High-Beta Intraday Momentum Breakout (BUY - Controlled Momentum, not Overextended)
