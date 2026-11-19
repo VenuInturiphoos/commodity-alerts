@@ -61,14 +61,14 @@ def git_sync_changes():
     """
     try:
         status = subprocess.run(
-            ["git", "status", "--porcelain", "web/advisory_trades_tracker.json", "web/near_alerts.json", "web/circuits_data.json"],
+            ["git", "status", "--porcelain", "web/"],
             capture_output=True,
             text=True,
             check=True
         )
         if status.stdout.strip():
-            print("[SYNC] Detected changes in tracking files. Pushing to GitHub...")
-            subprocess.run(["git", "add", "web/advisory_trades_tracker.json", "web/near_alerts.json", "web/circuits_data.json"], check=True)
+            print("[SYNC] Detected changes in web files. Pushing to GitHub...")
+            subprocess.run(["git", "add", "web/"], check=True)
             subprocess.run(["git", "commit", "-m", "Auto-update trades and alerts via Local Daemon [skip ci]"], check=True)
             subprocess.run(["git", "pull", "--rebase", "-X", "theirs", "origin", "main"], check=True)
             subprocess.run(["git", "push", "origin", "main"], check=True)
