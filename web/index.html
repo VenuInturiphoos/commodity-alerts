@@ -7727,7 +7727,17 @@ function renderAdvisorySummaryCards() {
                 ? Number(liveData.current_price) 
                 : (Number(t.live_price_data?.current_price) || Number(pt.entry_price));
             if (curPrice && !isNaN(curPrice)) {
-                const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
+                let effectivePrice = curPrice;
+                const sl = Number(pt.stop_loss || pt.initial_stop_loss || t.suggestion_6pm?.stop_loss || 0);
+                const tgt = Number(pt.target || t.suggestion_6pm?.target || 0);
+                if (pt.action === 'BUY') {
+                    if (sl > 0 && curPrice <= sl) effectivePrice = sl;
+                    else if (tgt > 0 && curPrice >= tgt) effectivePrice = tgt;
+                } else if (pt.action === 'SELL') {
+                    if (sl > 0 && curPrice >= sl) effectivePrice = sl;
+                    else if (tgt > 0 && curPrice <= tgt) effectivePrice = tgt;
+                }
+                const pts = pt.action === 'BUY' ? (effectivePrice - pt.entry_price) : (pt.entry_price - effectivePrice);
                 const lot = pt.quantity || t.lot_size || 1;
                 unrealizedPnl += pts * lot;
             }
@@ -7815,9 +7825,19 @@ function renderAdvisorySummaryCards() {
                 ? Number(liveData.current_price) 
                 : (Number(t.live_price_data?.current_price) || Number(pt.entry_price));
             if (curPrice && !isNaN(curPrice)) {
-                const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
+                let effectivePrice = curPrice;
+                const sl = Number(pt.stop_loss || pt.initial_stop_loss || t.suggestion_6pm?.stop_loss || 0);
+                const tgt = Number(pt.target || t.suggestion_6pm?.target || 0);
+                if (pt.action === 'BUY') {
+                    if (sl > 0 && curPrice <= sl) effectivePrice = sl; // Cap loss at protective stop-loss
+                    else if (tgt > 0 && curPrice >= tgt) effectivePrice = tgt; // Cap gain at target
+                } else if (pt.action === 'SELL') {
+                    if (sl > 0 && curPrice >= sl) effectivePrice = sl; // Cap loss at protective stop-loss
+                    else if (tgt > 0 && curPrice <= tgt) effectivePrice = tgt; // Cap gain at target
+                }
+                const pts = pt.action === 'BUY' ? (effectivePrice - pt.entry_price) : (pt.entry_price - effectivePrice);
                 const lot = pt.quantity || t.lot_size || 1;
-                const estCharges = calculateDhanCharges(t, curPrice);
+                const estCharges = calculateDhanCharges(t, effectivePrice);
                 const estChgVal = estCharges ? estCharges.total_charges : 0;
                 todayUnrealizedPnl += (pts * lot) - estChgVal;
                 todayGrossPnl += (pts * lot);
