@@ -4032,8 +4032,10 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                     fee_buf = round(cur_p * 0.0008, 2)  # Covers Dhan equity/futures charges
                     min_trail_buf = round(cur_p * 0.005, 2)
 
-                # Stage 1: Fee-Shielded Breakeven Lock at >= 75% towards Target
-                # Trades keep full structural invalidation stop through 0-74% progression to survive normal 38.2%-50% retracements.
+                # Approach A: Breakeven Shield & Full Target (User-Selected Institutional Protocol)
+                # Once price reaches >= breakeven_threshold (70%-75% target progress), move Stop-Loss to Breakeven (+Fee Shield).
+                # Stop stays locked at Breakeven, eliminating 100% of downside risk while giving the trade full breathing room
+                # (50-70+ pts on Crude) to hit the 100% Target without getting choked by minor bounces or candle wicks.
                 if pct_to_target >= breakeven_threshold and not pt.get('trailing_sl_active'):
                     pt['trailing_sl_active'] = True
                     pt['original_sl'] = pt.get('original_sl') or pt.get('initial_stop_loss') or stop_loss
@@ -4046,11 +4048,13 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                     else:
                         pt['peak_high'] = cur_p
                         effective_high = cur_p
+                    trade['eod_outcome']['badge'] = f"Risk-Free Breakeven 🛡️ (SL @ ₹{be_price:,.2f})"
+                    trade['eod_outcome']['summary'] = f"Approach A: Breakeven Shield active at ₹{be_price:,.2f} (+Fee Buffer). Running to 100% Target with full breathing room."
                     updated_any = True
                     
-                    subject = f"🛡️ [STAGE 1: FEE-SHIELDED BREAKEVEN (+1.0R)] {trade['name']} Reached {pct_to_target:.0f}% Target Milestone"
+                    subject = f"🛡️ [APPROACH A: BREAKEVEN SHIELD (+1.0R)] {trade['name']} Reached {pct_to_target:.0f}% Target Milestone"
                     body = (
-                        f"🛡️ <b>FEE-SHIELDED TRAILING STOP ACTIVATED (+1.0R)</b>\n"
+                        f"🛡️ <b>APPROACH A: BREAKEVEN SHIELD ACTIVATED (+1.0R)</b>\n"
                         f"📅 <i>{today_str}, {now_time_str}</i>\n"
                         f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
                         f"• <b>Asset</b>: {trade['name']} ({sym})\n"
@@ -4060,94 +4064,10 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                         f"• <b>Target</b>: ₹{calc_target:,.2f}\n"
                         f"• <b>Fee-Shielded Stop-Loss</b>: <b>₹{be_price:,.2f} (Covers Dhan Brokerage & Taxes)</b>\n"
                         f"• <b>Initial Stop-Loss</b>: ₹{pt.get('original_sl', entry_p):,.2f}\n\n"
-                        f"Position is now risk-free and protected against commission drag!\n\n"
+                        f"Position is now 100% risk-free! Stop is locked at Breakeven with maximum breathing room to capture the full 100% target without noise shakeouts.\n\n"
                         f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
                     )
                     alerts_to_send.append({'subject': subject, 'body': body})
-
-                # Structural Trend & Indicator Anchors for Trailing
-                c_ema20 = float(c_item.get('ema_20', 0) if c_item else (eq_item.get('ema_20', 0) if eq_item else 0))
-                c_atr = float(c_item.get('atr_14', 0) if c_item else (eq_item.get('atr_14', 0) if eq_item else (cur_p * 0.012)))
-                atr_pad = round(max(c_atr * 0.15, min_trail_buf * 0.5), 2)
-
-                # Stage 2: Structural Candle Trail at >= 88% towards Target (Choice C: Let winners run to 100% Target)
-                # Does NOT choke the trade at 50% profit; trails behind market structure (20 EMA / candle swing) with a 70% floor
-                if pct_to_target >= 88.0 and not pt.get('stage_2_profit_locked'):
-                    floor_price = round(entry_p + (target_dist * 0.70) if action == 'BUY' else entry_p - (target_dist * 0.70), 2)
-                    pt['stage_2_profit_locked'] = True
-                    
-                    # Structural anchor: 20 EMA with ATR pad, or 70% profit floor
-                    if action == 'BUY':
-                        struct_sl = round(c_ema20 - atr_pad, 2) if (c_ema20 and c_ema20 > entry_p) else floor_price
-                        lock_price = max(struct_sl, floor_price)
-                        # Breathing Room Invariant: Never choke closer than 35 pts (Crude) or 0.35x ATR from market price
-                        min_breath_dist = 35.0 if 'CRUDE' in sym.upper() else max(c_atr * 0.35, 1.0)
-                        lock_price = min(lock_price, cur_p - min_breath_dist)
-                        if lock_price > stop_loss and lock_price > entry_p:
-                            pt['stop_loss'] = lock_price
-                            stop_loss = lock_price
-                            pt['trough_low'] = cur_p
-                            effective_low = cur_p
-                    else:
-                        struct_sl = round(c_ema20 + atr_pad, 2) if (c_ema20 and c_ema20 < entry_p) else floor_price
-                        lock_price = min(struct_sl, floor_price)
-                        # Breathing Room Invariant: Never choke closer than 35 pts (Crude) or 0.35x ATR from market price
-                        min_breath_dist = 35.0 if 'CRUDE' in sym.upper() else max(c_atr * 0.35, 1.0)
-                        lock_price = max(lock_price, cur_p + min_breath_dist)
-                        if lock_price < stop_loss and lock_price < entry_p:
-                            pt['stop_loss'] = lock_price
-                            stop_loss = lock_price
-                            pt['peak_high'] = cur_p
-                            effective_high = cur_p
-
-                    trade['eod_outcome']['badge'] = f"Active (Structural Trail @ ₹{lock_price:,.2f})"
-                    trade['eod_outcome']['summary'] = f"Structural Candle Trail (+70% floor @ ₹{lock_price:,.2f}) active. Running to 100% full Target."
-                    updated_any = True
-
-                    subject = f"💰 [CHOICE C: STRUCTURAL PROFIT TRAIL (+70% FLOOR)] {trade['name']} Reached {pct_to_target:.0f}% Target Milestone"
-                    body = (
-                        f"💰 <b>STRUCTURAL CANDLE TRAIL ACTIVATED</b>\n"
-                        f"📅 <i>{today_str}, {now_time_str}</i>\n"
-                        f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
-                        f"• <b>Asset</b>: {trade['name']} ({sym})\n"
-                        f"• <b>Action</b>: {action} {lot_size} units\n"
-                        f"• <b>Current Price</b>: ₹{cur_p:,.2f} ({pct_to_target:.1f}% to Target)\n"
-                        f"• <b>Structural Trailing Stop</b>: <b>₹{lock_price:,.2f} (Structure + 70% Target Floor)</b>\n"
-                        f"• <b>Target</b>: ₹{calc_target:,.2f}\n\n"
-                        f"Trade is given room to breathe along market structure (20 EMA/swing lows) to capture the full 100% target exit.\n\n"
-                        f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
-                    )
-                    alerts_to_send.append({'subject': subject, 'body': body})
-
-                # Choice C: Structural Candle & 20 EMA Trailing Ratchet between 75% and 100%
-                # Replaced premature 25% target ratchet with 20 EMA / candle swing support to prevent noise shakeouts
-                if pt.get('trailing_sl_active') and pct_to_target >= breakeven_threshold:
-                    be_price = round(entry_p + fee_buf if action == 'BUY' else entry_p - fee_buf, 2)
-                    
-                    if action == 'BUY':
-                        # Anchor 1: 20 EMA support if trading above it
-                        ema_anchor = round(c_ema20 - atr_pad, 2) if (c_ema20 and c_ema20 > be_price) else be_price
-                        # Anchor 2: Candle swing support (minimum 40% target distance buffer so minor wiggles do not choke trade)
-                        trail_buffer = max(min_trail_buf * 1.5, round(target_dist * 0.40, 2))
-                        swing_anchor = round(effective_high - trail_buffer, 2)
-                        
-                        ratchet_sl = max(be_price, ema_anchor, swing_anchor)
-                        if ratchet_sl > stop_loss:
-                            stop_loss = ratchet_sl
-                            pt['stop_loss'] = ratchet_sl
-                            updated_any = True
-                    elif action == 'SELL':
-                        # Anchor 1: 20 EMA resistance if trading below it
-                        ema_anchor = round(c_ema20 + atr_pad, 2) if (c_ema20 and c_ema20 < be_price) else be_price
-                        # Anchor 2: Candle swing resistance (minimum 40% target distance buffer)
-                        trail_buffer = max(min_trail_buf * 1.5, round(target_dist * 0.40, 2))
-                        swing_anchor = round(effective_low + trail_buffer, 2)
-                        
-                        ratchet_sl = min(be_price, ema_anchor, swing_anchor)
-                        if ratchet_sl < stop_loss:
-                            stop_loss = ratchet_sl
-                            pt['stop_loss'] = ratchet_sl
-                            updated_any = True
 
                 # Target Runner Mode: Dynamically trail beyond 100% Target to capture explosive runaway trends
                 if pt.get('target_runner_active'):
