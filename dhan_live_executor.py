@@ -682,20 +682,35 @@ class DhanLiveExecutor:
             print(f"Error attaching Stop-Loss order: {e}")
             return {'status': 'error', 'message': str(e)}
 
-    def modify_stop_loss_order(self, order_id, new_trigger_price):
-        """Modifies trigger price of active Stop-Loss order on Dhan (Fee-Shielded Trailing Stop Ratchet)."""
-        new_trigger = round(float(new_trigger_price), 2)
+    def modify_stop_loss_order(self, order_id, new_trigger_price, action=None, symbol=''):
+        """
+        Modifies trigger price of active Stop-Loss order on Dhan (Fee-Shielded Trailing Stop Ratchet).
+        Enforces exchange tick-size compliance and execution buffer.
+        """
+        trigger_p = float(self._round_to_tick(float(new_trigger_price), symbol))
+        # For a BUY SL (covering a short), limit price is slightly above trigger price
+        # For a SELL SL (exiting a long), limit price is slightly below trigger price
+        is_buy_sl = (action == 'SELL') or ('BUY' in str(action).upper())
+        if is_buy_sl:
+            raw_limit = trigger_p + (10.0 if 'CRUDE' in symbol.upper() else 1.0)
+        else:
+            raw_limit = trigger_p - (10.0 if 'CRUDE' in symbol.upper() else 1.0)
+        limit_p = float(self._round_to_tick(raw_limit, symbol))
+
         try:
-            return self.dhan.modify_order(
-                order_id=order_id,
+            mod_res = self.dhan.modify_order(
+                order_id=str(order_id),
                 order_type=self.dhan.SL,
                 leg_name="ENTRY_LEG",
-                price=new_trigger,
-                trigger_price=new_trigger,
+                price=limit_p,
+                trigger_price=trigger_p,
                 disclosed_quantity=0,
                 validity=self.dhan.DAY
             )
+            print(f"🔄 [DHAN SL MODIFIED] Order {order_id} ratcheted to Trigger ₹{trigger_p}, Limit ₹{limit_p} (Res: {mod_res})")
+            return mod_res
         except Exception as e:
+            print(f"❌ Error modifying Dhan Stop-Loss order: {e}")
             return {'status': 'error', 'message': str(e)}
 
     def square_off_position(self, security_id, segment, action, quantity, price=None):

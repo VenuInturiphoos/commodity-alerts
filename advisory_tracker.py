@@ -4174,6 +4174,24 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
             pt['target'] = target
         if stop_loss is not None:
             pt['stop_loss'] = stop_loss
+            # Dynamic Broker SL Sync: Ratchet active Stop-Loss order on Dhan as target milestones are achieved
+            dhan_sl_id = pt.get('dhan_sl_order_id')
+            last_synced_sl = pt.get('last_synced_broker_sl')
+            if is_autopilot_enabled() and dhan_sl_id and stop_loss != last_synced_sl:
+                try:
+                    from dhan_live_executor import DhanLiveExecutor
+                    dhan_exec = DhanLiveExecutor()
+                    mod_res = dhan_exec.modify_stop_loss_order(
+                        order_id=dhan_sl_id,
+                        new_trigger_price=stop_loss,
+                        action=action,
+                        symbol=sym
+                    )
+                    if mod_res.get('status') == 'success':
+                        pt['last_synced_broker_sl'] = stop_loss
+                        print(f"🛡️ [DHAN SL RATCHET SYNC] Successfully updated live broker stop-loss on Dhan to ₹{stop_loss:,.2f} (Order: {dhan_sl_id})")
+                except Exception as sl_mod_err:
+                    print(f"⚠️ Error syncing Stop-Loss ratchet to Dhan: {sl_mod_err}")
 
         # Ensure active trades carry authoritative live price snapshot and live MTM for client UI
         if trade_status == 'ACTIVE' and cur_p > 0:
