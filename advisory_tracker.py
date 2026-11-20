@@ -4181,11 +4181,13 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                 try:
                     from dhan_live_executor import DhanLiveExecutor
                     dhan_exec = DhanLiveExecutor()
+                    dhan_qty = pt.get('dhan_quantity') or (3 if 'CRUDE' in sym.upper() else 1)
                     mod_res = dhan_exec.modify_stop_loss_order(
                         order_id=dhan_sl_id,
                         new_trigger_price=stop_loss,
                         action=action,
-                        symbol=sym
+                        symbol=sym,
+                        quantity=dhan_qty
                     )
                     if mod_res.get('status') == 'success':
                         pt['last_synced_broker_sl'] = stop_loss

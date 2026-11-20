@@ -688,7 +688,7 @@ class DhanLiveExecutor:
             print(f"Error attaching Stop-Loss order: {e}")
             return {'status': 'error', 'message': str(e)}
 
-    def modify_stop_loss_order(self, order_id, new_trigger_price, action=None, symbol=''):
+    def modify_stop_loss_order(self, order_id, new_trigger_price, action=None, symbol='', quantity=1):
         """
         Modifies trigger price of active Stop-Loss order on Dhan (Fee-Shielded Trailing Stop Ratchet).
         Enforces exchange tick-size compliance and execution buffer.
@@ -708,6 +708,7 @@ class DhanLiveExecutor:
                 order_id=str(order_id),
                 order_type=self.dhan.SL,
                 leg_name="ENTRY_LEG",
+                quantity=int(quantity or 1),
                 price=limit_p,
                 trigger_price=trigger_p,
                 disclosed_quantity=0,
