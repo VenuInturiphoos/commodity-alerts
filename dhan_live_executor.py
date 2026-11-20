@@ -312,6 +312,10 @@ class DhanLiveExecutor:
         'GOLDM': [
             {'security_id': '575011', 'custom_symbol': 'GOLDM DEC FUT', 'trading_symbol': 'GOLDM-04Dec2026-FUT', 'expiry': '2026-12-04 23:30:00'},
             {'security_id': '578779', 'custom_symbol': 'GOLDM JAN FUT', 'trading_symbol': 'GOLDM-05Jan2027-FUT', 'expiry': '2027-01-05 23:30:00'}
+        ],
+        'GOLDTEN': [
+            {'security_id': '574842', 'custom_symbol': 'GOLDTEN NOV FUT', 'trading_symbol': 'GOLDTEN-30Nov2026-FUT', 'expiry': '2026-11-30 23:30:00'},
+            {'security_id': '578629', 'custom_symbol': 'GOLDTEN DEC FUT', 'trading_symbol': 'GOLDTEN-31Dec2026-FUT', 'expiry': '2026-12-31 23:30:00'}
         ]
     }
 
@@ -330,7 +334,7 @@ class DhanLiveExecutor:
         elif clean_comm.startswith('SILVER'):
             canonical_comm = 'SILVERMIC'
         elif clean_comm.startswith('GOLD'):
-            canonical_comm = 'GOLDM'
+            canonical_comm = 'GOLDTEN'
         elif clean_comm.startswith('NATURALGAS'):
             canonical_comm = 'NATURALGASM'
         else:
@@ -490,6 +494,7 @@ class DhanLiveExecutor:
                 'CRUDEOILM': 10,
                 'SILVERMIC': 1,
                 'GOLDM': 10,
+                'GOLDTEN': 1,
                 'COPPERM': 1000
             }.get(clean_lookup, 1)
 
@@ -506,13 +511,14 @@ class DhanLiveExecutor:
             avail_bal = funds['available_balance']
             # Commodity mini margin estimation per single exchange lot
             single_lot_margin_map = {
-                'CRUDEOILM': 15000.0,
+                'CRUDEOILM': 24400.0,
                 'NATURALGASM': 17000.0,
                 'NATGASMINI': 17000.0,
                 'ALUMINI': 29000.0,
                 'ZINCMINI': 26500.0,
                 'SILVERMIC': 13500.0,
                 'GOLDM': 76000.0,
+                'GOLDTEN': 7600.0,
                 'COPPERM': 65600.0,
             }
             single_margin = single_lot_margin_map.get(clean_lookup, 35000.0)
