@@ -302,6 +302,19 @@ class EmailAlerter:
         # 2. Check email settings and credentials
         sender_email = (os.environ.get('SENDER_EMAIL') or self.config.get('sender_email') or 'your_email@gmail.com').strip()
         raw_password = (os.environ.get('SENDER_PASSWORD') or self.config.get('sender_password') or '').strip()
+        if not raw_password:
+            env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+            if os.path.exists(env_path):
+                try:
+                    with open(env_path, 'r') as ef:
+                        for line in ef:
+                            line = line.strip()
+                            if line.startswith('SENDER_PASSWORD='):
+                                raw_password = line.split('=', 1)[1].strip().strip('"').strip("'")
+                            elif line.startswith('SENDER_EMAIL=') and sender_email == 'your_email@gmail.com':
+                                sender_email = line.split('=', 1)[1].strip().strip('"').strip("'")
+                except Exception:
+                    pass
         # Clean up any spaces or accidental quotes in app password
         sender_password = raw_password.replace(' ', '').replace('"', '').replace("'", "")
         recipient_emails = self.get_recipients()
@@ -434,6 +447,19 @@ class EmailAlerter:
         """
         sender_email = (os.environ.get('SENDER_EMAIL') or self.config.get('sender_email') or 'venu.photos1@gmail.com').strip()
         raw_password = (os.environ.get('SENDER_PASSWORD') or self.config.get('sender_password') or '').strip()
+        if not raw_password:
+            env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+            if os.path.exists(env_path):
+                try:
+                    with open(env_path, 'r') as ef:
+                        for line in ef:
+                            line = line.strip()
+                            if line.startswith('SENDER_PASSWORD='):
+                                raw_password = line.split('=', 1)[1].strip().strip('"').strip("'")
+                            elif line.startswith('SENDER_EMAIL=') and sender_email == 'your_email@gmail.com':
+                                sender_email = line.split('=', 1)[1].strip().strip('"').strip("'")
+                except Exception:
+                    pass
         sender_password = raw_password.replace(' ', '').replace('"', '').replace("'", "")
         
         target_recipients = recipients or [sender_email]

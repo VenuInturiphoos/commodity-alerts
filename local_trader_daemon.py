@@ -114,6 +114,7 @@ def run_daemon():
                 continue
 
             iteration += 1
+            load_dotenv(override=True)
             print(f"\n--- [Cycle #{iteration} | {now_str} IST] Evaluating Trades & Triggers ---")
             
             # 1. Manage Active Positions (Targets, Trailing Stops, Structural Exits)
