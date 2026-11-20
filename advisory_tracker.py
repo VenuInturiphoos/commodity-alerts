@@ -128,6 +128,40 @@ MARGIN_RATES = {
     'GOLDTEN': 0.10
 }
 
+def get_canonical_commodity_root(s):
+    """
+    Normalizes any commodity symbol variant (parent, mini, micro, forward month)
+    to its canonical root asset name.
+    e.g. 'ALUMINI-30Nov2026-FUT' -> 'ALUMINIUM'
+         'CRUDEOILM' -> 'CRUDEOIL'
+         'NATGASMINI' -> 'NATURALGAS'
+         'GOLDTEN' -> 'GOLD'
+         'SILVERMIC' -> 'SILVER'
+         'ZINCMINI' -> 'ZINC'
+    """
+    if not s:
+        return ""
+    u = str(s).upper().replace('-FUT', '').replace('.NS', '').replace('.BO', '').strip()
+    if 'ALU' in u:
+        return 'ALUMINIUM'
+    if 'COPPER' in u:
+        return 'COPPER'
+    if 'CRUDE' in u:
+        return 'CRUDEOIL'
+    if ('NAT' in u and 'GAS' in u) or u.startswith('NG'):
+        return 'NATURALGAS'
+    if 'SILVER' in u:
+        return 'SILVER'
+    if 'GOLD' in u:
+        return 'GOLD'
+    if 'ZINC' in u:
+        return 'ZINC'
+    if 'LEAD' in u:
+        return 'LEAD'
+    if 'NICKEL' in u:
+        return 'NICKEL'
+    return u
+
 # =========================================================================
 # 📐 COMMODITY-CALIBRATED TRAILING STOP & BREAKEVEN NOISE FLOORS
 # Calibrated against historical 5-minute candle wicks and ATR to prevent
@@ -4657,10 +4691,10 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             sym_clean_u.startswith('COPPER')):
             continue
 
-        # Prevent duplicate active positions in the same symbol (matches parent, Mini, and Micro contracts)
-        clean_base = sym.replace('MIC', '').rstrip('M')
+        # Prevent duplicate active positions in the same canonical commodity
+        canon_sym = get_canonical_commodity_root(sym)
         if any(
-            (t.get('symbol') == sym or t.get('symbol') == f"{sym}M" or str(t.get('symbol', '')).replace('MIC', '').rstrip('M') == clean_base)
+            get_canonical_commodity_root(t.get('symbol')) == canon_sym
             and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT'] 
             for t in (trades + new_trades)
         ):
@@ -4671,12 +4705,11 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             continue
 
         # Check symbol trade count and cooldown today (only for actual executed BUY/SELL trades, not STAND_ASIDE)
-        # Match both parent and Mini contracts (e.g. COPPER and COPPERM) to avoid cooldown bypass
-        clean_base = sym.replace('MIC', '').rstrip('M')
+        # Match using canonical commodity root so parent, Mini, and Micro contracts share the same cooldown
         sym_today_trades = [
             t for t in trades 
             if t.get('date') == today_str 
-            and (t.get('symbol') == sym or t.get('symbol') == f"{sym}M" or t.get('symbol', '').replace('MIC', '').rstrip('M') == clean_base)
+            and get_canonical_commodity_root(t.get('symbol')) == canon_sym
             and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
             and t.get('paper_trade', {}).get('quantity', 0) > 0
         ]
