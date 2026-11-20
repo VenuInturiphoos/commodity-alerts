@@ -3780,6 +3780,18 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
     - Trails Stop-Loss to Breakeven once price moves 50% towards target (risk-free trade).
     - Executes Target and Stop-Loss auto-exits with instant alert notifications.
     """
+    if alerter is None:
+        try:
+            from alerter import EmailAlerter
+            cfg_p = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json')
+            if os.path.exists(cfg_p):
+                with open(cfg_p) as cf:
+                    alerter = EmailAlerter(json.load(cf))
+            else:
+                alerter = EmailAlerter({})
+        except Exception as al_err:
+            print(f"⚠️ Could not init EmailAlerter in check_and_execute_intraday_targets_and_stops: {al_err}")
+
     tracker = load_tracker()
     trades = tracker.get('trades', [])
     
@@ -4068,7 +4080,10 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                     if action == 'BUY':
                         struct_sl = round(c_ema20 - atr_pad, 2) if (c_ema20 and c_ema20 > entry_p) else floor_price
                         lock_price = max(struct_sl, floor_price)
-                        if lock_price > stop_loss:
+                        # Breathing Room Invariant: Never choke closer than 35 pts (Crude) or 0.35x ATR from market price
+                        min_breath_dist = 35.0 if 'CRUDE' in sym.upper() else max(c_atr * 0.35, 1.0)
+                        lock_price = min(lock_price, cur_p - min_breath_dist)
+                        if lock_price > stop_loss and lock_price > entry_p:
                             pt['stop_loss'] = lock_price
                             stop_loss = lock_price
                             pt['trough_low'] = cur_p
@@ -4076,7 +4091,10 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                     else:
                         struct_sl = round(c_ema20 + atr_pad, 2) if (c_ema20 and c_ema20 < entry_p) else floor_price
                         lock_price = min(struct_sl, floor_price)
-                        if lock_price < stop_loss:
+                        # Breathing Room Invariant: Never choke closer than 35 pts (Crude) or 0.35x ATR from market price
+                        min_breath_dist = 35.0 if 'CRUDE' in sym.upper() else max(c_atr * 0.35, 1.0)
+                        lock_price = max(lock_price, cur_p + min_breath_dist)
+                        if lock_price < stop_loss and lock_price < entry_p:
                             pt['stop_loss'] = lock_price
                             stop_loss = lock_price
                             pt['peak_high'] = cur_p
@@ -4515,11 +4533,19 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
             pt['pnl_inr'] = pnl_inr
             pt['status'] = "CLOSED"
             
-            # Live Dhan Broker Square-off if live order was placed
-            if pt.get('dhan_order_id'):
+            # Live Dhan Broker Square-off and Exit Email Notification
+            if pt.get('dhan_order_id') or pt.get('dhan_sl_order_id'):
                 try:
                     from dhan_live_executor import DhanLiveExecutor
                     dhan_exec = DhanLiveExecutor()
+                    dhan_exec.notify_dhan_event('POSITION_SQUARED_OFF', {
+                        'symbol': sym,
+                        'exit_action': 'BUY' if action == 'SELL' else 'SELL',
+                        'quantity': pt.get('quantity', 1),
+                        'exit_price': exit_p,
+                        'reason': f"{badge_text} ({reason})",
+                        'pnl': net_pnl_inr
+                    })
                     scrip_info = dhan_exec.resolve_scrip(sym)
                     if scrip_info:
                         sec_id = str(scrip_info['security_id'])
