@@ -244,6 +244,163 @@ class DhanLiveExecutor:
         except Exception as e:
             print(f"Error dispatching token expiry alert: {e}")
 
+    def notify_dhan_event(self, event_type, details, alerter=None):
+        """
+        Dispatches dedicated, confidential broker transaction notifications directly to the Dhan account owner:
+        - ENTRY_ORDER_PLACED: Strict limit order submitted / traded on exchange
+        - STOP_LOSS_ATTACHED: Protective exchange-level SL order placed on Dhan
+        - STOP_LOSS_MODIFIED: SL trigger modified / ratcheted (Breakeven, Profit Lock, Option A ATR buffer)
+        - POSITION_SQUARED_OFF: Position closed / target hit / EOD square-off
+        """
+        try:
+            if not alerter:
+                from alerter import EmailAlerter
+                cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json')
+                if os.path.exists(cfg_path):
+                    with open(cfg_path, 'r') as cf:
+                        alerter = EmailAlerter(json.load(cf))
+                else:
+                    alerter = EmailAlerter({})
+            if not alerter:
+                return False
+
+            now_ist = datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d %b %Y, %I:%M:%S %p IST')
+            client_id = self.client_id or '1106185635'
+            symbol = details.get('symbol', 'UNKNOWN')
+            action = details.get('action', '')
+            qty = details.get('quantity', '')
+            order_id = details.get('order_id', '')
+
+            if event_type == 'ENTRY_ORDER_PLACED':
+                limit_p = details.get('price', 0.0)
+                sl_p = details.get('sl_price', 0.0)
+                tgt_p = details.get('target_price', 0.0)
+                status = details.get('status', 'SUBMITTED')
+                subject = f"🟢 [DHAN ENTRY ORDER] {symbol} {action} {qty} Lots @ ₹{float(limit_p):,.2f} (#{order_id})"
+                badge_color = "#10b981"
+                event_name = "Limit Entry Order Placed on Dhan"
+                rows = f"""
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Client ID</td><td style="padding: 9px 12px; color: #f8fafc; font-weight: 600; border-bottom: 1px solid #1e293b;">{client_id}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Order ID</td><td style="padding: 9px 12px; color: #f8fafc; font-family: monospace; border-bottom: 1px solid #1e293b;">{order_id}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Instrument</td><td style="padding: 9px 12px; color: #38bdf8; font-weight: 600; border-bottom: 1px solid #1e293b;">{symbol}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Action / Side</td><td style="padding: 9px 12px; color: {'#10b981' if action == 'BUY' else '#f43f5e'}; font-weight: bold; border-bottom: 1px solid #1e293b;">{action}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Quantity</td><td style="padding: 9px 12px; color: #f8fafc; border-bottom: 1px solid #1e293b;">{qty} Lots</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Limit Price</td><td style="padding: 9px 12px; color: #f8fafc; font-weight: 600; border-bottom: 1px solid #1e293b;">₹{float(limit_p):,.2f}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Initial Stop-Loss</td><td style="padding: 9px 12px; color: #fbbf24; border-bottom: 1px solid #1e293b;">₹{float(sl_p):,.2f}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Target Milestone</td><td style="padding: 9px 12px; color: #34d399; border-bottom: 1px solid #1e293b;">₹{float(tgt_p):,.2f}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Order Status</td><td style="padding: 9px 12px; color: #38bdf8; border-bottom: 1px solid #1e293b;">{status}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8;">Execution Time</td><td style="padding: 9px 12px; color: #94a3b8;">{now_ist}</td></tr>
+                """
+
+            elif event_type == 'STOP_LOSS_ATTACHED':
+                sl_order_id = details.get('sl_order_id', order_id)
+                trig_p = float(details.get('trigger_price', 0.0))
+                lim_p = float(details.get('limit_price', 0.0))
+                sl_action = details.get('sl_action', 'BUY' if action == 'SELL' else 'SELL')
+                strategy = details.get('strategy', 'Option A (ATR Wick Buffer)')
+                max_risk = details.get('max_risk')
+                subject = f"🛡️ [DHAN STOP-LOSS ATTACHED] {symbol} SL Trigger @ ₹{trig_p:,.2f} (#{sl_order_id})"
+                badge_color = "#f59e0b"
+                event_name = "Protective Stop-Loss Attached on Dhan"
+                risk_str = f"₹{float(max_risk):,.2f}" if max_risk is not None else "Active"
+                rows = f"""
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Client ID</td><td style="padding: 9px 12px; color: #f8fafc; font-weight: 600; border-bottom: 1px solid #1e293b;">{client_id}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">SL Order ID</td><td style="padding: 9px 12px; color: #f8fafc; font-family: monospace; border-bottom: 1px solid #1e293b;">{sl_order_id}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Instrument</td><td style="padding: 9px 12px; color: #38bdf8; font-weight: 600; border-bottom: 1px solid #1e293b;">{symbol}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Order Type</td><td style="padding: 9px 12px; color: #f8fafc; border-bottom: 1px solid #1e293b;">STOP_LOSS ({sl_action})</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Quantity Protected</td><td style="padding: 9px 12px; color: #f8fafc; border-bottom: 1px solid #1e293b;">{qty} Lots</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">SL Trigger Price</td><td style="padding: 9px 12px; color: #fbbf24; font-weight: bold; font-size: 14px; border-bottom: 1px solid #1e293b;">₹{trig_p:,.2f}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">SL Limit Price</td><td style="padding: 9px 12px; color: #f8fafc; border-bottom: 1px solid #1e293b;">₹{lim_p:,.2f}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Protection Buffer</td><td style="padding: 9px 12px; color: #38bdf8; border-bottom: 1px solid #1e293b;">{strategy}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Max Risk at Stop</td><td style="padding: 9px 12px; color: #f43f5e; font-weight: 600; border-bottom: 1px solid #1e293b;">{risk_str}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Exchange Status</td><td style="padding: 9px 12px; color: #10b981; border-bottom: 1px solid #1e293b;">MCX: Order Added / PENDING</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8;">Active Since</td><td style="padding: 9px 12px; color: #94a3b8;">{now_ist}</td></tr>
+                """
+
+            elif event_type == 'STOP_LOSS_MODIFIED':
+                sl_order_id = details.get('order_id', '')
+                new_trig = float(details.get('new_trigger', 0.0))
+                new_lim = float(details.get('new_limit', 0.0))
+                old_trig = details.get('old_trigger')
+                reason = details.get('reason', 'Stop-Loss Ratchet')
+                subject = f"🔄 [DHAN STOP-LOSS UPDATED] {symbol} Ratcheted to ₹{new_trig:,.2f} ({reason})"
+                badge_color = "#38bdf8"
+                event_name = "Stop-Loss Ratcheted / Updated on Dhan"
+                old_trig_str = f"₹{float(old_trig):,.2f} &rarr; " if old_trig else ""
+                rows = f"""
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Client ID</td><td style="padding: 9px 12px; color: #f8fafc; font-weight: 600; border-bottom: 1px solid #1e293b;">{client_id}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">SL Order ID</td><td style="padding: 9px 12px; color: #f8fafc; font-family: monospace; border-bottom: 1px solid #1e293b;">{sl_order_id}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Instrument</td><td style="padding: 9px 12px; color: #38bdf8; font-weight: 600; border-bottom: 1px solid #1e293b;">{symbol}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">New SL Trigger</td><td style="padding: 9px 12px; color: #38bdf8; font-weight: bold; font-size: 14px; border-bottom: 1px solid #1e293b;">{old_trig_str}₹{new_trig:,.2f}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">New SL Limit</td><td style="padding: 9px 12px; color: #f8fafc; border-bottom: 1px solid #1e293b;">₹{new_lim:,.2f}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Update Reason</td><td style="padding: 9px 12px; color: #34d399; font-weight: 600; border-bottom: 1px solid #1e293b;">{reason}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Capital Protection</td><td style="padding: 9px 12px; color: #10b981; border-bottom: 1px solid #1e293b;">Risk Reduced / Capital Shielded 🛡️</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Exchange Status</td><td style="padding: 9px 12px; color: #10b981; border-bottom: 1px solid #1e293b;">MCX: Modified Successfully</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8;">Update Time</td><td style="padding: 9px 12px; color: #94a3b8;">{now_ist}</td></tr>
+                """
+
+            elif event_type == 'POSITION_SQUARED_OFF':
+                exit_price = details.get('exit_price', 0.0)
+                exit_action = details.get('exit_action', '')
+                reason = details.get('reason', 'Square-off Settlement')
+                pnl = details.get('pnl')
+                subject = f"🎯 [DHAN SQUARE-OFF] {symbol} Closed @ ₹{float(exit_price):,.2f} ({reason})"
+                badge_color = "#a855f7"
+                event_name = "Position Squared Off on Dhan"
+                pnl_str = f"₹{float(pnl):,.2f}" if pnl is not None else "Position Closed"
+                rows = f"""
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Client ID</td><td style="padding: 9px 12px; color: #f8fafc; font-weight: 600; border-bottom: 1px solid #1e293b;">{client_id}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Instrument</td><td style="padding: 9px 12px; color: #38bdf8; font-weight: 600; border-bottom: 1px solid #1e293b;">{symbol}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Closing Action</td><td style="padding: 9px 12px; color: #f8fafc; font-weight: bold; border-bottom: 1px solid #1e293b;">{exit_action}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Quantity Closed</td><td style="padding: 9px 12px; color: #f8fafc; border-bottom: 1px solid #1e293b;">{qty} Lots</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Exit Price</td><td style="padding: 9px 12px; color: #f8fafc; font-weight: 600; border-bottom: 1px solid #1e293b;">₹{float(exit_price):,.2f}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Exit Reason</td><td style="padding: 9px 12px; color: #38bdf8; border-bottom: 1px solid #1e293b;">{reason}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8; border-bottom: 1px solid #1e293b;">Realized P&L</td><td style="padding: 9px 12px; color: #10b981; font-weight: bold; border-bottom: 1px solid #1e293b;">{pnl_str}</td></tr>
+                    <tr><td style="padding: 9px 12px; color: #94a3b8;">Close Time</td><td style="padding: 9px 12px; color: #94a3b8;">{now_ist}</td></tr>
+                """
+            else:
+                subject = f"🔔 [DHAN BROKER EVENT] {symbol} {event_type}"
+                badge_color = "#38bdf8"
+                event_name = event_type
+                rows = f"<tr><td colspan='2' style='padding: 9px 12px; color: #f8fafc;'>{json.dumps(details, indent=2)}</td></tr>"
+
+            body_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <body style="margin: 0; padding: 24px; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+              <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #131c2e; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);">
+                <tr>
+                  <td style="padding: 20px 24px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-bottom: 1px solid #334155;">
+                    <div style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #94a3b8; font-weight: 600;">Dhan Autonomous Broker Gateway</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #ffffff; margin-top: 4px;">{event_name}</div>
+                    <div style="display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; background-color: {badge_color}22; color: {badge_color}; border: 1px solid {badge_color}44;">
+                      {event_type}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; font-size: 13px;">
+                      {rows}
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 14px 24px; background-color: #0f172a; border-top: 1px solid #1e293b; font-size: 11px; color: #64748b; text-align: center;">
+                    Confidential automated alert dispatched directly to account owner ({client_id}).<br>
+                    Commodity Analysis Autonomous Autopilot Engine &bull; {now_ist}
+                  </td>
+                </tr>
+              </table>
+            </body>
+            </html>
+            """
+
+            return alerter.send_dhan_broker_email(subject, body_html)
+        except Exception as e:
+            print(f"⚠️ Error building/dispatching Dhan broker alert: {e}")
+            return False
+
     def get_fund_limits(self):
         """Returns live cash balance and available margin from Dhan."""
         try:
@@ -587,6 +744,21 @@ class DhanLiveExecutor:
                 order_id = str(order_res.get('data', {}).get('orderId') or order_res.get('orderId', ''))
                 print(f"✅ LIMIT ORDER PLACED ON DHAN! Order ID: {order_id} (Status: {order_res.get('orderStatus', 'SUBMITTED')})")
                 
+                # Dispatch Dedicated Dhan Entry Email
+                try:
+                    self.notify_dhan_event('ENTRY_ORDER_PLACED', {
+                        'symbol': custom_sym or symbol,
+                        'action': action,
+                        'quantity': order_qty,
+                        'price': clean_limit_price,
+                        'sl_price': clean_sl_price,
+                        'target_price': target_price,
+                        'order_id': order_id,
+                        'status': order_res.get('orderStatus', 'SUBMITTED')
+                    })
+                except Exception as notify_err:
+                    print(f"⚠️ Error dispatching Dhan entry notification: {notify_err}")
+
                 # Auto-Attach Broker-Side Stop Loss Order with ATR Wick Buffer (Option A)
                 sl_res = None
                 if clean_sl_price and clean_sl_price > 0:
@@ -683,12 +855,33 @@ class DhanLiveExecutor:
                 tag="AUTOPILOT_SL"
             )
             print(f"🛡️ [BROKER STOP-LOSS ATTACHED] Placed SL order on Dhan: Trigger ₹{trigger_p}, Limit ₹{limit_p} (Res: {sl_res})")
+            if sl_res.get('status') == 'success' or sl_res.get('orderStatus') in ['TRANSIT', 'PENDING', 'TRADED'] or sl_res.get('data', {}).get('orderId'):
+                sl_id = str(sl_res.get('data', {}).get('orderId') or sl_res.get('orderId', ''))
+                # Calculate max rupee risk if symbol is known
+                max_risk = None
+                if 'CRUDE' in symbol.upper():
+                    max_risk = abs(limit_p - trigger_p) * 10 * int(quantity)
+                elif any(m in symbol.upper() for m in ['ALU', 'ZINC', 'LEAD', 'COPPER']):
+                    max_risk = abs(limit_p - trigger_p) * 1000 * int(quantity)
+                try:
+                    self.notify_dhan_event('STOP_LOSS_ATTACHED', {
+                        'symbol': symbol,
+                        'sl_action': 'BUY' if sl_action == self.dhan.BUY else 'SELL',
+                        'quantity': quantity,
+                        'trigger_price': trigger_p,
+                        'limit_price': limit_p,
+                        'sl_order_id': sl_id,
+                        'strategy': 'Option A (ATR Wick Buffer)',
+                        'max_risk': max_risk
+                    })
+                except Exception as notify_err:
+                    print(f"⚠️ Error dispatching Dhan SL attached notification: {notify_err}")
             return sl_res
         except Exception as e:
             print(f"Error attaching Stop-Loss order: {e}")
             return {'status': 'error', 'message': str(e)}
 
-    def modify_stop_loss_order(self, order_id, new_trigger_price, action=None, symbol='', quantity=1):
+    def modify_stop_loss_order(self, order_id, new_trigger_price, action=None, symbol='', quantity=1, reason='Stop-Loss Ratchet', old_trigger_price=None):
         """
         Modifies trigger price of active Stop-Loss order on Dhan (Fee-Shielded Trailing Stop Ratchet).
         Enforces exchange tick-size compliance and execution buffer.
@@ -715,12 +908,24 @@ class DhanLiveExecutor:
                 validity=self.dhan.DAY
             )
             print(f"🔄 [DHAN SL MODIFIED] Order {order_id} ratcheted to Trigger ₹{trigger_p}, Limit ₹{limit_p} (Res: {mod_res})")
+            if mod_res.get('status') == 'success' or mod_res.get('orderStatus') in ['TRANSIT', 'PENDING', 'TRADED'] or mod_res.get('data', {}).get('orderId'):
+                try:
+                    self.notify_dhan_event('STOP_LOSS_MODIFIED', {
+                        'symbol': symbol,
+                        'order_id': order_id,
+                        'new_trigger': trigger_p,
+                        'new_limit': limit_p,
+                        'old_trigger': old_trigger_price,
+                        'reason': reason
+                    })
+                except Exception as notify_err:
+                    print(f"⚠️ Error dispatching Dhan SL update notification: {notify_err}")
             return mod_res
         except Exception as e:
             print(f"❌ Error modifying Dhan Stop-Loss order: {e}")
             return {'status': 'error', 'message': str(e)}
 
-    def square_off_position(self, security_id, segment, action, quantity, price=None):
+    def square_off_position(self, security_id, segment, action, quantity, price=None, symbol='', reason='Square-off Settlement'):
         """Executes position square-off at Target Hit or 3:20 PM NSE / 11:45 PM MCX."""
         exit_action = self.dhan.SELL if action == 'BUY' else self.dhan.BUY
         is_commodity = (segment == 'MCX_COMM')
@@ -728,7 +933,7 @@ class DhanLiveExecutor:
         order_type = self.dhan.LIMIT if price else self.dhan.MARKET
 
         try:
-            return self.dhan.place_order(
+            res = self.dhan.place_order(
                 security_id=security_id,
                 exchange_segment=segment,
                 transaction_type=exit_action,
@@ -739,6 +944,18 @@ class DhanLiveExecutor:
                 validity=self.dhan.DAY,
                 tag="AUTOPILOT_EXIT"
             )
+            if res.get('status') == 'success' or res.get('orderStatus') in ['TRANSIT', 'PENDING', 'TRADED']:
+                try:
+                    self.notify_dhan_event('POSITION_SQUARED_OFF', {
+                        'symbol': symbol or f"Security {security_id}",
+                        'exit_action': 'SELL' if exit_action == self.dhan.SELL else 'BUY',
+                        'quantity': quantity,
+                        'exit_price': price or 0.0,
+                        'reason': reason
+                    })
+                except Exception as notify_err:
+                    print(f"⚠️ Error dispatching Dhan square-off notification: {notify_err}")
+            return res
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 

@@ -4187,7 +4187,9 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                         new_trigger_price=stop_loss,
                         action=action,
                         symbol=sym,
-                        quantity=dhan_qty
+                        quantity=dhan_qty,
+                        reason=f"Target Milestone Ratchet (Locking ₹{stop_loss:,.2f})",
+                        old_trigger_price=last_synced_sl
                     )
                     if mod_res.get('status') == 'success':
                         pt['last_synced_broker_sl'] = stop_loss

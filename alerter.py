@@ -126,6 +126,10 @@ class EmailAlerter:
         sub_upper = (subject or '').upper()
         bdy_upper = (body or '').upper()
 
+        # 0. Dedicated Dhan Broker Events (Orders, SL Attach, SL Ratchet/Update, Square-off)
+        if any(tag in sub_upper for tag in ["[DHAN", "DHAN ORDER", "DHAN STOP-LOSS", "DHAN SL", "DHAN POSITION", "DHAN BROKER"]):
+            return True
+
         # 1. Explicit Exclusions (Never send these non-trade alerts via email)
         explicit_blocks = [
             "CIRCUIT WARNING",
@@ -422,3 +426,51 @@ class EmailAlerter:
         except Exception as e:
             print(f"Failed to send Telegram alert Exception: {e}")
             return False
+
+    def send_dhan_broker_email(self, subject, body_html, body_text=None, recipients=None):
+        """
+        Dispatches a dedicated, confidential broker transaction email directly to the Dhan account owner
+        (venu.photos1@gmail.com). Never distributed to external or newsletter subscribers.
+        """
+        sender_email = (os.environ.get('SENDER_EMAIL') or self.config.get('sender_email') or 'venu.photos1@gmail.com').strip()
+        raw_password = (os.environ.get('SENDER_PASSWORD') or self.config.get('sender_password') or '').strip()
+        sender_password = raw_password.replace(' ', '').replace('"', '').replace("'", "")
+        
+        target_recipients = recipients or [sender_email]
+        if isinstance(target_recipients, str):
+            target_recipients = [target_recipients]
+
+        # Also trigger Telegram alert for instant mobile notification
+        plain_text = body_text or body_html.replace('<br>', '\n').replace('</p>', '\n').replace('<tr>', '\n')
+        import re
+        plain_text_clean = re.sub(r'<[^>]+>', '', plain_text).strip()
+        self._send_telegram(subject, plain_text_clean)
+
+        if not sender_password or sender_email == "your_email@gmail.com":
+            print(f"📧 [DHAN BROKER EMAIL QUEUED] SENDER_PASSWORD not configured. Alert logged:\n   Subject: {subject}")
+            return False
+
+        server = None
+        try:
+            server = self._create_smtp_session(sender_email, sender_password)
+            for recipient in target_recipients:
+                msg = MIMEMultipart('alternative')
+                msg['From'] = f"Dhan Autopilot <{sender_email}>"
+                msg['To'] = recipient
+                msg['Subject'] = subject
+
+                msg.attach(MIMEText(plain_text_clean, 'plain'))
+                msg.attach(MIMEText(body_html, 'html'))
+
+                server.send_message(msg)
+                print(f"📧 [DHAN BROKER EMAIL DISPATCHED] Successfully sent to {recipient}: {subject}")
+            return True
+        except Exception as e:
+            print(f"❌ [DHAN SMTP DISPATCH ERROR]: {e}")
+            return False
+        finally:
+            if server:
+                try:
+                    server.quit()
+                except Exception:
+                    pass
