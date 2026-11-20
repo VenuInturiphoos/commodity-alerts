@@ -581,9 +581,25 @@ class DhanLiveExecutor:
                 order_id = str(order_res.get('data', {}).get('orderId') or order_res.get('orderId', ''))
                 print(f"✅ LIMIT ORDER PLACED ON DHAN! Order ID: {order_id} (Status: {order_res.get('orderStatus', 'SUBMITTED')})")
                 
+                # Auto-Attach Broker-Side Stop Loss Order with ATR Wick Buffer (Option A)
+                sl_res = None
+                if clean_sl_price and clean_sl_price > 0:
+                    try:
+                        sl_res = self.attach_stop_loss_order(
+                            security_id=sec_id,
+                            segment=segment,
+                            entry_action=action,
+                            quantity=order_qty,
+                            stop_loss_price=clean_sl_price,
+                            symbol=symbol
+                        )
+                    except Exception as sl_err:
+                        print(f"⚠️ Could not auto-attach broker Stop-Loss order: {sl_err}")
+
                 return {
                     'status': 'PLACED',
                     'order_id': order_id,
+                    'sl_order_id': sl_res.get('data', {}).get('orderId') if (isinstance(sl_res, dict) and sl_res.get('data')) else None,
                     'symbol': symbol,
                     'custom_symbol': custom_sym,
                     'security_id': sec_id,
@@ -594,7 +610,8 @@ class DhanLiveExecutor:
                     'target_price': target_price,
                     'order_type': 'LIMIT',
                     'time': now_ist.strftime('%I:%M:%S %p IST'),
-                    'dhan_response': order_res
+                    'dhan_response': order_res,
+                    'dhan_sl_response': sl_res
                 }
             else:
                 err_msg = order_res.get('remarks') or order_res.get('message') or str(order_res)
@@ -612,24 +629,46 @@ class DhanLiveExecutor:
                 'reason': str(e)
             }
 
-    def attach_stop_loss_order(self, security_id, segment, entry_action, quantity, stop_loss_price):
+    def _round_to_tick(self, price, symbol=''):
+        """Rounds price to exact MCX exchange tick size."""
+        sym_u = symbol.upper()
+        if 'CRUDE' in sym_u or 'SILVER' in sym_u or 'GOLD' in sym_u:
+            # Tick size 1.00
+            return round(price)
+        elif 'NAT' in sym_u or 'GAS' in sym_u:
+            # Tick size 0.10
+            return round(round(price / 0.10) * 0.10, 1)
+        else:
+            # Base metals tick size 0.05
+            return round(round(price / 0.05) * 0.05, 2)
+
+    def attach_stop_loss_order(self, security_id, segment, entry_action, quantity, stop_loss_price, symbol=''):
         """
-        Attaches a Stop-Loss (SL-Limit) trigger order on Dhan to protect the position.
+        Attaches an exchange-level Stop-Loss (SL-Limit) trigger order on Dhan to protect the position.
         If entry was BUY, stop-loss order is SELL; if entry was SELL, stop-loss order is BUY.
+        Respects exact exchange tick sizes (e.g. ₹1.00 for Crude Oil).
         """
         sl_action = self.dhan.SELL if entry_action == 'BUY' else self.dhan.BUY
-        trigger_p = round(float(stop_loss_price), 2)
-        # 0.2% limit price buffer beyond trigger to guarantee execution in fast moves
-        limit_p = round(trigger_p * 0.998 if entry_action == 'BUY' else trigger_p * 1.002, 2)
+        raw_trigger = float(stop_loss_price)
+        raw_limit = raw_trigger * 0.998 if entry_action == 'BUY' else raw_trigger * 1.003
+        
+        trigger_p = float(self._round_to_tick(raw_trigger, symbol))
+        limit_p = float(self._round_to_tick(raw_limit, symbol))
+        # Ensure limit_p is slightly beyond trigger_p to guarantee execution
+        if sl_action == self.dhan.BUY and limit_p <= trigger_p:
+            limit_p = trigger_p + (1.0 if 'CRUDE' in symbol.upper() else 0.5)
+        elif sl_action == self.dhan.SELL and limit_p >= trigger_p:
+            limit_p = trigger_p - (1.0 if 'CRUDE' in symbol.upper() else 0.5)
+
         is_commodity = (segment == 'MCX_COMM')
         product_type = self.dhan.MARGIN if is_commodity else self.dhan.INTRA
 
         try:
             sl_res = self.dhan.place_order(
-                security_id=security_id,
+                security_id=str(security_id),
                 exchange_segment=segment,
                 transaction_type=sl_action,
-                quantity=quantity,
+                quantity=int(quantity),
                 order_type=self.dhan.SL,
                 product_type=product_type,
                 price=limit_p,
@@ -637,6 +676,7 @@ class DhanLiveExecutor:
                 validity=self.dhan.DAY,
                 tag="AUTOPILOT_SL"
             )
+            print(f"🛡️ [BROKER STOP-LOSS ATTACHED] Placed SL order on Dhan: Trigger ₹{trigger_p}, Limit ₹{limit_p} (Res: {sl_res})")
             return sl_res
         except Exception as e:
             print(f"Error attaching Stop-Loss order: {e}")
