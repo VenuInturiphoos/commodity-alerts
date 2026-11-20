@@ -5326,7 +5326,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
     # New intraday entries after 02:45 PM are prohibited since brokers auto square-off MIS orders by 03:15-03:20 PM.
     # Sized <= ₹3,000 risk (1% of ₹3L Trading pool) with 03:20 PM EOD square-off
     # =========================================================================
-    ENABLE_EQUITY_DERIVATIVES_SCANNER = True  # Active for Trade Analyser tracking & paper testing (Dhan broker orders remain strictly Commodity-only)
+    ENABLE_EQUITY_DERIVATIVES_SCANNER = os.environ.get('ENABLE_EQUITY_SCANNER', 'false').lower() in ['true', '1', 'yes']
     is_equity_window = ((hour == 9 and minute >= 30) or (10 <= hour < 14) or (hour == 14 and minute <= 45))
     cur_equity_positions = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'])
 
