@@ -1,10 +1,10 @@
 {
-  "last_updated": "20 Nov 2026, 02:08 PM IST",
+  "last_updated": "20 Nov 2026, 01:58 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 34,
-    "executed_count": 7,
+    "total_signals": 33,
+    "executed_count": 6,
     "correct_count": 3,
     "wrong_count": 3,
     "protected_count": 27,
@@ -17,147 +17,15 @@
     "intraday_pnl_inr": -66.75,
     "intraday_booked_profit_inr": 0.0,
     "intraday_pool_balance_inr": 30000.0,
-    "avg_trade_pnl_inr": -320.52,
-    "active_trades_count": 1,
+    "avg_trade_pnl_inr": -373.94,
+    "active_trades_count": 0,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 297823.13,
-    "used_margin_inr": 58401.6,
-    "available_cash_inr": 239421.53,
+    "used_margin_inr": 0,
+    "available_cash_inr": 297823.13,
     "net_worth_inr": 297823.13
   },
   "trades": [
-    {
-      "id": "ADV-20Nov2026-1407-ALUMINI",
-      "date": "20 Nov 2026",
-      "session_name": "Real-Time Technical Trigger (Directional Volatility Expansion (Bearish))",
-      "time_trigger": "02:07 PM IST",
-      "time_6pm": "02:07 PM IST",
-      "time_validation": "02:07 PM IST",
-      "time_615": "02:07 PM IST",
-      "time_exit": "11:45 PM IST",
-      "symbol": "ALUMINI",
-      "name": "Aluminium Mini",
-      "lot_size": 2000,
-      "event_context": "Indicator Confluence: Directional Volatility Expansion (Bearish)",
-      "regime": {
-        "regime": "CHOP_CONSOLIDATION",
-        "badge": "\ud83d\udca4 Chop / Consolidation",
-        "short_tag": "Chop / Range",
-        "color": "#94a3b8",
-        "bg_color": "rgba(148, 163, 184, 0.12)",
-        "border_color": "rgba(148, 163, 184, 0.35)",
-        "mandate": "Neutral consolidation (ADX: 28.8). Whipsaw risk for breakouts.",
-        "allowed_strategies": [
-          "WATCHLIST",
-          "STAGED_LIMIT_ORDERS",
-          "MEAN_REVERSION"
-        ],
-        "blocked_strategies": [
-          "MARKET_ORDERS",
-          "BREAKOUT_BUY"
-        ],
-        "icon": "fa-solid fa-arrows-left-right",
-        "adx": 28.8,
-        "rsi": 36.9,
-        "bb_width_pct": 8.05,
-        "daily_vol_pct": 2.07,
-        "close": 317.4,
-        "ema50": 330.8752010454479,
-        "ema200": 325.4209367631288
-      },
-      "time_machine": {
-        "replays": 1000,
-        "passed": true,
-        "verdict": "PARAMETRIC_STATISTICAL_PASS",
-        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
-        "p_target_pct": 57.5,
-        "p_stop_pct": 31.9,
-        "p_neither_pct": 10.6,
-        "resolved_win_rate": 64.3,
-        "resolved_win_rate_pct": 64.3,
-        "expected_r": 0.371,
-        "target_r": 1.2,
-        "sample_bars": 0,
-        "summary": "Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R"
-      },
-      "risk_check": {
-        "passed": true,
-        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
-        "reward_risk_ratio": 1.2,
-        "loss_at_stop_inr": 2000.0,
-        "potential_gain_inr": 2400.0,
-        "broker": "Dhan",
-        "est_charges_inr": 156.42,
-        "net_loss_at_stop_inr": 2156.42
-      },
-      "suggestion_6pm": {
-        "status": "REALTIME_TRIGGER",
-        "action_text": "SELL @ \u20b9317.40",
-        "rationale": "High-momentum directional breakdown: Chg -0.98%, ADX 28.8 >= 24, RSI 36.9. Capturing aggressive trend expansion. Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R",
-        "reference_price": 317.4,
-        "stop_loss": 318.4,
-        "target": 316.2,
-        "original_stop_loss": 318.4,
-        "original_target": 316.2
-      },
-      "check_615": {
-        "checked": true,
-        "status": "TECHNICAL_TRIGGER_ENTERED",
-        "price_615": 317.4,
-        "action_taken": "Entered SELL 2000 units @ \u20b9317.40",
-        "detail": "Directional Volatility Expansion (Bearish): High-momentum directional breakdown: Chg -0.98%, ADX 28.8 >= 24, RSI 36.9. Capturing aggressive trend expansion. | Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R"
-      },
-      "paper_trade": {
-        "user": "venu.photos1@gmail.com",
-        "action": "SELL",
-        "quantity": 2000,
-        "entry_price": 317.4,
-        "entry_time": "02:07 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": -0.65,
-        "pnl_inr": -1300.0,
-        "status": "ACTIVE",
-        "margin_required_inr": 58401.6,
-        "target": 316.2,
-        "stop_loss": 318.4,
-        "initial_stop_loss": 318.4,
-        "original_sl": 318.4,
-        "peak_high": 318.05,
-        "trough_low": 317.4,
-        "entry_day_high": 317.4,
-        "entry_day_low": 317.4,
-        "live_broker_order": {
-          "status": "REJECTED",
-          "reason": {
-            "error_code": "DH-905",
-            "error_type": "Input_Exception",
-            "error_message": "Invalid IP"
-          },
-          "dhan_response": {
-            "status": "failure",
-            "remarks": {
-              "error_code": "DH-905",
-              "error_type": "Input_Exception",
-              "error_message": "Invalid IP"
-            },
-            "data": ""
-          }
-        }
-      },
-      "eod_outcome": {
-        "session_close": null,
-        "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Directional Volatility Expansion (Bearish) active: SELL @ \u20b9317.40 (Target: \u20b9316.20, SL: \u20b9318.40) | Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R"
-      },
-      "live_price_data": {
-        "current_price": 318.05,
-        "change_pct": 0.2
-      }
-    },
     {
       "id": "ADV-20Nov2026-1351-ALUMINI",
       "date": "20 Nov 2026",
