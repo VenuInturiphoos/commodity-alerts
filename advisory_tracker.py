@@ -243,7 +243,8 @@ COMMODITY_STAGNATION_MINUTES = 360.0  # 360 minutes (6.0 hours) for commodities;
 STAGNATION_MIN_ADVERSE_PCT = 0.005   # Minimum 0.5% adverse move required; hovering near breakeven is protected consolidation
 ENFORCE_MINI_ONLY_COMMODITIES = False # Calibrated to ~₹1.5 Lakhs commodity margin per position per user instruction
 
-# Canonical specification mapping for trading futures around ~₹1.5 Lakhs margin per trade
+# Canonical specification mapping for trading futures with 50% split (~₹70,000 - ₹75,000 margin per position)
+# Calibrated to allow 2 concurrent diverse commodity positions within user's ₹1.5L available pool
 COMMODITY_SPECS_150K = {
     'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
     'SILVERM': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
@@ -251,17 +252,17 @@ COMMODITY_SPECS_150K = {
     'GOLD': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 10},
     'GOLDM': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 10},
     'GOLDTEN': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 10},
-    'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
-    'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
-    'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
-    'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 2000},
-    'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 2000},
-    'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 50},
-    'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 50},
-    'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 3000},
-    'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 3000},
-    'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 6000},
-    'ALUMINI': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 6000}
+    'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
+    'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
+    'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
+    'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 1000},
+    'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 1000},
+    'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 40},
+    'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 40},
+    'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 1000},
+    'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 1000},
+    'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 2000},
+    'ALUMINI': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 2000}
 }
 
 # Direct mapping to low-margin, micro/mini contracts for capital defense
@@ -300,14 +301,15 @@ COMMODITY_DISPLAY_NAMES = {
 
 def get_defense_contract_and_lot(sym, default_name=None):
     """
-    Returns (exec_sym, exec_name, lot_size) calibrated strictly for ~₹1.5 Lakhs target margin per trade:
-    - Silver: Silver Micro (SILVERMIC) 5 units (~₹1.36L margin)
-    - Gold: Gold Mini (GOLDM) 1 lot / 10 units (~₹1.35L margin)
-    - Zinc: Zinc Mini (ZINCMINI) 4 lots / 4000 units (~₹1.54L margin)
-    - Copper: Copper Mini (COPPERM) 2 lots / 2000 units (~₹1.36L margin)
-    - Crude Oil: Crude Oil Mini (CRUDEOILM) 5 lots / 50 units (~₹1.25L margin)
-    - Natural Gas: Natural Gas Mini (NATURALGASM) 12 lots / 3000 units (~₹1.51L margin)
-    - Aluminium: Aluminium Mini (ALUMINI) 6 lots / 6000 units (~₹1.32L margin)
+    Returns (exec_sym, exec_name, lot_size) calibrated strictly for 50% capital split (~₹75,000 margin per trade)
+    to enforce portfolio diversity (allowing 2 concurrent independent commodity positions):
+    - Silver: Silver Micro (SILVERMIC) 5 units (~₹67.5k margin)
+    - Gold: Gold Mini (GOLDM) 1 lot / 10 units (~₹76k margin)
+    - Zinc: Zinc Mini (ZINCMINI) 2 lots / 2000 units (~₹53k margin)
+    - Copper: Copper Mini (COPPERM) 1 lot / 1000 units (~₹65.6k margin)
+    - Crude Oil: Crude Oil Mini (CRUDEOILM) 4 lots / 40 units (~₹60k margin)
+    - Natural Gas: Natural Gas Mini (NATURALGASM) 4 lots / 1000 units (~₹68k margin)
+    - Aluminium: Aluminium Mini (ALUMINI) 2 lots / 2000 units (~₹58k margin)
     """
     clean = sym.replace('MIC', '').replace('MINI', '').rstrip('M')
     spec = COMMODITY_SPECS_150K.get(sym) or COMMODITY_SPECS_150K.get(clean)

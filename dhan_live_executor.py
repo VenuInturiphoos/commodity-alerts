@@ -478,30 +478,58 @@ class DhanLiveExecutor:
         if scrip_info.get('rolled_over'):
             print(f"🔄 [AUTO ROLLOVER ACTIVE] {symbol}: Executing on high-liquidity next month contract {custom_sym} (Sec ID: {sec_id}) to bypass tender period.")
         
-        # For commodities: Dhan API accepts quantity in lots (1 lot per order for mini/micro contracts)
-        # For equities: Dhan API accepts whole shares
+        # For commodities: Dhan API accepts quantity in exchange lots (1, 2, 4...)
+        # Map absolute units from tracker into whole exchange lots for Dhan:
         is_commodity = (segment == 'MCX_COMM' or asset_type == 'COMMODITY')
-        order_qty = 1 if is_commodity else int(quantity or 1)
+        clean_lookup = scrip_info.get('symbol_name', symbol).strip().upper()
+        if is_commodity:
+            base_multiplier = {
+                'ALUMINI': 1000, 'ALUMINIUM': 1000,
+                'ZINCMINI': 1000, 'ZINC': 1000,
+                'NATURALGASM': 250, 'NATGASMINI': 250,
+                'CRUDEOILM': 10,
+                'SILVERMIC': 1,
+                'GOLDM': 10,
+                'COPPERM': 1000
+            }.get(clean_lookup, 1)
 
-        # 2. Check Available Margin
+            if quantity and quantity >= base_multiplier:
+                order_qty = max(1, int(quantity // base_multiplier))
+            else:
+                order_qty = int(quantity or 1)
+        else:
+            order_qty = int(quantity or 1)
+
+        # 2. Check Available Margin (Calibrated to 50% split for portfolio diversity)
         funds = self.get_fund_limits()
         if funds.get('status') == 'success':
             avail_bal = funds['available_balance']
-            # Accurate Commodity mini margin estimation
-            comm_margin_map = {
-                'CRUDEOILM': 105000.0,
-                'ALUMINI': 35000.0,
-                'ZINCMINI': 40000.0,
-                'SILVERMIC': 35000.0,
-                'GOLDM': 85000.0,
+            # Commodity mini margin estimation per single exchange lot
+            single_lot_margin_map = {
+                'CRUDEOILM': 15000.0,
+                'NATURALGASM': 17000.0,
+                'NATGASMINI': 17000.0,
+                'ALUMINI': 29000.0,
+                'ZINCMINI': 26500.0,
+                'SILVERMIC': 13500.0,
+                'GOLDM': 76000.0,
+                'COPPERM': 65600.0,
             }
-            clean_lookup = scrip_info.get('symbol_name', symbol).strip().upper()
-            est_margin = comm_margin_map.get(clean_lookup, 135000.0) if is_commodity else (float(limit_price) * order_qty * 0.20)
-            if avail_bal < est_margin * 0.85:
-                return {
-                    'status': 'BLOCKED',
-                    'reason': f'INSUFFICIENT_MARGIN: Required ~₹{est_margin:,.2f}, Available: ₹{avail_bal:,.2f}. Order blocked.'
-                }
+            single_margin = single_lot_margin_map.get(clean_lookup, 35000.0)
+            est_margin = (single_margin * order_qty) if is_commodity else (float(limit_price) * order_qty * 0.20)
+            
+            # If available balance cannot afford order_qty lots, adaptively scale down to what fits
+            if is_commodity and avail_bal < est_margin:
+                max_affordable_lots = int(avail_bal // single_margin)
+                if max_affordable_lots >= 1:
+                    print(f"⚠️ [MARGIN AUTO-SCALE] Available margin (₹{avail_bal:,.2f}) insufficient for {order_qty} lots. Scaling to {max_affordable_lots} lot(s).")
+                    order_qty = max_affordable_lots
+                    est_margin = single_margin * order_qty
+                else:
+                    return {
+                        'status': 'BLOCKED',
+                        'reason': f'INSUFFICIENT_MARGIN: Required ~₹{est_margin:,.2f}, Available: ₹{avail_bal:,.2f}. Order blocked.'
+                    }
 
         # 3. Formulate Strict Limit Order Parameters
         self.check_and_sync_ip()

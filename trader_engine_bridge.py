@@ -878,7 +878,7 @@ class PositionSizer:
         'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1000},
     }
 
-    # Canonical ~₹1.5 Lakhs Margin Specification Mapping for MCX Commodities
+    # Canonical ~₹75k Margin Specification Mapping for MCX Commodities (50% Split of ₹1.5L Pool for 2 Concurrent Diverse Trades)
     COMMODITY_SPECS_150K = {
         'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
         'SILVERM': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
@@ -886,20 +886,20 @@ class PositionSizer:
         'GOLD': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 10},
         'GOLDM': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 10},
         'GOLDTEN': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot': 10},
-        'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
-        'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
-        'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 4000},
-        'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 2000},
-        'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 2000},
-        'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 50},
-        'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 50},
-        'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 3000},
-        'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 3000},
-        'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 6000},
-        'ALUMINI': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 6000}
+        'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
+        'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
+        'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
+        'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 1000},
+        'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 1000},
+        'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 40},
+        'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 40},
+        'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 1000},
+        'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 1000},
+        'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 2000},
+        'ALUMINI': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 2000}
     }
 
-    TARGET_COMMODITY_MARGIN_INR = 150000.0  # ₹1.5 Lakhs target margin per commodity position
+    TARGET_COMMODITY_MARGIN_INR = 75000.0  # ₹75,000 target margin (50% of ₹1.5L pool to allow 2 concurrent diverse trades)
 
     # MCX Standard Initial Margin Rates for Sizing
     MARGIN_RATES = {
@@ -913,17 +913,17 @@ class PositionSizer:
     }
 
     @classmethod
-    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=28000.0, atr=None, target_margin_inr=150000.0, available_margin_inr=None):
+    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=28000.0, atr=None, target_margin_inr=75000.0, available_margin_inr=None):
         """
-        Resolves the appropriate contract and scales lots to match ~₹1,50,000 deployed margin per position.
-        Commodities strictly trade in standardized whole exchange lots calibrated to ~₹1.5 Lakhs:
-        - NATURALGASM: 12 lots / 3000 units (~₹1.5L - ₹1.67L margin)
-        - CRUDEOILM: 10 lots / 100 units (~₹1.50L margin)
-        - SILVERMIC: 5 lots / 5 units (~₹1.36L margin)
-        - GOLDM: 2 lots / 20 units (~₹1.54L margin)
-        - COPPERM: 2 lots / 2000 units (~₹1.41L margin)
-        - ZINCMINI: 4 lots / 4000 units (~₹1.44L margin)
-        - ALUMINI: 6 lots / 6000 units (~₹1.35L margin)
+        Resolves the appropriate contract and scales lots to match ~₹75,000 deployed margin per position (50% pool split).
+        Commodities strictly trade in standardized whole exchange lots calibrated to ~₹75k:
+        - NATURALGASM: 4 lots / 1000 units (~₹68k margin)
+        - CRUDEOILM: 4 lots / 40 units (~₹60k margin)
+        - SILVERMIC: 5 lots / 5 units (~₹67.5k margin)
+        - GOLDM: 1 lot / 10 units (~₹76k margin)
+        - COPPERM: 1 lot / 1000 units (~₹65.6k margin)
+        - ZINCMINI: 2 lots / 2000 units (~₹53k margin)
+        - ALUMINI: 2 lots / 2000 units (~₹58k margin)
         """
         if entry <= 0 or not stop or stop <= 0 or entry == stop:
             return symbol, name, default_lot
