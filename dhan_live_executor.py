@@ -52,8 +52,11 @@ class DhanLiveExecutor:
         self.focus_commodities_only = os.environ.get('FOCUS_COMMODITIES_ONLY', 'true').lower() in ['true', '1', 'yes']
         # 2. Exclude trade executions if commodity contract is nearing expiry (<= 3 calendar days by default)
         self.expiry_safety_days = int(os.environ.get('COMMODITY_EXPIRY_SAFETY_DAYS', 3))
-        # 3. Explicitly excluded unsupported commodities on Dhan (e.g. Copper Mini)
-        self.unsupported_commodities = {'COPPERM', 'COPPER'}
+        # 3. Explicitly excluded volatile/unsupported commodities on Dhan (Copper & Aluminium per user instruction)
+        self.unsupported_commodities = {
+            'COPPER', 'COPPERM', 'COPPERMINI',
+            'ALUMINIUM', 'ALUMINI', 'ALUMINIUMMINI'
+        }
 
         # 4. Proactive Static IP Compliance Check
         self.check_and_sync_ip()
@@ -584,14 +587,16 @@ class DhanLiveExecutor:
         today_str = now_ist.strftime('%d %b %Y')
         action = action.upper()
 
-        # Rule 0: Exclude unsupported commodities on Dhan (e.g. Copper Mini)
+        # Rule 0: Exclude unsupported/high-volatility commodities on Dhan (Aluminium & Copper per user preference)
         sym_clean = symbol.strip().upper().replace('-FUT', '').replace('.NS', '').replace('.BO', '')
-        if sym_clean in self.unsupported_commodities or sym_clean.startswith('COPPER'):
-            print(f"🛑 [AUTOPILOT EXCLUDED] {symbol}: Unsupported contract on Dhan (Copper Mini). Trade execution excluded per user preference.")
+        if (sym_clean in self.unsupported_commodities or 
+            sym_clean.startswith('COPPER') or 
+            sym_clean.startswith('ALU')):
+            print(f"🛑 [AUTOPILOT EXCLUDED] {symbol}: High-volatility excluded commodity (Aluminium / Copper). Trade execution excluded per user preference.")
             return {
-                'status': 'EXCLUDED_UNSUPPORTED_COMMODITY',
+                'status': 'EXCLUDED_USER_PREFERENCE',
                 'symbol': symbol,
-                'reason': 'Dhan does not support Copper Mini contracts. Excluded from live broker execution.'
+                'reason': 'Aluminium and Copper are excluded from live Dhan broker execution per user preference (High volatility / unpredictable).'
             }
 
         # Rule 1: Focus strictly on Commodities (Exclude equities, stock futures, and options from live broker orders)
