@@ -1,10 +1,10 @@
 {
-  "last_updated": "20 Nov 2026, 08:58 AM IST",
+  "last_updated": "20 Nov 2026, 09:10 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 21,
-    "executed_count": 3,
+    "total_signals": 22,
+    "executed_count": 4,
     "correct_count": 1,
     "wrong_count": 2,
     "protected_count": 18,
@@ -17,15 +17,142 @@
     "intraday_pnl_inr": -66.75,
     "intraday_booked_profit_inr": 0.0,
     "intraday_pool_balance_inr": 30000.0,
-    "avg_trade_pnl_inr": -1261.68,
-    "active_trades_count": 0,
+    "avg_trade_pnl_inr": -946.26,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 296281.71,
-    "used_margin_inr": 0,
-    "available_cash_inr": 296281.71,
+    "used_margin_inr": 174597.6,
+    "available_cash_inr": 121684.11,
     "net_worth_inr": 296281.71
   },
   "trades": [
+    {
+      "id": "ADV-20Nov2026-0910-ALUMINI",
+      "date": "20 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (Directional Volatility Expansion (Bearish))",
+      "time_trigger": "09:10 AM IST",
+      "time_6pm": "09:10 AM IST",
+      "time_validation": "09:10 AM IST",
+      "time_615": "09:10 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 6000,
+      "event_context": "Indicator Confluence: Directional Volatility Expansion (Bearish)",
+      "regime": {
+        "regime": "CHOP_CONSOLIDATION",
+        "badge": "\ud83d\udca4 Chop / Consolidation",
+        "short_tag": "Chop / Range",
+        "color": "#94a3b8",
+        "bg_color": "rgba(148, 163, 184, 0.12)",
+        "border_color": "rgba(148, 163, 184, 0.35)",
+        "mandate": "Neutral consolidation (ADX: 28.8). Whipsaw risk for breakouts.",
+        "allowed_strategies": [
+          "WATCHLIST",
+          "STAGED_LIMIT_ORDERS",
+          "MEAN_REVERSION"
+        ],
+        "blocked_strategies": [
+          "MARKET_ORDERS",
+          "BREAKOUT_BUY"
+        ],
+        "icon": "fa-solid fa-arrows-left-right",
+        "adx": 28.8,
+        "rsi": 36.0,
+        "bb_width_pct": 8.11,
+        "daily_vol_pct": 2.02,
+        "close": 316.3,
+        "ema50": 331.8003717026359,
+        "ema200": 326.442706052689
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "STRONG_POSITIVE_EXPECTANCY",
+        "verdict_text": "Strongly Leans Toward Target \ud83c\udfaf (High Edge)",
+        "p_target_pct": 72.0,
+        "p_stop_pct": 28.0,
+        "p_neither_pct": 0.0,
+        "resolved_win_rate_pct": 72.0,
+        "expected_r": 0.584,
+        "target_r": 1.2,
+        "sample_bars": 117,
+        "summary": "3,000 Replays: 72.0% Target | 28.0% Stop | Expected: +0.58R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 6000.0,
+        "potential_gain_inr": 7200.0,
+        "broker": "Dhan",
+        "est_charges_inr": 373.74,
+        "net_loss_at_stop_inr": 6373.74
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b9316.30",
+        "rationale": "High-momentum directional breakdown: Chg -1.33%, ADX 28.8 >= 24, RSI 36.0. Capturing aggressive trend expansion. 3,000 Replays: 72.0% Target | 28.0% Stop | Expected: +0.58R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))",
+        "reference_price": 316.3,
+        "stop_loss": 317.3,
+        "target": 315.1,
+        "original_stop_loss": 317.3,
+        "original_target": 315.1
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 316.3,
+        "action_taken": "Entered SELL 6000 units @ \u20b9316.30",
+        "detail": "Directional Volatility Expansion (Bearish): High-momentum directional breakdown: Chg -1.33%, ADX 28.8 >= 24, RSI 36.0. Capturing aggressive trend expansion. | 3,000 Replays: 72.0% Target | 28.0% Stop | Expected: +0.58R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 6000,
+        "entry_price": 316.3,
+        "entry_time": "09:10 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "margin_required_inr": 174597.6,
+        "target": 315.1,
+        "stop_loss": 317.3,
+        "initial_stop_loss": 317.3,
+        "original_sl": 317.3,
+        "peak_high": 316.3,
+        "trough_low": 316.3,
+        "entry_day_high": 316.3,
+        "entry_day_low": 316.3,
+        "live_broker_order": {
+          "status": "REJECTED",
+          "reason": {
+            "error_code": "DH-901",
+            "error_type": "Invalid_Authentication",
+            "error_message": "Client ID or user generated access token is invalid or expired."
+          },
+          "dhan_response": {
+            "status": "failure",
+            "remarks": {
+              "error_code": "DH-901",
+              "error_type": "Invalid_Authentication",
+              "error_message": "Client ID or user generated access token is invalid or expired."
+            },
+            "data": ""
+          }
+        }
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Directional Volatility Expansion (Bearish) active: SELL @ \u20b9316.30 (Target: \u20b9315.10, SL: \u20b9317.30) | 3,000 Replays: 72.0% Target | 28.0% Stop | Expected: +0.58R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      }
+    },
     {
       "id": "ADV-19Nov2026-2022-NATURALGASM",
       "date": "19 Nov 2026",
