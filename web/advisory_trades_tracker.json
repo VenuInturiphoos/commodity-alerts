@@ -1,10 +1,10 @@
 {
-  "last_updated": "20 Nov 2026, 09:10 AM IST",
+  "last_updated": "20 Nov 2026, 09:11 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 22,
-    "executed_count": 4,
+    "total_signals": 23,
+    "executed_count": 5,
     "correct_count": 1,
     "wrong_count": 2,
     "protected_count": 18,
@@ -17,15 +17,143 @@
     "intraday_pnl_inr": -66.75,
     "intraday_booked_profit_inr": 0.0,
     "intraday_pool_balance_inr": 30000.0,
-    "avg_trade_pnl_inr": -946.26,
-    "active_trades_count": 1,
+    "avg_trade_pnl_inr": -757.01,
+    "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 296281.71,
-    "used_margin_inr": 174597.6,
-    "available_cash_inr": 121684.11,
+    "used_margin_inr": 271410.1,
+    "available_cash_inr": 24871.61,
     "net_worth_inr": 296281.71
   },
   "trades": [
+    {
+      "id": "ADV-20Nov2026-0911-CRUDEOILM",
+      "date": "20 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (EMA 20/50 Bearish Trend Confluence)",
+      "time_trigger": "09:11 AM IST",
+      "time_6pm": "09:11 AM IST",
+      "time_validation": "09:11 AM IST",
+      "time_615": "09:11 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "CRUDEOILM",
+      "name": "Crude Oil Mini",
+      "lot_size": 50,
+      "event_context": "Indicator Confluence: EMA 20/50 Bearish Trend Confluence",
+      "regime": {
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 37.2, RSI: 35.7). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "SHORT_FUTURES"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 37.2,
+        "rsi": 35.7,
+        "bb_width_pct": 8.06,
+        "daily_vol_pct": 4.04,
+        "close": 7745.0,
+        "ema50": 8410.711154321803,
+        "ema200": 8308.098177273767
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 47.8,
+        "p_stop_pct": 48.1,
+        "p_neither_pct": 4.0,
+        "resolved_win_rate_pct": 49.8,
+        "expected_r": 0.093,
+        "target_r": 1.2,
+        "sample_bars": 2457,
+        "summary": "3,000 Replays: 47.8% Target | 48.1% Stop | Expected: +0.09R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 2176.0,
+        "potential_gain_inr": 2611.0,
+        "broker": "Dhan",
+        "est_charges_inr": 113.89,
+        "net_loss_at_stop_inr": 2289.89
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b97,745.00",
+        "rationale": "20 EMA (\u20b98,308.10) < 50 EMA (\u20b98,410.71) with ADX 37.2 >= 20 and healthy RSI 35.7. Downward trend continuation in effect. 3,000 Replays: 47.8% Target | 48.1% Stop | Expected: +0.09R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 7745.0,
+        "stop_loss": 7788.52,
+        "target": 7692.78,
+        "original_stop_loss": 7788.52,
+        "original_target": 7692.78
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 7745.0,
+        "action_taken": "Entered SELL 50 units @ \u20b97,745.00",
+        "detail": "EMA 20/50 Bearish Trend Confluence: 20 EMA (\u20b98,308.10) < 50 EMA (\u20b98,410.71) with ADX 37.2 >= 20 and healthy RSI 35.7. Downward trend continuation in effect. | 3,000 Replays: 47.8% Target | 48.1% Stop | Expected: +0.09R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 50,
+        "entry_price": 7745.0,
+        "entry_time": "09:11 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "margin_required_inr": 96812.5,
+        "target": 7692.78,
+        "stop_loss": 7788.52,
+        "initial_stop_loss": 7788.52,
+        "original_sl": 7788.52,
+        "peak_high": 7745.0,
+        "trough_low": 7745.0,
+        "entry_day_high": 7745.0,
+        "entry_day_low": 7745.0,
+        "live_broker_order": {
+          "status": "REJECTED",
+          "reason": {
+            "error_code": "DH-901",
+            "error_type": "Invalid_Authentication",
+            "error_message": "Client ID or user generated access token is invalid or expired."
+          },
+          "dhan_response": {
+            "status": "failure",
+            "remarks": {
+              "error_code": "DH-901",
+              "error_type": "Invalid_Authentication",
+              "error_message": "Client ID or user generated access token is invalid or expired."
+            },
+            "data": ""
+          }
+        }
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "EMA 20/50 Bearish Trend Confluence active: SELL @ \u20b97,745.00 (Target: \u20b97,692.78, SL: \u20b97,788.52) | 3,000 Replays: 47.8% Target | 48.1% Stop | Expected: +0.09R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
     {
       "id": "ADV-20Nov2026-0910-ALUMINI",
       "date": "20 Nov 2026",
@@ -114,8 +242,8 @@
         "entry_time": "09:10 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
+        "pnl_points": 0.05,
+        "pnl_inr": 300.0,
         "status": "ACTIVE",
         "margin_required_inr": 174597.6,
         "target": 315.1,
@@ -123,7 +251,7 @@
         "initial_stop_loss": 317.3,
         "original_sl": 317.3,
         "peak_high": 316.3,
-        "trough_low": 316.3,
+        "trough_low": 316.25,
         "entry_day_high": 316.3,
         "entry_day_low": 316.3,
         "live_broker_order": {
@@ -151,6 +279,10 @@
         "badge": "Active Trigger \u26a1",
         "pnl_display": "Ticking Live...",
         "summary": "Directional Volatility Expansion (Bearish) active: SELL @ \u20b9316.30 (Target: \u20b9315.10, SL: \u20b9317.30) | 3,000 Replays: 72.0% Target | 28.0% Stop | Expected: +0.58R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      },
+      "live_price_data": {
+        "current_price": 316.25,
+        "change_pct": -0.02
       }
     },
     {
