@@ -632,16 +632,22 @@ def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=Non
     clean_sym = symbol.replace('-FUT', '').replace('.NS', '').replace('.BO', '').upper() if symbol else ""
     contract_max_stop = PullbackRetestGate.MAX_STOP_DISTANCE.get(clean_sym)
         
-    atr_buf = round(atr * 0.12, 2) if (atr and atr > 0) else round(cur_p * 0.0010, 2)
-    atr_buf = max(atr_buf, round(cur_p * 0.0005, 2))
+    # Option A (ATR Wick Buffer Calibration):
+    # Provides a breathing room buffer beyond structural wicks (0.30x ATR; min 35 pts on Crude Oil)
+    # to avoid premature noise stop-outs while staying well under the ₹6,000 max loss cap.
+    atr_buf = round(atr * 0.30, 2) if (atr and atr > 0) else round(cur_p * 0.0035, 2)
+    if 'CRUDE' in clean_sym:
+        atr_buf = max(atr_buf, 35.0)
+    else:
+        atr_buf = max(atr_buf, round(cur_p * 0.0020, 2))
     
     if action.upper() == 'SELL':
         ref_high = max(cur_p, day_h) if day_h and day_h > 0 else cur_p
         if day_h and day_l and day_h > day_l:
             or_mid = (day_h + day_l) / 2.0
-            if cur_p < or_mid < day_h:
+            if cur_p < or_mid < day_h and (or_mid - cur_p) >= (atr_buf * 0.5):
                 ref_high = or_mid
-        if ema20 and cur_p < ema20 < ref_high:
+        if ema20 and cur_p < ema20 < ref_high and (ema20 - cur_p) >= (atr_buf * 0.5):
             ref_high = ema20
             
         # Hard Ceiling Guard: Under Option 2, stop distance must not exceed contract maximum or 1.0x ATR
@@ -657,9 +663,9 @@ def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=Non
         ref_low = min(cur_p, day_l) if day_l and day_l > 0 else cur_p
         if day_h and day_l and day_h > day_l:
             or_mid = (day_h + day_l) / 2.0
-            if cur_p > or_mid > day_l:
+            if cur_p > or_mid > day_l and (cur_p - or_mid) >= (atr_buf * 0.5):
                 ref_low = or_mid
-        if ema20 and cur_p > ema20 > ref_low:
+        if ema20 and cur_p > ema20 > ref_low and (cur_p - ema20) >= (atr_buf * 0.5):
             ref_low = ema20
             
         # Hard Ceiling Guard: Under Option 2, stop distance must not exceed contract maximum or 1.0x ATR
