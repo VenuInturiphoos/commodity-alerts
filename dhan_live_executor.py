@@ -749,8 +749,10 @@ class DhanLiveExecutor:
             for o in orders:
                 status = str(o.get('orderStatus', '')).upper()
                 order_type = str(o.get('orderType', '')).upper()
-                # Only check open/unfilled limit orders
-                if status in ['TRANSIT', 'PENDING', 'OPEN']:
+                # Strictly only cancel stale entry LIMIT orders (NEVER cancel protective STOP_LOSS orders!)
+                if order_type in ['STOP_LOSS', 'SL', 'STOP_LOSS_MARKET', 'SLM'] or 'SL' in str(o.get('correlationId', '')):
+                    continue
+                if order_type == 'LIMIT' and status in ['TRANSIT', 'PENDING', 'OPEN']:
                     create_time_str = o.get('createTime')
                     order_id = str(o.get('orderId'))
                     symbol = o.get('tradingSymbol', '')
