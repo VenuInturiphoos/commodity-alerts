@@ -4321,7 +4321,7 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
             except Exception:
                 pass
 
-        is_trailing = bool(pt.get('stage_2_profit_locked') or pt.get('trailing_sl_active'))
+        is_trailing = bool(pt.get('stage_2_profit_locked') or pt.get('trailing_sl_active') or pt.get('target_runner_active'))
 
         # TARGET HIT & UNCAPPED RUNNER MODE ACTIVATION:
         # When 100% target is touched, do NOT cut the trade! Lock guaranteed 100% target profit floor & trail for bonus trend!
@@ -4347,6 +4347,29 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                 trade['eod_outcome']['badge'] = f"Target Runner 🎯🚀 (Floor @ ₹{stop_loss:,.2f})"
                 trade['eod_outcome']['summary'] = f"100% Target Achieved! Uncapped Runner Active (Floor ₹{stop_loss:,.2f}). Trailing along 20 EMA / structure for bonus upside."
                 updated_any = True
+
+                # Immediately Ratchet Active Broker Stop-Loss on Dhan to Target Floor
+                dhan_sl_id = pt.get('dhan_sl_order_id')
+                last_synced_sl = pt.get('last_synced_broker_sl')
+                if is_autopilot_enabled() and dhan_sl_id and stop_loss != last_synced_sl:
+                    try:
+                        from dhan_live_executor import DhanLiveExecutor
+                        dhan_exec = DhanLiveExecutor()
+                        dhan_qty = pt.get('dhan_quantity') or (3 if 'CRUDE' in sym.upper() else 1)
+                        mod_res = dhan_exec.modify_stop_loss_order(
+                            order_id=dhan_sl_id,
+                            new_trigger_price=stop_loss,
+                            action=action,
+                            symbol=sym,
+                            quantity=dhan_qty,
+                            reason=f"Target 1 Locked @ ₹{stop_loss:,.2f} (Uncapped Runner Active)",
+                            old_trigger_price=last_synced_sl
+                        )
+                        if mod_res.get('status') == 'success':
+                            pt['last_synced_broker_sl'] = stop_loss
+                            print(f"🎯 [DHAN TARGET RUNNER SYNC] Successfully locked Stop-Loss at Target 1 Floor ₹{stop_loss:,.2f} on Dhan (Order: {dhan_sl_id})")
+                    except Exception as sl_mod_err:
+                        print(f"⚠️ Error syncing Target Runner SL to Dhan: {sl_mod_err}")
 
                 subject = f"🎯🚀 [100% TARGET ACHIEVED — RUNNER MODE ACTIVE] {trade['name']} Hit Target @ ₹{calc_target:,.2f}!"
                 body = (
