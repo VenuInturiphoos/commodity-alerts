@@ -44,6 +44,7 @@ COMMODITY_YF_MAP = {
     'CRUDEOILM': 'CL=F',
     'NATURALGAS': 'NG=F',
     'NATURALGASM': 'NG=F',
+    'NATGASMINI': 'NG=F',
     'GOLD': 'GC=F',
     'GOLDM': 'GC=F',
     'GOLDTEN': 'GC=F',
@@ -101,6 +102,7 @@ class PullbackRetestGate:
         'CRUDEOILM': 85.0,
         'NATURALGAS': 5.00, # 5.0 pts on NatGas Mini = ₹1,250 max risk (survives 2-3 pt noise)
         'NATURALGASM': 5.00,
+        'NATGASMINI': 5.00,
         'GOLD': 650.0,      # 650 pts on Gold Ten = ₹650 max risk
         'GOLDM': 650.0,
         'GOLDTEN': 650.0,
@@ -248,14 +250,15 @@ class PreTradeRiskEngine:
                         "passed": False,
                         "reason": f"FALLING_KNIFE_BLOCKED: BUY rejected because asset is in a sell-off ({float(chg_pct):.2f}% <= -1.2%). Knife catching strictly prohibited."
                     }
-            if rsi is not None and float(rsi) > 65.0:
+            max_buy_rsi = 82.0 if is_breakout else 65.0
+            if rsi is not None and float(rsi) > max_buy_rsi:
                 return {
                     "passed": False,
-                    "reason": f"OVERBOUGHT_EXHAUSTION_BLOCKED: BUY rejected because RSI ({float(rsi):.1f}) is overbought (> 65.0). Chasing tops into exhausted buying is prohibited due to high risk of profit-taking reversal."
+                    "reason": f"OVERBOUGHT_EXHAUSTION_BLOCKED: BUY rejected because RSI ({float(rsi):.1f}) is overbought (> {max_buy_rsi:.1f}). Chasing tops into exhausted buying is prohibited due to high risk of profit-taking reversal."
                 }
 
         if act_upper == 'SELL':
-            if not is_reversal:
+            if not is_reversal and not is_breakout:
                 if ema50 is not None and entry > (float(ema50) * 1.002):
                     return {
                         "passed": False,
@@ -271,10 +274,11 @@ class PreTradeRiskEngine:
                         "passed": False,
                         "reason": f"COUNTER_TREND_BLOCKED: SELL rejected because asset is in a strong rally ({float(chg_pct):.2f}% >= +1.2%). Counter-trend shorting prohibited."
                     }
-            if rsi is not None and float(rsi) < 35.0:
+            min_sell_rsi = 18.0 if is_breakout else 35.0
+            if rsi is not None and float(rsi) < min_sell_rsi:
                 return {
                     "passed": False,
-                    "reason": f"OVERSOLD_EXHAUSTION_BLOCKED: SELL rejected because RSI ({float(rsi):.1f}) is deeply oversold (< 35.0). Shorting the bottom into exhausted selling is prohibited due to high risk of violent short-covering bounces."
+                    "reason": f"OVERSOLD_EXHAUSTION_BLOCKED: SELL rejected because RSI ({float(rsi):.1f}) is deeply oversold (< {min_sell_rsi:.1f}). Shorting the bottom into exhausted selling is prohibited due to high risk of violent short-covering bounces."
                 }
         
         # 1. Mandatory Stop-Loss Guard
@@ -348,10 +352,13 @@ class PreTradeRiskEngine:
                 "loss_at_stop_inr": loss_at_stop
             }
 
-        # 8. Maximum Concurrent Open Positions
+        # 8. Maximum Concurrent Open Positions (Segregated by Asset Class so stock paper trades do not block commodities)
         active_positions = sum(
             1 for t in existing_trades
-            if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
+            if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT'] and (
+                (is_target_eq and (t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'] or '-FUT' in str(t.get('symbol', '')))) or
+                (not is_target_eq and t.get('asset_type') not in ['EQUITY', 'INTRADAY_STOCK'] and '-FUT' not in str(t.get('symbol', '')))
+            )
         )
         if active_positions >= max_active_positions:
             return {
@@ -878,14 +885,16 @@ class PositionSizer:
         'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot_size': 10},
         'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot_size': 250},
         'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot_size': 250},
+        'NATGASMINI': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot_size': 250},
         'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot_size': 1},
-        'SILVERM': {'symbol': 'SILVERM', 'name': 'Silver Mini', 'lot_size': 5},
+        'SILVERM': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot_size': 1},
         'SILVERMIC': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot_size': 1},
-        'GOLD': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot_size': 10},
-        'GOLDM': {'symbol': 'GOLDM', 'name': 'Gold Mini', 'lot_size': 10},
-        'GOLDTEN': {'symbol': 'GOLDTEN', 'name': 'Gold', 'lot_size': 1},
-        'ZINC': {'symbol': 'ZINCM', 'name': 'Zinc Mini', 'lot_size': 1000},
-        'ZINCM': {'symbol': 'ZINCM', 'name': 'Zinc Mini', 'lot_size': 1000},
+        'GOLD': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot_size': 1},
+        'GOLDM': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot_size': 1},
+        'GOLDTEN': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot_size': 1},
+        'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot_size': 1000},
+        'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot_size': 1000},
+        'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot_size': 1000},
         'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1000},
         'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1000},
     }
@@ -907,6 +916,7 @@ class PositionSizer:
         'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 10},
         'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 250},
         'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 250},
+        'NATGASMINI': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 250},
         'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 1000},
         'ALUMINI': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 1000}
     }
@@ -916,7 +926,7 @@ class PositionSizer:
     # MCX Standard Initial Margin Rates for Sizing
     MARGIN_RATES = {
         'CRUDEOIL': 0.25, 'CRUDEOILM': 0.25,
-        'NATURALGAS': 0.18, 'NATURALGASM': 0.18,
+        'NATURALGAS': 0.18, 'NATURALGASM': 0.18, 'NATGASMINI': 0.18,
         'SILVER': 0.15, 'SILVERM': 0.15, 'SILVERMIC': 0.15,
         'GOLD': 0.10, 'GOLDM': 0.10, 'GOLDTEN': 0.10,
         'COPPER': 0.08, 'COPPERM': 0.08,

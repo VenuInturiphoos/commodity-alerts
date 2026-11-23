@@ -92,6 +92,7 @@ LOT_SIZES = {
     'CRUDEOILM': 10,    # Crude Oil Mini (10 bbl) - 1 pt = ₹10
     'NATURALGAS': 1250, # Natural Gas Standard (1250 mmBtu) - 1 pt = ₹1250
     'NATURALGASM': 250, # Natural Gas Mini (250 mmBtu) - 1 pt = ₹250
+    'NATGASMINI': 250,  # Natural Gas Mini alias
     'SILVER': 30,       # Silver Standard (30 kg) - 1 pt = ₹30
     'SILVERM': 5,       # Silver Mini (5 kg) - 1 pt = ₹5
     'SILVERMIC': 1,     # Silver Micro (1 kg) - 1 pt = ₹1
@@ -113,6 +114,7 @@ MARGIN_RATES = {
     'CRUDEOILM': 0.25,
     'NATURALGAS': 0.18,  # 18% margin (~₹1.30 Lakh @ ₹290)
     'NATURALGASM': 0.18,
+    'NATGASMINI': 0.18,
     'SILVER': 0.15,      # 15% margin (~₹1.45 Lakh)
     'SILVERM': 0.15,
     'SILVERMIC': 0.15,
@@ -384,17 +386,18 @@ COMMODITY_SPECS_150K = {
     'GOLD': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 1},
     'GOLDM': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 1},
     'GOLDTEN': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 1},
-    'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
-    'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
-    'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
+    'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 1000},
+    'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 1000},
+    'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 1000},
     'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 1000},
     'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 1000},
-    'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 20},
-    'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 20},
-    'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 1000},
-    'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 1000},
-    'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 2000},
-    'ALUMINI': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 2000}
+    'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 10},
+    'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 10},
+    'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 250},
+    'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 250},
+    'NATGASMINI': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 250},
+    'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 1000},
+    'ALUMINI': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 1000}
 }
 
 # Direct mapping to low-margin, micro/mini contracts for capital defense
@@ -402,10 +405,12 @@ MINI_COMMODITY_MAP = {
     'ALUMINIUM': 'ALUMINI',
     'CRUDEOIL': 'CRUDEOILM',
     'NATURALGAS': 'NATURALGASM',
+    'NATGASMINI': 'NATURALGASM',
     'SILVER': 'SILVERMIC',
     'SILVERM': 'SILVERMIC',
-    'GOLD': 'GOLDM',
-    'GOLDTEN': 'GOLDM',
+    'GOLD': 'GOLDTEN',
+    'GOLDM': 'GOLDTEN',
+    'GOLDTEN': 'GOLDTEN',
     'ZINC': 'ZINCMINI',
     'ZINCM': 'ZINCMINI',
     'COPPER': 'COPPERM'
@@ -416,6 +421,7 @@ COMMODITY_DISPLAY_NAMES = {
     'CRUDEOILM': 'Crude Oil Mini',
     'NATURALGAS': 'Natural Gas',
     'NATURALGASM': 'Natural Gas Mini',
+    'NATGASMINI': 'Natural Gas Mini',
     'SILVER': 'Silver',
     'SILVERM': 'Silver Mini',
     'SILVERMIC': 'Silver Micro',
@@ -484,12 +490,14 @@ def resolve_commodity_item(sym, commodities_map):
         'SILVERMIC': ['SILVERM', 'SILVER'],
         'SILVERM': ['SILVERMIC', 'SILVER'],
         'SILVER': ['SILVERMIC', 'SILVERM'],
-        'GOLDM': ['GOLD'],
-        'GOLD': ['GOLDM'],
+        'GOLDM': ['GOLDTEN', 'GOLD'],
+        'GOLDTEN': ['GOLDM', 'GOLD'],
+        'GOLD': ['GOLDTEN', 'GOLDM'],
         'CRUDEOILM': ['CRUDEOIL'],
         'CRUDEOIL': ['CRUDEOILM'],
-        'NATURALGASM': ['NATURALGAS'],
-        'NATURALGAS': ['NATURALGASM'],
+        'NATURALGASM': ['NATGASMINI', 'NATURALGAS'],
+        'NATGASMINI': ['NATURALGASM', 'NATURALGAS'],
+        'NATURALGAS': ['NATURALGASM', 'NATGASMINI'],
         'COPPERM': ['COPPER'],
         'COPPER': ['COPPERM'],
     }
@@ -4813,16 +4821,17 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         'ZINC': 'BASE_METALS', 'ZINCM': 'BASE_METALS', 'ZINCMINI': 'BASE_METALS',
         'ALUMINIUM': 'BASE_METALS', 'ALUMINI': 'BASE_METALS',
         'CRUDEOIL': 'ENERGY', 'CRUDEOILM': 'ENERGY',
-        'NATURALGAS': 'ENERGY', 'NATURALGASM': 'ENERGY'
+        'NATURALGAS': 'ENERGY', 'NATURALGASM': 'ENERGY', 'NATGASMINI': 'ENERGY'
     }
     for sfc_sym, sfc_cfg in STOCK_FUTURES_CONFIG.items():
         SECTORS[f"{sfc_sym}-FUT"] = sfc_cfg['sector']
         SECTORS[sfc_sym] = sfc_cfg['sector']
     
-    active_sectors = {
-        SECTORS.get(t.get('symbol')) for t in active_commodity_trades
-        if t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
-    }
+    sector_counts = {}
+    for t in active_commodity_trades:
+        if t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']:
+            sec = SECTORS.get(t.get('symbol'), 'OTHER')
+            sector_counts[sec] = sector_counts.get(sec, 0) + 1
 
     for item in commodities:
         # Check if we already reached max concurrent futures positions during this pass
@@ -4843,7 +4852,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             continue
 
         item_sector = SECTORS.get(sym, 'OTHER')
-        if item_sector in active_sectors:
+        # Allow up to 2 positions per sector (e.g. Gold + Silver in Bullion, Crude + NatGas in Energy)
+        if sector_counts.get(item_sector, 0) >= 2:
             continue
 
         # Check symbol trade count and cooldown today (only for actual executed BUY/SELL trades, not STAND_ASIDE)
@@ -5115,7 +5125,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             session_mid = round((day_h + day_l) / 2.0, 2) if (day_h > day_l) else cur_p
             session_vwap = round((float(item.get('open') or cur_p) + day_h + day_l + (2.0 * cur_p)) / 5.0, 2)
 
-            if not is_reversal:
+            if not is_reversal and not is_breakout:
                 # Rule 1: Macro Regime Filter (The 68% Win-Rate Alignment Rule)
                 if macro_regime == 'BREAKDOWN' and action == 'BUY':
                     print(f"🚫 Trend-Vector Gate: Blocked {sym} BUY. Macro Regime is BREAKDOWN (Price < 50E < 200E). Counter-trend buying strictly prohibited.")
@@ -5339,7 +5349,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     }
                 }
                 new_trades.append(entry_obj)
-                active_sectors.add(item_sector)
+                sector_counts[item_sector] = sector_counts.get(item_sector, 0) + 1
 
                 mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
                 subject = f"📢 [MARGIN EXHAUSTED - DISCRETIONARY ALERT] {name} {action} @ ₹{cur_p:,.2f} ({now_time_str})"
@@ -5430,7 +5440,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             }
             new_trades.append(entry_obj)
             dispatch_autonomous_limit_order(entry_obj, asset_type='COMMODITY')
-            active_sectors.add(item_sector)
+            sector_counts[item_sector] = sector_counts.get(item_sector, 0) + 1
 
             # Real-time notification email
             mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
