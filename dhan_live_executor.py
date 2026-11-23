@@ -50,8 +50,8 @@ class DhanLiveExecutor:
         # User Execution Focus Mandates:
         # 1. Strictly focus on MCX Commodities (exclude intraday equities and stock futures)
         self.focus_commodities_only = os.environ.get('FOCUS_COMMODITIES_ONLY', 'true').lower() in ['true', '1', 'yes']
-        # 2. Exclude trade executions if commodity contract is nearing expiry (<= 3 calendar days by default)
-        self.expiry_safety_days = int(os.environ.get('COMMODITY_EXPIRY_SAFETY_DAYS', 3))
+        # 2. Exclude trade executions if commodity contract is nearing expiry (<= 7 calendar days to respect MCX tender period)
+        self.expiry_safety_days = int(os.environ.get('COMMODITY_EXPIRY_SAFETY_DAYS', 7))
         # 3. Explicitly excluded volatile/unsupported commodities on Dhan (Copper & Aluminium per user instruction)
         self.unsupported_commodities = {
             'COPPER', 'COPPERM', 'COPPERMINI',

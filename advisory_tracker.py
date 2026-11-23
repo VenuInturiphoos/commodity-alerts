@@ -1,7 +1,15 @@
 import os
 import json
+import socket
 import requests
 import pytz
+import urllib3.util.connection as urllib_conn
+
+# Force IPv4 routing for Dhan API requests to strictly match whitelisted Static IP
+try:
+    urllib_conn.allowed_gai_family = lambda: socket.AF_INET
+except Exception:
+    pass
 from datetime import datetime
 from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer, MarketRegimeDetector, TradingAgentsOrchestrator, InstitutionalDirectionEngine, PullbackRetestGate
 from pre_move_detector import PreMoveDetector, PreMoveSignal

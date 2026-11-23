@@ -8,11 +8,19 @@ on Dhan, and pushes state updates to GitHub.
 
 import os
 import sys
+import socket
 import time
 import signal
 import subprocess
 from datetime import datetime
 import pytz
+import urllib3.util.connection as urllib_conn
+
+# Force IPv4 routing for Dhan API requests to strictly match whitelisted Primary Static IP
+try:
+    urllib_conn.allowed_gai_family = lambda: socket.AF_INET
+except Exception:
+    pass
 
 try:
     sys.stdout.reconfigure(line_buffering=True)

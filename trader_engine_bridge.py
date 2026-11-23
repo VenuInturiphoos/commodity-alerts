@@ -713,8 +713,8 @@ class ORBTimer:
                     "status": "LOW_VOLUME_FAKE_AVOIDED",
                     "reason": f"Low volume breakout: Volume ratio ({volume_ratio:.2f}x) is below {min_vol_thresh:.2f}x session volume threshold."
                 }
-            # Solid close above range
-            if bar_close >= day_high * 0.999:
+            # Solid close above range (aligned with Setup 2 breakout tolerance 0.996)
+            if bar_close >= day_high * 0.996:
                 return {
                     "passed": True,
                     "status": "ORB_BREAKOUT_CONFIRMED",
@@ -744,8 +744,8 @@ class ORBTimer:
                     "status": "LOW_VOLUME_FAKE_AVOIDED",
                     "reason": f"Low volume breakdown: Volume ratio ({volume_ratio:.2f}x) is below {min_vol_thresh:.2f}x session volume threshold."
                 }
-            # Solid close below range
-            if bar_close <= day_low * 1.001:
+            # Solid close below range (aligned with Setup 2 breakdown tolerance 1.004)
+            if bar_close <= day_low * 1.004:
                 return {
                     "passed": True,
                     "status": "ORB_BREAKDOWN_CONFIRMED",
