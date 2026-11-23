@@ -56,7 +56,7 @@ class PreMoveDetector:
     KC_ATR_MULT = 1.5
     MOMENTUM_LENGTH = 20
     MIN_SQUEEZE_BARS = 3
-    MIN_PMRI_TRIGGER = 72.0  # Minimum score out of 100 to trigger early entry
+    MIN_PMRI_TRIGGER = 60.0  # Minimum score out of 100 to trigger early pre-move coil entry (Calibrated from 72.0)
 
     @classmethod
     def calculate_indicators(cls, closes: List[float], highs: List[float], lows: List[float], volumes: List[float]) -> Dict[str, Any]:

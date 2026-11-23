@@ -5007,8 +5007,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
         # --- SETUP 2: Volatility Breakout with ADX Momentum ---
         if not triggered:
-            # A. Bullish Day-High Breakout
-            if (cur_p >= day_h * 0.996) and (chg_pct >= 0.40) and (adx is not None and adx >= 20.0) and (rsi is None or rsi <= 82.0):
+            # A. Bullish Day-High Breakout (Anti-Chasing Cap: chg_pct capped at +1.50% to prevent buying exhausted climax tops)
+            if (cur_p >= day_h * 0.996) and (0.40 <= chg_pct <= 1.50) and (adx is not None and adx >= 20.0) and (rsi is None or rsi <= 70.0):
                 if vol_ratio is None or vol_ratio >= 0.30:
                     triggered = True
                     action = "BUY"
@@ -5018,8 +5018,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     rationale = (f"Breaking Day High ₹{day_h:,.2f} with strong trend momentum (ADX {adx:.1f} >= 20 | "
                                  f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: +{chg_pct:.2f}%). Riding directional impulse.")
 
-            # B. Bearish Day-Low Breakdown
-            elif (cur_p <= day_l * 1.004) and (chg_pct <= -0.40) and (adx is not None and adx >= 20.0) and (rsi is None or rsi >= 18.0):
+            # B. Bearish Day-Low Breakdown (Anti-Chasing Floor: chg_pct capped at -1.50% to prevent shorting exhausted bottoms)
+            elif (cur_p <= day_l * 1.004) and (-1.50 <= chg_pct <= -0.40) and (adx is not None and adx >= 20.0) and (rsi is None or rsi >= 30.0):
                 if vol_ratio is None or vol_ratio >= 0.30:
                     triggered = True
                     action = "SELL"
@@ -5034,7 +5034,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             bullish_rsi = (50.0 <= rsi <= 65.0) or (adx >= 25.0 and 50.0 <= rsi <= 68.0) if rsi is not None else True
             bearish_rsi = (35.0 <= rsi <= 50.0) or (adx >= 25.0 and 28.0 <= rsi <= 50.0) if rsi is not None else True
             # Bullish Cross
-            if (ema20 > ema50) and (cur_p >= ema20) and bullish_rsi and (chg_pct >= 0.20):
+            if (ema20 > ema50) and (cur_p >= ema20) and bullish_rsi and (0.20 <= chg_pct <= 1.50):
                 triggered = True
                 action = "BUY"
                 setup_name = "EMA 20/50 Bullish Trend Confluence"
@@ -5044,7 +5044,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                              f"healthy RSI {f'{rsi:.1f}' if rsi else 'N/A'}. Trend continuation in effect.")
 
             # Bearish Cross
-            elif (ema20 < ema50) and (cur_p <= ema20) and bearish_rsi and (chg_pct <= -0.20):
+            elif (ema20 < ema50) and (cur_p <= ema20) and bearish_rsi and (-1.50 <= chg_pct <= -0.20):
                 triggered = True
                 action = "SELL"
                 setup_name = "EMA 20/50 Bearish Trend Confluence"
@@ -5054,25 +5054,26 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                              f"healthy RSI {f'{rsi:.1f}' if rsi else 'N/A'}. Downward trend continuation in effect.")
 
         # --- SETUP 4: Directional Volatility Expansion (High-Momentum Trending Moves) ---
-        if not triggered and (adx is not None and adx >= 24.0) and abs(chg_pct) >= 0.85:
-            # Strong Bullish Impulse (e.g. Natural Gas rally, Crude surge)
-            if (chg_pct >= 0.85) and (cur_p >= ema20 if ema20 else True) and (rsi is None or rsi <= 82.0):
+        # Strictly capped at 1.50% move to prevent buying/shorting into exhausted climax wicks
+        if not triggered and (adx is not None and adx >= 24.0) and (0.85 <= abs(chg_pct) <= 1.50):
+            # Strong Bullish Impulse
+            if (0.85 <= chg_pct <= 1.50) and (cur_p >= ema20 if ema20 else True) and (rsi is None or rsi <= 70.0):
                 triggered = True
                 action = "BUY"
                 setup_name = "Directional Volatility Expansion (Bullish)"
                 sl = round(cur_p - (1.4 * atr_val), 2)
                 tgt = round(cur_p + (2.5 * atr_val), 2)
                 rationale = (f"High-momentum directional surge: Chg +{chg_pct:.2f}%, ADX {adx:.1f} >= 24, "
-                             f"RSI {f'{rsi:.1f}' if rsi else 'N/A'}. Capturing aggressive trend expansion.")
-            # Strong Bearish Impulse (e.g. Bullion selloff, Energy breakdown)
-            elif (chg_pct <= -0.85) and (cur_p <= ema20 if ema20 else True) and (rsi is None or rsi >= 18.0):
+                             f"RSI {f'{rsi:.1f}' if rsi else 'N/A'}. Capturing early trend expansion.")
+            # Strong Bearish Impulse
+            elif (-1.50 <= chg_pct <= -0.85) and (cur_p <= ema20 if ema20 else True) and (rsi is None or rsi >= 30.0):
                 triggered = True
                 action = "SELL"
                 setup_name = "Directional Volatility Expansion (Bearish)"
                 sl = round(cur_p + (1.4 * atr_val), 2)
                 tgt = round(cur_p - (2.5 * atr_val), 2)
                 rationale = (f"High-momentum directional breakdown: Chg {chg_pct:.2f}%, ADX {adx:.1f} >= 24, "
-                             f"RSI {f'{rsi:.1f}' if rsi else 'N/A'}. Capturing aggressive trend expansion.")
+                             f"RSI {f'{rsi:.1f}' if rsi else 'N/A'}. Capturing early trend expansion.")
 
         if triggered and action:
             is_reversal = ("Exhaustion Mean-Reversion" in setup_name)
