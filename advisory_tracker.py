@@ -1279,21 +1279,19 @@ def dispatch_autonomous_limit_order(trade_entry, asset_type='COMMODITY'):
         from dhan_live_executor import DhanLiveExecutor
         dhan_exec = DhanLiveExecutor()
         
-        # 0. Enforce High-Volatility Commodity Exclusions (Aluminium & Copper excluded per user instruction)
+        # 0. Enforce High-Volatility Commodity Exclusions on Dhan Broker (Aluminium & Copper excluded from real broker execution per user instruction)
         sym_clean = symbol.strip().upper().replace('-FUT', '').replace('.NS', '').replace('.BO', '')
         if (sym_clean in ['COPPERM', 'COPPER', 'ALUMINIUM', 'ALUMINI'] or 
             sym_clean.startswith('COPPER') or 
             sym_clean.startswith('ALU')):
-            print(f"🛑 [HIGH VOLATILITY EXCLUSION] {symbol}: Excluded from Dhan live orders per user preference (Aluminium & Copper).")
-            pt['status'] = 'STAND_ASIDE'
-            pt['action'] = 'STAND_ASIDE'
-            pt['entry_price'] = None
-            pt['quantity'] = 0
-            if 'eod_outcome' in trade_entry:
-                trade_entry['eod_outcome']['outcome'] = 'PROTECTED'
-                trade_entry['eod_outcome']['badge'] = 'Excluded (High Volatility) 🛡️'
-                trade_entry['eod_outcome']['summary'] = f"Contract {symbol} excluded from live Dhan execution per user preference (High volatility / unpredictable)."
-            return {'status': 'EXCLUDED_USER_PREFERENCE', 'reason': 'Aluminium and Copper excluded per user instruction'}
+            print(f"🛑 [BROKER EXCLUSION] {symbol}: Excluded from real Dhan broker execution per user preference. Tracked actively on Trade Analyser portal.")
+            pt['dhan_broker_status'] = 'EXCLUDED_USER_PREFERENCE'
+            pt['live_broker_order'] = {
+                'status': 'EXCLUDED_USER_PREFERENCE',
+                'symbol': symbol,
+                'reason': 'Aluminium and Copper live broker execution excluded per user preference. Tracked actively on Trade Analyser portal.'
+            }
+            return {'status': 'EXCLUDED_USER_PREFERENCE', 'reason': 'Aluminium and Copper live broker execution excluded per user instruction'}
 
         # 0.5 Enforce Universal Multi-Hour Cooldown Guard (Strictly enforced for BOTH BUY and SELL)
         is_cd, cd_msg, cd_rem = check_commodity_cooldown(symbol)
@@ -4817,13 +4815,6 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
         sym = item.get('symbol')
         if not sym or sym not in LOT_SIZES:
-            continue
-
-        # Exclude Aluminium and Copper per user preference (high volatility and unpredictability)
-        sym_clean_u = sym.strip().upper().replace('-FUT', '').replace('.NS', '')
-        if (sym_clean_u in ['ALUMINIUM', 'ALUMINI', 'COPPER', 'COPPERM'] or 
-            sym_clean_u.startswith('ALU') or 
-            sym_clean_u.startswith('COPPER')):
             continue
 
         # Prevent duplicate active positions in the same canonical commodity
