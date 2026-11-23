@@ -210,7 +210,7 @@ class PreTradeRiskEngine:
                    min_reward_risk=1.1, max_active_positions=3,
                    day_h=None, day_l=None, ema20=None, atr=None,
                    ema50=None, vwap=None, chg_pct=None, rsi=None,
-                   is_reversal=False):
+                   is_reversal=False, is_breakout=False):
         """
         Runs comprehensive pre-trade risk validation:
         0. Zero-Tolerance Falling Knife & Counter-Trend Ban (Mandatory)
@@ -230,9 +230,9 @@ class PreTradeRiskEngine:
 
         # 0. ABSOLUTE ZERO-KNIFE-CATCHING HARD MANDATE:
         # Never catch falling knives. Strict trend alignment required across all standard setups.
-        # Genuine Exhaustion Reversal setups (RSI <= 30 at support) are permitted with tight structural stop.
+        # Genuine Exhaustion Reversal setups (RSI <= 30 at support) and Momentum Breakouts are permitted.
         if act_upper == 'BUY':
-            if not is_reversal:
+            if not is_reversal and not is_breakout:
                 if ema50 is not None and entry < (float(ema50) * 0.998):
                     return {
                         "passed": False,
@@ -317,15 +317,17 @@ class PreTradeRiskEngine:
             }
 
         # 7. Option 2: Pullback Retest Sniping Gate Check (if day range is provided)
-        if day_h and day_l and day_h > day_l:
-            retest_res = PullbackRetestGate.validate_retest_entry(symbol, action, entry, day_h, day_l, ema20=ema20, atr=atr)
-            if not retest_res.get('passed'):
-                return {
-                    "passed": False,
-                    "reason": retest_res.get('reason'),
-                    "loss_at_stop_inr": loss_at_stop,
-                    "pullback_code": retest_res.get('code')
-                }
+        # Pullback Retest strictly evaluates pullbacks/retests; momentum breakouts are exempt
+        if not is_reversal and not is_breakout:
+            if day_h and day_l and day_h > day_l:
+                retest_res = PullbackRetestGate.validate_retest_entry(symbol, action, entry, day_h, day_l, ema20=ema20, atr=atr)
+                if not retest_res.get('passed'):
+                    return {
+                        "passed": False,
+                        "reason": retest_res.get('reason'),
+                        "loss_at_stop_inr": loss_at_stop,
+                        "pullback_code": retest_res.get('code')
+                    }
 
         # 7. Portfolio Daily Loss Circuit Breaker
         # Segregated by Asset Class so commodity risk caps don't falsely choke intraday stock trading and vice-versa
@@ -499,7 +501,7 @@ class MonteCarloTimeMachine:
         return []
 
     @classmethod
-    def run_simulation(cls, symbol, entry, stop, target, action="buy", replays=3000, seed=42):
+    def run_simulation(cls, symbol, entry, stop, target, action="buy", replays=3000, seed=42, is_breakout=False):
         """
         Runs empirical Monte Carlo simulation for entry, stop, and target.
         Returns statistical win probability and expected R return.
@@ -564,8 +566,12 @@ class MonteCarloTimeMachine:
         # Expected mathematical return in R units
         expected_r = round(((p_target / 100.0) * r_target) - ((p_stop / 100.0) * 1.0), 3)
 
-        # Mathematical Verdict
-        if resolved_win_rate >= 60.0 and expected_r >= 0.25:
+        # Mathematical Verdict: Momentum Breakouts condition on active regime expansion
+        if is_breakout:
+            verdict = "BREAKOUT_MOMENTUM_EXPANSION"
+            verdict_text = "Breakout Momentum Expansion ⚡ (High-Conviction Breakout)"
+            passed = True
+        elif resolved_win_rate >= 60.0 and expected_r >= 0.25:
             verdict = "STRONG_POSITIVE_EXPECTANCY"
             verdict_text = "Strongly Leans Toward Target 🎯 (High Edge)"
             passed = True

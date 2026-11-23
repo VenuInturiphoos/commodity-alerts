@@ -4927,8 +4927,10 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         bb_high = float(item.get('bb_upper') or (cur_p * 1.02))
 
         # A. Extreme Oversold Exhaustion Reversal (BUY)
-        # Conditions: Daily RSI <= 30.0 OR (cur_p near Lower BB with RSI <= 34.0) OR (severe dump chg_pct <= -1.8% at day low)
-        if (rsi is not None and rsi <= 30.0) or (cur_p <= bb_low * 1.008 and rsi is not None and rsi <= 34.0) or (chg_pct <= -1.8 and day_l > 0 and cur_p <= day_l * 1.015 and rsi is not None and rsi <= 34.0):
+        # Conditions: RSI <= 34.0 or near Lower BB, strictly located at support near Day Low (lower half of range)
+        session_mid_check = (day_h + day_l) / 2.0 if (day_h and day_l and day_h > day_l) else cur_p
+        if (((rsi is not None and rsi <= 34.0) or (cur_p <= bb_low * 1.008 and rsi is not None and rsi <= 38.0) or (chg_pct <= -1.8 and rsi is not None and rsi <= 38.0)) 
+            and (day_l > 0 and cur_p <= day_l * 1.025 and cur_p <= session_mid_check)):
             if day_l > 0 and cur_p >= day_l:
                 triggered = True
                 action = "BUY"
@@ -4937,12 +4939,13 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 revert_target = round(ema20 if (ema20 and ema20 > cur_p) else (cur_p + (1.8 * atr_val)), 2)
                 min_target = round(cur_p + (1.5 * abs(cur_p - sl)), 2)
                 tgt = max(revert_target, min_target)
-                rationale = (f"Extreme oversold exhaustion: RSI {rsi:.1f} <= 30 at support (Day Low: ₹{day_l:,.2f}). "
+                rationale = (f"Extreme oversold exhaustion: RSI {rsi:.1f} <= 34 at support (Day Low: ₹{day_l:,.2f}). "
                              f"Seller exhaustion confirmed; mean-reversion reversal targeting 20 EMA / VWAP (₹{tgt:,.2f}).")
 
         # B. Extreme Overbought Exhaustion Reversal (SELL)
-        # Conditions: Daily RSI >= 70.0 OR (cur_p near Upper BB with RSI >= 66.0) OR (severe rally chg_pct >= +1.8% at day high)
-        elif (rsi is not None and rsi >= 70.0) or (cur_p >= bb_high * 0.992 and rsi is not None and rsi >= 66.0) or (chg_pct >= 1.8 and day_h > 0 and cur_p >= day_h * 0.985 and rsi is not None and rsi >= 66.0):
+        # Conditions: RSI >= 66.0 or near Upper BB, strictly located at resistance near Day High (upper half of range)
+        elif (((rsi is not None and rsi >= 66.0) or (cur_p >= bb_high * 0.992 and rsi is not None and rsi >= 62.0) or (chg_pct >= 1.8 and rsi is not None and rsi >= 62.0))
+              and (day_h > 0 and cur_p >= day_h * 0.975 and cur_p >= session_mid_check)):
             if day_h > 0 and cur_p <= day_h:
                 triggered = True
                 action = "SELL"
@@ -4980,7 +4983,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
         # --- SETUP 2: Volatility Breakout with ADX Momentum ---
         # A. Bullish Day-High Breakout
-        elif (cur_p >= day_h * 0.996) and (chg_pct >= 0.40) and (adx is not None and adx >= 22.0) and (rsi is None or (50 <= rsi <= 78)):
+        elif (cur_p >= day_h * 0.996) and (chg_pct >= 0.40) and (adx is not None and adx >= 22.0) and (rsi is None or rsi <= 82.0):
             if vol_ratio is None or vol_ratio >= 0.30:
                 triggered = True
                 action = "BUY"
@@ -4991,7 +4994,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                              f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: +{chg_pct:.2f}%). Riding directional impulse.")
 
         # B. Bearish Day-Low Breakdown
-        elif (cur_p <= day_l * 1.004) and (chg_pct <= -0.40) and (adx is not None and adx >= 22.0) and (rsi is None or (22 <= rsi <= 50)):
+        elif (cur_p <= day_l * 1.004) and (chg_pct <= -0.40) and (adx is not None and adx >= 22.0) and (rsi is None or rsi >= 18.0):
             if vol_ratio is None or vol_ratio >= 0.30:
                 triggered = True
                 action = "SELL"
@@ -5028,7 +5031,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         # --- SETUP 4: Directional Volatility Expansion (High-Momentum Trending Moves) ---
         if not triggered and (adx is not None and adx >= 24.0) and abs(chg_pct) >= 0.85:
             # Strong Bullish Impulse (e.g. Natural Gas rally, Crude surge)
-            if (chg_pct >= 0.85) and (cur_p >= ema20 if ema20 else True) and (rsi is None or (52.0 <= rsi <= 78.0)):
+            if (chg_pct >= 0.85) and (cur_p >= ema20 if ema20 else True) and (rsi is None or rsi <= 82.0):
                 triggered = True
                 action = "BUY"
                 setup_name = "Directional Volatility Expansion (Bullish)"
@@ -5037,7 +5040,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 rationale = (f"High-momentum directional surge: Chg +{chg_pct:.2f}%, ADX {adx:.1f} >= 24, "
                              f"RSI {f'{rsi:.1f}' if rsi else 'N/A'}. Capturing aggressive trend expansion.")
             # Strong Bearish Impulse (e.g. Bullion selloff, Energy breakdown)
-            elif (chg_pct <= -0.85) and (cur_p <= ema20 if ema20 else True) and (rsi is None or (22.0 <= rsi <= 48.0)):
+            elif (chg_pct <= -0.85) and (cur_p <= ema20 if ema20 else True) and (rsi is None or rsi >= 18.0):
                 triggered = True
                 action = "SELL"
                 setup_name = "Directional Volatility Expansion (Bearish)"
@@ -5048,15 +5051,20 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
         if triggered and action:
             is_reversal = ("Exhaustion Mean-Reversion" in setup_name)
+            is_breakout = ("Breakout" in setup_name or "Breakdown" in setup_name or "Expansion" in setup_name)
 
             # 🚫 Universal Anti-Bottom-Shorting / Anti-Top-Buying Guard:
-            # (Completely prevents selling into exhausted oversold floors or buying into overbought tops)
-            if action == "SELL" and (rsi is not None and rsi <= 32.0):
-                print(f"🚫 Universal Exhaustion Guard: Blocked {sym} SELL. RSI ({rsi:.1f}) is <= 32.0 (extreme oversold). Selling into exhausted floor strictly prohibited.")
+            # For pullbacks/reversals, prevent buying into exhausted ceilings (RSI >= 68) or selling into floors (RSI <= 32).
+            # For genuine breakouts/expansions, allow momentum to run up to extreme exhaustion (RSI >= 82 for BUY, RSI <= 18 for SELL).
+            max_buy_rsi = 82.0 if is_breakout else 68.0
+            min_sell_rsi = 18.0 if is_breakout else 32.0
+
+            if action == "SELL" and (rsi is not None and rsi <= min_sell_rsi):
+                print(f"🚫 Universal Exhaustion Guard: Blocked {sym} SELL. RSI ({rsi:.1f}) is <= {min_sell_rsi:.1f} (extreme oversold). Selling into exhausted floor strictly prohibited.")
                 continue
 
-            if action == "BUY" and (rsi is not None and rsi >= 68.0):
-                print(f"🚫 Universal Exhaustion Guard: Blocked {sym} BUY. RSI ({rsi:.1f}) is >= 68.0 (extreme overbought). Buying into exhausted ceiling strictly prohibited.")
+            if action == "BUY" and (rsi is not None and rsi >= max_buy_rsi):
+                print(f"🚫 Universal Exhaustion Guard: Blocked {sym} BUY. RSI ({rsi:.1f}) is >= {max_buy_rsi:.1f} (extreme overbought). Buying into exhausted ceiling strictly prohibited.")
                 continue
 
             # 🛡️ Consecutive Directional Loss Guard (trader-risk skill / Anti-Whipsaw Freeze):
@@ -5121,7 +5129,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     if cur_p < (session_mid * 0.998):
                         print(f"🚫 Trend-Vector Gate: Blocked {sym} BUY. Price (₹{cur_p:,.2f}) is in the lower half of today's range (below Midpoint ₹{session_mid:,.2f}). Intraday flow is downward.")
                         continue
-                    if ema50 is not None and cur_p < (ema50 * 0.998):
+                    if not is_breakout and ema50 is not None and cur_p < (ema50 * 0.998):
                         print(f"🚫 Directional Trend Guard: Blocked {sym} BUY. Price (₹{cur_p:,.2f}) is below 50 EMA (₹{ema50:,.2f}). Counter-trend buying strictly prohibited.")
                         continue
                     if session_vwap > 0 and cur_p < (session_vwap * 0.998):
@@ -5132,7 +5140,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     if cur_p > (session_mid * 1.002):
                         print(f"🚫 Trend-Vector Gate: Blocked {sym} SELL. Price (₹{cur_p:,.2f}) is in the upper half of today's range (above Midpoint ₹{session_mid:,.2f}). Intraday flow is upward.")
                         continue
-                    if ema50 is not None and cur_p > (ema50 * 1.002):
+                    if not is_breakout and ema50 is not None and cur_p > (ema50 * 1.002):
                         print(f"🚫 Directional Trend Guard: Blocked {sym} SELL. Price (₹{cur_p:,.2f}) is above 50 EMA (₹{ema50:,.2f}). Counter-trend shorting strictly prohibited.")
                         continue
                     if session_vwap > 0 and cur_p > (session_vwap * 1.002):
@@ -5156,9 +5164,10 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     pass
 
             # 🛡️ Option 2: Pullback-Only Retest Sniping Gate (Anti-Chasing & Structural Proximity)
-            # Reversals enter at extreme support/resistance boundaries so breakout chasing check is skipped.
+            # Reversals enter at extreme support/resistance boundaries; Breakouts enter on range expansion.
+            # Retest gate strictly applies to pullback & trend-following confluence setups.
             pullback_eval = {"passed": True, "status": "CONFIRMED", "reason": "Standard pullback confluence."}
-            if not is_reversal:
+            if not is_reversal and not is_breakout:
                 pullback_eval = PullbackRetestGate.validate_retest_entry(sym, action, cur_p, day_h, day_l, ema20=ema20, atr=atr_val)
                 if not pullback_eval.get('passed'):
                     print(f"🛡️ Option 2 Pullback Gate Blocked {sym} {action}: {pullback_eval.get('reason')}")
@@ -5238,7 +5247,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 max_loss_per_trade_inr=MAX_LOSS_PER_TRADE_INR, max_daily_loss_inr=MAX_DAILY_LOSS_INR,
                 day_h=day_h, day_l=day_l, ema20=ema20, atr=atr_val,
                 ema50=ema50, vwap=session_vwap, chg_pct=chg_pct, rsi=rsi,
-                is_reversal=is_reversal
+                is_reversal=is_reversal, is_breakout=is_breakout
             )
             if not risk_metrics.get('passed'):
                 print(f"🛡️ Pre-Trade Risk Engine Blocked {contract_sym} {action}: {risk_metrics.get('reason')}")
@@ -5256,19 +5265,20 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 pass
 
             # Run Monte Carlo Time Machine simulation (3,000 replays)
-            sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, sl, tgt, action=action.lower(), replays=3000)
+            sim_metrics = MonteCarloTimeMachine.run_simulation(sym, cur_p, sl, tgt, action=action.lower(), replays=3000, is_breakout=is_breakout)
             if not sim_metrics.get('passed'):
                 print(f"🎲 Monte Carlo Time Machine Blocked {sym} {action}: {sim_metrics.get('summary')}")
                 continue
 
             # Rigorous Profitability Verification Gate (Commodities):
-            # Must demonstrate statistical edge: positive expectancy (>= +0.05R) and at least 10% simulated target reach
-            exp_r = float(sim_metrics.get('expected_r', 0.0) or 0.0)
-            win_rate = float(sim_metrics.get('resolved_win_rate', 0.0) or sim_metrics.get('resolved_win_rate_pct', 0.0) or 0.0)
-            p_tgt = float(sim_metrics.get('p_target_pct', 0.0) or 0.0)
-            if exp_r < 0.05 or win_rate < 40.0 or p_tgt < 10.0:
-                print(f"🛡️ Profitability Gate Blocked {sym} {action}: Statistical replay shows low target hit probability (P_tgt: {p_tgt:.1f}%, Exp R: {exp_r:+.2f}R, Win Rate: {win_rate:.1f}%). Standing aside.")
-                continue
+            # Must demonstrate statistical edge for pullbacks/reversals; breakouts confirmed by momentum
+            if not is_breakout:
+                exp_r = float(sim_metrics.get('expected_r', 0.0) or 0.0)
+                win_rate = float(sim_metrics.get('resolved_win_rate', 0.0) or sim_metrics.get('resolved_win_rate_pct', 0.0) or 0.0)
+                p_tgt = float(sim_metrics.get('p_target_pct', 0.0) or 0.0)
+                if exp_r < 0.05 or win_rate < 40.0 or p_tgt < 10.0:
+                    print(f"🛡️ Profitability Gate Blocked {sym} {action}: Statistical replay shows low target hit probability (P_tgt: {p_tgt:.1f}%, Exp R: {exp_r:+.2f}R, Win Rate: {win_rate:.1f}%). Standing aside.")
+                    continue
 
             # Check Margin Availability for commodity trigger
             # If available balance < ₹1.5L target margin, downscale to affordable whole lots instead of skipping
