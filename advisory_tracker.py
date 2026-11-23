@@ -4765,11 +4765,12 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             print(f"Warning: Could not initialize fallback EmailAlerter: {e}")
             alerter = None
         
-    # Institutional Liquidity Window: 11:30 AM to 10:45 PM IST
-    # Avoids low-volume 09:00 - 11:30 AM Asian session chop; captures London (01:30 PM) and US (07:00 PM) institutional expansions.
+    # Active Trading Window: 09:00 AM to 11:15 PM IST
+    # Evaluates morning pre-ignition coils (09:00 - 09:30 AM) with Daily 50-EMA macro trend guard,
+    # as well as London (01:30 PM) and US (07:00 PM) institutional expansions.
     hour = now_dt.hour
     minute = now_dt.minute
-    is_in_window = ((hour == 11 and minute >= 30) or (12 <= hour < 22) or (hour == 22 and minute <= 45))
+    is_in_window = ((9 <= hour < 23) or (hour == 23 and minute <= 15))
     if not is_in_window:
         return False
 
