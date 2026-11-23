@@ -76,7 +76,7 @@ def git_sync_changes():
             print("[SYNC] Detected changes in web files. Pushing to GitHub...")
             subprocess.run(["git", "add", "web/"], check=True)
             subprocess.run(["git", "commit", "-m", "Auto-update trades and alerts via Local Daemon [skip ci]"], check=True)
-            subprocess.run(["git", "pull", "--rebase", "-X", "theirs", "origin", "main"], check=True)
+            subprocess.run(["git", "pull", "--rebase", "--autostash", "-X", "theirs", "origin", "main"], check=True)
             subprocess.run(["git", "push", "origin", "main"], check=True)
             print("[SYNC] Successfully pushed to origin main.")
     except Exception as e:
