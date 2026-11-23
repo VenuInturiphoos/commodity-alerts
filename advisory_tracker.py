@@ -4765,10 +4765,11 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             print(f"Warning: Could not initialize fallback EmailAlerter: {e}")
             alerter = None
         
-    # Active intraday window: 09:05 AM to 10:45 PM IST
+    # Institutional Liquidity Window: 11:30 AM to 10:45 PM IST
+    # Avoids low-volume 09:00 - 11:30 AM Asian session chop; captures London (01:30 PM) and US (07:00 PM) institutional expansions.
     hour = now_dt.hour
     minute = now_dt.minute
-    is_in_window = (hour == 9 and minute >= 5) or (10 <= hour < 22) or (hour == 22 and minute <= 45)
+    is_in_window = ((hour == 11 and minute >= 30) or (12 <= hour < 22) or (hour == 22 and minute <= 45))
     if not is_in_window:
         return False
 
@@ -4856,8 +4857,10 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         if not sym or sym not in LOT_SIZES:
             continue
 
-        # Prevent duplicate active positions in the same canonical commodity
+        # Strict Exclusion Guard: Copper, Natural Gas, and Aluminium are excluded per user preference
         canon_sym = get_canonical_commodity_root(sym)
+        if canon_sym in ['COPPER', 'NATURALGAS', 'ALUMINIUM']:
+            continue
         if any(
             get_canonical_commodity_root(t.get('symbol')) == canon_sym
             and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT'] 
@@ -5000,11 +5003,11 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                  f"Relief rally tested 20 EMA resistance (₹{ema20:,.2f}) with healthy RSI {rsi:.1f}. Structural stop placed above 20 EMA resistance (₹{sl:,.2f}).")
 
         # -------------------------------------------------------------
-        # PERSONALITY B: NATURAL GAS & SILVER -> VOLATILITY BREAKOUT & EXPANSION ENGINE
+        # PERSONALITY B: SILVER -> VOLATILITY BREAKOUT & EXPANSION ENGINE
         # -------------------------------------------------------------
         elif is_momentum_asset and not triggered:
-            # Bullish Day-High Breakout (Strict Anti-Chasing Cap: chg_pct strictly <= 1.00%)
-            if (cur_p >= day_h * 0.996) and (0.30 <= chg_pct <= 1.00) and (adx is not None and adx >= 20.0) and (rsi is None or rsi <= 68.0):
+            # Bullish Day-High Breakout (Strict Anti-Chasing Cap: chg_pct strictly <= 1.00% | Trend-Aligned: cur_p >= ema50)
+            if (cur_p >= day_h * 0.996) and (0.30 <= chg_pct <= 1.00) and (adx is not None and adx >= 20.0) and (rsi is None or rsi <= 68.0) and (ema50 is None or cur_p >= ema50):
                 if vol_ratio is None or vol_ratio >= 0.30:
                     triggered = True
                     action = "BUY"
@@ -5012,10 +5015,10 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     sl = round(cur_p - (0.85 * atr_val), 2)
                     tgt = round(cur_p + (2.4 * atr_val), 2)
                     rationale = (f"Breaking Day High ₹{day_h:,.2f} with strong trend momentum (ADX {adx:.1f} >= 20 | "
-                                 f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: +{chg_pct:.2f}%). Riding directional impulse on momentum asset.")
+                                 f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: +{chg_pct:.2f}% | Above 50 EMA). Riding directional impulse on Silver.")
 
-            # Bearish Day-Low Breakdown (Strict Anti-Chasing Floor: chg_pct strictly >= -1.00%)
-            elif (cur_p <= day_l * 1.004) and (-1.00 <= chg_pct <= -0.30) and (adx is not None and adx >= 20.0) and (rsi is None or rsi >= 32.0):
+            # Bearish Day-Low Breakdown (Strict Anti-Chasing Floor: chg_pct strictly >= -1.00% | Trend-Aligned: cur_p <= ema50)
+            elif (cur_p <= day_l * 1.004) and (-1.00 <= chg_pct <= -0.30) and (adx is not None and adx >= 20.0) and (rsi is None or rsi >= 32.0) and (ema50 is None or cur_p <= ema50):
                 if vol_ratio is None or vol_ratio >= 0.30:
                     triggered = True
                     action = "SELL"
@@ -5023,7 +5026,28 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     sl = round(cur_p + (0.85 * atr_val), 2)
                     tgt = round(cur_p - (2.4 * atr_val), 2)
                     rationale = (f"Breaking Day Low ₹{day_l:,.2f} with strong trend breakdown (ADX {adx:.1f} >= 20 | "
-                                 f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: {chg_pct:.2f}%). Riding directional impulse on momentum asset.")
+                                 f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: {chg_pct:.2f}% | Below 50 EMA). Riding directional impulse on Silver.")
+
+        # -------------------------------------------------------------
+        # PERSONALITY C: ZINC -> PRE-IGNITION VOLATILITY COIL (TREND-ALIGNED)
+        # -------------------------------------------------------------
+        elif 'ZINC' in clean_sym_upper and not triggered:
+            # Bullish Coil: ADX >= 18, Price >= 50 EMA
+            if (ema20 is not None and ema50 is not None and cur_p >= ema50 and cur_p >= ema20 * 0.998) and (adx is not None and adx >= 18.0) and (rsi is None or (48.0 <= rsi <= 65.0)):
+                triggered = True
+                action = "BUY"
+                setup_name = "Pre-Ignition Volatility Coil (Trend-Aligned)"
+                sl = round(cur_p - (1.1 * atr_val), 2)
+                tgt = round(cur_p + (2.2 * atr_val), 2)
+                rationale = f"Zinc Volatility Coil forming above 50 EMA (₹{ema50:,.2f}) & 20 EMA (₹{ema20:,.2f}) with ADX {adx:.1f}. High-probability trend expansion."
+            # Bearish Coil: ADX >= 18, Price <= 50 EMA
+            elif (ema20 is not None and ema50 is not None and cur_p <= ema50 and cur_p <= ema20 * 1.002) and (adx is not None and adx >= 18.0) and (rsi is None or (35.0 <= rsi <= 52.0)):
+                triggered = True
+                action = "SELL"
+                setup_name = "Pre-Ignition Volatility Coil (Trend-Aligned)"
+                sl = round(cur_p + (1.1 * atr_val), 2)
+                tgt = round(cur_p - (2.2 * atr_val), 2)
+                rationale = f"Zinc Volatility Coil breakdown below 50 EMA (₹{ema50:,.2f}) & 20 EMA (₹{ema20:,.2f}) with ADX {adx:.1f}. High-probability trend breakdown."
 
         # --- SETUP 2: Standard Day-High / Day-Low Volatility Breakout (For Non-Tailored Assets) ---
         if not triggered and not is_trend_asset and not is_momentum_asset:
