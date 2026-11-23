@@ -83,24 +83,27 @@ class PullbackRetestGate:
        - GOLDM (20 units): max stop distance <= 300.0 pts (₹6,000 max risk)
     """
 
+    # Volatility-Calibrated Stop Distances (Option 2 Breathing Room)
+    # Calibrated to avoid premature noise stop-outs on Mini/Micro contracts
+    # while strictly keeping maximum trade risk capped well under ₹3,500.
     MAX_STOP_DISTANCE = {
-        'ALUMINIUM': 1.00,
-        'ALUMINI': 1.00,
-        'ZINC': 1.50,
-        'ZINCM': 1.50,
-        'ZINCMINI': 1.50,
-        'COPPER': 2.50,
-        'COPPERM': 2.50,
-        'SILVER': 1200.0,
-        'SILVERM': 1200.0,
-        'SILVERMIC': 1200.0,
-        'CRUDEOIL': 50.0,
-        'CRUDEOILM': 50.0,
-        'NATURALGAS': 2.00,
-        'NATURALGASM': 2.00,
-        'GOLD': 300.0,
-        'GOLDM': 300.0,
-        'GOLDTEN': 300.0,
+        'ALUMINIUM': 2.00,
+        'ALUMINI': 2.00,
+        'ZINC': 3.00,       # 3.0 pts on Zinc Mini = ₹3,000 max risk (prevents noise stop-outs)
+        'ZINCM': 3.00,
+        'ZINCMINI': 3.00,
+        'COPPER': 5.00,
+        'COPPERM': 5.00,
+        'SILVER': 2400.0,   # 2,400 pts on Silver Micro = ₹2,400 max risk (absorbs Silver wicks)
+        'SILVERM': 2400.0,
+        'SILVERMIC': 2400.0,
+        'CRUDEOIL': 85.0,   # 85 pts on Crude Mini = ₹850 max risk (absorbs intraday wicks)
+        'CRUDEOILM': 85.0,
+        'NATURALGAS': 5.00, # 5.0 pts on NatGas Mini = ₹1,250 max risk (survives 2-3 pt noise)
+        'NATURALGASM': 5.00,
+        'GOLD': 650.0,      # 650 pts on Gold Ten = ₹650 max risk
+        'GOLDM': 650.0,
+        'GOLDTEN': 650.0,
     }
 
     @classmethod

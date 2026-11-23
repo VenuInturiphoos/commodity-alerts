@@ -765,13 +765,21 @@ def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=Non
     contract_max_stop = PullbackRetestGate.MAX_STOP_DISTANCE.get(clean_sym)
         
     # Option A (ATR Wick Buffer Calibration):
-    # Provides a breathing room buffer beyond structural wicks (0.30x ATR; min 35 pts on Crude Oil)
-    # to avoid premature noise stop-outs while staying well under the ₹6,000 max loss cap.
-    atr_buf = round(atr * 0.30, 2) if (atr and atr > 0) else round(cur_p * 0.0035, 2)
+    # Provides reasonable breathing room beyond structural wicks (0.40x-0.50x ATR)
+    # to avoid premature noise stop-outs while keeping maximum risk strictly managed.
+    atr_buf = round(atr * 0.40, 2) if (atr and atr > 0) else round(cur_p * 0.0045, 2)
     if 'CRUDE' in clean_sym:
-        atr_buf = max(atr_buf, 35.0)
+        atr_buf = max(atr_buf, 45.0)
+    elif 'NAT' in clean_sym:
+        atr_buf = max(atr_buf, 3.0)
+    elif 'ZINC' in clean_sym:
+        atr_buf = max(atr_buf, 1.80)
+    elif 'SILVER' in clean_sym:
+        atr_buf = max(atr_buf, 1400.0)
+    elif 'GOLD' in clean_sym:
+        atr_buf = max(atr_buf, 400.0)
     else:
-        atr_buf = max(atr_buf, round(cur_p * 0.0020, 2))
+        atr_buf = max(atr_buf, round(cur_p * 0.0025, 2))
     
     if action.upper() == 'SELL':
         ref_high = max(cur_p, day_h) if day_h and day_h > 0 else cur_p
