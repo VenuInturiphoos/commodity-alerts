@@ -1,29 +1,29 @@
 {
-  "last_updated": "23 Nov 2026, 08:03 PM IST",
+  "last_updated": "23 Nov 2026, 08:04 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
     "total_signals": 82,
     "executed_count": 14,
     "correct_count": 6,
-    "wrong_count": 6,
+    "wrong_count": 7,
     "protected_count": 68,
-    "win_rate_pct": 50.0,
+    "win_rate_pct": 46.2,
     "broker": "Dhan",
-    "total_gross_pnl_inr": -1339.17,
-    "total_charges_inr": 1426.64,
-    "total_pnl_inr": -2765.81,
-    "commodity_pnl_inr": -3451.12,
+    "total_gross_pnl_inr": -4339.17,
+    "total_charges_inr": 1541.54,
+    "total_pnl_inr": -5880.71,
+    "commodity_pnl_inr": -6566.02,
     "intraday_pnl_inr": 685.31,
     "intraday_booked_profit_inr": 685.31,
     "intraday_pool_balance_inr": 30685.31,
-    "avg_trade_pnl_inr": -197.56,
-    "active_trades_count": 2,
+    "avg_trade_pnl_inr": -420.05,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
-    "current_cash_inr": 297234.19,
-    "used_margin_inr": 50113.02,
-    "available_cash_inr": 247121.17,
-    "net_worth_inr": 297234.19
+    "current_cash_inr": 294119.29,
+    "used_margin_inr": 12686.3,
+    "available_cash_inr": 281432.99,
+    "net_worth_inr": 294119.29
   },
   "trades": [
     {
@@ -34,7 +34,7 @@
       "time_6pm": "08:03 PM IST",
       "time_validation": "08:03 PM IST",
       "time_615": "08:03 PM IST",
-      "time_exit": "11:45 PM IST",
+      "time_exit": "08:04 PM IST",
       "symbol": "ZINCMINI",
       "name": "Zinc Mini",
       "lot_size": 1000,
@@ -114,18 +114,18 @@
         "quantity": 1000,
         "entry_price": 396.05,
         "entry_time": "08:03 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "ACTIVE",
+        "exit_price": 393.05,
+        "exit_time": "08:04 PM IST",
+        "pnl_points": -3.0,
+        "pnl_inr": -3114.9,
+        "status": "CLOSED",
         "margin_required_inr": 37426.72,
         "target": 399.65,
         "stop_loss": 393.05,
         "initial_stop_loss": 393.05,
         "original_sl": 393.05,
         "peak_high": 396.05,
-        "trough_low": 396.05,
+        "trough_low": 376.1,
         "entry_day_high": 396.05,
         "entry_day_low": 396.05,
         "live_broker_order": {
@@ -144,15 +144,66 @@
             },
             "data": ""
           }
-        }
+        },
+        "gross_pnl_inr": -3000.0,
+        "charges": {
+          "broker": "Dhan",
+          "segment": "COMMODITY_FUTURES",
+          "buy_turnover": 396050.0,
+          "sell_turnover": 393050.0,
+          "total_turnover": 789100.0,
+          "brokerage": 40.0,
+          "buy_brokerage": 20.0,
+          "sell_brokerage": 20.0,
+          "stt_ctt": 39.3,
+          "exchange_charges": 16.57,
+          "sebi_charges": 0.79,
+          "stamp_duty": 7.92,
+          "gst": 10.32,
+          "dp_charges": 0.0,
+          "total_charges": 114.9,
+          "gross_pnl": -3000.0,
+          "net_pnl": -3114.9,
+          "summary_text": "Gross: \u20b9-3,000.00 | Dhan Charges: -\u20b9114.90 (Brok \u20b940.00 + Taxes \u20b974.90) | Net: \u20b9-3,114.90"
+        },
+        "net_pnl_inr": -3114.9,
+        "exit_trigger": "STOP_LOSS_HIT"
       },
       "eod_outcome": {
-        "session_close": null,
+        "session_close": 393.05,
         "circuit_limit": null,
-        "outcome": "PENDING",
-        "badge": "Active Trigger \u26a1",
-        "pnl_display": "Ticking Live...",
-        "summary": "Day-High Volatility Breakout active: BUY @ \u20b9396.05 (Target: \u20b9399.65, SL: \u20b9393.05) | Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R"
+        "outcome": "WRONG",
+        "badge": "Stop Loss Hit \ud83d\uded1 (08:04 PM IST)",
+        "pnl_display": "\u20b9-3,114.90",
+        "summary": "Stop-Loss Triggered \ud83d\uded1 (Exit \u20b9393.05) at 08:04 PM IST. Entry: \u20b9396.05 -> Exit: \u20b9393.05 (Gross: \u20b9-3,000.00 | Dhan: -\u20b9114.90 | Net: \u20b9-3,114.90).",
+        "exit_time": "08:04 PM IST",
+        "exit_trigger": "STOP_LOSS_HIT",
+        "gross_pnl_inr": -3000.0,
+        "charges": {
+          "broker": "Dhan",
+          "segment": "COMMODITY_FUTURES",
+          "buy_turnover": 396050.0,
+          "sell_turnover": 393050.0,
+          "total_turnover": 789100.0,
+          "brokerage": 40.0,
+          "buy_brokerage": 20.0,
+          "sell_brokerage": 20.0,
+          "stt_ctt": 39.3,
+          "exchange_charges": 16.57,
+          "sebi_charges": 0.79,
+          "stamp_duty": 7.92,
+          "gst": 10.32,
+          "dp_charges": 0.0,
+          "total_charges": 114.9,
+          "gross_pnl": -3000.0,
+          "net_pnl": -3114.9,
+          "summary_text": "Gross: \u20b9-3,000.00 | Dhan Charges: -\u20b9114.90 (Brok \u20b940.00 + Taxes \u20b974.90) | Net: \u20b9-3,114.90"
+        },
+        "net_pnl_inr": -3114.9
+      },
+      "live_price_data": {
+        "current_price": 376.1,
+        "change_pct": -5.04
       }
     },
     {
@@ -428,8 +479,8 @@
         "entry_time": "08:01 PM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": 23.0,
-        "pnl_inr": 23.0,
+        "pnl_points": -162.0,
+        "pnl_inr": -162.0,
         "status": "ACTIVE",
         "margin_required_inr": 12686.3,
         "target": 127643.0,
@@ -437,7 +488,7 @@
         "initial_stop_loss": 126213.0,
         "original_sl": 126213.0,
         "peak_high": 126886.0,
-        "trough_low": 126863.0,
+        "trough_low": 126701.0,
         "entry_day_high": 126863.0,
         "entry_day_low": 126863.0,
         "live_broker_order": {
@@ -467,8 +518,8 @@
         "summary": "Day-High Volatility Breakout active: BUY @ \u20b9126,863.00 (Target: \u20b9127,643.00, SL: \u20b9126,213.00) | 3,000 Replays: 29.2% Target | 55.5% Stop | Expected: -0.20R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))"
       },
       "live_price_data": {
-        "current_price": 126886.0,
-        "change_pct": 0.02
+        "current_price": 126701.0,
+        "change_pct": -0.13
       }
     },
     {
