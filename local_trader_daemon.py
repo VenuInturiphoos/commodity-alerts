@@ -12,9 +12,31 @@ import socket
 import time
 import signal
 import subprocess
+import fcntl
 from datetime import datetime
 import pytz
 import urllib3.util.connection as urllib_conn
+
+# =========================================================================
+# MANDATORY SINGLETON PROCESS GUARD
+# Prevents duplicate daemon processes from running concurrently, which causes
+# race conditions, state clobbering, and duplicate email alert dispatch.
+# =========================================================================
+LOCK_FILE = '/tmp/commodity_trader_daemon.lock'
+lock_fd = None
+
+def acquire_singleton_lock():
+    global lock_fd
+    try:
+        lock_fd = open(LOCK_FILE, 'w')
+        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        lock_fd.write(str(os.getpid()))
+        lock_fd.flush()
+    except (IOError, BlockingIOError):
+        print(f"🛑 [SINGLETON GUARD] Another instance of local_trader_daemon is already active. Terminating duplicate process (PID {os.getpid()}) immediately.")
+        sys.exit(0)
+
+acquire_singleton_lock()
 
 # Force IPv4 routing for Dhan API requests to strictly match whitelisted Primary Static IP
 try:

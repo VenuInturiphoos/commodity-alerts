@@ -219,38 +219,66 @@ class EmailAlerter:
 
         return False
 
-    def _is_duplicate_trade_alert(self, subject, channel="EMAIL", window_minutes=15):
+    DEDUP_CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.local_dedup_cache.json')
+
+    def _get_dedup_window(self, subject, default_minutes=15):
+        """
+        Determines the protective cooldown window for alert deduplication.
+        Real-time technical entry triggers strictly receive 120-minute (2 hour) lockout
+        to prevent duplicate or recurring email spam while an active trade is underway.
+        """
+        sub_upper = subject.upper()
+        if 'REAL-TIME TECHNICAL TRIGGER' in sub_upper or 'INTRADAY MIS TRIGGER' in sub_upper or 'STOCK FUTURE TRIGGER' in sub_upper:
+            return 120
+        if '100% TARGET ACHIEVED' in sub_upper or 'TARGET HIT' in sub_upper or 'STOP-LOSS' in sub_upper:
+            return 30
+        return default_minutes
+
+    def _is_duplicate_trade_alert(self, subject, channel="EMAIL", window_minutes=None):
         """
         Guards against sending duplicate trade execution alerts across overlapping
-        cron cycles or runner loops within a 15-minute window.
+        cron cycles or runner loops.
+        Uses a local non-git persisted cache file (.local_dedup_cache.json) so Git pulls
+        never wipe out active deduplication timestamps.
         Strips dynamic timestamps and price fractions to create a deterministic signature.
-        e.g. '⚡ [REAL-TIME TECHNICAL TRIGGER] Copper Mini SELL @ ₹1,277.65 (02:35 PM IST)'
-        -> key: '⚡ [REAL-TIME TECHNICAL TRIGGER] COPPER MINI SELL'
+        e.g. '⚡ [REAL-TIME TECHNICAL TRIGGER] Silver Micro BUY @ ₹154,287.00 (12:28 PM IST)'
+        -> key: 'EMAIL_⚡ [REAL-TIME TECHNICAL TRIGGER] SILVER MICRO BUY'
         """
         try:
             norm_key = re.sub(r'\(.*?\)', '', subject)
             norm_key = re.sub(r'@\s*₹?[\d,.]+', '', norm_key)
             norm_key = f"{channel}_" + re.sub(r'\s+', ' ', norm_key).strip().upper()
 
+            req_window = window_minutes if window_minutes is not None else self._get_dedup_window(subject)
             now = datetime.now()
-            local_state_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
-            if os.path.exists(local_state_path):
-                with open(local_state_path, 'r') as f:
-                    state = json.load(f)
-                dedup_store = state.get('__email_dedup_cache__', {})
-                if norm_key in dedup_store:
-                    last_sent_str = dedup_store[norm_key]
-                    last_sent_dt = datetime.fromisoformat(last_sent_str)
-                    elapsed = (now - last_sent_dt).total_seconds()
-                    if elapsed < (window_minutes * 60):
-                        return True
+
+            # Read from persistent local non-git cache first, then fallback to web/alerts_state.json
+            dedup_store = {}
+            for cache_path in [self.DEDUP_CACHE_FILE, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')]:
+                if os.path.exists(cache_path):
+                    try:
+                        with open(cache_path, 'r') as f:
+                            data = json.load(f)
+                        dedup_store.update(data.get('__email_dedup_cache__', {}))
+                    except Exception:
+                        pass
+
+            if norm_key in dedup_store:
+                last_sent_str = dedup_store[norm_key]
+                last_sent_dt = datetime.fromisoformat(last_sent_str)
+                elapsed = (now - last_sent_dt).total_seconds()
+                if elapsed < (req_window * 60):
+                    rem_mins = int((req_window * 60 - elapsed) / 60)
+                    print(f"🛡️ [{channel} DEDUP] Suppressed duplicate alert: '{norm_key}' dispatched {int(elapsed/60)}m ago ({rem_mins}m remaining in {req_window}m lockout window).")
+                    return True
         except Exception as e:
             print(f"Warning: Exception in _is_duplicate_trade_alert: {e}")
         return False
 
     def _record_trade_alert_sent(self, subject, channel="EMAIL"):
         """
-        Records dispatched trade alert signature in web/alerts_state.json cache.
+        Records dispatched trade alert signature in persistent local non-git cache
+        AND web/alerts_state.json. Uses file locking to prevent race conditions.
         Auto-purges entries older than 24 hours.
         """
         try:
@@ -259,6 +287,34 @@ class EmailAlerter:
             norm_key = f"{channel}_" + re.sub(r'\s+', ' ', norm_key).strip().upper()
 
             now = datetime.now()
+            
+            # 1. Update persistent local non-git cache with file locking
+            import fcntl
+            local_dedup_state = {}
+            if os.path.exists(self.DEDUP_CACHE_FILE):
+                try:
+                    with open(self.DEDUP_CACHE_FILE, 'r') as lf:
+                        local_dedup_state = json.load(lf)
+                except Exception:
+                    local_dedup_state = {}
+
+            l_store = local_dedup_state.setdefault('__email_dedup_cache__', {})
+            l_store[norm_key] = now.isoformat()
+            # Purge older than 24h
+            l_del = [k for k, v in l_store.items() if (now - datetime.fromisoformat(v)).total_seconds() > 86400]
+            for k in l_del:
+                l_store.pop(k, None)
+
+            try:
+                with open(self.DEDUP_CACHE_FILE, 'w') as lf:
+                    fcntl.flock(lf, fcntl.LOCK_EX)
+                    json.dump(local_dedup_state, lf, indent=2)
+                    fcntl.flock(lf, fcntl.LOCK_UN)
+            except Exception as lock_err:
+                with open(self.DEDUP_CACHE_FILE, 'w') as lf:
+                    json.dump(local_dedup_state, lf, indent=2)
+
+            # 2. Also mirror to web/alerts_state.json for web dashboard visibility
             local_state_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
             state = {}
             if os.path.exists(local_state_path):
@@ -270,8 +326,6 @@ class EmailAlerter:
 
             dedup_store = state.setdefault('__email_dedup_cache__', {})
             dedup_store[norm_key] = now.isoformat()
-
-            # Purge entries older than 24 hours
             keys_to_del = [k for k, v in dedup_store.items() if (now - datetime.fromisoformat(v)).total_seconds() > 86400]
             for k in keys_to_del:
                 dedup_store.pop(k, None)
