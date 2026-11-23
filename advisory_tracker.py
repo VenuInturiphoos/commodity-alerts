@@ -4985,7 +4985,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         # ⚠️ Strict Session & Regime Restrictions:
         # 1. Blocked before 01:30 PM IST (Morning ranges are naturally narrow; fake coil trap).
         # 2. Blocked if RSI is oversold (< 38) for SELL or overbought (> 62) for BUY.
-        elif not (now_dt.hour < 13 or (now_dt.hour == 13 and now_dt.minute < 30)):
+        if not triggered and not (now_dt.hour < 13 or (now_dt.hour == 13 and now_dt.minute < 30)):
             pm_signal = PreMoveDetector.evaluate_live_snapshot(
                 sym, cur_p, day_h, day_l, p_close, chg_pct, adx=adx, rsi=rsi,
                 atr=atr_val, ema20=ema20, ema50=ema50, volume=vol, avg_volume=avg_vol
@@ -5006,30 +5006,31 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                  f"{' | '.join(pm_signal.reasons[:3])}. Early coil entry prior to breakout expansion.")
 
         # --- SETUP 2: Volatility Breakout with ADX Momentum ---
-        # A. Bullish Day-High Breakout
-        elif (cur_p >= day_h * 0.996) and (chg_pct >= 0.40) and (adx is not None and adx >= 20.0) and (rsi is None or rsi <= 82.0):
-            if vol_ratio is None or vol_ratio >= 0.30:
-                triggered = True
-                action = "BUY"
-                setup_name = "Day-High Volatility Breakout"
-                sl = round(cur_p - (1.3 * atr_val), 2)
-                tgt = round(cur_p + (2.4 * atr_val), 2)
-                rationale = (f"Breaking Day High ₹{day_h:,.2f} with strong trend momentum (ADX {adx:.1f} >= 20 | "
-                             f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: +{chg_pct:.2f}%). Riding directional impulse.")
+        if not triggered:
+            # A. Bullish Day-High Breakout
+            if (cur_p >= day_h * 0.996) and (chg_pct >= 0.40) and (adx is not None and adx >= 20.0) and (rsi is None or rsi <= 82.0):
+                if vol_ratio is None or vol_ratio >= 0.30:
+                    triggered = True
+                    action = "BUY"
+                    setup_name = "Day-High Volatility Breakout"
+                    sl = round(cur_p - (1.3 * atr_val), 2)
+                    tgt = round(cur_p + (2.4 * atr_val), 2)
+                    rationale = (f"Breaking Day High ₹{day_h:,.2f} with strong trend momentum (ADX {adx:.1f} >= 20 | "
+                                 f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: +{chg_pct:.2f}%). Riding directional impulse.")
 
-        # B. Bearish Day-Low Breakdown
-        elif (cur_p <= day_l * 1.004) and (chg_pct <= -0.40) and (adx is not None and adx >= 20.0) and (rsi is None or rsi >= 18.0):
-            if vol_ratio is None or vol_ratio >= 0.30:
-                triggered = True
-                action = "SELL"
-                setup_name = "Day-Low Volatility Breakdown"
-                sl = round(cur_p + (1.3 * atr_val), 2)
-                tgt = round(cur_p - (2.4 * atr_val), 2)
-                rationale = (f"Breaking Day Low ₹{day_l:,.2f} with strong trend breakdown (ADX {adx:.1f} >= 20 | "
-                             f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: {chg_pct:.2f}%). Riding directional impulse.")
+            # B. Bearish Day-Low Breakdown
+            elif (cur_p <= day_l * 1.004) and (chg_pct <= -0.40) and (adx is not None and adx >= 20.0) and (rsi is None or rsi >= 18.0):
+                if vol_ratio is None or vol_ratio >= 0.30:
+                    triggered = True
+                    action = "SELL"
+                    setup_name = "Day-Low Volatility Breakdown"
+                    sl = round(cur_p + (1.3 * atr_val), 2)
+                    tgt = round(cur_p - (2.4 * atr_val), 2)
+                    rationale = (f"Breaking Day Low ₹{day_l:,.2f} with strong trend breakdown (ADX {adx:.1f} >= 20 | "
+                                 f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: {chg_pct:.2f}%). Riding directional impulse.")
 
         # --- SETUP 3: EMA 20/50 Golden / Death Trend Cross ---
-        elif (ema20 is not None and ema50 is not None) and (adx is not None and adx >= 20.0):
+        if not triggered and (ema20 is not None and ema50 is not None) and (adx is not None and adx >= 20.0):
             bullish_rsi = (50.0 <= rsi <= 65.0) or (adx >= 25.0 and 50.0 <= rsi <= 68.0) if rsi is not None else True
             bearish_rsi = (35.0 <= rsi <= 50.0) or (adx >= 25.0 and 28.0 <= rsi <= 50.0) if rsi is not None else True
             # Bullish Cross
