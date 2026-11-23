@@ -1,10 +1,10 @@
 {
-  "last_updated": "23 Nov 2026, 12:24 PM IST",
+  "last_updated": "23 Nov 2026, 12:25 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 58,
-    "executed_count": 8,
+    "total_signals": 59,
+    "executed_count": 9,
     "correct_count": 3,
     "wrong_count": 4,
     "protected_count": 50,
@@ -17,15 +17,143 @@
     "intraday_pnl_inr": -66.75,
     "intraday_booked_profit_inr": 0.0,
     "intraday_pool_balance_inr": 30000.0,
-    "avg_trade_pnl_inr": -550.02,
-    "active_trades_count": 1,
+    "avg_trade_pnl_inr": -488.91,
+    "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 295666.57,
-    "used_margin_inr": 12505.0,
-    "available_cash_inr": 283161.57,
+    "used_margin_inr": 22503.12,
+    "available_cash_inr": 273163.45,
     "net_worth_inr": 295666.57
   },
   "trades": [
+    {
+      "id": "ADV-23Nov2026-1225-SUZLON",
+      "date": "23 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (Intraday Breakdown / Weakness Expansion)",
+      "time_trigger": "12:25 PM IST",
+      "time_6pm": "12:25 PM IST",
+      "time_validation": "12:25 PM IST",
+      "time_615": "12:25 PM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "SUZLON.NS",
+      "name": "Suzlon Energy Ltd",
+      "lot_size": 1364,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: Intraday Breakdown / Weakness Expansion",
+      "regime": {
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 20.0, RSI: 41.5). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "SHORT_FUTURES"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 20.0,
+        "rsi": 41.5,
+        "change_pct": 0.0,
+        "bb_width_pct": 14.6,
+        "daily_vol_pct": 1.5,
+        "close": 36.65,
+        "ema50": 39.72,
+        "ema200": 46.46
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 25.2,
+        "p_stop_pct": 14.9,
+        "p_neither_pct": 59.9,
+        "resolved_win_rate_pct": 62.9,
+        "expected_r": 0.156,
+        "target_r": 1.21,
+        "sample_bars": 693,
+        "summary": "3,000 Replays: 25.2% Target | 14.9% Stop | Expected: +0.16R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.21,
+        "loss_at_stop_inr": 722.92,
+        "potential_gain_inr": 872.96,
+        "broker": "Dhan",
+        "est_charges_inr": 53.31,
+        "net_loss_at_stop_inr": 776.23
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKDOWN_CONFIRMED",
+        "reason": "ORB SELL Confirmed: Solid bar close \u20b936.65 breaking below range low \u20b936.51 with volume confirmation."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "pullback_check": {
+        "passed": true,
+        "reason": "PULLBACK_CONFIRMED: Price \u20b936.65 is within 0.31 pts (<= 0.55 pts) of overhead resistance \u20b936.96.",
+        "ref_anchor": 36.959999999999994,
+        "stop_distance": 0.30999999999999517,
+        "code": "PULLBACK_CONFIRMED"
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b936.65",
+        "rationale": "Breaking towards Day Low (Chg: -0.68%) with accelerating downward RSI momentum (41.5) and verified ORB breakdown below VWAP. Realistic intraday short targeting 1.2R downside. 3,000 Replays: 25.2% Target | 14.9% Stop | Expected: +0.16R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 36.65,
+        "stop_loss": 37.18,
+        "target": 36.01
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 36.65,
+        "action_taken": "Entered SELL 1364 shares @ \u20b936.65",
+        "detail": "Intraday Breakdown / Weakness Expansion: Breaking towards Day Low (Chg: -0.68%) with accelerating downward RSI momentum (41.5) and verified ORB breakdown below VWAP. Realistic intraday short targeting 1.2R downside. | 3,000 Replays: 25.2% Target | 14.9% Stop | Expected: +0.16R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 1364,
+        "entry_price": 36.65,
+        "entry_time": "12:25 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 36.01,
+        "stop_loss": 37.18,
+        "initial_stop_loss": 37.18,
+        "original_sl": 37.18,
+        "peak_high": 36.65,
+        "trough_low": 36.65,
+        "margin_required_inr": 9998.12,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Intraday Breakdown / Weakness Expansion active: SELL @ \u20b936.65 (Target: \u20b936.01, SL: \u20b937.18) | 3,000 Replays: 25.2% Target | 14.9% Stop | Expected: +0.16R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      }
+    },
     {
       "id": "ADV-23Nov2026-1224-GOLDTEN",
       "date": "23 Nov 2026",
