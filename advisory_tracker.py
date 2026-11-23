@@ -4944,96 +4944,90 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         sl = None
         tgt = None
 
-        # --- SETUP 1: Top & Low Exhaustion Reversal Engine ---
-        # Identifies exact market turning points (tops and lows) before they reverse.
-        # Places ultra-tight invalidation stops outside the exhaustion rejection wicks and captures mean-reversions back to 20 EMA / VWAP.
-        bb_low = float(item.get('bb_lower') or (cur_p * 0.98))
-        bb_high = float(item.get('bb_upper') or (cur_p * 1.02))
-        session_mid_check = (day_h + day_l) / 2.0 if (day_h and day_l and day_h > day_l) else cur_p
+        # --- SETUP 1: Asset-Tailored Commodity Execution Engine ---
+        # Tailored to natural commodity market microstructure (Validated on 60-day empirical replay):
+        # - GOLD & CRUDE OIL: Trend-Pullback Retest Engine (Defends 20 EMA / VWAP anchor in HTF trend)
+        # - NATURAL GAS & SILVER: Directional Volatility Breakout & Expansion Engine (Momentum impulse without wick flushes)
+        clean_sym_upper = sym.replace('-FUT', '').replace('.NS', '').replace('.BO', '').upper()
+        is_trend_asset = any(k in clean_sym_upper for k in ['GOLD', 'CRUDE'])
+        is_momentum_asset = any(k in clean_sym_upper for k in ['NATURALGAS', 'NATGAS', 'SILVER'])
+        day_range = max(day_h - day_l, cur_p * 0.005) if (day_h and day_l and day_h > day_l) else (cur_p * 0.01)
+        session_vwap = round((float(item.get('open') or p_close) + day_h + day_l + (2.0 * cur_p)) / 5.0, 2)
 
-        # A. Extreme Low Exhaustion Bounce (BUY)
-        # Conditions: Price at structural floor (within 1.0% of Day Low or touching Lower BB) with RSI <= 34.0 (or <= 38.0 on extended drop)
-        at_floor = (day_l > 0 and cur_p <= day_l * 1.010) or (cur_p <= bb_low * 1.005)
-        oversold_rsi = (rsi is not None and rsi <= 34.0) or (at_floor and rsi is not None and rsi <= 38.0) or (chg_pct <= -1.5 and rsi is not None and rsi <= 38.0)
-        if at_floor and oversold_rsi and (cur_p <= session_mid_check):
-            floor_level = min(day_l, bb_low) if (day_l and day_l > 0) else bb_low
-            # Structural invalidation stop: tucked tightly under the floor rejection base
-            min_sl_dist = max(0.18 * atr_val, cur_p * 0.0020)
-            sl_candidate = round(floor_level - (0.15 * atr_val), 2)
-            if (cur_p - sl_candidate) < min_sl_dist:
-                sl = round(cur_p - min_sl_dist, 2)
-            elif (cur_p - sl_candidate) > (0.35 * atr_val):
-                sl = round(cur_p - (0.30 * atr_val), 2)
-            else:
-                sl = sl_candidate
-            
-            risk_dist = abs(cur_p - sl)
-            revert_target = round(ema20 if (ema20 and ema20 > cur_p) else (cur_p + (2.2 * risk_dist)), 2)
-            min_target = round(cur_p + (2.2 * risk_dist), 2)
-            tgt = max(revert_target, min_target)
-            
-            triggered = True
-            action = "BUY"
-            setup_name = "Top & Low Exhaustion Reversal (Oversold Floor Bounce)"
-            rationale = (f"Extreme oversold floor exhaustion: RSI {rsi:.1f} <= 38 at structural base (Day Low: ₹{day_l:,.2f} | Lower BB: ₹{bb_low:,.2f}). "
-                         f"Seller exhaustion confirmed; tight structural stop under floor wick (₹{sl:,.2f}, risk: {risk_dist:.2f} pts), targeting mean-reversion to 20 EMA (₹{tgt:,.2f}).")
+        # -------------------------------------------------------------
+        # PERSONALITY A: GOLD & CRUDE OIL -> TREND-PULLBACK RETEST ENGINE
+        # -------------------------------------------------------------
+        if is_trend_asset and ema20 is not None and ema50 is not None:
+            # Bull Trend Retest (BUY Dip at 20 EMA)
+            is_htf_bull = (cur_p >= ema50) and (ema20 >= ema50 * 0.998) and (cur_p >= session_vwap * 0.998)
+            not_chasing_top = (day_h - cur_p >= cur_p * 0.0035) and (cur_p <= day_h - 0.12 * day_range)
+            pullback_to_ema = (cur_p >= ema20 * 0.994) and (float(item.get('low') or cur_p) <= ema20 * 1.002)
+            healthy_rsi_bull = (rsi is not None and 40.0 <= rsi <= 64.0)
 
-        # B. Extreme Top Exhaustion Fade (SELL)
-        # Conditions: Price at structural ceiling (within 1.0% of Day High or touching Upper BB) with RSI >= 66.0 (or >= 62.0 on extended rally)
-        elif not triggered:
-            at_ceiling = (day_h > 0 and cur_p >= day_h * 0.990) or (cur_p >= bb_high * 0.995)
-            overbought_rsi = (rsi is not None and rsi >= 66.0) or (at_ceiling and rsi is not None and rsi >= 62.0) or (chg_pct >= 1.5 and rsi is not None and rsi >= 62.0)
-            if at_ceiling and overbought_rsi and (cur_p >= session_mid_check):
-                ceiling_level = max(day_h, bb_high) if (day_h and day_h > 0) else bb_high
-                # Structural invalidation stop: tucked tightly above the ceiling rejection peak
-                min_sl_dist = max(0.18 * atr_val, cur_p * 0.0020)
-                sl_candidate = round(ceiling_level + (0.15 * atr_val), 2)
-                if (sl_candidate - cur_p) < min_sl_dist:
-                    sl = round(cur_p + min_sl_dist, 2)
-                elif (sl_candidate - cur_p) > (0.35 * atr_val):
+            if is_htf_bull and not_chasing_top and pullback_to_ema and healthy_rsi_bull:
+                sl_anchor = min(float(item.get('low') or cur_p), ema20)
+                sl = round(sl_anchor - (0.35 * atr_val), 2)
+                risk_dist = abs(cur_p - sl)
+                if risk_dist < 0.25 * atr_val:
                     sl = round(cur_p - (0.30 * atr_val), 2)
-                else:
-                    sl = sl_candidate
-                
-                risk_dist = abs(sl - cur_p)
-                revert_target = round(ema20 if (ema20 and ema20 < cur_p) else (cur_p - (2.2 * risk_dist)), 2)
-                min_target = round(cur_p - (2.2 * risk_dist), 2)
-                tgt = min(revert_target, min_target)
-                
+                    risk_dist = abs(cur_p - sl)
+                tgt = round(cur_p + (2.4 * risk_dist), 2)
                 triggered = True
-                action = "SELL"
-                setup_name = "Top & Low Exhaustion Reversal (Overbought Ceiling Fade)"
-                rationale = (f"Extreme overbought ceiling exhaustion: RSI {rsi:.1f} >= 62 at structural peak (Day High: ₹{day_h:,.2f} | Upper BB: ₹{bb_high:,.2f}). "
-                             f"Buyer exhaustion confirmed; tight structural stop above ceiling wick (₹{sl:,.2f}, risk: {risk_dist:.2f} pts), targeting mean-reversion to 20 EMA (₹{tgt:,.2f}).")
+                action = "BUY"
+                setup_name = "Trend Pullback (20 EMA Retest Bounce)"
+                rationale = (f"Confirmed Bull Trend Pullback on {sym}: Trading above 50 EMA (₹{ema50:,.2f}) & VWAP (₹{session_vwap:,.2f}). "
+                             f"Pullback tested 20 EMA support (₹{ema20:,.2f}) with healthy RSI {rsi:.1f}. Structural stop placed below 20 EMA support (₹{sl:,.2f}).")
 
-        # --- SETUP 0: Pre-Ignition Volatility Coil (Primary Sovereign Focus) ---
-        # Identifies the quiet coiling phase immediately before trend ignition.
-        # Minimal structural stop loss (0.20 - 0.45x ATR) placed strictly at the coil boundary.
-        bb_w_pct = float(item.get('bb_width_pct') or 0.0) if item.get('bb_width_pct') else None
-        if not triggered:
-            pm_signal = PreMoveDetector.evaluate_live_snapshot(
-                sym, cur_p, day_h, day_l, p_close, chg_pct, adx=adx, rsi=rsi,
-                atr=atr_val, ema20=ema20, ema50=ema50, volume=vol, avg_volume=avg_vol,
-                bb_upper=bb_high, bb_lower=bb_low, bb_width_pct=bb_w_pct
-            )
-            if pm_signal and pm_signal.status in ["PRE_MOVE_BUY_TRIGGER", "PRE_MOVE_SELL_TRIGGER"]:
-                coil_act = pm_signal.action
-                if coil_act == "SELL" and (rsi is not None and rsi < 36.0):
-                    pm_signal = None
-                elif coil_act == "BUY" and (rsi is not None and rsi > 64.0):
-                    pm_signal = None
-                else:
+            # Bear Trend Retest (SELL Rally at 20 EMA)
+            elif not triggered:
+                is_htf_bear = (cur_p <= ema50) and (ema20 <= ema50 * 1.002) and (cur_p <= session_vwap * 1.002)
+                not_chasing_bottom = (cur_p - day_l >= cur_p * 0.0035) and (cur_p >= day_l + 0.12 * day_range)
+                pullback_to_ema_bear = (cur_p <= ema20 * 1.006) and (float(item.get('high') or cur_p) >= ema20 * 0.998)
+                healthy_rsi_bear = (rsi is not None and 36.0 <= rsi <= 60.0)
+
+                if is_htf_bear and not_chasing_bottom and pullback_to_ema_bear and healthy_rsi_bear:
+                    sl_anchor = max(float(item.get('high') or cur_p), ema20)
+                    sl = round(sl_anchor + (0.35 * atr_val), 2)
+                    risk_dist = abs(sl - cur_p)
+                    if risk_dist < 0.25 * atr_val:
+                        sl = round(cur_p + (0.30 * atr_val), 2)
+                        risk_dist = abs(sl - cur_p)
+                    tgt = round(cur_p - (2.4 * risk_dist), 2)
                     triggered = True
-                    action = pm_signal.action
-                    setup_name = "Pre-Ignition Volatility Coil"
-                    sl = pm_signal.stop_loss
-                    tgt = pm_signal.target_1
-                    rationale = (f"Pre-Move Readiness Index: {pm_signal.pmri_score:.1f}/100. "
-                                 f"{' | '.join(pm_signal.reasons[:3])}. Early coil entry with minimum structural stop loss prior to breakout expansion.")
+                    action = "SELL"
+                    setup_name = "Trend Pullback (20 EMA Retest Fade)"
+                    rationale = (f"Confirmed Bear Trend Rally Fade on {sym}: Trading below 50 EMA (₹{ema50:,.2f}) & VWAP (₹{session_vwap:,.2f}). "
+                                 f"Relief rally tested 20 EMA resistance (₹{ema20:,.2f}) with healthy RSI {rsi:.1f}. Structural stop placed above 20 EMA resistance (₹{sl:,.2f}).")
 
-        # --- SETUP 2: Volatility Breakout with ADX Momentum ---
-        if not triggered:
-            # A. Bullish Day-High Breakout (Strict Anti-Chasing Cap: chg_pct strictly <= 1.00% to prevent buying exhausted climax tops)
+        # -------------------------------------------------------------
+        # PERSONALITY B: NATURAL GAS & SILVER -> VOLATILITY BREAKOUT & EXPANSION ENGINE
+        # -------------------------------------------------------------
+        elif is_momentum_asset and not triggered:
+            # Bullish Day-High Breakout (Strict Anti-Chasing Cap: chg_pct strictly <= 1.00%)
+            if (cur_p >= day_h * 0.996) and (0.30 <= chg_pct <= 1.00) and (adx is not None and adx >= 20.0) and (rsi is None or rsi <= 68.0):
+                if vol_ratio is None or vol_ratio >= 0.30:
+                    triggered = True
+                    action = "BUY"
+                    setup_name = "Volatility Breakout (Day-High Expansion)"
+                    sl = round(cur_p - (0.85 * atr_val), 2)
+                    tgt = round(cur_p + (2.4 * atr_val), 2)
+                    rationale = (f"Breaking Day High ₹{day_h:,.2f} with strong trend momentum (ADX {adx:.1f} >= 20 | "
+                                 f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: +{chg_pct:.2f}%). Riding directional impulse on momentum asset.")
+
+            # Bearish Day-Low Breakdown (Strict Anti-Chasing Floor: chg_pct strictly >= -1.00%)
+            elif (cur_p <= day_l * 1.004) and (-1.00 <= chg_pct <= -0.30) and (adx is not None and adx >= 20.0) and (rsi is None or rsi >= 32.0):
+                if vol_ratio is None or vol_ratio >= 0.30:
+                    triggered = True
+                    action = "SELL"
+                    setup_name = "Volatility Breakdown (Day-Low Expansion)"
+                    sl = round(cur_p + (0.85 * atr_val), 2)
+                    tgt = round(cur_p - (2.4 * atr_val), 2)
+                    rationale = (f"Breaking Day Low ₹{day_l:,.2f} with strong trend breakdown (ADX {adx:.1f} >= 20 | "
+                                 f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: {chg_pct:.2f}%). Riding directional impulse on momentum asset.")
+
+        # --- SETUP 2: Standard Day-High / Day-Low Volatility Breakout (For Non-Tailored Assets) ---
+        if not triggered and not is_trend_asset and not is_momentum_asset:
+            # Bullish Day-High Breakout
             if (cur_p >= day_h * 0.996) and (0.30 <= chg_pct <= 1.00) and (adx is not None and adx >= 20.0) and (rsi is None or rsi <= 68.0):
                 if vol_ratio is None or vol_ratio >= 0.30:
                     triggered = True
@@ -5044,7 +5038,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     rationale = (f"Breaking Day High ₹{day_h:,.2f} with strong trend momentum (ADX {adx:.1f} >= 20 | "
                                  f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: +{chg_pct:.2f}%). Riding directional impulse.")
 
-            # B. Bearish Day-Low Breakdown (Strict Anti-Chasing Floor: chg_pct strictly >= -1.00% to prevent shorting exhausted bottoms)
+            # Bearish Day-Low Breakdown
             elif (cur_p <= day_l * 1.004) and (-1.00 <= chg_pct <= -0.30) and (adx is not None and adx >= 20.0) and (rsi is None or rsi >= 32.0):
                 if vol_ratio is None or vol_ratio >= 0.30:
                     triggered = True
@@ -5110,6 +5104,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         if triggered and action:
             is_reversal = any(term in setup_name for term in ["Exhaustion", "Reversal", "Mean-Reversion", "Floor Bounce", "Ceiling Fade", "Top & Low"])
             is_breakout = ("Breakout" in setup_name or "Breakdown" in setup_name or "Expansion" in setup_name)
+            is_pullback = ("Pullback" in setup_name or "Retest" in setup_name)
 
             # 🚫 Universal Anti-Bottom-Shorting / Anti-Top-Buying Guard:
             # For pullbacks/reversals, prevent buying into exhausted ceilings (RSI >= 68) or selling into floors (RSI <= 32).
@@ -5184,7 +5179,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
                 # Rule 2: Intraday Session Flow Alignment (Session Midpoint Anchor)
                 if action == "BUY":
-                    if cur_p < (session_mid * 0.998):
+                    if not is_pullback and cur_p < (session_mid * 0.998):
                         print(f"🚫 Trend-Vector Gate: Blocked {sym} BUY. Price (₹{cur_p:,.2f}) is in the lower half of today's range (below Midpoint ₹{session_mid:,.2f}). Intraday flow is downward.")
                         continue
                     if not is_breakout and ema50 is not None and cur_p < (ema50 * 0.998):
@@ -5195,7 +5190,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                         continue
 
                 if action == "SELL":
-                    if cur_p > (session_mid * 1.002):
+                    if not is_pullback and cur_p > (session_mid * 1.002):
                         print(f"🚫 Trend-Vector Gate: Blocked {sym} SELL. Price (₹{cur_p:,.2f}) is in the upper half of today's range (above Midpoint ₹{session_mid:,.2f}). Intraday flow is upward.")
                         continue
                     if not is_breakout and ema50 is not None and cur_p > (ema50 * 1.002):
@@ -5212,10 +5207,10 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     if recent_bars and len(recent_bars) >= 12:
                         # Price ratio delta over last 12 bars (1 hour)
                         delta_1h = recent_bars[-1]['c_ratio'] - recent_bars[-12]['c_ratio']
-                        if action == 'BUY' and delta_1h < -0.003:  # Falling > 0.3% in last hour
+                        if not is_pullback and action == 'BUY' and delta_1h < -0.003:  # Falling > 0.3% in last hour
                             print(f"🚫 Trend-Vector Gate: Blocked {sym} BUY. 1-Hour Intraday Trend is falling ({delta_1h*100:+.2f}%). Counter-trend buying into active selling is prohibited.")
                             continue
-                        elif action == 'SELL' and delta_1h > 0.003:  # Rising > 0.3% in last hour
+                        elif not is_pullback and action == 'SELL' and delta_1h > 0.003:  # Rising > 0.3% in last hour
                             print(f"🚫 Trend-Vector Gate: Blocked {sym} SELL. 1-Hour Intraday Trend is rising ({delta_1h*100:+.2f}%). Counter-trend shorting into active buying is prohibited.")
                             continue
                 except Exception:
@@ -5232,7 +5227,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     continue
 
             # 📐 Structural Technical Bracket: Option 2 calibrated with contract-specific bounds
-            if not is_reversal or not sl or not tgt:
+            if not sl or not tgt:
                 calc_sl, calc_tgt = calculate_technical_bracket(action, cur_p, day_h, day_l, ema20=ema20, ema50=ema50, atr=atr_val, min_rrr=1.2, is_intraday=True, symbol=sym)
                 sl = calc_sl or sl
                 tgt = calc_tgt or tgt
