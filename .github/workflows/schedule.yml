@@ -1,9 +1,10 @@
 name: Commodity Price Alerter
 
 on:
-  schedule:
-    # Runs every 5 minutes during MCX trading days (runner loops 4 times with 60s intervals)
-    - cron: '*/5 * * * 1-5'
+  # Schedule disabled to prevent cloud CI/CD from competing with local Mac daemon and sending duplicate emails.
+  # Local daemon runs 24/7 on the local Mac host with the required static IP.
+  # schedule:
+  #   - cron: '*/5 * * * 1-5'
   workflow_dispatch: # Allows manual trigger from the UI
   repository_dispatch:
     types: [trigger-cron] # Allows triggering via external webhook

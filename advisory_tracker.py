@@ -4595,6 +4595,12 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                     reason = "Intraday EOD Square-off (03:20 PM) ⏰"
 
         if hit_exit or hit_stagnation or hit_eod:
+            # If trade exited in the same check cycle as target milestone, remove redundant milestone alert
+            # so only the final comprehensive exit alert is sent
+            alerts_to_send = [
+                a for a in alerts_to_send
+                if not (sym in a.get('subject', '') and '100% TARGET ACHIEVED' in a.get('subject', ''))
+            ]
             pnl_pts = (exit_p - entry_p) if action == 'BUY' else (entry_p - exit_p)
             # Strict Stop-Loss PnL Sanity Guard: An initial/structural stop-loss hit can NEVER yield positive profit!
             if hit_sl and not is_trailing:

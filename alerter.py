@@ -226,12 +226,13 @@ class EmailAlerter:
         Determines the protective cooldown window for alert deduplication.
         Real-time technical entry triggers strictly receive 120-minute (2 hour) lockout
         to prevent duplicate or recurring email spam while an active trade is underway.
+        Exit notifications receive 60-minute lockout.
         """
         sub_upper = subject.upper()
         if 'REAL-TIME TECHNICAL TRIGGER' in sub_upper or 'INTRADAY MIS TRIGGER' in sub_upper or 'STOCK FUTURE TRIGGER' in sub_upper:
             return 120
-        if '100% TARGET ACHIEVED' in sub_upper or 'TARGET HIT' in sub_upper or 'STOP-LOSS' in sub_upper:
-            return 30
+        if 'TARGET RUNNER' in sub_upper or 'PAPER TRADE EXIT' in sub_upper or '100% TARGET ACHIEVED' in sub_upper or 'TARGET HIT' in sub_upper or 'STOP-LOSS' in sub_upper or 'STOP LOSS' in sub_upper:
+            return 60
         return default_minutes
 
     def _is_duplicate_trade_alert(self, subject, channel="EMAIL", window_minutes=None):
@@ -338,6 +339,12 @@ class EmailAlerter:
     def send_alerts(self, alerts):
         if not alerts:
             return False, []
+
+        # GUARD: Ephemeral cloud CI/CD runners (GitHub Actions) MUST NEVER send trade alerts
+        # when the user's local daemon is running on their Mac. This eliminates duplicate email dispatch.
+        if os.environ.get('GITHUB_ACTIONS') == 'true' or os.environ.get('CI') == 'true':
+            print("🛡️ [CI CLOUD GUARD] Email dispatch disabled in GitHub Actions runner to prevent duplicate emails (Local Mac Daemon is authoritative).")
+            return True, []
 
         telegram_sent_indices = set()
         # 1. Send Telegram notifications
