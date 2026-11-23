@@ -1,5 +1,5 @@
 {
-  "last_updated": "23 Nov 2026, 07:06 PM IST",
+  "last_updated": "23 Nov 2026, 07:11 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -42,17 +42,17 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / DIRECTION ENGINE",
-        "rationale": "US Pit Open Upper Circuit fade blocked: Intraday Bullish Session Momentum: Price (\u20b9124,745.0) holding above VWAP (\u20b9124,651.0) and Day Open (\u20b9124,443.0) with positive momentum (+2.44%).. Counter-trend short prohibited.",
-        "reference_price": 124745.0,
+        "rationale": "US Pit Open Upper Circuit fade blocked: Intraday Bullish Session Momentum: Price (\u20b9124,566.0) holding above VWAP (\u20b9124,579.4) and Day Open (\u20b9124,443.0) with positive momentum (+2.29%).. Counter-trend short prohibited.",
+        "reference_price": 124566.0,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "DIRECTION_ENGINE_STAND_ASIDE",
-        "price_615": 124745.0,
+        "price_615": 124566.0,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "Intraday Bullish Session Momentum: Price (\u20b9124,745.0) holding above VWAP (\u20b9124,651.0) and Day Open (\u20b9124,443.0) with positive momentum (+2.44%)."
+        "detail": "Intraday Bullish Session Momentum: Price (\u20b9124,566.0) holding above VWAP (\u20b9124,579.4) and Day Open (\u20b9124,443.0) with positive momentum (+2.29%)."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -89,31 +89,31 @@
       "lot_size": 1,
       "event_context": "US Pit Open Upper Circuit Test (15-Min Rule Enforced)",
       "suggestion_6pm": {
-        "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / DIRECTION ENGINE",
-        "rationale": "US Pit Open Upper Circuit fade blocked: Conflict: HTF is Bearish but price (\u20b9151,332.0) is trading above Session VWAP (\u20b9150,944.0). Counter-trend short blocked.. Counter-trend short prohibited.",
-        "reference_price": 151332.0,
-        "stop_loss": null,
-        "target": null
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 07:15 PM IST CANDLE CLOSE before entering SELL",
+        "rationale": "High institutional volume at US open. Must confirm limit barrier holds.",
+        "reference_price": 150768.0,
+        "stop_loss": 155288.52,
+        "target": 148721.0
       },
       "check_615": {
-        "checked": true,
-        "status": "DIRECTION_ENGINE_STAND_ASIDE",
-        "price_615": 151332.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Conflict: HTF is Bearish but price (\u20b9151,332.0) is trading above Session VWAP (\u20b9150,944.0). Counter-trend short blocked."
+        "checked": false,
+        "status": "PENDING_615",
+        "price_615": null,
+        "action_taken": "Awaiting 07:15 PM IST candle close verification...",
+        "detail": "Action will be triggered dynamically at 07:15 PM IST."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "STAND_ASIDE",
-        "quantity": 0,
+        "action": "SELL",
+        "quantity": 1,
         "entry_price": null,
         "entry_time": null,
         "exit_price": null,
         "exit_time": null,
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "STAND_ASIDE"
+        "status": "PENDING_615"
       },
       "eod_outcome": {
         "session_close": null,
@@ -140,25 +140,25 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / PULLBACK REQUIRED",
-        "rationale": "PULLBACK_REQUIRED: Chasing day low (Price \u20b97,612.00 is within 12.00 pts of Day Low \u20b97,600.00). Option 2 mandates waiting for pullback into resistance before shorting. Standing aside to avoid chasing at range extremes.",
-        "reference_price": 7612.0,
+        "rationale": "PULLBACK_REQUIRED: Chasing day low (Price \u20b97,609.00 is within 9.00 pts of Day Low \u20b97,600.00). Option 2 mandates waiting for pullback into resistance before shorting. Standing aside to avoid chasing at range extremes.",
+        "reference_price": 7609.0,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "PULLBACK_REQUIRED_STAND_ASIDE",
-        "price_615": 7612.0,
+        "price_615": 7609.0,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "PULLBACK_REQUIRED: Chasing day low (Price \u20b97,612.00 is within 12.00 pts of Day Low \u20b97,600.00). Option 2 mandates waiting for pullback into resistance before shorting."
+        "detail": "PULLBACK_REQUIRED: Chasing day low (Price \u20b97,609.00 is within 9.00 pts of Day Low \u20b97,600.00). Option 2 mandates waiting for pullback into resistance before shorting."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "STAND_ASIDE",
         "quantity": 0,
-        "entry_price": 7612.0,
+        "entry_price": 7609.0,
         "entry_time": "07:00 PM IST",
-        "exit_price": 7612.0,
+        "exit_price": 7609.0,
         "exit_time": "11:45 PM IST",
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
@@ -189,17 +189,17 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 07:15 PM IST CANDLE CLOSE before entering SELL NATURALGASM",
-        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9351.5) & trading below Session VWAP (\u20b9331.9). Target 1.2R calibrated to ATR.",
-        "reference_price": 329.5,
-        "stop_loss": 334.5,
-        "target": 324.0
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9351.5) & trading below Session VWAP (\u20b9331.7). Target 1.2R calibrated to ATR.",
+        "reference_price": 328.9,
+        "stop_loss": 333.9,
+        "target": 323.4
       },
       "check_615": {
         "checked": false,
         "status": "PENDING_615",
         "price_615": null,
         "action_taken": "Awaiting 07:15 PM IST candle close to confirm SELL trend holds...",
-        "detail": "15-minute verification scheduled for 07:15 PM IST (Reference: \u20b9329.50)."
+        "detail": "15-minute verification scheduled for 07:15 PM IST (Reference: \u20b9328.90)."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -212,12 +212,12 @@
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
         "status": "PENDING_615",
-        "target": 324.0,
-        "stop_loss": 334.5
+        "target": 323.4,
+        "stop_loss": 333.9
       },
       "eod_outcome": {
         "session_close": null,
-        "circuit_limit": 334.5,
+        "circuit_limit": 333.9,
         "outcome": "PENDING",
         "badge": "Awaiting 07:15 \u23f3",
         "pnl_display": "Pending Confirmation",
@@ -236,43 +236,41 @@
       "symbol": "COPPERM",
       "name": "Copper Mini",
       "lot_size": 1000,
-      "event_context": "US Pit Open Trend Momentum Buy (NYMEX/COMEX Open)",
+      "event_context": "Safe Normal Range (Range-Bound Chop)",
       "suggestion_6pm": {
-        "status": "WAIT_615",
-        "action_text": "WAIT FOR 07:15 PM IST CANDLE CLOSE before entering BUY COPPERM",
-        "rationale": "US Pit Open Momentum: Intraday Bullish Session Momentum: Price (\u20b91,158.7) holding above VWAP (\u20b91,160.3) and Day Open (\u20b91,157.3) with positive momentum (+0.50%). Target 1.2R calibrated to ATR.",
-        "reference_price": 1158.65,
-        "stop_loss": 1153.65,
-        "target": 1164.15
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
+        "rationale": "Asset within tight range (+0.43%). Non-trending or neutral structure (Regime: BULL_TREND, HTF: BEARISH, ADX: 59.1). Standing aside to preserve capital.. Capital preserved in cash.",
+        "reference_price": 1157.8,
+        "stop_loss": 1106.78,
+        "target": 1152.9
       },
       "check_615": {
-        "checked": false,
-        "status": "PENDING_615",
-        "price_615": null,
-        "action_taken": "Awaiting 07:15 PM IST candle close to confirm BUY trend holds...",
-        "detail": "15-minute verification scheduled for 07:15 PM IST (Reference: \u20b91,158.65)."
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 1157.8,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Tight non-trending consolidation. Capital preserved."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
-        "action": "BUY",
-        "quantity": 1000,
-        "entry_price": null,
-        "entry_time": null,
-        "exit_price": null,
-        "exit_time": null,
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 1157.8,
+        "entry_time": "07:00 PM IST",
+        "exit_price": 1157.8,
+        "exit_time": "11:45 PM IST",
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
-        "status": "PENDING_615",
-        "target": 1164.15,
-        "stop_loss": 1153.65
+        "status": "CLOSED"
       },
       "eod_outcome": {
         "session_close": null,
-        "circuit_limit": 1153.65,
-        "outcome": "PENDING",
-        "badge": "Awaiting 07:15 \u23f3",
-        "pnl_display": "Pending Confirmation",
-        "summary": "US Pit Open BUY momentum setup awaiting 07:15 PM IST candle close."
+        "circuit_limit": 1106.78,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
       }
     },
     {
@@ -291,25 +289,25 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / PULLBACK REQUIRED",
-        "rationale": "PULLBACK_REQUIRED: Chasing day low (Price \u20b9388.55 is within 0.75 pts of Day Low \u20b9387.80). Option 2 mandates waiting for pullback into resistance before shorting. Standing aside to avoid chasing at range extremes.",
-        "reference_price": 388.55,
+        "rationale": "PULLBACK_REQUIRED: Chasing day low (Price \u20b9388.50 is within 0.70 pts of Day Low \u20b9387.80). Option 2 mandates waiting for pullback into resistance before shorting. Standing aside to avoid chasing at range extremes.",
+        "reference_price": 388.5,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "PULLBACK_REQUIRED_STAND_ASIDE",
-        "price_615": 388.55,
+        "price_615": 388.5,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "PULLBACK_REQUIRED: Chasing day low (Price \u20b9388.55 is within 0.75 pts of Day Low \u20b9387.80). Option 2 mandates waiting for pullback into resistance before shorting."
+        "detail": "PULLBACK_REQUIRED: Chasing day low (Price \u20b9388.50 is within 0.70 pts of Day Low \u20b9387.80). Option 2 mandates waiting for pullback into resistance before shorting."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
         "action": "STAND_ASIDE",
         "quantity": 0,
-        "entry_price": 388.55,
+        "entry_price": 388.5,
         "entry_time": "07:00 PM IST",
-        "exit_price": 388.55,
+        "exit_price": 388.5,
         "exit_time": "11:45 PM IST",
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
@@ -340,15 +338,15 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (+1.35%). Conflict: HTF is Bearish but price (\u20b9322.6) is trading above Session VWAP (\u20b9320.3). Counter-trend short blocked.. Capital preserved in cash.",
-        "reference_price": 322.65,
+        "rationale": "Asset within tight range (+1.27%). Conflict: HTF is Bearish but price (\u20b9322.4) is trading above Session VWAP (\u20b9320.2). Counter-trend short blocked.. Capital preserved in cash.",
+        "reference_price": 322.4,
         "stop_loss": 305.62,
         "target": 318.35
       },
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 322.65,
+        "price_615": 322.4,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Tight non-trending consolidation. Capital preserved."
       },
@@ -356,9 +354,9 @@
         "user": "venu.photos1@gmail.com",
         "action": "STAND_ASIDE",
         "quantity": 0,
-        "entry_price": 322.65,
+        "entry_price": 322.4,
         "entry_time": "07:00 PM IST",
-        "exit_price": 322.65,
+        "exit_price": 322.4,
         "exit_time": "11:45 PM IST",
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
@@ -389,17 +387,17 @@
       "suggestion_6pm": {
         "status": "WAIT_615",
         "action_text": "WAIT FOR 07:15 PM IST CANDLE CLOSE before entering BUY ZINCMINI",
-        "rationale": "US Pit Open Momentum: Intraday Bullish Session Momentum: Price (\u20b9388.6) holding above VWAP (\u20b9388.4) and Day Open (\u20b9387.9) with positive momentum (+0.57%). Target 1.2R calibrated to ATR.",
-        "reference_price": 388.55,
-        "stop_loss": 385.55,
-        "target": 391.85
+        "rationale": "US Pit Open Momentum: Intraday Bullish Session Momentum: Price (\u20b9388.5) holding above VWAP (\u20b9388.4) and Day Open (\u20b9387.9) with positive momentum (+0.56%). Target 1.2R calibrated to ATR.",
+        "reference_price": 388.5,
+        "stop_loss": 385.5,
+        "target": 391.8
       },
       "check_615": {
         "checked": false,
         "status": "PENDING_615",
         "price_615": null,
         "action_taken": "Awaiting 07:15 PM IST candle close to confirm BUY trend holds...",
-        "detail": "15-minute verification scheduled for 07:15 PM IST (Reference: \u20b9388.55)."
+        "detail": "15-minute verification scheduled for 07:15 PM IST (Reference: \u20b9388.50)."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -412,12 +410,12 @@
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
         "status": "PENDING_615",
-        "target": 391.85,
-        "stop_loss": 385.55
+        "target": 391.8,
+        "stop_loss": 385.5
       },
       "eod_outcome": {
         "session_close": null,
-        "circuit_limit": 385.55,
+        "circuit_limit": 385.5,
         "outcome": "PENDING",
         "badge": "Awaiting 07:15 \u23f3",
         "pnl_display": "Pending Confirmation",
@@ -440,15 +438,15 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
-        "rationale": "Asset within tight range (+1.35%). Conflict: HTF is Bearish but price (\u20b9322.6) is trading above Session VWAP (\u20b9321.6). Counter-trend short blocked.. Capital preserved in cash.",
-        "reference_price": 322.65,
+        "rationale": "Asset within tight range (+1.27%). Conflict: HTF is Bearish but price (\u20b9322.4) is trading above Session VWAP (\u20b9321.5). Counter-trend short blocked.. Capital preserved in cash.",
+        "reference_price": 322.4,
         "stop_loss": 305.62,
         "target": 318.35
       },
       "check_615": {
         "checked": true,
         "status": "CONFIRMED_STAND_ASIDE",
-        "price_615": 322.65,
+        "price_615": 322.4,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Tight non-trending consolidation. Capital preserved."
       },
@@ -456,9 +454,9 @@
         "user": "venu.photos1@gmail.com",
         "action": "STAND_ASIDE",
         "quantity": 0,
-        "entry_price": 322.65,
+        "entry_price": 322.4,
         "entry_time": "07:00 PM IST",
-        "exit_price": 322.65,
+        "exit_price": 322.4,
         "exit_time": "11:45 PM IST",
         "pnl_points": 0.0,
         "pnl_inr": 0.0,
