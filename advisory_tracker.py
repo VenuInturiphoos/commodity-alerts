@@ -5213,8 +5213,9 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
             # 1. Institutional Market Regime Classifier & False Signal Filter
             regime_info = MarketRegimeDetector.classify_regime(
-                symbol=sym, close=cur_p, ema50=ema50, ema200=ema20,
-                adx=adx, rsi=rsi, bb_lower=lc, bb_upper=uc, atr=atr_val
+                symbol=sym, close=cur_p, ema50=ema50, ema200=(ema50 or cur_p),
+                adx=adx, rsi=rsi, bb_lower=bb_low, bb_upper=bb_high, atr=atr_val,
+                chg_pct=chg_pct, day_h=day_h, day_l=day_l
             )
             regime_check = MarketRegimeDetector.validate_signal(regime_info, action, setup_name)
             if not regime_check.get('passed'):

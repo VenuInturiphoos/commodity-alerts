@@ -476,6 +476,16 @@ class DhanLiveExecutor:
         'GOLDTEN': [
             {'security_id': '574842', 'custom_symbol': 'GOLDTEN NOV FUT', 'trading_symbol': 'GOLDTEN-30Nov2026-FUT', 'expiry': '2026-11-30 23:30:00'},
             {'security_id': '578629', 'custom_symbol': 'GOLDTEN DEC FUT', 'trading_symbol': 'GOLDTEN-31Dec2026-FUT', 'expiry': '2026-12-31 23:30:00'}
+        ],
+        'NATGASMINI': [
+            {'security_id': '574320', 'custom_symbol': 'NATURALGASM NOV FUT', 'trading_symbol': 'NATGASMINI-24Nov2026-FUT', 'expiry': '2026-11-24 23:30:00'},
+            {'security_id': '578250', 'custom_symbol': 'NATURALGASM DEC FUT', 'trading_symbol': 'NATGASMINI-28Dec2026-FUT', 'expiry': '2026-12-28 23:30:00'},
+            {'security_id': '581136', 'custom_symbol': 'NATURALGASM JAN FUT', 'trading_symbol': 'NATGASMINI-25Jan2027-FUT', 'expiry': '2027-01-25 23:30:00'}
+        ],
+        'NATURALGASM': [
+            {'security_id': '574320', 'custom_symbol': 'NATURALGASM NOV FUT', 'trading_symbol': 'NATGASMINI-24Nov2026-FUT', 'expiry': '2026-11-24 23:30:00'},
+            {'security_id': '578250', 'custom_symbol': 'NATURALGASM DEC FUT', 'trading_symbol': 'NATGASMINI-28Dec2026-FUT', 'expiry': '2026-12-28 23:30:00'},
+            {'security_id': '581136', 'custom_symbol': 'NATURALGASM JAN FUT', 'trading_symbol': 'NATGASMINI-25Jan2027-FUT', 'expiry': '2027-01-25 23:30:00'}
         ]
     }
 
@@ -495,8 +505,8 @@ class DhanLiveExecutor:
             canonical_comm = 'SILVERMIC'
         elif clean_comm.startswith('GOLD'):
             canonical_comm = 'GOLDTEN'
-        elif clean_comm.startswith('NATURALGAS'):
-            canonical_comm = 'NATURALGASM'
+        elif clean_comm.startswith('NATURALGAS') or clean_comm.startswith('NATGAS'):
+            canonical_comm = 'NATGASMINI'
         else:
             canonical_comm = clean_comm
 

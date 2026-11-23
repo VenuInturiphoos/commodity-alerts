@@ -115,6 +115,19 @@ def run_daemon():
 
             iteration += 1
             load_dotenv(override=True)
+            try:
+                import importlib
+                import trader_engine_bridge
+                import advisory_tracker
+                import dhan_live_executor as dhan_mod
+                importlib.reload(trader_engine_bridge)
+                importlib.reload(advisory_tracker)
+                importlib.reload(dhan_mod)
+                check_and_execute_intraday_targets_and_stops = advisory_tracker.check_and_execute_intraday_targets_and_stops
+                evaluate_realtime_technical_triggers = advisory_tracker.evaluate_realtime_technical_triggers
+                dhan_exec = dhan_mod.DhanLiveExecutor()
+            except Exception as e:
+                pass
             print(f"\n--- [Cycle #{iteration} | {now_str} IST] Evaluating Trades & Triggers ---")
             
             # 1. Manage Active Positions (Targets, Trailing Stops, Structural Exits)

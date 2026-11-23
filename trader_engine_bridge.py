@@ -697,12 +697,14 @@ class ORBTimer:
                     "status": "WICK_TRAP_AVOIDED",
                     "reason": f"Wick trap rejected: price wicked to ₹{current_price:,.2f} (above Day High ₹{day_high:,.2f}) but bar closed inside range at ₹{bar_close:,.2f}."
                 }
-            # Institutional Volume expansion check (trader-entry requires >= 1.0x average OR volume)
-            if volume_ratio is not None and volume_ratio < 1.0:
+            # Institutional Volume expansion check (prorated for session progression)
+            # Commodities trade 14.5 hours; morning sessions naturally have partial-day cumulative volume
+            min_vol_thresh = 0.25 if (current_time is None or getattr(current_time, 'hour', 12) < 17) else 0.50
+            if volume_ratio is not None and volume_ratio < min_vol_thresh:
                 return {
                     "passed": False,
                     "status": "LOW_VOLUME_FAKE_AVOIDED",
-                    "reason": f"Low volume breakout: Volume ratio ({volume_ratio:.2f}x) is below 1.0x institutional volume threshold."
+                    "reason": f"Low volume breakout: Volume ratio ({volume_ratio:.2f}x) is below {min_vol_thresh:.2f}x session volume threshold."
                 }
             # Solid close above range
             if bar_close >= day_high * 0.999:
@@ -728,11 +730,12 @@ class ORBTimer:
                     "reason": f"Liquidity sweep rejected: price wicked to ₹{current_price:,.2f} (below Day Low ₹{day_low:,.2f}) but bar closed inside range at ₹{bar_close:,.2f}."
                 }
             # Institutional Volume expansion check
-            if volume_ratio is not None and volume_ratio < 1.0:
+            min_vol_thresh = 0.25 if (current_time is None or getattr(current_time, 'hour', 12) < 17) else 0.50
+            if volume_ratio is not None and volume_ratio < min_vol_thresh:
                 return {
                     "passed": False,
                     "status": "LOW_VOLUME_FAKE_AVOIDED",
-                    "reason": f"Low volume breakdown: Volume ratio ({volume_ratio:.2f}x) is below 1.0x institutional volume threshold."
+                    "reason": f"Low volume breakdown: Volume ratio ({volume_ratio:.2f}x) is below {min_vol_thresh:.2f}x session volume threshold."
                 }
             # Solid close below range
             if bar_close <= day_low * 1.001:
@@ -1281,7 +1284,7 @@ class MarketRegimeDetector:
 
     @classmethod
     def classify_regime(cls, symbol, close, ema50, ema200, adx, rsi, bb_lower, bb_upper,
-                        daily_vol_pct=None, atr=None):
+                        daily_vol_pct=None, atr=None, chg_pct=None, day_h=None, day_l=None):
         if not close or close <= 0:
             return None
 
@@ -1289,14 +1292,22 @@ class MarketRegimeDetector:
         ema200 = float(ema200 or close)
         adx = float(adx or 20.0)
         rsi = float(rsi or 50.0)
+        chg_pct = float(chg_pct or 0.0)
+        day_h = float(day_h or 0.0)
+        day_l = float(day_l or 0.0)
         bb_low = float(bb_lower or (close * 0.95))
         bb_high = float(bb_upper or (close * 1.05))
         
         bb_width_pct = round(((bb_high - bb_low) / close) * 100, 2) if close > 0 else 10.0
         daily_vol = float(daily_vol_pct) if daily_vol_pct else (round((atr / close) * 100, 2) if (atr and close > 0) else 1.8)
 
+        # 0. Intraday Momentum Breakout Transition (Priority for Capturing Big Moves)
+        # If asset is up strongly at/near Day High with robust ADX, it is transitioning into Bull Momentum
+        is_breakout_expansion_bull = (chg_pct >= 0.70) and (day_h > 0 and close >= day_h * 0.990) and (adx >= 20.0)
+        is_breakdown_expansion_bear = (chg_pct <= -0.70) and (day_l > 0 and close <= day_l * 1.010) and (adx >= 20.0)
+
         # 1. Check Chop / Consolidation (Theta Zone) first
-        is_chop = (adx < 20.0) or (bb_width_pct <= 12.5 and 38.0 <= rsi <= 62.0)
+        is_chop = (adx < 20.0) or (bb_width_pct <= 12.5 and 38.0 <= rsi <= 62.0 and adx < 22.0)
         
         # 2. Check Volatility Expansion
         is_volatile_expansion = (bb_width_pct >= 16.0) or (daily_vol >= 3.0)
@@ -1306,7 +1317,31 @@ class MarketRegimeDetector:
         is_bear_structure = (close <= ema50) and (ema50 <= (ema200 * 1.015)) and (rsi <= 52.0)
         has_trend_strength = (adx >= 20.0)
 
-        if is_chop and not (has_trend_strength and (is_bull_structure or is_bear_structure)):
+        if is_breakout_expansion_bull:
+            regime = "BULL_TREND"
+            badge = "⚡ Bull Breakout Expansion"
+            short_tag = "Bull Breakout"
+            color = "#34d399"
+            bg_color = "rgba(52, 211, 153, 0.12)"
+            border_color = "rgba(52, 211, 153, 0.35)"
+            mandate = f"High-momentum Day-High breakout expansion (Chg: +{chg_pct:.2f}%, ADX: {adx:.1f}). Riding directional impulse."
+            allowed = ["TREND_BREAKOUT_BUY", "EXPANSION_BUY", "MOMENTUM_RUN"]
+            blocked = ["NAKED_CALL_SELLING", "SHORTING"]
+            regime_icon = "fa-solid fa-bolt"
+
+        elif is_breakdown_expansion_bear:
+            regime = "BREAKDOWN"
+            badge = "⚡ Bear Breakdown Expansion"
+            short_tag = "Bear Breakdown"
+            color = "#fb7185"
+            bg_color = "rgba(251, 113, 133, 0.12)"
+            border_color = "rgba(251, 113, 133, 0.35)"
+            mandate = f"High-momentum Day-Low breakdown expansion (Chg: {chg_pct:.2f}%, ADX: {adx:.1f}). Riding downward impulse."
+            allowed = ["SHORT_BREAKDOWN", "DEFENSIVE_HEDGING"]
+            blocked = ["BUYING_DIPS", "BUY_EQUITY"]
+            regime_icon = "fa-solid fa-bolt"
+
+        elif is_chop and not (has_trend_strength and (is_bull_structure or is_bear_structure)):
             regime = "CHOP_CONSOLIDATION"
             badge = "💤 Chop / Consolidation"
             short_tag = "Chop / Range"
@@ -1366,6 +1401,32 @@ class MarketRegimeDetector:
             blocked = ["AGGRESSIVE_BREAKOUT"]
             regime_icon = "fa-solid fa-arrow-trend-up"
 
+        elif has_trend_strength:
+            # Active directional trend / momentum where moving averages are catching up to rapid moves
+            session_mid = (bb_high + bb_low) / 2.0
+            if (close >= session_mid) or (rsi >= 50.0):
+                regime = "BULL_TREND"
+                badge = "🚀 Bull Trend (Momentum)"
+                short_tag = "Bull Trend"
+                color = "#34d399"
+                bg_color = "rgba(52, 211, 153, 0.12)"
+                border_color = "rgba(52, 211, 153, 0.35)"
+                mandate = f"Strong directional momentum (ADX: {adx:.1f}). Favorable for trend continuation & breakouts."
+                allowed = ["TREND_BREAKOUT_BUY", "PULLBACK_LONG", "EXPANSION_BUY"]
+                blocked = ["NAKED_CALL_SELLING", "SHORTING"]
+                regime_icon = "fa-solid fa-arrow-trend-up"
+            else:
+                regime = "BREAKDOWN"
+                badge = "🔻 Breakdown (Momentum)"
+                short_tag = "Breakdown"
+                color = "#fb7185"
+                bg_color = "rgba(251, 113, 133, 0.12)"
+                border_color = "rgba(251, 113, 133, 0.35)"
+                mandate = f"Strong downward momentum (ADX: {adx:.1f}). Favorable for short breakdowns."
+                allowed = ["SHORT_BREAKDOWN", "DEFENSIVE_HEDGING"]
+                blocked = ["BUYING_DIPS", "BUY_EQUITY"]
+                regime_icon = "fa-solid fa-arrow-trend-down"
+
         else:
             regime = "CHOP_CONSOLIDATION"
             badge = "💤 Chop / Consolidation"
@@ -1391,6 +1452,7 @@ class MarketRegimeDetector:
             "icon": regime_icon,
             "adx": round(adx, 1),
             "rsi": round(rsi, 1),
+            "change_pct": round(chg_pct, 2),
             "bb_width_pct": bb_width_pct,
             "daily_vol_pct": round(daily_vol, 2),
             "close": close,
@@ -1414,8 +1476,14 @@ class MarketRegimeDetector:
         setup_lower = (setup_name or "").lower()
         act_upper = (action or "").upper()
         is_reversal = any(term in setup_lower for term in ['reversal', 'mean-reversion', 'mean_reversion', 'rebound', 'oversold bounce', 'overbought fade'])
+        is_breakout = any(term in setup_lower for term in ['breakout', 'breakdown', 'expansion', 'impulse', 'momentum'])
+        adx_val = float(regime_info.get('adx') or 0.0) if isinstance(regime_info, dict) else 0.0
 
         if regime in ["CHOP_CONSOLIDATION", "COMPRESSED_RANGE"]:
+            # If ADX >= 22.0 or setup is a confirmed breakout, it represents a regime transition out of chop
+            if adx_val >= 22.0 or is_breakout:
+                return {"passed": True, "reason": f"Momentum impulse confirmed (ADX: {adx_val:.1f}). Breakout validated.", "regime": regime}
+
             # In chop/consolidation, breakout, coil or crossover signals are high-probability whipsaws
             if any(term in setup_lower for term in ['breakout', 'breakdown', 'crossover', 'cross', 'golden cross', 'high-beta', 'pre-ignition', 'coil', 'volatility coil']):
                 return {
@@ -1445,10 +1513,13 @@ class MarketRegimeDetector:
                         }
 
         elif regime in ["BREAKDOWN", "BEAR_TREND"]:
-            # In structural breakdown, never buy falling knives unless extreme oversold exhaustion reversal (RSI <= 30 at floor)
+            # In structural breakdown, never buy falling knives unless extreme oversold exhaustion reversal (RSI <= 34 at floor)
+            # OR genuine Day-High breakout / directional volatility expansion riding strong momentum
             if act_upper == "BUY":
-                rsi_val = float(regime_info.get('rsi') or 50.0)
-                if is_reversal and rsi_val <= 30.0:
+                chg_val = float(regime_info.get('change_pct', 0.0) or 0.0)
+                if is_breakout and (adx_val >= 20.0 or chg_val >= 0.40):
+                    pass  # Permitted: High-momentum breakout / V-shape trend transition riding Day High
+                elif is_reversal and float(regime_info.get('rsi') or 50.0) <= 34.0:
                     pass  # Permitted: Extreme exhaustion bounce with structural invalidation stop
                 else:
                     return {
@@ -1459,10 +1530,13 @@ class MarketRegimeDetector:
                     }
 
         elif regime == "BULL_TREND":
-            # In structural bull trend, never short or fade unless extreme overbought exhaustion reversal (RSI >= 70 at ceiling)
+            # In structural bull trend, never short or fade unless extreme overbought exhaustion reversal (RSI >= 66 at ceiling)
+            # OR genuine Day-Low breakdown riding strong downward momentum
             if act_upper == "SELL":
-                rsi_val = float(regime_info.get('rsi') or 50.0)
-                if is_reversal and rsi_val >= 70.0:
+                chg_val = float(regime_info.get('change_pct', 0.0) or 0.0)
+                if is_breakout and (adx_val >= 20.0 or chg_val <= -0.40):
+                    pass  # Permitted: High-momentum breakdown / trend reversal transition riding Day Low
+                elif is_reversal and float(regime_info.get('rsi') or 50.0) >= 66.0:
                     pass  # Permitted: Extreme exhaustion fade with structural invalidation stop
                 else:
                     return {
