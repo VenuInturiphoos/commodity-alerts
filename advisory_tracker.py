@@ -5001,25 +5001,25 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
         # --- SETUP 2: Volatility Breakout with ADX Momentum ---
         # A. Bullish Day-High Breakout
-        elif (cur_p >= day_h * 0.996) and (chg_pct >= 0.40) and (adx is not None and adx >= 22.0) and (rsi is None or rsi <= 82.0):
+        elif (cur_p >= day_h * 0.996) and (chg_pct >= 0.40) and (adx is not None and adx >= 20.0) and (rsi is None or rsi <= 82.0):
             if vol_ratio is None or vol_ratio >= 0.30:
                 triggered = True
                 action = "BUY"
                 setup_name = "Day-High Volatility Breakout"
                 sl = round(cur_p - (1.3 * atr_val), 2)
                 tgt = round(cur_p + (2.4 * atr_val), 2)
-                rationale = (f"Breaking Day High ₹{day_h:,.2f} with strong trend momentum (ADX {adx:.1f} >= 22 | "
+                rationale = (f"Breaking Day High ₹{day_h:,.2f} with strong trend momentum (ADX {adx:.1f} >= 20 | "
                              f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: +{chg_pct:.2f}%). Riding directional impulse.")
 
         # B. Bearish Day-Low Breakdown
-        elif (cur_p <= day_l * 1.004) and (chg_pct <= -0.40) and (adx is not None and adx >= 22.0) and (rsi is None or rsi >= 18.0):
+        elif (cur_p <= day_l * 1.004) and (chg_pct <= -0.40) and (adx is not None and adx >= 20.0) and (rsi is None or rsi >= 18.0):
             if vol_ratio is None or vol_ratio >= 0.30:
                 triggered = True
                 action = "SELL"
                 setup_name = "Day-Low Volatility Breakdown"
                 sl = round(cur_p + (1.3 * atr_val), 2)
                 tgt = round(cur_p - (2.4 * atr_val), 2)
-                rationale = (f"Breaking Day Low ₹{day_l:,.2f} with strong trend breakdown (ADX {adx:.1f} >= 22 | "
+                rationale = (f"Breaking Day Low ₹{day_l:,.2f} with strong trend breakdown (ADX {adx:.1f} >= 20 | "
                              f"RSI {f'{rsi:.1f}' if rsi else 'N/A'} | Chg: {chg_pct:.2f}%). Riding directional impulse.")
 
         # --- SETUP 3: EMA 20/50 Golden / Death Trend Cross ---
