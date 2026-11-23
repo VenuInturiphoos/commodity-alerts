@@ -881,25 +881,25 @@ class PositionSizer:
         'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot_size': 1000},
     }
 
-    # Canonical ~₹75k Margin Specification Mapping for MCX Commodities (50% Split of ₹1.5L Pool for 2 Concurrent Diverse Trades)
+    # Canonical 1-Lot Specification Mapping for MCX Mini/Micro Commodities
     COMMODITY_SPECS_150K = {
-        'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
-        'SILVERM': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
-        'SILVERMIC': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
-        'GOLD': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 5},
-        'GOLDM': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 5},
-        'GOLDTEN': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 5},
-        'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
-        'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
-        'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
+        'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 1},
+        'SILVERM': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 1},
+        'SILVERMIC': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 1},
+        'GOLD': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 1},
+        'GOLDM': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 1},
+        'GOLDTEN': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 1},
+        'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 1000},
+        'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 1000},
+        'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 1000},
         'COPPER': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 1000},
         'COPPERM': {'symbol': 'COPPERM', 'name': 'Copper Mini', 'lot': 1000},
-        'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 20},
-        'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 20},
-        'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 1000},
-        'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 1000},
-        'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 2000},
-        'ALUMINI': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 2000}
+        'CRUDEOIL': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 10},
+        'CRUDEOILM': {'symbol': 'CRUDEOILM', 'name': 'Crude Oil Mini', 'lot': 10},
+        'NATURALGAS': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 250},
+        'NATURALGASM': {'symbol': 'NATURALGASM', 'name': 'Natural Gas Mini', 'lot': 250},
+        'ALUMINIUM': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 1000},
+        'ALUMINI': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 1000}
     }
 
     TARGET_COMMODITY_MARGIN_INR = 75000.0  # ₹75,000 target margin (50% of ₹1.5L pool to allow 2 concurrent diverse trades)

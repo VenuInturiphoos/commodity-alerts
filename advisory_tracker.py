@@ -378,12 +378,12 @@ ENFORCE_MINI_ONLY_COMMODITIES = False # Calibrated to ~₹1.5 Lakhs commodity ma
 # Canonical specification mapping for trading futures with 50% split (~₹70,000 - ₹75,000 margin per position)
 # Calibrated to allow 2 concurrent diverse commodity positions within user's ₹1.5L available pool
 COMMODITY_SPECS_150K = {
-    'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
-    'SILVERM': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
-    'SILVERMIC': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 5},
-    'GOLD': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 5},
-    'GOLDM': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 5},
-    'GOLDTEN': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 5},
+    'SILVER': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 1},
+    'SILVERM': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 1},
+    'SILVERMIC': {'symbol': 'SILVERMIC', 'name': 'Silver Micro', 'lot': 1},
+    'GOLD': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 1},
+    'GOLDM': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 1},
+    'GOLDTEN': {'symbol': 'GOLDTEN', 'name': 'Gold Ten (Micro)', 'lot': 1},
     'ZINC': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
     'ZINCM': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
     'ZINCMINI': {'symbol': 'ZINCMINI', 'name': 'Zinc Mini', 'lot': 2000},
@@ -1320,6 +1320,12 @@ def dispatch_autonomous_limit_order(trade_entry, asset_type='COMMODITY'):
         if dhan_exec.focus_commodities_only:
             if asset_type != 'COMMODITY' or sym_clean.endswith('.NS') or sym_clean.endswith('.BO') or '-FUT' in sym_clean or asset_type in ['EQUITY', 'FUTURES', 'INTRADAY_STOCK', 'STOCK_FUTURES', 'OPTIONS']:
                 print(f"🛑 [COMMODITY ONLY BROKER GUARD] {symbol}: Non-commodity asset. Live Dhan execution excluded (Trade Analyser tracking remains active).")
+                pt['dhan_broker_status'] = 'EXCLUDED_NON_COMMODITY'
+                pt['live_broker_order'] = {
+                    'status': 'EXCLUDED_NON_COMMODITY',
+                    'symbol': symbol,
+                    'reason': 'Live Dhan broker execution restricted to MCX Commodities. Active tracking enabled on Trade Analyser portal.'
+                }
                 return {'status': 'EXCLUDED_NON_COMMODITY', 'reason': 'Dhan execution restricted to MCX Commodities only'}
 
         # 2. Enforce Expiry Risk Rule (Only exclude if ALL contracts in rollover chain are expired/in tender window)
@@ -5442,7 +5448,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
     # New intraday entries after 02:45 PM are prohibited since brokers auto square-off MIS orders by 03:15-03:20 PM.
     # Sized <= ₹3,000 risk (1% of ₹3L Trading pool) with 03:20 PM EOD square-off
     # =========================================================================
-    ENABLE_EQUITY_DERIVATIVES_SCANNER = os.environ.get('ENABLE_EQUITY_SCANNER', 'false').lower() in ['true', '1', 'yes']
+    ENABLE_EQUITY_DERIVATIVES_SCANNER = os.environ.get('ENABLE_EQUITY_SCANNER', 'true').lower() in ['true', '1', 'yes']
     is_equity_window = ((hour == 9 and minute >= 30) or (10 <= hour < 14) or (hour == 14 and minute <= 45))
     cur_equity_positions = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'])
 
