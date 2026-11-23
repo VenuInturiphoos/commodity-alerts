@@ -7839,9 +7839,8 @@ function renderAdvisorySummaryCards() {
                 const lot = pt.quantity || t.lot_size || 1;
                 const estCharges = calculateDhanCharges(t, effectivePrice);
                 const estChgVal = estCharges ? estCharges.total_charges : 0;
-                const grossMtm = (pts * lot);
-                todayUnrealizedPnl += grossMtm - estChgVal;
-                todayGrossPnl += grossMtm;
+                todayUnrealizedPnl += (pts * lot) - estChgVal;
+                todayGrossPnl += (pts * lot);
                 todayCharges += estChgVal;
             }
         }
@@ -7869,11 +7868,10 @@ function renderAdvisorySummaryCards() {
     if (todaySubEl) {
         if (todayActiveCount > 0) {
             const rSign = todayRealizedPnl >= 0 ? '+' : '-';
-            const grossMtmVal = todayGrossPnl - (todayTrades.filter(t => t.paper_trade?.status === 'CLOSED').reduce((s, t) => s + Number(t.paper_trade?.gross_pnl_inr !== undefined ? t.paper_trade.gross_pnl_inr : (t.paper_trade?.pnl_inr || 0)), 0));
-            const mSign = grossMtmVal >= 0 ? '+' : '-';
+            const uSign = todayUnrealizedPnl >= 0 ? '+' : '-';
             const rColor = todayRealizedPnl >= 0 ? '#4ade80' : '#fb7185';
-            const mColor = grossMtmVal >= 0 ? '#4ade80' : '#fb7185';
-            todaySubEl.innerHTML = `Realized: <strong style="color:${rColor};">${rSign}₹${Math.abs(todayRealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · Live MTM: <strong style="color:${mColor};">${mSign}₹${Math.abs(grossMtmVal).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · Dhan: <strong style="color:#fb7185;">-₹${todayCharges.toFixed(2)}</strong>`;
+            const uColor = todayUnrealizedPnl >= 0 ? '#4ade80' : '#fb7185';
+            todaySubEl.innerHTML = `Realized: <strong style="color:${rColor};">${rSign}₹${Math.abs(todayRealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · MTM: <strong style="color:${uColor};">${uSign}₹${Math.abs(todayUnrealizedPnl).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong> · Dhan: <strong style="color:#fb7185;">-₹${todayCharges.toFixed(2)}</strong>`;
         } else {
             const gSign = todayGrossPnl >= 0 ? '+' : '-';
             const gColor = todayGrossPnl >= 0 ? '#4ade80' : '#fb7185';
