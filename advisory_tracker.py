@@ -1397,6 +1397,7 @@ def record_live_9am_advisory(commodities_list):
 
         sym, name, lot_size, quote_item = resolve_defense_contract_and_quote(raw_sym, item, commodities_map)
         cur_p = quote_item['current_price']
+        day_o = quote_item.get('open', cur_p)
         day_h = quote_item.get('day_high', cur_p)
         day_l = quote_item.get('day_low', cur_p)
         p_close = quote_item.get('prev_close', cur_p)
@@ -1839,6 +1840,7 @@ def record_live_130pm_advisory(commodities_list):
 
         sym, name, lot_size, quote_item = resolve_defense_contract_and_quote(raw_sym, item, commodities_map)
         cur_p = quote_item['current_price']
+        day_o = quote_item.get('open', cur_p)
         day_h = quote_item.get('day_high', cur_p)
         day_l = quote_item.get('day_low', cur_p)
         p_close = quote_item['prev_close']
