@@ -14,6 +14,12 @@ import subprocess
 from datetime import datetime
 import pytz
 
+try:
+    sys.stdout.reconfigure(line_buffering=True)
+    sys.stderr.reconfigure(line_buffering=True)
+except Exception:
+    pass
+
 from dotenv import load_dotenv
 load_dotenv()
 
