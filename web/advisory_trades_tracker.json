@@ -1,10 +1,10 @@
 {
-  "last_updated": "23 Nov 2026, 07:40 PM IST",
+  "last_updated": "23 Nov 2026, 08:01 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 79,
-    "executed_count": 11,
+    "total_signals": 81,
+    "executed_count": 13,
     "correct_count": 5,
     "wrong_count": 6,
     "protected_count": 68,
@@ -17,15 +17,271 @@
     "intraday_pnl_inr": 685.31,
     "intraday_booked_profit_inr": 685.31,
     "intraday_pool_balance_inr": 30685.31,
-    "avg_trade_pnl_inr": -418.3,
-    "active_trades_count": 0,
+    "avg_trade_pnl_inr": -353.95,
+    "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 295398.65,
-    "used_margin_inr": 0,
-    "available_cash_inr": 295398.65,
+    "used_margin_inr": 36262.85,
+    "available_cash_inr": 259135.8,
     "net_worth_inr": 295398.65
   },
   "trades": [
+    {
+      "id": "ADV-23Nov2026-2001-SILVERMIC",
+      "date": "23 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (Day-High Volatility Breakout)",
+      "time_trigger": "08:01 PM IST",
+      "time_6pm": "08:01 PM IST",
+      "time_validation": "08:01 PM IST",
+      "time_615": "08:01 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "SILVERMIC",
+      "name": "Silver Micro",
+      "lot_size": 1,
+      "event_context": "Indicator Confluence: Day-High Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\u26a1 Bull Breakout Expansion",
+        "short_tag": "Bull Breakout",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "High-momentum Day-High breakout expansion (Chg: +5.69%, ADX: 56.2). Riding directional impulse.",
+        "allowed_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "EXPANSION_BUY",
+          "MOMENTUM_RUN"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 56.2,
+        "rsi": 27.9,
+        "change_pct": 5.69,
+        "bb_width_pct": 4.0,
+        "daily_vol_pct": 4.11,
+        "close": 157177.0,
+        "ema50": 198669.7470555148,
+        "ema200": 198669.7470555148
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "BREAKOUT_MOMENTUM_EXPANSION",
+        "verdict_text": "Breakout Momentum Expansion \u26a1 (High-Conviction Breakout)",
+        "p_target_pct": 12.4,
+        "p_stop_pct": 37.4,
+        "p_neither_pct": 50.2,
+        "resolved_win_rate_pct": 24.9,
+        "expected_r": -0.225,
+        "target_r": 1.2,
+        "sample_bars": 2034,
+        "summary": "3,000 Replays: 12.4% Target | 37.4% Stop | Expected: -0.23R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 2400.0,
+        "potential_gain_inr": 2880.0,
+        "broker": "Dhan",
+        "est_charges_inr": 73.91,
+        "net_loss_at_stop_inr": 2473.91
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b9157,177.00",
+        "rationale": "Breaking Day High \u20b9157,555.00 with strong trend momentum (ADX 56.2 >= 20 | RSI 27.9 | Chg: +5.69%). Riding directional impulse. 3,000 Replays: 12.4% Target | 37.4% Stop | Expected: -0.23R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))",
+        "reference_price": 157177.0,
+        "stop_loss": 154777.0,
+        "target": 160057.0,
+        "original_stop_loss": 154777.0,
+        "original_target": 160057.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 157177.0,
+        "action_taken": "Entered BUY 1 units @ \u20b9157,177.00",
+        "detail": "Day-High Volatility Breakout: Breaking Day High \u20b9157,555.00 with strong trend momentum (ADX 56.2 >= 20 | RSI 27.9 | Chg: +5.69%). Riding directional impulse. | 3,000 Replays: 12.4% Target | 37.4% Stop | Expected: -0.23R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1,
+        "entry_price": 157177.0,
+        "entry_time": "08:01 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "margin_required_inr": 23576.55,
+        "target": 160057.0,
+        "stop_loss": 154777.0,
+        "initial_stop_loss": 154777.0,
+        "original_sl": 154777.0,
+        "peak_high": 157177.0,
+        "trough_low": 157177.0,
+        "entry_day_high": 157177.0,
+        "entry_day_low": 157177.0,
+        "live_broker_order": {
+          "status": "REJECTED",
+          "reason": {
+            "error_code": "DH-905",
+            "error_type": "Input_Exception",
+            "error_message": "Invalid IP"
+          },
+          "dhan_response": {
+            "status": "failure",
+            "remarks": {
+              "error_code": "DH-905",
+              "error_type": "Input_Exception",
+              "error_message": "Invalid IP"
+            },
+            "data": ""
+          }
+        }
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Day-High Volatility Breakout active: BUY @ \u20b9157,177.00 (Target: \u20b9160,057.00, SL: \u20b9154,777.00) | 3,000 Replays: 12.4% Target | 37.4% Stop | Expected: -0.23R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))"
+      }
+    },
+    {
+      "id": "ADV-23Nov2026-2001-GOLDTEN",
+      "date": "23 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (Day-High Volatility Breakout)",
+      "time_trigger": "08:01 PM IST",
+      "time_6pm": "08:01 PM IST",
+      "time_validation": "08:01 PM IST",
+      "time_615": "08:01 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "GOLDTEN",
+      "name": "Gold Ten (Micro)",
+      "lot_size": 1,
+      "event_context": "Indicator Confluence: Day-High Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\u26a1 Bull Breakout Expansion",
+        "short_tag": "Bull Breakout",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "High-momentum Day-High breakout expansion (Chg: +4.18%, ADX: 42.3). Riding directional impulse.",
+        "allowed_strategies": [
+          "TREND_BREAKOUT_BUY",
+          "EXPANSION_BUY",
+          "MOMENTUM_RUN"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-bolt",
+        "adx": 42.3,
+        "rsi": 30.7,
+        "change_pct": 4.18,
+        "bb_width_pct": 4.0,
+        "daily_vol_pct": 2.32,
+        "close": 126863.0,
+        "ema50": 142472.16862649948,
+        "ema200": 142472.16862649948
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "BREAKOUT_MOMENTUM_EXPANSION",
+        "verdict_text": "Breakout Momentum Expansion \u26a1 (High-Conviction Breakout)",
+        "p_target_pct": 29.2,
+        "p_stop_pct": 55.5,
+        "p_neither_pct": 15.3,
+        "resolved_win_rate_pct": 34.5,
+        "expected_r": -0.205,
+        "target_r": 1.2,
+        "sample_bars": 2035,
+        "summary": "3,000 Replays: 29.2% Target | 55.5% Stop | Expected: -0.20R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 650.0,
+        "potential_gain_inr": 780.0,
+        "broker": "Dhan",
+        "est_charges_inr": 68.92,
+        "net_loss_at_stop_inr": 718.92
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b9126,863.00",
+        "rationale": "Breaking Day High \u20b9127,119.00 with strong trend momentum (ADX 42.3 >= 20 | RSI 30.7 | Chg: +4.18%). Riding directional impulse. 3,000 Replays: 29.2% Target | 55.5% Stop | Expected: -0.20R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))",
+        "reference_price": 126863.0,
+        "stop_loss": 126213.0,
+        "target": 127643.0,
+        "original_stop_loss": 126213.0,
+        "original_target": 127643.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 126863.0,
+        "action_taken": "Entered BUY 1 units @ \u20b9126,863.00",
+        "detail": "Day-High Volatility Breakout: Breaking Day High \u20b9127,119.00 with strong trend momentum (ADX 42.3 >= 20 | RSI 30.7 | Chg: +4.18%). Riding directional impulse. | 3,000 Replays: 29.2% Target | 55.5% Stop | Expected: -0.20R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 1,
+        "entry_price": 126863.0,
+        "entry_time": "08:01 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "margin_required_inr": 12686.3,
+        "target": 127643.0,
+        "stop_loss": 126213.0,
+        "initial_stop_loss": 126213.0,
+        "original_sl": 126213.0,
+        "peak_high": 126863.0,
+        "trough_low": 126863.0,
+        "entry_day_high": 126863.0,
+        "entry_day_low": 126863.0,
+        "live_broker_order": {
+          "status": "REJECTED",
+          "reason": {
+            "error_code": "DH-905",
+            "error_type": "Input_Exception",
+            "error_message": "Invalid IP"
+          },
+          "dhan_response": {
+            "status": "failure",
+            "remarks": {
+              "error_code": "DH-905",
+              "error_type": "Input_Exception",
+              "error_message": "Invalid IP"
+            },
+            "data": ""
+          }
+        }
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Day-High Volatility Breakout active: BUY @ \u20b9126,863.00 (Target: \u20b9127,643.00, SL: \u20b9126,213.00) | 3,000 Replays: 29.2% Target | 55.5% Stop | Expected: -0.20R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))"
+      }
+    },
     {
       "id": "ADV-23Nov2026-1938-ALUMINI",
       "date": "23 Nov 2026",
