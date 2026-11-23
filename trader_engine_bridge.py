@@ -1485,7 +1485,7 @@ class MarketRegimeDetector:
         regime = regime_info.get("regime") if isinstance(regime_info, dict) else str(regime_info)
         setup_lower = (setup_name or "").lower()
         act_upper = (action or "").upper()
-        is_reversal = any(term in setup_lower for term in ['reversal', 'mean-reversion', 'mean_reversion', 'rebound', 'oversold bounce', 'overbought fade'])
+        is_reversal = any(term in setup_lower for term in ['reversal', 'mean-reversion', 'mean_reversion', 'rebound', 'oversold bounce', 'overbought fade', 'exhaustion', 'floor bounce', 'ceiling fade', 'top & low', 'top and low'])
         is_breakout = any(term in setup_lower for term in ['breakout', 'breakdown', 'expansion', 'impulse', 'momentum'])
         is_coil = any(term in setup_lower for term in ['pre-ignition', 'coil', 'volatility coil', 'pre-move'])
         adx_val = float(regime_info.get('adx') or 0.0) if isinstance(regime_info, dict) else 0.0
@@ -1532,13 +1532,13 @@ class MarketRegimeDetector:
                         }
 
         elif regime in ["BREAKDOWN", "BEAR_TREND"]:
-            # In structural breakdown, never buy falling knives unless extreme oversold exhaustion reversal (RSI <= 34 at floor)
+            # In structural breakdown, never buy falling knives unless extreme oversold exhaustion reversal (RSI <= 38 at floor)
             # OR genuine Day-High breakout / directional volatility expansion riding strong momentum
             if act_upper == "BUY":
                 chg_val = float(regime_info.get('change_pct', 0.0) or 0.0)
                 if is_breakout and (adx_val >= 20.0 or chg_val >= 0.40):
                     pass  # Permitted: High-momentum breakout / V-shape trend transition riding Day High
-                elif is_reversal and float(regime_info.get('rsi') or 50.0) <= 34.0:
+                elif is_reversal and float(regime_info.get('rsi') or 50.0) <= 38.0:
                     pass  # Permitted: Extreme exhaustion bounce with structural invalidation stop
                 else:
                     return {
@@ -1549,13 +1549,13 @@ class MarketRegimeDetector:
                     }
 
         elif regime == "BULL_TREND":
-            # In structural bull trend, never short or fade unless extreme overbought exhaustion reversal (RSI >= 66 at ceiling)
+            # In structural bull trend, never short or fade unless extreme overbought exhaustion reversal (RSI >= 62 at ceiling)
             # OR genuine Day-Low breakdown riding strong downward momentum
             if act_upper == "SELL":
                 chg_val = float(regime_info.get('change_pct', 0.0) or 0.0)
                 if is_breakout and (adx_val >= 20.0 or chg_val <= -0.40):
                     pass  # Permitted: High-momentum breakdown / trend reversal transition riding Day Low
-                elif is_reversal and float(regime_info.get('rsi') or 50.0) >= 66.0:
+                elif is_reversal and float(regime_info.get('rsi') or 50.0) >= 62.0:
                     pass  # Permitted: Extreme exhaustion fade with structural invalidation stop
                 else:
                     return {

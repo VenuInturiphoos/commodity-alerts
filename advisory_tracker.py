@@ -4944,42 +4944,67 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         sl = None
         tgt = None
 
-        # --- SETUP 1: Exhaustion Mean-Reversion Reversal Engine ---
-        # Activates strictly at extreme oversold/overbought conditions where momentum is exhausted (>72% reversal edge).
-        # Replaces bottom-shorting with high-conviction support bounces targeting VWAP / 20 EMA.
+        # --- SETUP 1: Top & Low Exhaustion Reversal Engine ---
+        # Identifies exact market turning points (tops and lows) before they reverse.
+        # Places ultra-tight invalidation stops outside the exhaustion rejection wicks and captures mean-reversions back to 20 EMA / VWAP.
         bb_low = float(item.get('bb_lower') or (cur_p * 0.98))
         bb_high = float(item.get('bb_upper') or (cur_p * 1.02))
-
-        # A. Extreme Oversold Exhaustion Reversal (BUY)
-        # Conditions: RSI <= 34.0 or near Lower BB, strictly located at support near Day Low (lower half of range)
         session_mid_check = (day_h + day_l) / 2.0 if (day_h and day_l and day_h > day_l) else cur_p
-        if (((rsi is not None and rsi <= 34.0) or (cur_p <= bb_low * 1.008 and rsi is not None and rsi <= 38.0) or (chg_pct <= -1.8 and rsi is not None and rsi <= 38.0)) 
-            and (day_l > 0 and cur_p <= day_l * 1.025 and cur_p <= session_mid_check)):
-            if day_l > 0 and cur_p >= day_l:
-                triggered = True
-                action = "BUY"
-                setup_name = "Exhaustion Mean-Reversion Reversal (Oversold Bounce)"
-                sl = round(day_l - (0.5 * atr_val), 2)
-                revert_target = round(ema20 if (ema20 and ema20 > cur_p) else (cur_p + (1.8 * atr_val)), 2)
-                min_target = round(cur_p + (1.5 * abs(cur_p - sl)), 2)
-                tgt = max(revert_target, min_target)
-                rationale = (f"Extreme oversold exhaustion: RSI {rsi:.1f} <= 34 at support (Day Low: ₹{day_l:,.2f}). "
-                             f"Seller exhaustion confirmed; mean-reversion reversal targeting 20 EMA / VWAP (₹{tgt:,.2f}).")
 
-        # B. Extreme Overbought Exhaustion Reversal (SELL)
-        # Conditions: RSI >= 66.0 or near Upper BB, strictly located at resistance near Day High (upper half of range)
-        elif (((rsi is not None and rsi >= 66.0) or (cur_p >= bb_high * 0.992 and rsi is not None and rsi >= 62.0) or (chg_pct >= 1.8 and rsi is not None and rsi >= 62.0))
-              and (day_h > 0 and cur_p >= day_h * 0.975 and cur_p >= session_mid_check)):
-            if day_h > 0 and cur_p <= day_h:
+        # A. Extreme Low Exhaustion Bounce (BUY)
+        # Conditions: Price at structural floor (within 1.0% of Day Low or touching Lower BB) with RSI <= 34.0 (or <= 38.0 on extended drop)
+        at_floor = (day_l > 0 and cur_p <= day_l * 1.010) or (cur_p <= bb_low * 1.005)
+        oversold_rsi = (rsi is not None and rsi <= 34.0) or (at_floor and rsi is not None and rsi <= 38.0) or (chg_pct <= -1.5 and rsi is not None and rsi <= 38.0)
+        if at_floor and oversold_rsi and (cur_p <= session_mid_check):
+            floor_level = min(day_l, bb_low) if (day_l and day_l > 0) else bb_low
+            # Structural invalidation stop: tucked tightly under the floor rejection base
+            min_sl_dist = max(0.18 * atr_val, cur_p * 0.0020)
+            sl_candidate = round(floor_level - (0.15 * atr_val), 2)
+            if (cur_p - sl_candidate) < min_sl_dist:
+                sl = round(cur_p - min_sl_dist, 2)
+            elif (cur_p - sl_candidate) > (0.35 * atr_val):
+                sl = round(cur_p - (0.30 * atr_val), 2)
+            else:
+                sl = sl_candidate
+            
+            risk_dist = abs(cur_p - sl)
+            revert_target = round(ema20 if (ema20 and ema20 > cur_p) else (cur_p + (2.2 * risk_dist)), 2)
+            min_target = round(cur_p + (2.2 * risk_dist), 2)
+            tgt = max(revert_target, min_target)
+            
+            triggered = True
+            action = "BUY"
+            setup_name = "Top & Low Exhaustion Reversal (Oversold Floor Bounce)"
+            rationale = (f"Extreme oversold floor exhaustion: RSI {rsi:.1f} <= 38 at structural base (Day Low: ₹{day_l:,.2f} | Lower BB: ₹{bb_low:,.2f}). "
+                         f"Seller exhaustion confirmed; tight structural stop under floor wick (₹{sl:,.2f}, risk: {risk_dist:.2f} pts), targeting mean-reversion to 20 EMA (₹{tgt:,.2f}).")
+
+        # B. Extreme Top Exhaustion Fade (SELL)
+        # Conditions: Price at structural ceiling (within 1.0% of Day High or touching Upper BB) with RSI >= 66.0 (or >= 62.0 on extended rally)
+        elif not triggered:
+            at_ceiling = (day_h > 0 and cur_p >= day_h * 0.990) or (cur_p >= bb_high * 0.995)
+            overbought_rsi = (rsi is not None and rsi >= 66.0) or (at_ceiling and rsi is not None and rsi >= 62.0) or (chg_pct >= 1.5 and rsi is not None and rsi >= 62.0)
+            if at_ceiling and overbought_rsi and (cur_p >= session_mid_check):
+                ceiling_level = max(day_h, bb_high) if (day_h and day_h > 0) else bb_high
+                # Structural invalidation stop: tucked tightly above the ceiling rejection peak
+                min_sl_dist = max(0.18 * atr_val, cur_p * 0.0020)
+                sl_candidate = round(ceiling_level + (0.15 * atr_val), 2)
+                if (sl_candidate - cur_p) < min_sl_dist:
+                    sl = round(cur_p + min_sl_dist, 2)
+                elif (sl_candidate - cur_p) > (0.35 * atr_val):
+                    sl = round(cur_p - (0.30 * atr_val), 2)
+                else:
+                    sl = sl_candidate
+                
+                risk_dist = abs(sl - cur_p)
+                revert_target = round(ema20 if (ema20 and ema20 < cur_p) else (cur_p - (2.2 * risk_dist)), 2)
+                min_target = round(cur_p - (2.2 * risk_dist), 2)
+                tgt = min(revert_target, min_target)
+                
                 triggered = True
                 action = "SELL"
-                setup_name = "Exhaustion Mean-Reversion Reversal (Overbought Fade)"
-                sl = round(day_h + (0.5 * atr_val), 2)
-                revert_target = round(ema20 if (ema20 and ema20 < cur_p) else (cur_p - (1.8 * atr_val)), 2)
-                min_target = round(cur_p - (1.5 * abs(sl - cur_p)), 2)
-                tgt = min(revert_target, min_target)
-                rationale = (f"Extreme overbought exhaustion: RSI {rsi:.1f} >= 70 at resistance (Day High: ₹{day_h:,.2f}). "
-                             f"Buyer exhaustion confirmed; mean-reversion fade targeting 20 EMA / VWAP (₹{tgt:,.2f}).")
+                setup_name = "Top & Low Exhaustion Reversal (Overbought Ceiling Fade)"
+                rationale = (f"Extreme overbought ceiling exhaustion: RSI {rsi:.1f} >= 62 at structural peak (Day High: ₹{day_h:,.2f} | Upper BB: ₹{bb_high:,.2f}). "
+                             f"Buyer exhaustion confirmed; tight structural stop above ceiling wick (₹{sl:,.2f}, risk: {risk_dist:.2f} pts), targeting mean-reversion to 20 EMA (₹{tgt:,.2f}).")
 
         # --- SETUP 0: Pre-Ignition Volatility Coil (Primary Sovereign Focus) ---
         # Identifies the quiet coiling phase immediately before trend ignition.
@@ -5083,7 +5108,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                              f"RSI {f'{rsi:.1f}' if rsi else 'N/A'}. Capturing early trend expansion.")
 
         if triggered and action:
-            is_reversal = ("Exhaustion Mean-Reversion" in setup_name)
+            is_reversal = any(term in setup_name for term in ["Exhaustion", "Reversal", "Mean-Reversion", "Floor Bounce", "Ceiling Fade", "Top & Low"])
             is_breakout = ("Breakout" in setup_name or "Breakdown" in setup_name or "Expansion" in setup_name)
 
             # 🚫 Universal Anti-Bottom-Shorting / Anti-Top-Buying Guard:
