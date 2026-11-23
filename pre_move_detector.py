@@ -391,10 +391,13 @@ class PreMoveDetector:
                                prev_close: float, change_pct: float, adx: Optional[float] = None,
                                rsi: Optional[float] = None, atr: Optional[float] = None,
                                ema20: Optional[float] = None, ema50: Optional[float] = None,
-                               volume: Optional[float] = None, avg_volume: Optional[float] = None) -> PreMoveSignal:
+                               volume: Optional[float] = None, avg_volume: Optional[float] = None,
+                               bb_upper: Optional[float] = None, bb_lower: Optional[float] = None,
+                               bb_width_pct: Optional[float] = None) -> PreMoveSignal:
         """
         Lightweight snapshot evaluator when full candle history is not loaded.
-        Uses intraday range compression, day high/low bandwidth, and momentum indicators.
+        Uses multi-factor rolling compression (Bollinger Bandwidth, EMA proximity,
+        intraday range, volume dry-up) and sets structural MINIMUM stop-loss geometry.
         """
         if current_price <= 0:
             return PreMoveSignal(
@@ -410,16 +413,35 @@ class PreMoveDetector:
         day_range_pct = (day_range / current_price) * 100.0
 
         vol_ratio = (volume / avg_volume) if (volume and avg_volume and avg_volume > 0) else 1.0
-        
-        # High compression: day range < 1.1x ATR or < 1.0% total range
-        is_compressed = (day_range < (1.15 * atr_val)) or (day_range_pct < 1.0)
-        
+
+        # 1. Bollinger Band Compression / Multi-Bar Coil Analysis
+        calc_bb_w = ((bb_upper - bb_lower) / current_price * 100.0) if (bb_upper and bb_lower and bb_upper > bb_lower) else None
+        active_bb_w = bb_width_pct if (bb_width_pct is not None and bb_width_pct > 0) else calc_bb_w
+
+        # High-beta commodities (Silver, Natural Gas) have naturally wider baseline bandwidths
+        is_high_beta = any(s in symbol.upper() for s in ['SILVER', 'NATURALGAS', 'NATGAS'])
+        bb_squeeze_threshold = 8.5 if is_high_beta else 5.2
+
+        is_bb_compressed = (active_bb_w is not None and active_bb_w <= bb_squeeze_threshold)
+
+        # 2. Baseline proximity: Price consolidating tightly within 0.85% of EMA 20
+        ema_ref = ema20 or ema50 or prev_close
+        ema_dev_pct = abs(current_price - ema_ref) / current_price * 100.0 if (ema_ref and ema_ref > 0) else 0.5
+        is_ema_coiled = ema_dev_pct <= 0.85
+
+        # Multi-factor compression:
+        # True if BB is squeezed, OR price is hugging EMA coil baseline, OR intraday range is coiled
+        is_compressed = is_bb_compressed or (is_ema_coiled and (active_bb_w is None or active_bb_w <= (bb_squeeze_threshold + 2.0))) or (day_range < (1.15 * atr_val)) or (day_range_pct < 1.25)
+
         pmri_score = 0.0
         reasons = []
 
-        if is_compressed:
+        if is_bb_compressed:
             pmri_score += 35.0
-            reasons.append(f"Intraday Range Coiled: Day range is only {day_range_pct:.2f}% ({day_range:.2f} pts <= 1.15x ATR). Volatility bottleneck.")
+            reasons.append(f"Bollinger Band Volatility Squeeze: Bandwidth coiled at {active_bb_w:.1f}% (<= {bb_squeeze_threshold:.1f}%). Pre-explosion energy containment.")
+        elif is_compressed:
+            pmri_score += 30.0
+            reasons.append(f"Intraday Range Coiled: Price hugging baseline ({ema_dev_pct:.2f}% dev, day range {day_range_pct:.2f}%). Volatility bottleneck.")
 
         if vol_ratio < 0.70:
             pmri_score += 20.0
@@ -431,20 +453,17 @@ class PreMoveDetector:
         session_mid = round((day_high + day_low) / 2.0, 2) if (day_high > day_low) else current_price
 
         # Momentum vector from EMA alignment, session midpoint, and change %
-        ema_ref = ema20 or ema50 or prev_close
-        if current_price >= ema_ref and current_price >= (session_mid * 0.998) and (change_pct >= -0.20):
+        if current_price >= ema_ref and current_price >= (session_mid * 0.998) and (change_pct >= -0.30):
             mom_dir = "BULLISH_EXPANDING"
             pmri_score += 25.0
             reasons.append(f"Price holding above baseline (₹{ema_ref:,.2f}) and session midpoint (₹{session_mid:,.2f}), building upward coil pressure.")
-        elif current_price <= ema_ref and current_price <= (session_mid * 1.002) and (change_pct <= 0.20):
+        elif current_price <= ema_ref and current_price <= (session_mid * 1.002) and (change_pct <= 0.30):
             mom_dir = "BEARISH_EXPANDING"
             pmri_score += 25.0
             reasons.append(f"Price capped below baseline (₹{ema_ref:,.2f}) and session midpoint (₹{session_mid:,.2f}), building downward coil pressure.")
         elif current_price < session_mid:
-            # Below midpoint: flow leans bearish
             mom_dir = "BEARISH_EXPANDING" if current_price <= ema_ref else "FLAT"
         elif current_price > session_mid:
-            # Above midpoint: flow leans bullish
             mom_dir = "BULLISH_EXPANDING" if current_price >= ema_ref else "FLAT"
         else:
             mom_dir = "FLAT"
@@ -453,7 +472,7 @@ class PreMoveDetector:
             pmri_score += 10.0
             reasons.append(f"ADX strength ({adx:.1f}) ready to sustain breakout momentum.")
 
-        if rsi is not None and (45.0 <= rsi <= 60.0):
+        if rsi is not None and (42.0 <= rsi <= 64.0):
             pmri_score += 10.0
             reasons.append(f"Neutral RSI ({rsi:.1f}) provides maximum expansion runway without exhaustion.")
 
@@ -475,10 +494,16 @@ class PreMoveDetector:
                 else:
                     action = "BUY"
                     status = "PRE_MOVE_BUY_TRIGGER"
-                    sl = round(day_low - (0.25 * atr_val), 2)
-                    risk_pts = max(current_price - sl, 0.40 * atr_val)
-                    tgt1 = round(current_price + (2.0 * risk_pts), 2)
-                    tgt2 = round(current_price + (3.5 * risk_pts), 2)
+                    # Ultra-tight invalidation stop: placed strictly under the coil support floor
+                    coil_floor = bb_lower if (bb_lower and bb_lower > 0 and bb_lower < current_price) else (current_price - (0.35 * atr_val))
+                    raw_sl = min(current_price - (0.25 * atr_val), coil_floor - (0.05 * atr_val))
+                    # Bound stop loss between 0.20 * atr_val and 0.45 * atr_val to guarantee MINIMUM stoploss
+                    min_risk = 0.20 * atr_val
+                    max_risk = 0.45 * atr_val
+                    risk_pts = max(min_risk, min(current_price - raw_sl, max_risk))
+                    sl = round(current_price - risk_pts, 2)
+                    tgt1 = round(current_price + (2.5 * risk_pts), 2)  # 2.5R primary asymmetric target
+                    tgt2 = round(current_price + (4.5 * risk_pts), 2)  # 4.5R explosive runner target
                     rrr = round((tgt1 - current_price) / risk_pts, 2)
             elif mom_dir == "BEARISH_EXPANDING":
                 # Hard Oversold Guard: Never SELL into exhausted oversold conditions
@@ -488,10 +513,15 @@ class PreMoveDetector:
                 else:
                     action = "SELL"
                     status = "PRE_MOVE_SELL_TRIGGER"
-                    sl = round(day_high + (0.25 * atr_val), 2)
-                    risk_pts = max(sl - current_price, 0.40 * atr_val)
-                    tgt1 = round(current_price - (2.0 * risk_pts), 2)
-                    tgt2 = round(current_price - (3.5 * risk_pts), 2)
+                    # Ultra-tight invalidation stop: placed strictly above the coil resistance ceiling
+                    coil_roof = bb_upper if (bb_upper and bb_upper > 0 and bb_upper > current_price) else (current_price + (0.35 * atr_val))
+                    raw_sl = max(current_price + (0.25 * atr_val), coil_roof + (0.05 * atr_val))
+                    min_risk = 0.20 * atr_val
+                    max_risk = 0.45 * atr_val
+                    risk_pts = max(min_risk, min(raw_sl - current_price, max_risk))
+                    sl = round(current_price + risk_pts, 2)
+                    tgt1 = round(current_price - (2.5 * risk_pts), 2)  # 2.5R primary asymmetric target
+                    tgt2 = round(current_price - (4.5 * risk_pts), 2)  # 4.5R explosive runner target
                     rrr = round((current_price - tgt1) / risk_pts, 2)
 
         return PreMoveSignal(

@@ -1487,15 +1487,24 @@ class MarketRegimeDetector:
         act_upper = (action or "").upper()
         is_reversal = any(term in setup_lower for term in ['reversal', 'mean-reversion', 'mean_reversion', 'rebound', 'oversold bounce', 'overbought fade'])
         is_breakout = any(term in setup_lower for term in ['breakout', 'breakdown', 'expansion', 'impulse', 'momentum'])
+        is_coil = any(term in setup_lower for term in ['pre-ignition', 'coil', 'volatility coil', 'pre-move'])
         adx_val = float(regime_info.get('adx') or 0.0) if isinstance(regime_info, dict) else 0.0
 
         if regime in ["CHOP_CONSOLIDATION", "COMPRESSED_RANGE"]:
+            # Pre-Ignition Volatility Coils are specifically engineered to identify trades inside compressed ranges before the explosion
+            if is_coil:
+                return {
+                    "passed": True,
+                    "reason": "Pre-Ignition Volatility Coil entering inside compressed range prior to expansion. Early asymmetric entry validated.",
+                    "regime": regime
+                }
+
             # If ADX >= 22.0 or setup is a confirmed breakout, it represents a regime transition out of chop
             if adx_val >= 22.0 or is_breakout:
                 return {"passed": True, "reason": f"Momentum impulse confirmed (ADX: {adx_val:.1f}). Breakout validated.", "regime": regime}
 
-            # In chop/consolidation, breakout, coil or crossover signals are high-probability whipsaws
-            if any(term in setup_lower for term in ['breakout', 'breakdown', 'crossover', 'cross', 'golden cross', 'high-beta', 'pre-ignition', 'coil', 'volatility coil']):
+            # In chop/consolidation, chasing late breakouts or crossovers are high-probability whipsaws
+            if any(term in setup_lower for term in ['breakout', 'breakdown', 'crossover', 'cross', 'golden cross', 'high-beta']):
                 return {
                     "passed": False,
                     "reason": f"FALSE SIGNAL FILTER: Blocked {action} '{setup_name}' during CHOP_CONSOLIDATION (ADX {regime_info.get('adx', 'low')}). High whipsaw & fakeout risk.",
