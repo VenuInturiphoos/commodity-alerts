@@ -162,6 +162,104 @@ def get_canonical_commodity_root(s):
         return 'NICKEL'
     return u
 
+def check_commodity_cooldown(symbol, trades=None, today_str=None, now_dt=None):
+    """
+    Authoritative Universal Commodity Cooldown Guard.
+    Applies strictly BEFORE taking ANY new trade (whether BUY or SELL) on a commodity.
+    
+    Rules:
+    - Normalizes symbol to canonical root (e.g. ALUMINI -> ALUMINIUM, CRUDEOILM -> CRUDEOIL).
+    - If prior trade hit STOP LOSS: 120 minutes (2 hours) mandatory lockout.
+    - If prior trade hit TARGET: 120 minutes (2 hours) mandatory lockout.
+    - If prior trade closed standard / breakeven / stagnation: 90 minutes mandatory lockout.
+    - If any trade in this canonical commodity is currently ACTIVE or PENDING_LIMIT:
+      Blocks new trade (prevents simultaneous overlapping exposure).
+    - APPLIES TO BOTH BUY AND SELL (Strict anti-churning & anti-revenge trading).
+      
+    Returns:
+    (is_in_cooldown: bool, reason: str, remaining_mins: float)
+    """
+    if not symbol:
+        return False, "No symbol provided", 0.0
+
+    canon_sym = get_canonical_commodity_root(symbol)
+    if not canon_sym:
+        return False, "Could not resolve canonical root", 0.0
+
+    now_dt = now_dt or datetime.now(pytz.timezone('Asia/Kolkata'))
+    today_str = today_str or now_dt.strftime('%d %b %Y')
+
+    if trades is None:
+        try:
+            tracker = load_tracker()
+            trades = tracker.get('trades', [])
+        except Exception:
+            trades = []
+
+    # 1. Prevent overlapping simultaneous active/pending trades in the same commodity
+    for t in trades:
+        if t.get('date') == today_str and get_canonical_commodity_root(t.get('symbol')) == canon_sym:
+            pt = t.get('paper_trade', {})
+            if pt.get('status') in ['ACTIVE', 'PENDING_LIMIT']:
+                return True, f"Active/Pending position already open on {canon_sym} ({t.get('symbol')} {pt.get('action')}). Simultaneous re-entry blocked.", 0.0
+
+    # 2. Find all executed trades for this canonical commodity today
+    sym_today_trades = [
+        t for t in trades
+        if t.get('date') == today_str
+        and get_canonical_commodity_root(t.get('symbol')) == canon_sym
+        and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
+        and t.get('paper_trade', {}).get('quantity', 0) > 0
+    ]
+    if not sym_today_trades:
+        return False, "No prior trades today", 0.0
+
+    # 3. Sort chronologically to find the true most recent trade
+    def _trade_sort_key(tr):
+        pt_tr = tr.get('paper_trade', {})
+        t_str = pt_tr.get('exit_time') or pt_tr.get('entry_time') or tr.get('time_trigger') or ''
+        dt_obj = parse_ist_timestamp(t_str, today_str)
+        return dt_obj if dt_obj else datetime.min.replace(tzinfo=pytz.timezone('Asia/Kolkata'))
+
+    sorted_trades = sorted(sym_today_trades, key=_trade_sort_key)
+    last_t = sorted_trades[-1]
+    last_pt = last_t.get('paper_trade', {})
+    last_time_str = last_pt.get('exit_time') or last_pt.get('entry_time') or last_t.get('time_trigger')
+
+    if not last_time_str:
+        return False, "No timestamp found on prior trade", 0.0
+
+    t_struct = parse_ist_timestamp(last_time_str, today_str)
+    if not t_struct:
+        return False, "Could not parse prior trade timestamp", 0.0
+
+    diff_mins = (now_dt - t_struct).total_seconds() / 60.0
+    if diff_mins < 0:
+        diff_mins = 0.0
+
+    # 4. Determine required cooldown based on outcome
+    last_exit_trigger = str(last_pt.get('exit_trigger') or last_t.get('eod_outcome', {}).get('exit_trigger', ''))
+    is_target_hit = ('TARGET' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) > 500.0) or (last_t.get('eod_outcome', {}).get('outcome') == 'CORRECT')
+    is_sl_hit = ('STOP_LOSS' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) < 0)
+
+    if is_sl_hit:
+        required_cooldown = 120.0
+        reason_label = "Post-Stop-Loss 2-Hour Lockout"
+    elif is_target_hit:
+        required_cooldown = 120.0
+        reason_label = "Post-Target 2-Hour Lockout"
+    else:
+        required_cooldown = 90.0
+        reason_label = "Standard 90m Lockout"
+
+    if diff_mins < required_cooldown:
+        remaining = round(required_cooldown - diff_mins, 1)
+        action_desc = last_pt.get('action') or 'TRADE'
+        msg = f"{canon_sym} in mandatory cooldown ({reason_label}): Prior {action_desc} exited {int(diff_mins)}m ago ({int(remaining)}m remaining of {int(required_cooldown)}m lockout). Applicable to BOTH BUY and SELL."
+        return True, msg, remaining
+    else:
+        return False, f"Cooldown expired ({int(diff_mins)}m elapsed >= {int(required_cooldown)}m required).", 0.0
+
 # =========================================================================
 # 📐 COMMODITY-CALIBRATED TRAILING STOP & BREAKEVEN NOISE FLOORS
 # Calibrated against historical 5-minute candle wicks and ATR to prevent
@@ -1196,6 +1294,20 @@ def dispatch_autonomous_limit_order(trade_entry, asset_type='COMMODITY'):
                 trade_entry['eod_outcome']['badge'] = 'Excluded (High Volatility) 🛡️'
                 trade_entry['eod_outcome']['summary'] = f"Contract {symbol} excluded from live Dhan execution per user preference (High volatility / unpredictable)."
             return {'status': 'EXCLUDED_USER_PREFERENCE', 'reason': 'Aluminium and Copper excluded per user instruction'}
+
+        # 0.5 Enforce Universal Multi-Hour Cooldown Guard (Strictly enforced for BOTH BUY and SELL)
+        is_cd, cd_msg, cd_rem = check_commodity_cooldown(symbol)
+        if is_cd:
+            print(f"🛑 [AUTOPILOT COOLDOWN BLOCKED] {symbol}: Live Dhan order blocked. {cd_msg}")
+            pt['status'] = 'STAND_ASIDE'
+            pt['action'] = 'STAND_ASIDE'
+            pt['entry_price'] = None
+            pt['quantity'] = 0
+            if 'eod_outcome' in trade_entry:
+                trade_entry['eod_outcome']['outcome'] = 'PROTECTED'
+                trade_entry['eod_outcome']['badge'] = 'Cooldown Active ⏱️'
+                trade_entry['eod_outcome']['summary'] = f"Contract {symbol} in mandatory cooldown: {cd_msg}"
+            return {'status': 'BLOCKED_COOLDOWN', 'reason': cd_msg, 'remaining_minutes': cd_rem}
 
         # 1. Enforce Commodity-Only Rule (Live broker execution restricted strictly to MCX Commodities)
         sym_clean = symbol.strip().upper()
@@ -4730,7 +4842,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         # Check symbol trade count and cooldown today (only for actual executed BUY/SELL trades, not STAND_ASIDE)
         # Match using canonical commodity root so parent, Mini, and Micro contracts share the same cooldown
         sym_today_trades = [
-            t for t in trades 
+            t for t in (trades + new_trades)
             if t.get('date') == today_str 
             and get_canonical_commodity_root(t.get('symbol')) == canon_sym
             and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
@@ -4739,51 +4851,11 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         if len(sym_today_trades) >= MAX_TRADES_PER_SYMBOL_DAY:
             continue  # Max 3 trades per commodity per day
 
-        # Check cooldown from last closed/entered trade on this symbol
-        if sym_today_trades:
-            # Sort chronologically using authoritative IST parser to get the true most recent trade
-            def _trade_sort_key(tr):
-                pt_tr = tr.get('paper_trade', {})
-                t_str = pt_tr.get('exit_time') or pt_tr.get('entry_time') or tr.get('time_trigger') or ''
-                dt_obj = parse_ist_timestamp(t_str, today_str)
-                return dt_obj if dt_obj else datetime.min.replace(tzinfo=pytz.timezone('Asia/Kolkata'))
-
-            sorted_sym_trades = sorted(sym_today_trades, key=_trade_sort_key)
-            last_t = sorted_sym_trades[-1]
-            last_pt = last_t.get('paper_trade', {})
-            # Cooldown MUST be measured from exit_time if trade closed, or entry_time if still pending/active
-            last_time_str = last_pt.get('exit_time') or last_pt.get('entry_time') or last_t.get('time_trigger')
-            if last_time_str:
-                try:
-                    t_struct = parse_ist_timestamp(last_time_str, today_str)
-                    if t_struct:
-                        diff_mins = (now_dt - t_struct).total_seconds() / 60.0
-                        
-                        # Option B: Session Cooldown (90 mins after Target Hit, 45 mins after Stop Loss, 30 mins standard)
-                        last_exit_trigger = str(last_pt.get('exit_trigger') or last_t.get('eod_outcome', {}).get('exit_trigger', ''))
-                        is_target_hit = ('TARGET' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) > 500.0) or (last_t.get('eod_outcome', {}).get('outcome') == 'CORRECT')
-                        is_sl_hit = ('STOP_LOSS' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) < 0)
-                        
-                        # Strict Multi-Hour Cooldown (Anti-Churning):
-                        # Enforces a minimum 120-minute (2 hours) lockout after any closed trade on the same commodity
-                        if is_target_hit:
-                            required_cooldown = 120.0
-                            guard_label = " [Post-Target 2-Hour Lockout]"
-                        elif is_sl_hit:
-                            required_cooldown = 120.0
-                            guard_label = " [Post-Stop-Loss 2-Hour Lockout]"
-                        else:
-                            required_cooldown = 90.0
-                            guard_label = " [Standard 90m Lockout]"
-                        
-                        if diff_mins < required_cooldown:
-                            print(f"⏱️ Cooldown Active for {sym}: Prior trade exited {int(diff_mins)}m ago (required: {int(required_cooldown)}m{guard_label}). Skipping.")
-                            continue
-                        else:
-                            if is_target_hit:
-                                print(f"🔓 Option B Cooldown Expired for {sym}: Prior target hit {int(diff_mins)}m ago (>= 90m required). Contract unlocked for new setups!")
-                except Exception:
-                    pass
+        # Universal Cooldown Guard: Enforces 120m post-SL, 120m post-target, and 90m standard lockout (BOTH BUY & SELL)
+        is_cd, cd_msg, cd_rem = check_commodity_cooldown(sym, trades=(trades + new_trades), today_str=today_str, now_dt=now_dt)
+        if is_cd:
+            print(f"⏱️ Cooldown Active for {sym}: {cd_msg}")
+            continue
 
         cur_p = float(item.get('current_price') or 0)
         # Fetch authoritative live execution price if broker API is connected
@@ -5002,17 +5074,19 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     recent_dt = parse_ist_timestamp(recent_time_str, today_str)
                     elapsed_m = ((now_dt - recent_dt).total_seconds() / 60.0) if recent_dt else 999.0
                     
+                    # Mandatory 120-minute Post-Stop-Loss Lockout for BOTH BUY and SELL
+                    if elapsed_m < 120.0:
+                        print(f"🚫 Post-Stop-Loss Universal Lockout: Blocked {sym} {action}. Previous {recent_action} stopped out {int(elapsed_m)}m ago (<120m required lockout). Mandatory anti-churning freeze active for BOTH BUY and SELL.")
+                        continue
+
                     if recent_action == action:
-                        if elapsed_m < 90.0:
-                            print(f"🚫 Directional Loss Guard: Blocked {sym} {action}. Previous {recent_action} stopped out {int(elapsed_m)}m ago (<90m required for same-direction re-entry). Anti-whipsaw freeze active.")
-                            continue
                         recent_entry_p = float(recent_pt.get('entry_price') or 0.0)
-                        if elapsed_m < 120.0 and recent_entry_p > 0.0:
+                        if elapsed_m < 180.0 and recent_entry_p > 0.0:
                             if action == 'SELL' and cur_p > recent_entry_p:
-                                print(f"🚫 Directional Loss Guard: Blocked {sym} SELL at ₹{cur_p:,.2f} because price is still above prior failed entry ₹{recent_entry_p:,.2f} ({int(elapsed_m)}m elapsed < 120m).")
+                                print(f"🚫 Directional Loss Guard: Blocked {sym} SELL at ₹{cur_p:,.2f} because price is still above prior failed entry ₹{recent_entry_p:,.2f} ({int(elapsed_m)}m elapsed < 180m).")
                                 continue
                             elif action == 'BUY' and cur_p < recent_entry_p:
-                                print(f"🚫 Directional Loss Guard: Blocked {sym} BUY at ₹{cur_p:,.2f} because price is still below prior failed entry ₹{recent_entry_p:,.2f} ({int(elapsed_m)}m elapsed < 120m).")
+                                print(f"🚫 Directional Loss Guard: Blocked {sym} BUY at ₹{cur_p:,.2f} because price is still below prior failed entry ₹{recent_entry_p:,.2f} ({int(elapsed_m)}m elapsed < 180m).")
                                 continue
 
             # 🛡️ Institutional Trend & Multi-Timeframe Trend-Vector Gate:

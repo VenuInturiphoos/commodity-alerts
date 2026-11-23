@@ -616,6 +616,21 @@ class DhanLiveExecutor:
                     'reason': 'Autopilot is restricted to MCX Commodities only. Intraday equities, stock futures, and options execution on Dhan are disabled.'
                 }
 
+        # Rule 1.5: Enforce Mandatory Cooldown Lockout (120m Post-SL, 120m Post-Target, 90m Standard for BOTH BUY & SELL)
+        try:
+            from advisory_tracker import check_commodity_cooldown
+            is_cd, cd_msg, cd_rem = check_commodity_cooldown(symbol)
+            if is_cd:
+                print(f"🛑 [AUTOPILOT COOLDOWN BLOCKED] {symbol}: Live order blocked. {cd_msg}")
+                return {
+                    'status': 'BLOCKED_COOLDOWN',
+                    'symbol': symbol,
+                    'remaining_minutes': cd_rem,
+                    'reason': cd_msg
+                }
+        except Exception as cd_err:
+            print(f"⚠️ Warning checking cooldown in DhanLiveExecutor: {cd_err}")
+
         # 1. Resolve Instrument
         scrip_info = self.resolve_scrip(symbol, asset_type)
         if not scrip_info:
