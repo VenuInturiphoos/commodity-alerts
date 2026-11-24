@@ -268,13 +268,81 @@ class LiquiditySweepDetector:
         return False, "NONE", 0.0
 
 
+class VolatilityCoilDetector:
+    """
+    Detects Volatility Squeeze Coils (Bollinger Bands compressing strictly inside Keltner Channels)
+    and verifies explosive breakout release with ultra-tight risk geometry.
+    """
+    @classmethod
+    def analyze_squeeze(cls, closes: List[float], highs: List[float], lows: List[float]) -> Dict[str, Any]:
+        if len(closes) < 25:
+            return {"is_in_coil": False, "did_fire": False, "coil_bars": 0, "fire_dir": "NEUTRAL",
+                    "coil_floor": closes[-1] if closes else 0.0, "coil_roof": closes[-1] if closes else 0.0}
+
+        c = np.array(closes)
+        h = np.array(highs)
+        l = np.array(lows)
+        n = len(c)
+
+        # 1. Bollinger Bands (20, 2.0)
+        sma20 = pd.Series(c).rolling(20).mean().values
+        std20 = pd.Series(c).rolling(20).std().values
+        bb_upper = sma20 + 2.0 * std20
+        bb_lower = sma20 - 2.0 * std20
+
+        # 2. Keltner Channels (20, 1.5 ATR)
+        tr = np.zeros(n)
+        tr[1:] = np.maximum(h[1:] - l[1:], np.maximum(np.abs(h[1:] - c[:-1]), np.abs(l[1:] - c[:-1])))
+        tr[0] = h[0] - l[0]
+        atr = pd.Series(tr).ewm(alpha=1.0/14, adjust=False).mean().values
+        ema20 = pd.Series(c).ewm(span=20, adjust=False).mean().values
+        kc_upper = ema20 + 1.5 * atr
+        kc_lower = ema20 - 1.5 * atr
+
+        # 3. Squeeze state: BB strictly inside KC
+        is_sq = (bb_upper < kc_upper) & (bb_lower > kc_lower)
+        curr_is_sq = bool(is_sq[-1])
+
+        # 4. Count consecutive squeeze bars preceding the current bar
+        coil_bars = 0
+        idx = len(is_sq) - 2 if not curr_is_sq else len(is_sq) - 1
+        while idx >= 0 and is_sq[idx]:
+            coil_bars += 1
+            idx -= 1
+
+        # Squeeze fires on the first bar where squeeze releases after >= 3 coiling bars
+        did_fire = (coil_bars >= 3) and (not curr_is_sq)
+
+        # Direction of expansion on the firing bar
+        fire_dir = "NEUTRAL"
+        if did_fire:
+            if c[-1] > kc_upper[-1] or c[-1] > sma20[-1]:
+                fire_dir = "UP"
+            elif c[-1] < kc_lower[-1] or c[-1] < sma20[-1]:
+                fire_dir = "DOWN"
+
+        floor_val = float(bb_lower[-1]) if not np.isnan(bb_lower[-1]) else float(c[-1] * 0.99)
+        roof_val = float(bb_upper[-1]) if not np.isnan(bb_upper[-1]) else float(c[-1] * 1.01)
+
+        return {
+            "is_in_coil": curr_is_sq,
+            "coil_bars": coil_bars,
+            "did_fire": did_fire,
+            "fire_dir": fire_dir,
+            "coil_floor": floor_val,
+            "coil_roof": roof_val,
+            "atr": float(atr[-1]) if not np.isnan(atr[-1]) else float(c[-1] * 0.01)
+        }
+
+
 class InstitutionalConfluenceEngine:
     """
     Master Quantitative Orchestrator.
-    Combines Volume Profile, AVWAP, KER, and Liquidity Sweeps into 
-    Two Independent, Non-Conflicting Archetypes:
+    Combines Volume Profile, AVWAP, KER, Liquidity Sweeps, and Volatility Squeeze Coils into
+    Three Independent, Non-Conflicting Archetypes:
     - Archetype A: Value Expansion Engine (Breakout)
     - Archetype B: Liquidity Sweep Reversal Engine (Reversal)
+    - Archetype C: Volatility Coil Expansion Engine (Post-Squeeze Ignition)
     """
 
     @classmethod
@@ -384,11 +452,71 @@ class InstitutionalConfluenceEngine:
                 score_b_bear += 20.0
 
         # =====================================================================
+        # ARCHETYPE C: VOLATILITY COIL EXPANSION ENGINE (POST-SQUEEZE IGNITION)
+        # Triggered strictly when a multi-bar volatility coil fires with macro trend alignment
+        # =====================================================================
+        coil_data = VolatilityCoilDetector.analyze_squeeze(closes, highs, lows)
+        score_c_bull = 0.0
+        score_c_bear = 0.0
+
+        if coil_data["is_in_coil"]:
+            reasons.append(f"Pre-Volatility Coil: Active {coil_data['coil_bars']}-bar squeeze inside Keltner Channel. Squeeze coiling; waiting for expansion bar close.")
+
+        if coil_data["did_fire"]:
+            # 1. Bullish Coil Release (Expansion bar closed UP + strictly aligned above Daily 50-EMA)
+            if coil_data["fire_dir"] == "UP" and daily_ema50 and cur_p >= daily_ema50:
+                score_c_bull += 35.0  # Squeeze released UP after >= 3 coiling bars
+                reasons.append(f"Volatility Coil Release: {coil_data['coil_bars']}-bar squeeze fired UP outside Keltner Channel")
+                score_c_bull += 25.0  # Macro Trend: strictly aligned above Daily 50-EMA
+                reasons.append(f"Macro Trend: Confirmed above Daily 50-EMA (₹{daily_ema50:,.2f})")
+                if ker >= 0.35:
+                    score_c_bull += 20.0
+                    reasons.append(f"Trend Efficiency: Directional KER {ker:.2f} >= 0.35")
+                if vol_ratio >= 1.15:
+                    score_c_bull += 15.0
+                    reasons.append(f"Ignition Volume: Volume expansion ({vol_ratio:.1f}x)")
+                if cur_p >= avwap.session_vwap:
+                    score_c_bull += 10.0
+                    reasons.append("AVWAP: Price holding above Session VWAP")
+
+            # 2. Bearish Coil Release (Expansion bar closed DOWN + strictly aligned below Daily 50-EMA)
+            elif coil_data["fire_dir"] == "DOWN" and daily_ema50 and cur_p <= daily_ema50:
+                score_c_bear += 35.0  # Squeeze released DOWN after >= 3 coiling bars
+                reasons.append(f"Volatility Coil Release: {coil_data['coil_bars']}-bar squeeze fired DOWN outside Keltner Channel")
+                score_c_bear += 25.0  # Macro Trend: strictly aligned below Daily 50-EMA
+                reasons.append(f"Macro Trend: Confirmed below Daily 50-EMA (₹{daily_ema50:,.2f})")
+                if ker >= 0.35:
+                    score_c_bear += 20.0
+                    reasons.append(f"Trend Efficiency: Downward KER {ker:.2f} >= 0.35")
+                if vol_ratio >= 1.15:
+                    score_c_bear += 15.0
+                    reasons.append(f"Distribution Volume: Breakdown volume ({vol_ratio:.1f}x)")
+                if cur_p <= avwap.session_vwap:
+                    score_c_bear += 10.0
+                    reasons.append("AVWAP: Price capped below Session VWAP")
+
+        # =====================================================================
         # ARBITRATION & SIZING
         # =====================================================================
         CONFLUENCE_THRESHOLD = min_confluence
 
-        # Check Bullish Confluence
+        # Check Bullish Confluence (Archetype A, B, or C)
+        if score_c_bull >= CONFLUENCE_THRESHOLD:
+            # Archetype C: Volatility Coil Expansion BUY (Ultra-tight stop tucked at coil floor)
+            sl = round(coil_data["coil_floor"] - 0.10 * atr, 2)
+            risk = max(abs(cur_p - sl), 0.25 * atr)
+            t1 = round(cur_p + 2.0 * risk, 2)
+            t2 = round(cur_p + 3.5 * risk, 2)
+            return InstitutionalSignal(
+                symbol=symbol, action="BUY", archetype="VOLATILITY_COIL_EXPANSION",
+                confluence_score=score_c_bull, current_price=cur_p, entry_price=cur_p,
+                stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=3.5,
+                ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=False,
+                rationale=f"Volatility Coil Expansion BUY: {coil_data['coil_bars']}-bar squeeze fired UP above Keltner Channel. "
+                          f"Aligned above Daily 50-EMA with ultra-tight coil floor stop ₹{sl:,.2f} (+{score_c_bull:.0f}/100 confluence).",
+                reasons=reasons
+            )
+
         if score_a_bull >= CONFLUENCE_THRESHOLD:
             # Archetype A: Value Expansion BUY
             sl = max(vp.vah * 0.997, cur_p - 1.5 * atr)
@@ -422,7 +550,23 @@ class InstitutionalConfluenceEngine:
                 reasons=reasons
             )
 
-        # Check Bearish Confluence
+        # Check Bearish Confluence (Archetype A, B, or C)
+        if score_c_bear >= CONFLUENCE_THRESHOLD:
+            # Archetype C: Volatility Coil Expansion SELL (Ultra-tight stop tucked at coil roof)
+            sl = round(coil_data["coil_roof"] + 0.10 * atr, 2)
+            risk = max(abs(sl - cur_p), 0.25 * atr)
+            t1 = round(cur_p - 2.0 * risk, 2)
+            t2 = round(cur_p - 3.5 * risk, 2)
+            return InstitutionalSignal(
+                symbol=symbol, action="SELL", archetype="VOLATILITY_COIL_EXPANSION",
+                confluence_score=score_c_bear, current_price=cur_p, entry_price=cur_p,
+                stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=3.5,
+                ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=False,
+                rationale=f"Volatility Coil Expansion SELL: {coil_data['coil_bars']}-bar squeeze fired DOWN below Keltner Channel. "
+                          f"Aligned below Daily 50-EMA with ultra-tight coil ceiling stop ₹{sl:,.2f} (+{score_c_bear:.0f}/100 confluence).",
+                reasons=reasons
+            )
+
         if score_a_bear >= CONFLUENCE_THRESHOLD:
             # Archetype A: Value Expansion SELL
             sl = min(vp.val * 1.003, cur_p + 1.5 * atr)
@@ -457,7 +601,7 @@ class InstitutionalConfluenceEngine:
             )
 
         # Stand Aside (Chop / Insufficient Confluence)
-        best_score = max(score_a_bull, score_a_bear, score_b_bull, score_b_bear)
+        best_score = max(score_a_bull, score_a_bear, score_b_bull, score_b_bear, score_c_bull, score_c_bear)
         return InstitutionalSignal(
             symbol=symbol, action="STAND_ASIDE", archetype="NONE", confluence_score=best_score,
             current_price=cur_p, entry_price=cur_p, stop_loss=cur_p, target_1=cur_p, target_2=cur_p,
