@@ -921,7 +921,7 @@ class PositionSizer:
         'ALUMINI': {'symbol': 'ALUMINI', 'name': 'Aluminium Mini', 'lot': 1000}
     }
 
-    TARGET_COMMODITY_MARGIN_INR = 75000.0  # ₹75,000 target margin (50% of ₹1.5L pool to allow 2 concurrent diverse trades)
+    TARGET_COMMODITY_MARGIN_INR = 150000.0  # ₹1,50,000 target margin (50% of ₹3.0L pool to allow exactly 2 concurrent trades)
 
     # MCX Standard Initial Margin Rates for Sizing
     MARGIN_RATES = {
@@ -935,17 +935,14 @@ class PositionSizer:
     }
 
     @classmethod
-    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=28000.0, atr=None, target_margin_inr=75000.0, available_margin_inr=None):
+    def resolve_contract_and_lot(cls, symbol, name, entry, stop, default_lot, max_risk_inr=28000.0, atr=None, target_margin_inr=150000.0, available_margin_inr=None):
         """
-        Resolves the appropriate contract and scales lots to match ~₹75,000 deployed margin per position (50% pool split).
-        Commodities strictly trade in standardized whole exchange lots calibrated to ~₹75k:
-        - NATURALGASM: 4 lots / 1000 units (~₹68k margin)
-        - CRUDEOILM: 4 lots / 40 units (~₹60k margin)
-        - SILVERMIC: 5 lots / 5 units (~₹67.5k margin)
-        - GOLDM: 1 lot / 10 units (~₹76k margin)
-        - COPPERM: 1 lot / 1000 units (~₹65.6k margin)
-        - ZINCMINI: 2 lots / 2000 units (~₹53k margin)
-        - ALUMINI: 2 lots / 2000 units (~₹58k margin)
+        Resolves the appropriate contract and scales lots to match ~₹1,50,000 deployed margin per position (50% pool split).
+        Allows up to 2 concurrent active positions within ₹3,00,000 total capital.
+        - CRUDEOILM: Scaled to fit ~₹1.5L margin
+        - GOLDTEN / GOLDM: Scaled to fit ~₹1.5L margin
+        - SILVERMIC: Scaled to fit ~₹1.5L margin
+        - COPPERM: Scaled to fit ~₹1.5L margin
         """
         if entry <= 0 or not stop or stop <= 0 or entry == stop:
             return symbol, name, default_lot
@@ -965,8 +962,12 @@ class PositionSizer:
         m_rate = cls.MARGIN_RATES.get(resolved_sym, cls.MARGIN_RATES.get(base_sym, 0.20))
         single_lot_margin = (base_unit * entry) * m_rate
 
-        # Preferred canonical lot for ~₹1.5L target
-        canonical_lot = spec_150k['lot'] if spec_150k else (default_lot if default_lot > 0 else base_unit)
+        # Preferred canonical lot dynamically scaled to match ~₹1.5L target margin allocation
+        if single_lot_margin > 0:
+            target_lots = max(1, int(target_margin_inr // single_lot_margin))
+            canonical_lot = target_lots * base_unit
+        else:
+            canonical_lot = spec_150k['lot'] if spec_150k else (default_lot if default_lot > 0 else base_unit)
 
         # For Crude Oil Mini, dynamically scale lots if price is elevated so broker margin never exceeds ₹1.5L
         if resolved_sym == 'CRUDEOILM' and entry > 0:
