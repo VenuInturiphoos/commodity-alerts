@@ -33,7 +33,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Intraday Monitoring (Every 1 Minute Loop)
+      - name: Run Intraday Monitoring (2-Minute Interval Cadence)
         env:
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
@@ -50,14 +50,15 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # Execute 1-minute interval checks within the runner (3 iterations to ensure clean finish before next 5m cron)
+          # Maintain precise 2-minute cadence across the 5-minute GitHub Actions schedule window
           for i in 1 2 3; do
-            echo "=== Intraday 1-Minute Check #$i at $(date -u) ==="
+            START_TS=$(date +%s)
+            echo "=== Intraday 2-Minute Cadence Check #$i at $(date -u) ==="
             python main.py
             
             git add web/near_alerts.json web/circuits_data.json web/circuits_history_30d.json web/circuits_history_60d.json web/alerts_state.json web/advisory_trades_tracker.json web/nifty_crossover_oversold.json web/stock_investments_tracker.json web/golden_cross_history.json
             if ! git diff --staged --quiet; then
-              git commit -m "Auto-update near alerts and circuit limits data" || true
+              git commit -m "Auto-update near alerts and circuit limits data [skip ci]" || true
               git pull --rebase origin main || true
               git push origin HEAD:main || true
             else
@@ -65,8 +66,12 @@ jobs:
             fi
             
             if [ $i -lt 3 ]; then
-              echo "Waiting 60 seconds for next 1-minute check..."
-              sleep 60
+              ELAPSED=$(( $(date +%s) - START_TS ))
+              SLEEP_TIME=$(( 120 - ELAPSED ))
+              if [ $SLEEP_TIME -gt 0 ]; then
+                echo "Waiting ${SLEEP_TIME}s to maintain exact 2-minute cadence..."
+                sleep $SLEEP_TIME
+              fi
             fi
           done
 
