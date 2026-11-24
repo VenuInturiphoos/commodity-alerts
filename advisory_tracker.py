@@ -1267,10 +1267,10 @@ def save_tracker(tracker_data):
         return False
 
 def is_autopilot_enabled():
-    """Returns True if Dhan Autopilot is enabled (defaults to True unless explicitly disabled)."""
-    val = os.environ.get('DHAN_AUTOPILOT_ENABLED', 'true').strip()
+    """Returns True only if Dhan Autopilot is explicitly enabled (defaults to False - 100% Paper Trading Mode)."""
+    val = os.environ.get('DHAN_AUTOPILOT_ENABLED', 'false').strip()
     if not val:
-        val = 'true'
+        val = 'false'
     return val.lower() in ['true', '1', 'yes']
 
 def dispatch_autonomous_limit_order(trade_entry, asset_type='COMMODITY'):

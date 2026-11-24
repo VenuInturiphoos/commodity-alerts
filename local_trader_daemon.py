@@ -117,7 +117,11 @@ def run_daemon():
     print("🚀 Local Autopilot Trading Daemon Starting...")
     print(f"Time (IST): {datetime.now(IST).strftime('%Y-%m-%d %I:%M:%S %p')}")
     print(f"Dhan Client ID: {os.getenv('DHAN_CLIENT_ID', 'Not Set')[:4]}***")
-    print(f"Dhan Autopilot Enabled: {os.getenv('DHAN_AUTOPILOT_ENABLED')}")
+    autopilot_on = os.getenv('DHAN_AUTOPILOT_ENABLED', 'false').lower() in ['true', '1', 'yes']
+    print(f"Dhan Autopilot Enabled: {autopilot_on}")
+    if not autopilot_on:
+        print("🛡️ LIVE BROKER ORDERS DISABLED: System operating in 100% Paper Trading Mode.")
+        print("   All trade signals, targets, and stops will be recorded and tracked virtually with ZERO real funds at risk.")
     print("=" * 65)
     
     config = load_config()
@@ -172,13 +176,14 @@ def run_daemon():
             # 2. Evaluate Real-Time Technical Triggers (Commodities & Intraday Stocks)
             evaluate_realtime_technical_triggers(checker, alerter)
             
-            # 3. Clean up any stale limit orders on Dhan (>3 mins without fill)
-            try:
-                stale_cancels = dhan_exec.check_and_cancel_stale_limit_orders(max_age_seconds=180)
-                if stale_cancels:
-                    print(f"🧹 Stale limit orders cancelled on Dhan: {stale_cancels}")
-            except Exception as e:
-                print(f"⚠️ Stale order cancel check error: {e}")
+            # 3. Clean up any stale limit orders on Dhan (Only when live autopilot is active)
+            if os.getenv('DHAN_AUTOPILOT_ENABLED', 'false').lower() in ['true', '1', 'yes']:
+                try:
+                    stale_cancels = dhan_exec.check_and_cancel_stale_limit_orders(max_age_seconds=180)
+                    if stale_cancels:
+                        print(f"🧹 Stale limit orders cancelled on Dhan: {stale_cancels}")
+                except Exception as e:
+                    print(f"⚠️ Stale order cancel check error: {e}")
                 
             # 4. Sync web tracking files to GitHub repository
             git_sync_changes()

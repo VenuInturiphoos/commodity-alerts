@@ -597,6 +597,16 @@ class DhanLiveExecutor:
         today_str = now_ist.strftime('%d %b %Y')
         action = action.upper()
 
+        # Master Safety Guard: 100% Paper Trading Lock
+        autopilot_val = os.environ.get('DHAN_AUTOPILOT_ENABLED', 'false').lower().strip()
+        if autopilot_val not in ['true', '1', 'yes']:
+            print(f"🛡️ [PAPER TRADING ONLY] {symbol}: Live Dhan broker execution is disabled per user mandate. Order placement intercepted.")
+            return {
+                'status': 'PAPER_TRADING_ONLY',
+                'symbol': symbol,
+                'reason': 'Dhan live broker module is completely excluded per user mandate. System is in 100% paper trading mode.'
+            }
+
         # Rule 0: Exclude unsupported/high-volatility commodities on Dhan (Aluminium & Copper per user preference)
         sym_clean = symbol.strip().upper().replace('-FUT', '').replace('.NS', '').replace('.BO', '')
         if (sym_clean in self.unsupported_commodities or 
