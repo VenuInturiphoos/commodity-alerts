@@ -59,7 +59,7 @@ class AnchoredVWAP:
 class InstitutionalSignal:
     symbol: str
     action: str                  # "BUY", "SELL", "STAND_ASIDE"
-    archetype: str               # "VALUE_EXPANSION_BREAKOUT", "LIQUIDITY_SWEEP_REVERSAL", "NONE"
+    archetype: str               # "VALUE_EXPANSION_BREAKOUT", "LIQUIDITY_SWEEP_REVERSAL", "VOLATILITY_COIL_EXPANSION", "NONE"
     confluence_score: float      # 0 to 100
     current_price: float
     entry_price: float
@@ -71,6 +71,11 @@ class InstitutionalSignal:
     volume_profile: Optional[VolumeProfile] = None
     avwap: Optional[AnchoredVWAP] = None
     is_sweep: bool = False
+    coil_active: bool = False
+    coil_bars: int = 0
+    coil_floor: float = 0.0
+    coil_roof: float = 0.0
+    daily_ema50: Optional[float] = None
     rationale: str = ""
     reasons: List[str] = field(default_factory=list)
 
@@ -512,6 +517,9 @@ class InstitutionalConfluenceEngine:
                 confluence_score=score_c_bull, current_price=cur_p, entry_price=cur_p,
                 stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=3.5,
                 ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=False,
+                coil_active=coil_data["is_in_coil"], coil_bars=coil_data["coil_bars"],
+                coil_floor=coil_data["coil_floor"], coil_roof=coil_data["coil_roof"],
+                daily_ema50=daily_ema50,
                 rationale=f"Volatility Coil Expansion BUY: {coil_data['coil_bars']}-bar squeeze fired UP above Keltner Channel. "
                           f"Aligned above Daily 50-EMA with ultra-tight coil floor stop ₹{sl:,.2f} (+{score_c_bull:.0f}/100 confluence).",
                 reasons=reasons
@@ -528,6 +536,9 @@ class InstitutionalConfluenceEngine:
                 confluence_score=score_a_bull, current_price=cur_p, entry_price=cur_p,
                 stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=2.5,
                 ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=False,
+                coil_active=coil_data["is_in_coil"], coil_bars=coil_data["coil_bars"],
+                coil_floor=coil_data["coil_floor"], coil_roof=coil_data["coil_roof"],
+                daily_ema50=daily_ema50,
                 rationale=f"Institutional Value Expansion above VAH (₹{vp.vah:,.2f}) with KER {ker:.2f}. "
                           f"Holding above AVWAP with +{score_a_bull:.0f}/100 confluence.",
                 reasons=reasons
@@ -545,6 +556,9 @@ class InstitutionalConfluenceEngine:
                 confluence_score=score_b_bull, current_price=cur_p, entry_price=cur_p,
                 stop_loss=sl, target_1=t1, target_2=t2, reward_risk_ratio=max(1.8, rrr),
                 ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=True,
+                coil_active=coil_data["is_in_coil"], coil_bars=coil_data["coil_bars"],
+                coil_floor=coil_data["coil_floor"], coil_roof=coil_data["coil_roof"],
+                daily_ema50=daily_ema50,
                 rationale=f"Institutional Bear-Trap Reclaim at ₹{sweep_price:,.2f}. "
                           f"Rotating back to POC (₹{vp.poc:,.2f}) with +{score_b_bull:.0f}/100 confluence.",
                 reasons=reasons
@@ -562,6 +576,9 @@ class InstitutionalConfluenceEngine:
                 confluence_score=score_c_bear, current_price=cur_p, entry_price=cur_p,
                 stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=3.5,
                 ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=False,
+                coil_active=coil_data["is_in_coil"], coil_bars=coil_data["coil_bars"],
+                coil_floor=coil_data["coil_floor"], coil_roof=coil_data["coil_roof"],
+                daily_ema50=daily_ema50,
                 rationale=f"Volatility Coil Expansion SELL: {coil_data['coil_bars']}-bar squeeze fired DOWN below Keltner Channel. "
                           f"Aligned below Daily 50-EMA with ultra-tight coil ceiling stop ₹{sl:,.2f} (+{score_c_bear:.0f}/100 confluence).",
                 reasons=reasons
@@ -578,6 +595,9 @@ class InstitutionalConfluenceEngine:
                 confluence_score=score_a_bear, current_price=cur_p, entry_price=cur_p,
                 stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=2.5,
                 ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=False,
+                coil_active=coil_data["is_in_coil"], coil_bars=coil_data["coil_bars"],
+                coil_floor=coil_data["coil_floor"], coil_roof=coil_data["coil_roof"],
+                daily_ema50=daily_ema50,
                 rationale=f"Institutional Value Breakdown below VAL (₹{vp.val:,.2f}) with KER {ker:.2f}. "
                           f"Breaking below AVWAP with +{score_a_bear:.0f}/100 confluence.",
                 reasons=reasons
@@ -595,6 +615,9 @@ class InstitutionalConfluenceEngine:
                 confluence_score=score_b_bear, current_price=cur_p, entry_price=cur_p,
                 stop_loss=sl, target_1=t1, target_2=t2, reward_risk_ratio=max(1.8, rrr),
                 ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=True,
+                coil_active=coil_data["is_in_coil"], coil_bars=coil_data["coil_bars"],
+                coil_floor=coil_data["coil_floor"], coil_roof=coil_data["coil_roof"],
+                daily_ema50=daily_ema50,
                 rationale=f"Institutional Bull-Trap Rejection at ₹{sweep_price:,.2f}. "
                           f"Rotating back to POC (₹{vp.poc:,.2f}) with +{score_b_bear:.0f}/100 confluence.",
                 reasons=reasons
@@ -606,6 +629,9 @@ class InstitutionalConfluenceEngine:
             symbol=symbol, action="STAND_ASIDE", archetype="NONE", confluence_score=best_score,
             current_price=cur_p, entry_price=cur_p, stop_loss=cur_p, target_1=cur_p, target_2=cur_p,
             reward_risk_ratio=0.0, ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=is_sweep,
+            coil_active=coil_data["is_in_coil"], coil_bars=coil_data["coil_bars"],
+            coil_floor=coil_data["coil_floor"], coil_roof=coil_data["coil_roof"],
+            daily_ema50=daily_ema50,
             rationale=f"Market coiling inside Value Area (Score: {best_score:.0f}/100 < {CONFLUENCE_THRESHOLD:.0f} threshold). Standing aside to prevent fee churn."
         )
 

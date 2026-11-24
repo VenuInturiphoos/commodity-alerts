@@ -138,6 +138,15 @@ class EmailAlerter:
             "[NSE STOCK FUTURE TRIGGER]",
             "[NSE FUTURE TRIGGER]",
             "[REAL-TIME TECHNICAL TRIGGER]",
+            "[PRE-VOLATILITY COIL ALERT]",
+            "[PRE-VOLATILITY COIL TRIGGER]",
+            "[PRE-VOLATILITY COIL]",
+            "[COIL EXPANSION TRIGGER]",
+            "[COIL ALERT]",
+            "PRE-VOLATILITY COIL",
+            "VOLATILITY COIL EXPANSION",
+            "VOLATILITY COIL",
+            "VOLATILITY SQUEEZE COIL",
             "[LIMIT ORDER FILLED]",
             "[6:15 PM TRADE CONFIRMED]",
             "[7:15 PM TRADE CONFIRMED]",
@@ -239,11 +248,14 @@ class EmailAlerter:
         Determines the protective cooldown window for alert deduplication.
         Real-time technical entry triggers strictly receive 120-minute (2 hour) lockout
         to prevent duplicate or recurring email spam while an active trade is underway.
+        Pre-volatility coil detection alerts receive 90-minute lockout.
         Exit notifications receive 60-minute lockout.
         """
         sub_upper = subject.upper()
-        if 'REAL-TIME TECHNICAL TRIGGER' in sub_upper or 'INTRADAY MIS TRIGGER' in sub_upper or 'STOCK FUTURE TRIGGER' in sub_upper:
+        if 'REAL-TIME TECHNICAL TRIGGER' in sub_upper or 'INTRADAY MIS TRIGGER' in sub_upper or 'STOCK FUTURE TRIGGER' in sub_upper or 'PRE-VOLATILITY COIL TRIGGER' in sub_upper:
             return 120
+        if 'PRE-VOLATILITY COIL' in sub_upper or 'COIL ALERT' in sub_upper or 'SQUEEZE ALERT' in sub_upper:
+            return 90
         if 'TARGET RUNNER' in sub_upper or 'PAPER TRADE EXIT' in sub_upper or '100% TARGET ACHIEVED' in sub_upper or 'TARGET HIT' in sub_upper or 'STOP-LOSS' in sub_upper or 'STOP LOSS' in sub_upper:
             return 60
         return default_minutes
@@ -364,8 +376,8 @@ class EmailAlerter:
         for idx, alert in enumerate(alerts):
             try:
                 sub = alert.get('subject', '')
-                if self._is_duplicate_trade_alert(sub, channel="TELEGRAM", window_minutes=15):
-                    print(f"🛡️ [TELEGRAM DEDUP] Suppressing duplicate Telegram alert (dispatched < 15m ago): {sub}")
+                if self._is_duplicate_trade_alert(sub, channel="TELEGRAM"):
+                    print(f"🛡️ [TELEGRAM DEDUP] Suppressing duplicate Telegram alert (cooldown active): {sub}")
                     continue
                 if self._send_telegram(sub, alert['body']):
                     telegram_sent_indices.add(idx)
@@ -404,8 +416,8 @@ class EmailAlerter:
                 if not self.is_trade_execution_alert(subject, body):
                     print(f"📧 [EMAIL FILTER] Suppressing non-trade alert per user rule: {subject}")
                     email_filtered_indices.add(idx)
-                elif self._is_duplicate_trade_alert(subject, channel="EMAIL", window_minutes=15):
-                    print(f"🛡️ [EMAIL DEDUP] Suppressing duplicate trade email (dispatched < 15m ago): {subject}")
+                elif self._is_duplicate_trade_alert(subject, channel="EMAIL"):
+                    print(f"🛡️ [EMAIL DEDUP] Suppressing duplicate trade email (cooldown active): {subject}")
                     email_filtered_indices.add(idx)
                 else:
                     email_alerts_to_send.append((idx, alert))

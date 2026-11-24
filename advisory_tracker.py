@@ -251,16 +251,12 @@ def check_commodity_cooldown(symbol, trades=None, today_str=None, now_dt=None):
     if diff_mins < 0:
         diff_mins = 0.0
 
-    # 4. Determine required cooldown based on outcome
+    # 4. Determine required cooldown based on outcome (Strictly Intraday Cadence per user mandate: 2-3 trades/day)
     last_exit_trigger = str(last_pt.get('exit_trigger') or last_t.get('eod_outcome', {}).get('exit_trigger', ''))
     is_target_hit = ('TARGET' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) > 500.0) or (last_t.get('eod_outcome', {}).get('outcome') == 'CORRECT')
     is_sl_hit = ('STOP_LOSS' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) < 0)
-    is_swing = bool(last_t.get('is_swing_trade') or last_t.get('holding_type') == 'MULTI_SESSION_SWING')
 
-    if is_swing:
-        required_cooldown = 72.0 * 60.0  # 72 hours (4,320 mins) multi-session swing cooldown
-        reason_label = "Elite Swing 72-Hour Cooldown"
-    elif is_sl_hit:
+    if is_sl_hit:
         required_cooldown = 60.0  # 60m intraday reset after SL
         reason_label = "Post-Stop-Loss 60m Reset"
     elif is_target_hit:
@@ -5050,17 +5046,60 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 min_confluence=85.0
             )
 
+            # ⚡ PRE-VOLATILITY COIL DETECTION & ALERT (ENERGY COMPRESSION PHASE)
+            if getattr(sig, 'coil_active', False) and getattr(sig, 'coil_bars', 0) >= 3 and not (sig.action in ['BUY', 'SELL'] and sig.confluence_score >= 85.0):
+                c_bars = getattr(sig, 'coil_bars', 0)
+                c_floor = getattr(sig, 'coil_floor', cur_p * 0.99)
+                c_roof = getattr(sig, 'coil_roof', cur_p * 1.01)
+                d_ema50 = getattr(sig, 'daily_ema50', None)
+                
+                # Macro Trend Context & Directional Bias
+                if d_ema50 and cur_p >= d_ema50:
+                    bias_txt = "BULLISH BREAKOUT BIAS"
+                    trend_desc = f"Holding above Daily 50-EMA (₹{d_ema50:,.2f})"
+                elif d_ema50 and cur_p <= d_ema50:
+                    bias_txt = "BEARISH BREAKDOWN BIAS"
+                    trend_desc = f"Pinned below Daily 50-EMA (₹{d_ema50:,.2f})"
+                else:
+                    bias_txt = "NEUTRAL DUAL-DIRECTION BIAS"
+                    trend_desc = "Testing consolidation equilibrium"
+
+                exp_pct = "1.25%" if 'GOLD' in clean_sym_upper else "3.20%"
+                coil_sub = f"⚡ [PRE-VOLATILITY COIL ALERT] {name} Compression Active ({c_bars} bars) @ ₹{cur_p:,.2f} ({now_time_str})"
+                coil_bdy = (
+                    f"⚡ <b>PRE-VOLATILITY COIL DETECTED (ENERGY COMPRESSION)</b>\n"
+                    f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                    f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                    f"• <b>Asset</b>: {name} ({sym})\n"
+                    f"• <b>Current Price</b>: ₹{cur_p:,.2f}\n"
+                    f"• <b>Coil Status</b>: <b>Active Squeeze for {c_bars} consecutive bars</b> (Bollinger Bands compressed strictly inside Keltner Channels)\n"
+                    f"• <b>Coil Boundaries</b>: Floor Support ₹{c_floor:,.2f} | Ceiling Resistance ₹{c_roof:,.2f}\n"
+                    f"• <b>Macro Trend Filter</b>: {trend_desc}\n"
+                    f"• <b>Directional Bias</b>: <b>{bias_txt}</b>\n"
+                    f"• <b>Expected Move</b>: Rapid range expansion of ±{exp_pct} expected upon breakout release.\n"
+                    f"• <b>Execution Rule</b>: System is standing aside inside the coil. As soon as an expansion candle closes outside the channel, the engine will fire an automated entry with tight boundary stop and 2.5R to 3.5R runners.\n\n"
+                    f"🛡️ <i>Pre-Move Volatility Engine Active | Standing By for Ignition</i>"
+                )
+                if alerter:
+                    try:
+                        alerter.send_alert(coil_sub, coil_bdy)
+                    except Exception as ex:
+                        print(f"Error dispatching pre-volatility coil alert: {ex}")
+
             if sig.action in ['BUY', 'SELL'] and sig.confluence_score >= 85.0:
                 triggered = True
                 action = sig.action
-                setup_name = f"Elite Institutional Confluence ({sig.archetype.replace('_', ' ').title()})"
+                if sig.archetype == "VOLATILITY_COIL_EXPANSION":
+                    setup_name = "Pre-Volatility Coil Expansion Engine"
+                else:
+                    setup_name = f"Elite Institutional Confluence ({sig.archetype.replace('_', ' ').title()})"
                 sl = sig.stop_loss
-                tgt = sig.target_2  # Target 2 (Runner 2.5R)
+                tgt = sig.target_2  # Target 2 (Runner 2.5R to 3.5R)
                 target_1 = sig.target_1  # Target 1 (Breakeven Trail Milestone 1.5R)
                 confluence_score = sig.confluence_score
-                is_institutional_swing = True
+                is_institutional_swing = False  # Strictly intraday per user specification
                 rationale = (f"Elite Confluence (+{sig.confluence_score:.0f}/100) on {sym}: {sig.rationale} "
-                             f"Archetype: {sig.archetype}. Multi-session swing holding active. "
+                             f"Archetype: {sig.archetype}. Intraday trade active. "
                              f"Target 1 (Breakeven Trail): ₹{target_1:,.2f} | Target 2 (Runner): ₹{tgt:,.2f} | SL: ₹{sl:,.2f}.")
             else:
                 # Elite Confluence Gate: Reject lower quality setups on Gold and Crude to prevent fee churn
@@ -5113,6 +5152,36 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 sl = round(cur_p + (1.1 * atr_val), 2)
                 tgt = round(cur_p - (2.2 * atr_val), 2)
                 rationale = f"Zinc Volatility Coil breakdown below 50 EMA (₹{ema50:,.2f}) & 20 EMA (₹{ema20:,.2f}) with ADX {adx:.1f}. High-probability trend breakdown."
+
+        # ⚡ PRE-VOLATILITY COIL DETECTION & ALERT FOR MOMENTUM / OTHER COMMODITIES (Silver, Zinc)
+        if (is_momentum_asset or 'ZINC' in clean_sym_upper) and not triggered and PreMoveDetector is not None:
+            try:
+                pm_sig = PreMoveDetector.evaluate_live_snapshot(
+                    sym, cur_p, day_h, day_l, p_close, chg_pct,
+                    adx=adx, rsi=rsi, atr=atr_val, ema20=ema20, ema50=ema50,
+                    volume=vol, avg_volume=avg_vol
+                )
+                if pm_sig and pm_sig.squeeze_active and pm_sig.squeeze_bars >= 3:
+                    coil_sub = f"⚡ [PRE-VOLATILITY COIL ALERT] {name} Compression Active ({pm_sig.squeeze_bars} bars) @ ₹{cur_p:,.2f} ({now_time_str})"
+                    coil_bdy = (
+                        f"⚡ <b>PRE-VOLATILITY COIL DETECTED (ENERGY COMPRESSION)</b>\n"
+                        f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                        f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                        f"• <b>Asset</b>: {name} ({sym})\n"
+                        f"• <b>Current Price</b>: ₹{cur_p:,.2f}\n"
+                        f"• <b>Coil Status</b>: <b>Active Volatility Squeeze for {pm_sig.squeeze_bars} bars</b>\n"
+                        f"• <b>PMRI Score</b>: {pm_sig.pmri_score:.1f}/100\n"
+                        f"• <b>Momentum Vector</b>: {pm_sig.momentum_direction}\n"
+                        f"• <b>Execution Rule</b>: Standing aside inside the compression. Engine primed for breakout.\n\n"
+                        f"🛡️ <i>Pre-Move Volatility Engine Active | Standing By for Ignition</i>"
+                    )
+                    if alerter:
+                        try:
+                            alerter.send_alert(coil_sub, coil_bdy)
+                        except Exception as ex:
+                            print(f"Error dispatching coil alert for {sym}: {ex}")
+            except Exception:
+                pass
 
         # --- SETUP 2: Standard Day-High / Day-Low Volatility Breakout (For Non-Tailored Assets) ---
         if not triggered and not is_trend_asset and not is_momentum_asset:
@@ -5587,21 +5656,40 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
             # Real-time notification email
             mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
-            subject = f"⚡ [REAL-TIME TECHNICAL TRIGGER] {name} {action} @ ₹{cur_p:,.2f} ({now_time_str})"
-            body = (
-                f"⚡ <b>REAL-TIME TECHNICAL CONFLUENCE TRIGGER</b>\n"
-                f"📅 <i>{today_str}, {now_time_str}</i>\n"
-                f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
-                f"• <b>Asset</b>: {name} ({sym})\n"
-                f"• <b>Signal</b>: <b>{action} {lot_size} units @ ₹{cur_p:,.2f}</b>\n"
-                f"• <b>Setup</b>: {setup_name}\n"
-                f"• <b>Technical Rationale</b>: {rationale}\n"
-                f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
-                f"• <b>Stop-Loss</b>: ₹{sl:,.2f} (Dynamic Volatility Risk Cap)\n"
-                f"• <b>Target</b>: ₹{tgt:,.2f} (Asymmetric Upside)\n"
-                f"• <b>Status</b>: Active paper trade running. Automatic trailing breakeven & auto-exit enabled.\n\n"
-                f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
-            )
+            if "Coil" in setup_name:
+                subject = f"⚡ [PRE-VOLATILITY COIL TRIGGER] {name} {action} @ ₹{cur_p:,.2f} ({now_time_str})"
+                body = (
+                    f"⚡ <b>PRE-VOLATILITY COIL EXPANSION TRIGGERED</b>\n"
+                    f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                    f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                    f"• <b>Asset</b>: {name} ({sym})\n"
+                    f"• <b>Signal</b>: <b>{action} {adaptive_lot} units @ ₹{cur_p:,.2f}</b>\n"
+                    f"• <b>Setup</b>: {setup_name}\n"
+                    f"• <b>Technical Rationale</b>: {rationale}\n"
+                    f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
+                    f"• <b>Stop-Loss</b>: ₹{sl:,.2f} (Ultra-tight Coil Boundary Invalidation Stop)\n"
+                    f"• <b>Target 1 (Breakeven Trail)</b>: ₹{target_1:,.2f} (1.5R to 2.0R)\n"
+                    f"• <b>Target 2 (Runner)</b>: ₹{tgt:,.2f} (3.5R Explosive Runner)\n"
+                    f"• <b>Capital Sizing</b>: ₹1,50,000 Margin Allocated (Split into 2 concurrent trades on ₹3 Lakhs capital)\n"
+                    f"• <b>Status</b>: Active intraday paper trade running. Automatic trailing breakeven & 23:15 IST square-off enabled.\n\n"
+                    f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                )
+            else:
+                subject = f"⚡ [REAL-TIME TECHNICAL TRIGGER] {name} {action} @ ₹{cur_p:,.2f} ({now_time_str})"
+                body = (
+                    f"⚡ <b>REAL-TIME TECHNICAL CONFLUENCE TRIGGER</b>\n"
+                    f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                    f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                    f"• <b>Asset</b>: {name} ({sym})\n"
+                    f"• <b>Signal</b>: <b>{action} {adaptive_lot} units @ ₹{cur_p:,.2f}</b>\n"
+                    f"• <b>Setup</b>: {setup_name}\n"
+                    f"• <b>Technical Rationale</b>: {rationale}\n"
+                    f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
+                    f"• <b>Stop-Loss</b>: ₹{sl:,.2f} (Dynamic Volatility Risk Cap)\n"
+                    f"• <b>Target</b>: ₹{tgt:,.2f} (Asymmetric Upside)\n"
+                    f"• <b>Status</b>: Active paper trade running. Automatic trailing breakeven & auto-exit enabled.\n\n"
+                    f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                )
             alerts_to_send.append({'subject': subject, 'body': body})
             print(f"⚡ Technical Trigger Fired: {name} {action} @ ₹{cur_p:,.2f} ({setup_name}) | Replay: {mc_badge}")
 
