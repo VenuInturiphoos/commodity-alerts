@@ -1,13 +1,13 @@
 {
-  "last_updated": "24 Nov 2026, 08:58 AM IST",
+  "last_updated": "24 Nov 2026, 09:01 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 86,
+    "total_signals": 95,
     "executed_count": 14,
     "correct_count": 6,
     "wrong_count": 8,
-    "protected_count": 72,
+    "protected_count": 81,
     "win_rate_pct": 42.9,
     "broker": "Dhan",
     "total_gross_pnl_inr": -4989.17,
@@ -26,6 +26,465 @@
     "net_worth_inr": 293400.37
   },
   "trades": [
+    {
+      "id": "ADV-24Nov2026-0901-GOLDTEN",
+      "date": "24 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "GOLDTEN",
+      "name": "Gold Ten (Micro)",
+      "lot_size": 1,
+      "event_context": "MCX Open Gap (++3.46%) | CPR: 1.98%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9125,996.0) is trading above Session VWAP (\u20b9125,782.6). Counter-trend short blocked.",
+        "reference_price": 125996.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 125996.0,
+        "action_taken": "Stood Aside",
+        "detail": "Conflict: HTF is Bearish but price (\u20b9125,996.0) is trading above Session VWAP (\u20b9125,782.6). Counter-trend short blocked."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9125,996.0) is trading above Session VWAP (\u20b9125,782.6). Counter-trend short blocked."
+      }
+    },
+    {
+      "id": "ADV-24Nov2026-0901-SILVERMIC",
+      "date": "24 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "SILVERMIC",
+      "name": "Silver Micro",
+      "lot_size": 1,
+      "event_context": "MCX Open Gap (++4.61%) | CPR: 2.24%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9155,578.0) is trading above Session VWAP (\u20b9154,883.6). Counter-trend short blocked.",
+        "reference_price": 155578.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 155578.0,
+        "action_taken": "Stood Aside",
+        "detail": "Conflict: HTF is Bearish but price (\u20b9155,578.0) is trading above Session VWAP (\u20b9154,883.6). Counter-trend short blocked."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9155,578.0) is trading above Session VWAP (\u20b9154,883.6). Counter-trend short blocked."
+      }
+    },
+    {
+      "id": "ADV-24Nov2026-0901-CRUDEOILM",
+      "date": "24 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "CRUDEOILM",
+      "name": "Crude Oil Mini",
+      "lot_size": 10,
+      "event_context": "MCX Open Gap (-1.59%) | CPR: 0.38%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / HARD RISK STOP",
+        "rationale": "Reward:Risk ratio 0.57 is below minimum requirement of 1.1R (Risk: 486.6 pts, Reward: 276.0 pts).",
+        "reference_price": 7571.0,
+        "stop_loss": 8057.55,
+        "target": 7295.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "HARD_RISK_STAND_ASIDE",
+        "price_615": 7571.0,
+        "action_taken": "Stood Aside",
+        "detail": "Reward:Risk ratio 0.57 is below minimum requirement of 1.1R (Risk: 486.6 pts, Reward: 276.0 pts)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Reward:Risk ratio 0.57 is below minimum requirement of 1.1R (Risk: 486.6 pts, Reward: 276.0 pts)."
+      }
+    },
+    {
+      "id": "ADV-24Nov2026-0901-NATURALGASM",
+      "date": "24 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "NATURALGASM",
+      "name": "Natural Gas Mini",
+      "lot_size": 250,
+      "event_context": "MCX Open Gap (-3.38%) | CPR: 1.78%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / HARD RISK STOP",
+        "rationale": "Reward:Risk ratio 0.64 is below minimum requirement of 1.1R (Risk: 19.8 pts, Reward: 12.6 pts).",
+        "reference_price": 328.4,
+        "stop_loss": 348.16,
+        "target": 315.83
+      },
+      "check_615": {
+        "checked": true,
+        "status": "HARD_RISK_STAND_ASIDE",
+        "price_615": 328.4,
+        "action_taken": "Stood Aside",
+        "detail": "Reward:Risk ratio 0.64 is below minimum requirement of 1.1R (Risk: 19.8 pts, Reward: 12.6 pts)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Reward:Risk ratio 0.64 is below minimum requirement of 1.1R (Risk: 19.8 pts, Reward: 12.6 pts)."
+      }
+    },
+    {
+      "id": "ADV-24Nov2026-0901-COPPERM",
+      "date": "24 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "COPPERM",
+      "name": "Copper Mini",
+      "lot_size": 1000,
+      "event_context": "MCX Open Gap (++3.56%) | CPR: 1.67%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Direction Engine Block: Conflict: HTF is Bearish but price (\u20b91,193.9) is trading above Session VWAP (\u20b91,189.3). Counter-trend short blocked.",
+        "reference_price": 1193.9,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 1193.9,
+        "action_taken": "Stood Aside",
+        "detail": "Conflict: HTF is Bearish but price (\u20b91,193.9) is trading above Session VWAP (\u20b91,189.3). Counter-trend short blocked."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Direction Engine Block: Conflict: HTF is Bearish but price (\u20b91,193.9) is trading above Session VWAP (\u20b91,189.3). Counter-trend short blocked."
+      }
+    },
+    {
+      "id": "ADV-24Nov2026-0901-ZINCMINI",
+      "date": "24 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 1000,
+      "event_context": "MCX Open Gap (++1.70%) | CPR: 0.83%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9392.9) is trading above Session VWAP (\u20b9392.2). Counter-trend short blocked.",
+        "reference_price": 392.9,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 392.9,
+        "action_taken": "Stood Aside",
+        "detail": "Conflict: HTF is Bearish but price (\u20b9392.9) is trading above Session VWAP (\u20b9392.2). Counter-trend short blocked."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9392.9) is trading above Session VWAP (\u20b9392.2). Counter-trend short blocked."
+      }
+    },
+    {
+      "id": "ADV-24Nov2026-0901-ALUMINI",
+      "date": "24 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 1000,
+      "event_context": "MCX Open Gap (++1.71%) | CPR: 0.71%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9323.8) is trading above Session VWAP (\u20b9323.0). Counter-trend short blocked.",
+        "reference_price": 323.8,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 323.8,
+        "action_taken": "Stood Aside",
+        "detail": "Conflict: HTF is Bearish but price (\u20b9323.8) is trading above Session VWAP (\u20b9323.0). Counter-trend short blocked."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9323.8) is trading above Session VWAP (\u20b9323.0). Counter-trend short blocked."
+      }
+    },
+    {
+      "id": "ADV-24Nov2026-0901-ZINCMINI",
+      "date": "24 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 1000,
+      "event_context": "MCX Open Gap (++1.70%) | CPR: 0.83%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9392.9) is trading above Session VWAP (\u20b9392.2). Counter-trend short blocked.",
+        "reference_price": 392.9,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 392.9,
+        "action_taken": "Stood Aside",
+        "detail": "Conflict: HTF is Bearish but price (\u20b9392.9) is trading above Session VWAP (\u20b9392.2). Counter-trend short blocked."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9392.9) is trading above Session VWAP (\u20b9392.2). Counter-trend short blocked."
+      }
+    },
+    {
+      "id": "ADV-24Nov2026-0901-ALUMINI",
+      "date": "24 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 1000,
+      "event_context": "MCX Open Gap (++1.71%) | CPR: 0.71%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9323.8) is trading above Session VWAP (\u20b9323.0). Counter-trend short blocked.",
+        "reference_price": 323.8,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 323.8,
+        "action_taken": "Stood Aside",
+        "detail": "Conflict: HTF is Bearish but price (\u20b9323.8) is trading above Session VWAP (\u20b9323.0). Counter-trend short blocked."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9323.8) is trading above Session VWAP (\u20b9323.0). Counter-trend short blocked."
+      }
+    },
     {
       "id": "ADV-23Nov2026-2100-GOLD",
       "date": "23 Nov 2026",
