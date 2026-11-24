@@ -14,6 +14,11 @@ from datetime import datetime
 from trader_engine_bridge import PreTradeRiskEngine, MonteCarloTimeMachine, ORBTimer, EventRiskGuard, PositionSizer, MarketRegimeDetector, TradingAgentsOrchestrator, InstitutionalDirectionEngine, PullbackRetestGate
 from pre_move_detector import PreMoveDetector, PreMoveSignal
 from dhan_brokerage_calculator import DhanBrokerageCalculator
+try:
+    from institutional_engine import InstitutionalConfluenceEngine, InstitutionalSignal
+except ImportError:
+    InstitutionalConfluenceEngine = None
+    InstitutionalSignal = None
 
 TRACKER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'advisory_trades_tracker.json')
 NIFTY_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'nifty_crossover_oversold.json')
@@ -206,29 +211,28 @@ def check_commodity_cooldown(symbol, trades=None, today_str=None, now_dt=None):
         except Exception:
             trades = []
 
-    # 1. Prevent overlapping simultaneous active/pending trades in the same commodity
+    # 1. Prevent overlapping simultaneous active/pending trades in the same commodity (across all sessions)
     for t in trades:
-        if t.get('date') == today_str and get_canonical_commodity_root(t.get('symbol')) == canon_sym:
+        if get_canonical_commodity_root(t.get('symbol')) == canon_sym:
             pt = t.get('paper_trade', {})
             if pt.get('status') in ['ACTIVE', 'PENDING_LIMIT']:
                 return True, f"Active/Pending position already open on {canon_sym} ({t.get('symbol')} {pt.get('action')}). Simultaneous re-entry blocked.", 0.0
 
-    # 2. Find all executed trades for this canonical commodity today
+    # 2. Find all executed trades for this canonical commodity
     sym_today_trades = [
         t for t in trades
-        if t.get('date') == today_str
-        and get_canonical_commodity_root(t.get('symbol')) == canon_sym
+        if get_canonical_commodity_root(t.get('symbol')) == canon_sym
         and t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']
         and t.get('paper_trade', {}).get('quantity', 0) > 0
     ]
     if not sym_today_trades:
-        return False, "No prior trades today", 0.0
+        return False, "No prior trades", 0.0
 
     # 3. Sort chronologically to find the true most recent trade
     def _trade_sort_key(tr):
         pt_tr = tr.get('paper_trade', {})
         t_str = pt_tr.get('exit_time') or pt_tr.get('entry_time') or tr.get('time_trigger') or ''
-        dt_obj = parse_ist_timestamp(t_str, today_str)
+        dt_obj = parse_ist_timestamp(t_str, tr.get('date', today_str))
         return dt_obj if dt_obj else datetime.min.replace(tzinfo=pytz.timezone('Asia/Kolkata'))
 
     sorted_trades = sorted(sym_today_trades, key=_trade_sort_key)
@@ -239,7 +243,7 @@ def check_commodity_cooldown(symbol, trades=None, today_str=None, now_dt=None):
     if not last_time_str:
         return False, "No timestamp found on prior trade", 0.0
 
-    t_struct = parse_ist_timestamp(last_time_str, today_str)
+    t_struct = parse_ist_timestamp(last_time_str, last_t.get('date', today_str))
     if not t_struct:
         return False, "Could not parse prior trade timestamp", 0.0
 
@@ -251,8 +255,12 @@ def check_commodity_cooldown(symbol, trades=None, today_str=None, now_dt=None):
     last_exit_trigger = str(last_pt.get('exit_trigger') or last_t.get('eod_outcome', {}).get('exit_trigger', ''))
     is_target_hit = ('TARGET' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) > 500.0) or (last_t.get('eod_outcome', {}).get('outcome') == 'CORRECT')
     is_sl_hit = ('STOP_LOSS' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) < 0)
+    is_swing = bool(last_t.get('is_swing_trade') or last_t.get('holding_type') == 'MULTI_SESSION_SWING' or canon_sym in ['GOLD', 'CRUDEOIL'])
 
-    if is_sl_hit:
+    if is_swing:
+        required_cooldown = 72.0 * 60.0  # 72 hours (4,320 mins) multi-session swing cooldown
+        reason_label = "Elite Swing 72-Hour Cooldown"
+    elif is_sl_hit:
         required_cooldown = 120.0
         reason_label = "Post-Stop-Loss 2-Hour Lockout"
     elif is_target_hit:
@@ -3977,7 +3985,11 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
     today_str = now_dt.strftime('%d %b %Y')
     now_time_str = now_dt.strftime('%I:%M %p IST')
     
-    relevant_trades = [t for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']]
+    relevant_trades = [
+        t for t in trades 
+        if t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']
+        and (t.get('date') == today_str or t.get('holding_type') == 'MULTI_SESSION_SWING' or t.get('is_swing_trade') or t.get('paper_trade', {}).get('holding_type') == 'MULTI_SESSION_SWING')
+    ]
     
     # ⏱️ 3-Minute Limit Order TTL Check on Dhan: Cancel any pending limit order older than 3 minutes (180s)
     if is_autopilot_enabled():
@@ -4211,10 +4223,18 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                     min_trail_buf = round(cur_p * 0.005, 2)
 
                 # Approach A: Breakeven Shield & Full Target (User-Selected Institutional Protocol)
-                # Once price reaches >= breakeven_threshold (70%-75% target progress), move Stop-Loss to Breakeven (+Fee Shield).
-                # Stop stays locked at Breakeven, eliminating 100% of downside risk while giving the trade full breathing room
-                # (50-70+ pts on Crude) to hit the 100% Target without getting choked by minor bounces or candle wicks.
-                if pct_to_target >= breakeven_threshold and not pt.get('trailing_sl_active'):
+                # Once price reaches >= breakeven_threshold (70%-75% target progress) or touches Target 1,
+                # move Stop-Loss to Breakeven (+Fee Shield). Stop stays locked at Breakeven, eliminating 100%
+                # of downside risk while giving the trade full breathing room to hit Target 2 runner.
+                t1_val = pt.get('target_1')
+                hit_t1_milestone = False
+                if t1_val is not None:
+                    if action == 'BUY' and (cur_p >= t1_val or effective_high >= t1_val):
+                        hit_t1_milestone = True
+                    elif action == 'SELL' and (cur_p <= t1_val or effective_low <= t1_val):
+                        hit_t1_milestone = True
+
+                if (pct_to_target >= breakeven_threshold or hit_t1_milestone) and not pt.get('trailing_sl_active'):
                     pt['trailing_sl_active'] = True
                     pt['original_sl'] = pt.get('original_sl') or pt.get('initial_stop_loss') or stop_loss
                     be_price = round(entry_p + fee_buf if action == 'BUY' else entry_p - fee_buf, 2)
@@ -4947,10 +4967,13 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         rationale = ""
         sl = None
         tgt = None
+        target_1 = None
+        confluence_score = None
+        is_institutional_swing = False
 
         # --- SETUP 1: Asset-Tailored Commodity Execution Engine ---
         # Tailored to natural commodity market microstructure (Validated on 60-day empirical replay):
-        # - GOLD & CRUDE OIL: Trend-Pullback Retest Engine (Defends 20 EMA / VWAP anchor in HTF trend)
+        # - GOLD & CRUDE OIL: Elite Multi-Factor Institutional Confluence Engine (Volume Profile + AVWAP + KER + Sweeps >= 85)
         # - NATURAL GAS & SILVER: Directional Volatility Breakout & Expansion Engine (Momentum impulse without wick flushes)
         clean_sym_upper = sym.replace('-FUT', '').replace('.NS', '').replace('.BO', '').upper()
         is_trend_asset = any(k in clean_sym_upper for k in ['GOLD', 'CRUDE'])
@@ -4959,49 +4982,36 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         session_vwap = round((float(item.get('open') or p_close) + day_h + day_l + (2.0 * cur_p)) / 5.0, 2)
 
         # -------------------------------------------------------------
-        # PERSONALITY A: GOLD & CRUDE OIL -> TREND-PULLBACK RETEST ENGINE
+        # PERSONALITY A: GOLD & CRUDE OIL -> ELITE MULTI-FACTOR INSTITUTIONAL CONFLUENCE ENGINE (>=85)
         # -------------------------------------------------------------
-        if is_trend_asset and ema20 is not None and ema50 is not None:
-            # Bull Trend Retest (BUY Dip at 20 EMA)
-            is_htf_bull = (cur_p >= ema50) and (ema20 >= ema50 * 0.998) and (cur_p >= session_vwap * 0.998)
-            not_chasing_top = (day_h - cur_p >= cur_p * 0.0035) and (cur_p <= day_h - 0.12 * day_range)
-            pullback_to_ema = (cur_p >= ema20 * 0.994) and (float(item.get('low') or cur_p) <= ema20 * 1.002)
-            healthy_rsi_bull = (rsi is not None and 40.0 <= rsi <= 64.0)
+        if is_trend_asset and InstitutionalConfluenceEngine is not None:
+            yf_sym = 'GC=F' if 'GOLD' in clean_sym_upper else 'CL=F'
+            mcx_mult = 0.373273 if 'GOLD' in clean_sym_upper else 1.000049
 
-            if is_htf_bull and not_chasing_top and pullback_to_ema and healthy_rsi_bull:
-                sl_anchor = min(float(item.get('low') or cur_p), ema20)
-                sl = round(sl_anchor - (0.35 * atr_val), 2)
-                risk_dist = abs(cur_p - sl)
-                if risk_dist < 0.25 * atr_val:
-                    sl = round(cur_p - (0.30 * atr_val), 2)
-                    risk_dist = abs(cur_p - sl)
-                tgt = round(cur_p + (2.4 * risk_dist), 2)
+            sig = InstitutionalConfluenceEngine.fetch_and_evaluate(
+                symbol=sym,
+                yf_symbol=yf_sym,
+                mcx_multiplier=mcx_mult,
+                current_price=cur_p,
+                min_confluence=85.0
+            )
+
+            if sig.action in ['BUY', 'SELL'] and sig.confluence_score >= 85.0:
                 triggered = True
-                action = "BUY"
-                setup_name = "Trend Pullback (20 EMA Retest Bounce)"
-                rationale = (f"Confirmed Bull Trend Pullback on {sym}: Trading above 50 EMA (₹{ema50:,.2f}) & VWAP (₹{session_vwap:,.2f}). "
-                             f"Pullback tested 20 EMA support (₹{ema20:,.2f}) with healthy RSI {rsi:.1f}. Structural stop placed below 20 EMA support (₹{sl:,.2f}).")
-
-            # Bear Trend Retest (SELL Rally at 20 EMA)
-            elif not triggered:
-                is_htf_bear = (cur_p <= ema50) and (ema20 <= ema50 * 1.002) and (cur_p <= session_vwap * 1.002)
-                not_chasing_bottom = (cur_p - day_l >= cur_p * 0.0035) and (cur_p >= day_l + 0.12 * day_range)
-                pullback_to_ema_bear = (cur_p <= ema20 * 1.006) and (float(item.get('high') or cur_p) >= ema20 * 0.998)
-                healthy_rsi_bear = (rsi is not None and 36.0 <= rsi <= 60.0)
-
-                if is_htf_bear and not_chasing_bottom and pullback_to_ema_bear and healthy_rsi_bear:
-                    sl_anchor = max(float(item.get('high') or cur_p), ema20)
-                    sl = round(sl_anchor + (0.35 * atr_val), 2)
-                    risk_dist = abs(sl - cur_p)
-                    if risk_dist < 0.25 * atr_val:
-                        sl = round(cur_p + (0.30 * atr_val), 2)
-                        risk_dist = abs(sl - cur_p)
-                    tgt = round(cur_p - (2.4 * risk_dist), 2)
-                    triggered = True
-                    action = "SELL"
-                    setup_name = "Trend Pullback (20 EMA Retest Fade)"
-                    rationale = (f"Confirmed Bear Trend Rally Fade on {sym}: Trading below 50 EMA (₹{ema50:,.2f}) & VWAP (₹{session_vwap:,.2f}). "
-                                 f"Relief rally tested 20 EMA resistance (₹{ema20:,.2f}) with healthy RSI {rsi:.1f}. Structural stop placed above 20 EMA resistance (₹{sl:,.2f}).")
+                action = sig.action
+                setup_name = f"Elite Institutional Confluence ({sig.archetype.replace('_', ' ').title()})"
+                sl = sig.stop_loss
+                tgt = sig.target_2  # Target 2 (Runner 2.5R)
+                target_1 = sig.target_1  # Target 1 (Breakeven Trail Milestone 1.5R)
+                confluence_score = sig.confluence_score
+                is_institutional_swing = True
+                rationale = (f"Elite Confluence (+{sig.confluence_score:.0f}/100) on {sym}: {sig.rationale} "
+                             f"Archetype: {sig.archetype}. Multi-session swing holding active. "
+                             f"Target 1 (Breakeven Trail): ₹{target_1:,.2f} | Target 2 (Runner): ₹{tgt:,.2f} | SL: ₹{sl:,.2f}.")
+            else:
+                # Elite Confluence Gate: Reject lower quality setups on Gold and Crude to prevent fee churn
+                print(f"🛡️ Elite Institutional Gate: {sym} Confluence score {sig.confluence_score:.0f}/100 < 85. Standing aside to protect capital and eliminate churn.")
+                continue
 
         # -------------------------------------------------------------
         # PERSONALITY B: SILVER -> VOLATILITY BREAKOUT & EXPANSION ENGINE
@@ -5451,7 +5461,12 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 "time_6pm": now_time_str,
                 "time_validation": now_time_str,
                 "time_615": now_time_str,
-                "time_exit": get_us_aligned_session_times(now_dt)["eod_str"],
+                "time_exit": "Multi-Session Target 2" if is_institutional_swing else get_us_aligned_session_times(now_dt)["eod_str"],
+                "holding_type": "MULTI_SESSION_SWING" if is_institutional_swing else "INTRADAY",
+                "is_swing_trade": bool(is_institutional_swing),
+                "confluence_score": confluence_score,
+                "target_1": target_1,
+                "target_2": tgt,
                 "symbol": contract_sym,
                 "name": contract_name,
                 "lot_size": adaptive_lot,
@@ -5466,6 +5481,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     "reference_price": cur_p,
                     "stop_loss": sl,
                     "target": tgt,
+                    "target_1": target_1,
+                    "target_2": tgt,
                     "original_stop_loss": sl,
                     "original_target": tgt
                 },
@@ -5488,7 +5505,11 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     "pnl_inr": 0.0,
                     "status": "ACTIVE",
                     "margin_required_inr": req_margin,
+                    "holding_type": "MULTI_SESSION_SWING" if is_institutional_swing else "INTRADAY",
                     "target": tgt,
+                    "target_1": target_1,
+                    "target_2": tgt,
+                    "breakeven_active": False,
                     "stop_loss": sl,
                     "initial_stop_loss": sl,
                     "original_sl": sl,
@@ -6594,8 +6615,21 @@ def exit_and_evaluate_eod_trades(checker, alerter):
         eod['pnl_display'] = '₹0.00 (Protected)'
         eod['summary'] = '15-minute confirmation check elapsed without executed entry. 100% capital protected in cash.'
 
-    # 2. Square off ACTIVE Paper Trades (sweep all open active positions)
-    active_trades = [t for t in trades if t.get('paper_trade', {}).get('status') == 'ACTIVE']
+    # 2. Square off ACTIVE Paper Trades (sweep all open active intraday positions; allow multi-session swings to breathe)
+    active_trades = [
+        t for t in trades 
+        if t.get('paper_trade', {}).get('status') == 'ACTIVE'
+        and not t.get('is_swing_trade')
+        and t.get('holding_type') != 'MULTI_SESSION_SWING'
+        and t.get('paper_trade', {}).get('holding_type') != 'MULTI_SESSION_SWING'
+    ]
+    swing_active = [
+        t for t in trades 
+        if t.get('paper_trade', {}).get('status') == 'ACTIVE'
+        and (t.get('is_swing_trade') or t.get('holding_type') == 'MULTI_SESSION_SWING' or t.get('paper_trade', {}).get('holding_type') == 'MULTI_SESSION_SWING')
+    ]
+    if swing_active:
+        print(f"🏛️ {len(swing_active)} Multi-Session Elite Swing trade(s) active. Overnight breathing room maintained to reach Target 2.")
     if not active_trades:
         print(f"No active advisory paper trades to exit tonight ({len(pending_to_expire)} unconfirmed setups expired to Protected).")
         save_tracker(tracker)

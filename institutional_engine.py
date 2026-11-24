@@ -280,7 +280,7 @@ class InstitutionalConfluenceEngine:
     @classmethod
     def evaluate(cls, symbol: str, closes: List[float], highs: List[float], lows: List[float],
                  volumes: List[float], daily_ema50: Optional[float] = None, 
-                 atr: Optional[float] = None) -> InstitutionalSignal:
+                 atr: Optional[float] = None, min_confluence: float = 85.0) -> InstitutionalSignal:
 
         if not closes or len(closes) < 25:
             p = closes[-1] if closes else 0.0
@@ -386,19 +386,19 @@ class InstitutionalConfluenceEngine:
         # =====================================================================
         # ARBITRATION & SIZING
         # =====================================================================
-        CONFLUENCE_THRESHOLD = 70.0
+        CONFLUENCE_THRESHOLD = min_confluence
 
         # Check Bullish Confluence
         if score_a_bull >= CONFLUENCE_THRESHOLD:
             # Archetype A: Value Expansion BUY
-            sl = max(vp.vah * 0.997, cur_p - 1.2 * atr)
+            sl = max(vp.vah * 0.997, cur_p - 1.5 * atr)
             risk = abs(cur_p - sl)
             t1 = round(cur_p + 1.5 * risk, 2)
-            t2 = round(cur_p + 2.8 * risk, 2)
+            t2 = round(cur_p + 2.5 * risk, 2)
             return InstitutionalSignal(
                 symbol=symbol, action="BUY", archetype="VALUE_EXPANSION_BREAKOUT",
                 confluence_score=score_a_bull, current_price=cur_p, entry_price=cur_p,
-                stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=2.8,
+                stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=2.5,
                 ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=False,
                 rationale=f"Institutional Value Expansion above VAH (₹{vp.vah:,.2f}) with KER {ker:.2f}. "
                           f"Holding above AVWAP with +{score_a_bull:.0f}/100 confluence.",
@@ -407,7 +407,7 @@ class InstitutionalConfluenceEngine:
 
         if score_b_bull >= CONFLUENCE_THRESHOLD:
             # Archetype B: Liquidity Sweep BUY
-            sl = round(sweep_price - 0.20 * atr, 2)
+            sl = round(sweep_price - 0.25 * atr, 2)
             risk = abs(cur_p - sl)
             t1 = vp.poc # Primary Target is POC
             t2 = round(vp.vah, 2) # Secondary Target is VAH
@@ -425,14 +425,14 @@ class InstitutionalConfluenceEngine:
         # Check Bearish Confluence
         if score_a_bear >= CONFLUENCE_THRESHOLD:
             # Archetype A: Value Expansion SELL
-            sl = min(vp.val * 1.003, cur_p + 1.2 * atr)
+            sl = min(vp.val * 1.003, cur_p + 1.5 * atr)
             risk = abs(sl - cur_p)
             t1 = round(cur_p - 1.5 * risk, 2)
-            t2 = round(cur_p - 2.8 * risk, 2)
+            t2 = round(cur_p - 2.5 * risk, 2)
             return InstitutionalSignal(
                 symbol=symbol, action="SELL", archetype="VALUE_EXPANSION_BREAKOUT",
                 confluence_score=score_a_bear, current_price=cur_p, entry_price=cur_p,
-                stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=2.8,
+                stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=2.5,
                 ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=False,
                 rationale=f"Institutional Value Breakdown below VAL (₹{vp.val:,.2f}) with KER {ker:.2f}. "
                           f"Breaking below AVWAP with +{score_a_bear:.0f}/100 confluence.",
@@ -441,7 +441,7 @@ class InstitutionalConfluenceEngine:
 
         if score_b_bear >= CONFLUENCE_THRESHOLD:
             # Archetype B: Liquidity Sweep SELL
-            sl = round(sweep_price + 0.20 * atr, 2)
+            sl = round(sweep_price + 0.25 * atr, 2)
             risk = abs(sl - cur_p)
             t1 = vp.poc
             t2 = round(vp.val, 2)
@@ -462,8 +462,56 @@ class InstitutionalConfluenceEngine:
             symbol=symbol, action="STAND_ASIDE", archetype="NONE", confluence_score=best_score,
             current_price=cur_p, entry_price=cur_p, stop_loss=cur_p, target_1=cur_p, target_2=cur_p,
             reward_risk_ratio=0.0, ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=is_sweep,
-            rationale=f"Market coiling inside Value Area (Score: {best_score:.0f}/100 < 70 threshold). Standing aside to prevent fee churn."
+            rationale=f"Market coiling inside Value Area (Score: {best_score:.0f}/100 < {CONFLUENCE_THRESHOLD:.0f} threshold). Standing aside to prevent fee churn."
         )
+
+    @classmethod
+    def fetch_and_evaluate(cls, symbol: str, yf_symbol: str, mcx_multiplier: float = 1.0,
+                           current_price: Optional[float] = None, min_confluence: float = 85.0) -> InstitutionalSignal:
+        """
+        Fetches 1-hour intraday candles proxy from Yahoo Finance for the commodity,
+        scales to MCX Indian Rupee terms, and evaluates the 4-factor institutional confluence.
+        """
+        import yfinance as yf
+        try:
+            ticker = yf.Ticker(yf_symbol)
+            df = ticker.history(period="15d", interval="1h")
+            if df.empty or len(df) < 25:
+                p = current_price or 0.0
+                return InstitutionalSignal(
+                    symbol=symbol, action="STAND_ASIDE", archetype="NONE", confluence_score=0.0,
+                    current_price=p, entry_price=p, stop_loss=p, target_1=p, target_2=p,
+                    reward_risk_ratio=0.0, ker_efficiency=0.0, rationale="Insufficient candle history from market data provider."
+                )
+
+            # Scale prices to live MCX INR
+            if current_price and current_price > 0 and float(df['Close'].iloc[-1]) > 0:
+                scale = float(current_price) / float(df['Close'].iloc[-1])
+            else:
+                scale = float(mcx_multiplier)
+
+            closes = [float(c * scale) for c in df['Close']]
+            highs = [float(h * scale) for h in df['High']]
+            lows = [float(l * scale) for l in df['Low']]
+            vols = [float(v) for v in df['Volume']]
+
+            # Calculate daily EMA 50
+            daily_df = ticker.history(period="90d", interval="1d")
+            daily_ema50 = None
+            if not daily_df.empty and len(daily_df) >= 20:
+                daily_ema50 = float(daily_df['Close'].ewm(span=50, adjust=False).mean().iloc[-1] * scale)
+
+            return cls.evaluate(
+                symbol=symbol, closes=closes, highs=highs, lows=lows,
+                volumes=vols, daily_ema50=daily_ema50, min_confluence=min_confluence
+            )
+        except Exception as e:
+            p = current_price or 0.0
+            return InstitutionalSignal(
+                symbol=symbol, action="STAND_ASIDE", archetype="NONE", confluence_score=0.0,
+                current_price=p, entry_price=p, stop_loss=p, target_1=p, target_2=p,
+                reward_risk_ratio=0.0, ker_efficiency=0.0, rationale=f"Error evaluating institutional confluence: {e}"
+            )
 
 
 if __name__ == "__main__":
