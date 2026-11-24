@@ -255,20 +255,20 @@ def check_commodity_cooldown(symbol, trades=None, today_str=None, now_dt=None):
     last_exit_trigger = str(last_pt.get('exit_trigger') or last_t.get('eod_outcome', {}).get('exit_trigger', ''))
     is_target_hit = ('TARGET' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) > 500.0) or (last_t.get('eod_outcome', {}).get('outcome') == 'CORRECT')
     is_sl_hit = ('STOP_LOSS' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) < 0)
-    is_swing = bool(last_t.get('is_swing_trade') or last_t.get('holding_type') == 'MULTI_SESSION_SWING' or canon_sym in ['GOLD', 'CRUDEOIL'])
+    is_swing = bool(last_t.get('is_swing_trade') or last_t.get('holding_type') == 'MULTI_SESSION_SWING')
 
     if is_swing:
         required_cooldown = 72.0 * 60.0  # 72 hours (4,320 mins) multi-session swing cooldown
         reason_label = "Elite Swing 72-Hour Cooldown"
     elif is_sl_hit:
-        required_cooldown = 120.0
-        reason_label = "Post-Stop-Loss 2-Hour Lockout"
+        required_cooldown = 60.0  # 60m intraday reset after SL
+        reason_label = "Post-Stop-Loss 60m Reset"
     elif is_target_hit:
-        required_cooldown = 120.0
-        reason_label = "Post-Target 2-Hour Lockout"
+        required_cooldown = 45.0  # 45m intraday reset after target
+        reason_label = "Post-Target 45m Reset"
     else:
-        required_cooldown = 90.0
-        reason_label = "Standard 90m Lockout"
+        required_cooldown = 45.0
+        reason_label = "Standard 45m Intraday Reset"
 
     if diff_mins < required_cooldown:
         remaining = round(required_cooldown - diff_mins, 1)
