@@ -130,7 +130,55 @@ class EmailAlerter:
         if any(tag in sub_upper for tag in ["[DHAN", "DHAN ORDER", "DHAN STOP-LOSS", "DHAN SL", "DHAN POSITION", "DHAN BROKER"]):
             return True
 
-        # 1. Explicit Exclusions (Never send these non-trade alerts via email)
+        # 1. Genuine Trade Executions (Entry & Exit) - HIGHEST PRIORITY
+        # If an alert represents an actual executed trade entry or exit, it MUST ALWAYS be sent!
+        trade_taken_signatures = [
+            "[DAILY STOCK SIP]",
+            "[NIFTY INTRADAY MIS TRIGGER]",
+            "[NSE STOCK FUTURE TRIGGER]",
+            "[NSE FUTURE TRIGGER]",
+            "[REAL-TIME TECHNICAL TRIGGER]",
+            "[LIMIT ORDER FILLED]",
+            "[6:15 PM TRADE CONFIRMED]",
+            "[7:15 PM TRADE CONFIRMED]",
+            "[TRADE ENTERED]",
+            "TRADE ENTERED",
+            "ENTERED BUY",
+            "ENTERED SELL",
+            "REAL-TIME INTRADAY STOCK TRIGGER",
+            "DAILY STOCK INVESTMENT (CASH DELIVERY)",
+            "ORDER EXECUTED",
+            "TRADE TAKEN",
+            "POSITION OPENED",
+        ]
+        for sig in trade_taken_signatures:
+            if sig in sub_upper or sig in bdy_upper:
+                return True
+
+        trade_exited_signatures = [
+            "[TARGET HIT]",
+            "TARGET 1 EXECUTED",
+            "TARGET 2 EXECUTED",
+            "TARGET ACHIEVED",
+            "[STOP LOSS HIT]",
+            "STOP LOSS HIT",
+            "STOP-LOSS TRIGGERED",
+            "PROTECTIVE STOP LOSS EXECUTED",
+            "PAPER TRADE EXIT",
+            "PAPER TRADE AUTO-EXIT",
+            "BREAKEVEN EXIT",
+            "STAGNATION EXIT",
+            "SQUARE-OFF EXECUTED",
+            "SQUARE-OFF SETTLED",
+        ]
+        for sig in trade_exited_signatures:
+            if sig in sub_upper or sig in bdy_upper:
+                return True
+
+        if "BOUGHT" in sub_upper and ("SHARES" in sub_upper or "SIP" in sub_upper):
+            return True
+
+        # 2. Explicit Exclusions (Only filter out purely informational non-trade alerts)
         explicit_blocks = [
             "CIRCUIT WARNING",
             "CIRCUIT HIT",
@@ -157,42 +205,7 @@ class EmailAlerter:
             if block in sub_upper:
                 return False
 
-        # 2. Trades Taken (Entry / Order Executions)
-        trade_taken_signatures = [
-            "[DAILY STOCK SIP]",
-            "[NIFTY INTRADAY MIS TRIGGER]",
-            "[NSE STOCK FUTURE TRIGGER]",
-            "[NSE FUTURE TRIGGER]",
-            "[REAL-TIME TECHNICAL TRIGGER]",
-            "[LIMIT ORDER FILLED]",
-            "[6:15 PM TRADE CONFIRMED]",
-            "REAL-TIME INTRADAY STOCK TRIGGER",
-            "DAILY STOCK INVESTMENT (CASH DELIVERY)",
-            "ORDER EXECUTED",
-            "TRADE TAKEN",
-            "POSITION OPENED",
-        ]
-        for sig in trade_taken_signatures:
-            if sig in sub_upper or sig in bdy_upper:
-                return True
-
-        if "BOUGHT" in sub_upper and ("SHARES" in sub_upper or "SIP" in sub_upper):
-            return True
-
-        # 3. Trades Exited (Target Hit, Stop Loss, Breakeven, Square-off, EOD Settlement)
-        trade_exited_signatures = [
-            "[TARGET HIT]",
-            "TARGET 1 EXECUTED",
-            "TARGET 2 EXECUTED",
-            "TARGET ACHIEVED",
-            "[STOP LOSS HIT]",
-            "STOP LOSS HIT",
-            "STOP-LOSS TRIGGERED",
-            "PROTECTIVE STOP LOSS EXECUTED",
-            "PAPER TRADE EXIT",
-            "PAPER TRADE AUTO-EXIT",
-            "BREAKEVEN EXIT",
-            "STAGNATION EXIT",
+        square_off_signatures = [
             "03:20 PM SQUARE-OFF",
             "INTRADAY SQUARE-OFF",
             "EOD SQUARE-OFF",
@@ -201,7 +214,7 @@ class EmailAlerter:
             "[11:30 PM SETTLEMENT]",
             "POSITION CLOSED",
         ]
-        for sig in trade_exited_signatures:
+        for sig in square_off_signatures:
             if sig in sub_upper or sig in bdy_upper:
                 return True
 
