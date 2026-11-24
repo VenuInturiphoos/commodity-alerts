@@ -2560,6 +2560,27 @@ def record_live_6pm_advisory(commodities_list, pre_6pm_events):
             # US Pit Open Directional Momentum Setup
             # When assets are within normal daily bands, evaluate NYMEX/COMEX pit open trend momentum
             act_dir = inst_dir.get('allowed_action')
+
+            # Enforce High-Conviction Institutional Confluence Engine (>=85) for Gold & Crude Oil
+            clean_sym_upper = sym.replace('-FUT', '').replace('.NS', '').replace('.BO', '').upper()
+            is_trend_asset = any(k in clean_sym_upper for k in ['GOLD', 'CRUDE'])
+            if is_trend_asset and InstitutionalConfluenceEngine is not None:
+                yf_sym = 'GC=F' if 'GOLD' in clean_sym_upper else 'CL=F'
+                mcx_mult = 0.373273 if 'GOLD' in clean_sym_upper else 1.000049
+                try:
+                    sig = InstitutionalConfluenceEngine.fetch_and_evaluate(
+                        symbol=sym, yf_symbol=yf_sym, mcx_multiplier=mcx_mult,
+                        current_price=cur_p, min_confluence=85.0
+                    )
+                    if sig.action not in ['BUY', 'SELL'] or sig.confluence_score < 85.0:
+                        print(f"🛡️ US Pit Open Institutional Engine Blocked {sym}: Score {sig.confluence_score:.1f}/100 < 85.0 ({sig.action})")
+                        act_dir = "STAND_ASIDE"
+                    else:
+                        act_dir = sig.action
+                except Exception as e:
+                    print(f"⚠️ Error evaluating InstitutionalConfluenceEngine for {sym}: {e}")
+                    act_dir = "STAND_ASIDE"
+
             if act_dir in ['BUY', 'SELL']:
                 action = act_dir
                 # Option 2: Pullback-Only Retest Sniping Gate Check
@@ -3524,23 +3545,50 @@ def check_and_execute_615_confirmation(checker, alerter):
             ref_p = float(trade.get('suggestion_6pm', {}).get('reference_price', cur_p))
             sl = float(trade.get('suggestion_6pm', {}).get('stop_loss') or (cur_p * 0.99 if action == 'BUY' else cur_p * 1.01))
             tgt = float(trade.get('suggestion_6pm', {}).get('target') or (cur_p * 1.015 if action == 'BUY' else cur_p * 0.985))
+            open_p = c_item.get('open', prev_close) if c_item else prev_close
+            high_p = c_item.get('high', cur_p) if c_item else cur_p
+            low_p = c_item.get('low', cur_p) if c_item else cur_p
             inst_dir = InstitutionalDirectionEngine.evaluate_commodity_direction(
-                sym, cur_p, prev_close, c_item.get('high', cur_p) if c_item else cur_p, c_item.get('low', cur_p) if c_item else cur_p, c_item.get('volume', 0) if c_item else 0
+                sym, cur_p, open_p, high_p, low_p, prev_close,
+                ema20=c_item.get('ema_20') if c_item else None,
+                ema50=c_item.get('ema_50') if c_item else None,
+                ema200=c_item.get('ema_200') if c_item else None,
+                rsi=c_item.get('rsi_14') if c_item else None,
+                adx=c_item.get('adx_14') if c_item else None,
+                atr=c_item.get('atr_14') if c_item else None
             )
             vwap = inst_dir.get('vwap', cur_p)
             
             is_confirmed = False
             trend_reject_reason = ""
-            if action == 'BUY':
-                if cur_p >= (ref_p * 0.997) and cur_p >= (vwap * 0.997):
-                    is_confirmed = True
+
+            # Enforce High-Conviction Institutional Confluence Engine (>=85) for Gold & Crude Oil
+            clean_sym_upper = sym.replace('-FUT', '').replace('.NS', '').replace('.BO', '').upper()
+            is_trend_asset = any(k in clean_sym_upper for k in ['GOLD', 'CRUDE'])
+            if is_trend_asset and InstitutionalConfluenceEngine is not None:
+                yf_sym = 'GC=F' if 'GOLD' in clean_sym_upper else 'CL=F'
+                mcx_mult = 0.373273 if 'GOLD' in clean_sym_upper else 1.000049
+                try:
+                    sig = InstitutionalConfluenceEngine.fetch_and_evaluate(
+                        symbol=sym, yf_symbol=yf_sym, mcx_multiplier=mcx_mult,
+                        current_price=cur_p, min_confluence=85.0
+                    )
+                    if sig.action != action or sig.confluence_score < 85.0:
+                        trend_reject_reason = f"Institutional Confluence Engine rejected {action} (Confluence: {sig.confluence_score:.1f}/100, Engine Action: {sig.action})."
+                except Exception as e:
+                    print(f"⚠️ Error evaluating InstitutionalConfluenceEngine at confirmation for {sym}: {e}")
+
+            if not trend_reject_reason:
+                if action == 'BUY':
+                    if cur_p >= ref_p and cur_p >= vwap:
+                        is_confirmed = True
+                    else:
+                        trend_reject_reason = f"Price slipped below entry reference (₹{cur_p:,.2f} < ₹{ref_p:,.2f}) or VWAP (₹{vwap:,.1f})."
                 else:
-                    trend_reject_reason = f"Price slipped below entry reference (₹{cur_p:,.2f} < ₹{ref_p:,.2f}) or VWAP (₹{vwap:,.1f})."
-            else:
-                if cur_p <= (ref_p * 1.003) and cur_p <= (vwap * 1.003):
-                    is_confirmed = True
-                else:
-                    trend_reject_reason = f"Price spiked above entry reference (₹{cur_p:,.2f} > ₹{ref_p:,.2f}) or VWAP (₹{vwap:,.1f})."
+                    if cur_p <= ref_p and cur_p <= vwap:
+                        is_confirmed = True
+                    else:
+                        trend_reject_reason = f"Price spiked above entry reference (₹{cur_p:,.2f} > ₹{ref_p:,.2f}) or VWAP (₹{vwap:,.1f})."
             
             trade['check_615']['checked'] = True
             trade['check_615']['price_615'] = cur_p
@@ -3953,8 +4001,14 @@ def check_and_execute_615_confirmation(checker, alerter):
     
     if alert_messages and alerter:
         body = "\n\n".join(alert_messages) + "\n\n🌐 View Live Tracker: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
-        alerter.send_alert(f"⚡ [{timing['conf_str']} UPDATE] 15-Min Confirmation & Stand Aside Playbook", body)
-        print(f"Successfully dispatched {timing['conf_str']} confirmation alert.")
+        active_entered = [t for t in pending_trades if t.get('paper_trade', {}).get('status') == 'ACTIVE']
+        if active_entered:
+            trade_names = ", ".join([f"{t['name']} ({t.get('paper_trade', {}).get('action')})" for t in active_entered])
+            subject = f"⚡ [{timing['conf_str']} TRADE ENTERED] {trade_names}"
+        else:
+            subject = f"⚡ [{timing['conf_str']} CONFIRMATION] Stand Aside Playbook"
+        alerter.send_alert(subject, body)
+        print(f"Successfully dispatched {timing['conf_str']} alert with subject: {subject}")
     
     return True
 
