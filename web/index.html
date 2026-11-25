@@ -7675,6 +7675,9 @@ function applyAdvisoryMonthFilter(monthValue) {
     // Render KPI cards and table
     renderAdvisorySummaryCards();
     renderAdvisoryTradesTable();
+    if (typeof tvStreamManager !== 'undefined' && tvStreamManager.subscribeSymbolsForTrades) {
+        try { tvStreamManager.subscribeSymbolsForTrades(); } catch(e){}
+    }
 }
 
 function renderAdvisorySummaryCards() {
@@ -9021,6 +9024,7 @@ class TradingViewWebStreamManager {
                     'COMEX:SI1!', 'COMEX:GC1!', 'NYMEX:CL1!', 'NYMEX:NG1!'
                 ];
                 sendFrame('quote_add_symbols', [this.sessionId, ...baseSymbols]);
+                this.subscribeSymbolsForTrades();
             };
 
             this.ws.onmessage = (event) => {
@@ -9059,6 +9063,48 @@ class TradingViewWebStreamManager {
             };
         } catch (e) {
             console.warn("TradingView WebSocket init error:", e);
+        }
+    }
+
+    subscribeSymbolsForTrades() {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+        const toAdd = [];
+        const processTrade = (t) => {
+            if (!t || !t.symbol) return;
+            const sym = t.symbol.toUpperCase();
+            let tk = null;
+            if (sym.includes('.NS') || t.asset_type === 'INTRADAY_STOCK' || t.asset_type === 'EQUITY') {
+                const clean = sym.replace('.NS', '').trim();
+                tk = `NSE:${clean}`;
+            } else if (sym.includes('-FUT') || t.asset_type === 'STOCK_FUTURES') {
+                const clean = sym.replace('-FUT', '').replace('.NS', '').trim();
+                tk = `NSE:${clean}1!`;
+            } else {
+                const clean = sym.replace('.NS', '').trim();
+                tk = `MCX:${clean}1!`;
+            }
+            if (tk && !this.subscribedSymbols.has(tk)) {
+                this.subscribedSymbols.add(tk);
+                toAdd.push(tk);
+            }
+        };
+
+        if (typeof advisoryTrackerData !== 'undefined' && Array.isArray(advisoryTrackerData?.trades)) {
+            advisoryTrackerData.trades.forEach(processTrade);
+        }
+        if (typeof activeTrackerCache !== 'undefined' && Array.isArray(activeTrackerCache?.trades)) {
+            activeTrackerCache.trades.forEach(processTrade);
+        }
+
+        if (toAdd.length > 0) {
+            const sendFrame = (m, p) => {
+                const str = JSON.stringify({ m, p });
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(`~m~${str.length}~m~${str}`);
+                }
+            };
+            sendFrame('quote_add_symbols', [this.sessionId, ...toAdd]);
+            console.log("⚡ [TV WebStream] Subscribed live ticks for:", toAdd);
         }
     }
 
@@ -9233,6 +9279,17 @@ class TradingViewWebStreamManager {
                     t.live_price_data = t.live_price_data || {};
                     t.live_price_data.current_price = price;
                     t.live_price_data.change_pct = chg;
+                    t._is_live_streamed = true;
+
+                    // Real-time tick MTM recalculation
+                    const pt = t.paper_trade;
+                    if (pt && pt.entry_price && Number(pt.entry_price) > 0 && pt.status === 'ACTIVE') {
+                        const ep = Number(pt.entry_price);
+                        const qty = Number(pt.quantity || t.lot_size || 1);
+                        const pts = (pt.action === 'BUY') ? (price - ep) : (ep - price);
+                        pt.pnl_points = Math.round(pts * 100) / 100;
+                        pt.pnl_inr = Math.round(pts * qty * 100) / 100;
+                    }
                     changed = true;
                 }
             });
