@@ -739,14 +739,38 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
                             <span id="tv-stream-badge" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.35); color: #4ade80; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px;">
-                                <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px #22c55e; animation:pulse 1.5s infinite;"></span>
-                                <i class="fa-solid fa-bolt"></i> TV WebStream: 1s Live
+                                <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px #22c55e; animation:pulse 1s infinite;"></span>
+                                <i class="fa-solid fa-satellite-dish"></i> TradingView Live Stream ⚡
                             </span>
                             <span id="tracker-last-updated" style="font-size: 0.8rem; color: var(--text-secondary);">Syncing...</span>
                             <button onclick="if (typeof fetchCircuitsData === 'function') fetchCircuitsData(true); loadAdvisoryTracker(true);" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #c7d2fe; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
                                 <i class="fa-solid fa-arrows-rotate"></i> Refresh Tracker
                             </button>
                         </div>
+                    </div>
+
+                    <!-- 🔴 OFFICIAL TRADINGVIEW REAL-TIME TICKER TAPE (100% Client-Side Live Stream) -->
+                    <div class="tradingview-widget-container" style="margin-top: 1rem; margin-bottom: 0.5rem; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.08);">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+                        {
+                            "symbols": [
+                                { "proName": "NSE:AUBANK", "title": "AU Small Finance Bank" },
+                                { "proName": "NSE:MANKIND", "title": "Mankind Pharma" },
+                                { "proName": "MCX:SILVERMIC1!", "title": "Silver Micro" },
+                                { "proName": "MCX:CRUDEOILM1!", "title": "Crude Oil Mini" },
+                                { "proName": "MCX:GOLDM1!", "title": "Gold Mini" },
+                                { "proName": "MCX:ZINCMINI1!", "title": "Zinc Mini" },
+                                { "proName": "MCX:NATURALGASM1!", "title": "Natural Gas Mini" },
+                                { "proName": "NSE:NIFTY", "title": "Nifty 50" }
+                            ],
+                            "showSymbolLogo": true,
+                            "isTransparent": true,
+                            "displayMode": "adaptive",
+                            "colorTheme": "dark",
+                            "locale": "en"
+                        }
+                        </script>
                     </div>
 
                     <!-- KPI Cards for 6 PM Advisory -->
