@@ -5780,6 +5780,13 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 top_syms = [f"{s.get('symbol', '').replace('.NS', '')} ({s.get('_selector_action', 'BUY')})" for s in equity_stocks[:5]]
                 print(f"🎯 Intraday Curated Institutional Candidates (Nifty Breadth: {nifty_benchmark_chg:+.2f}%): {', '.join(top_syms)}")
 
+            active_sectors = set()
+            for t in (trades + new_trades):
+                if t.get('paper_trade', {}).get('status') in ['ACTIVE', 'PENDING_LIMIT']:
+                    t_sym = t.get('symbol', '').replace('-FUT', '').replace('.NS', '').upper()
+                    if t_sym in STOCK_FUTURES_CONFIG:
+                        active_sectors.add(STOCK_FUTURES_CONFIG[t_sym]['sector'])
+
             for s in equity_stocks:
                 cand_action = s.get('_selector_action') or 'BUY'
                 # Guard A: Hard False Signal Invalidation Guard (applies to BUY signals; breakdown stocks are valid for SHORT)
