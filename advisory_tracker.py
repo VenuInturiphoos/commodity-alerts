@@ -5209,16 +5209,24 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                             setup_name = f"Pre-Volatility Coil Expansion ({action.title()} Futures - Option A)"
 
                         # Sizing: Invalidation Stop
-                        if is_spring_setup and pm_sig.stop_loss > 0:
+                        if pm_sig.stop_loss > 0:
+                            # Use structural coil invalidation stop tucked directly outside boundary
                             sl = pm_sig.stop_loss
-                            risk_pts = max(abs(cur_p - sl), 0.25 * atr_val)
+                            risk_pts = max(abs(cur_p - sl), 0.20 * atr_val)
+                            # Ensure risk does not exceed single-trade budget
+                            eff_lot = adaptive_lot if adaptive_lot > 0 else 1
+                            max_allowed_pts = (MAX_LOSS_PER_TRADE_INR * 0.90) / eff_lot
+                            risk_pts = min(risk_pts, max_allowed_pts)
                             sl = round(cur_p - risk_pts, 2) if action == 'BUY' else round(cur_p + risk_pts, 2)
                             tgt = round(cur_p + (1.8 * risk_pts), 2) if action == 'BUY' else round(cur_p - (1.8 * risk_pts), 2)
                         else:
                             session_mid = round((day_h + day_l) / 2.0, 2) if day_h > day_l else cur_p
-                            coil_mid = round((cur_p + pm_sig.stop_loss) / 2.0, 2)
+                            coil_mid = round((cur_p + pm_sig.stop_loss) / 2.0, 2) if pm_sig.stop_loss > 0 else cur_p
                             sl = min(session_mid, coil_mid) if action == 'BUY' else max(session_mid, coil_mid)
-                            risk_pts = max(abs(cur_p - sl), 0.30 * atr_val)
+                            risk_pts = max(abs(cur_p - sl), 0.25 * atr_val)
+                            eff_lot = adaptive_lot if adaptive_lot > 0 else 1
+                            max_allowed_pts = (MAX_LOSS_PER_TRADE_INR * 0.90) / eff_lot
+                            risk_pts = min(risk_pts, max_allowed_pts)
                             sl = round(cur_p - risk_pts, 2) if action == 'BUY' else round(cur_p + risk_pts, 2)
                             tgt = round(cur_p + (1.8 * risk_pts), 2) if action == 'BUY' else round(cur_p - (1.8 * risk_pts), 2)
                         target_1 = tgt
