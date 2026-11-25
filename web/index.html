@@ -8038,6 +8038,67 @@ function filterAdvisoryTradesTable() {
 window.filterAdvisoryTradesTable = filterAdvisoryTradesTable;
 
 let currentTvDeckKey = '';
+let currentTvTickerKey = '';
+
+function renderTradingViewTickerTape(allTrades) {
+    const container = document.getElementById('tv-ticker-tape-container');
+    if (!container) return;
+
+    // Collect base benchmark symbols
+    const baseSymbols = [
+        { "proName": "NSE:NIFTY", "title": "Nifty 50" },
+        { "proName": "MCX:GOLDM1!", "title": "Gold Mini" },
+        { "proName": "MCX:SILVERMIC1!", "title": "Silver Micro" },
+        { "proName": "MCX:CRUDEOILM1!", "title": "Crude Oil Mini" },
+        { "proName": "MCX:ZINCMINI1!", "title": "Zinc Mini" },
+        { "proName": "MCX:NATURALGASM1!", "title": "Natural Gas Mini" }
+    ];
+
+    // Collect any intraday stock and commodity trades triggered today (Active + Completed)
+    const todayTrades = (allTrades || []).filter(t => isTodayISTTrade(t) && t.paper_trade && t.paper_trade.action && t.paper_trade.action !== 'STAND_ASIDE');
+
+    const triggeredSymbols = [];
+    const seen = new Set();
+    todayTrades.forEach(t => {
+        const sym = (t.symbol || '').toUpperCase();
+        let proName = sym;
+        if (sym.includes('.NS') || t.asset_type === 'INTRADAY_STOCK' || t.asset_type === 'EQUITY') {
+            proName = `NSE:${sym.replace('.NS', '').trim()}`;
+        } else if (sym.includes('-FUT') || t.asset_type === 'STOCK_FUTURES') {
+            proName = `NSE:${sym.replace('-FUT', '').replace('.NS', '').trim()}1!`;
+        } else {
+            proName = `MCX:${sym.replace('.NS', '').trim()}1!`;
+        }
+        if (!seen.has(proName)) {
+            seen.add(proName);
+            triggeredSymbols.push({ proName: proName, title: t.name || sym });
+        }
+    });
+
+    const combinedSymbols = [...triggeredSymbols, ...baseSymbols];
+    const newKey = combinedSymbols.map(s => s.proName).join('|');
+
+    if (newKey === currentTvTickerKey) return;
+    currentTvTickerKey = newKey;
+
+    container.innerHTML = `<div class="tradingview-widget-container__widget"></div>`;
+
+    const config = {
+        "symbols": combinedSymbols,
+        "showSymbolLogo": true,
+        "isTransparent": true,
+        "displayMode": "adaptive",
+        "colorTheme": "dark",
+        "locale": "en"
+    };
+
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
+    script.async = true;
+    script.text = JSON.stringify(config);
+    container.appendChild(script);
+}
 
 function renderTradingViewActiveDeck(allTrades) {
     const deckEl = document.getElementById('tv-active-trades-deck');
@@ -8154,6 +8215,7 @@ function renderAdvisoryTradesTable() {
     if (!tbody || !advisoryTrackerData) return;
 
     const allTrades = advisoryTrackerData.trades || [];
+    renderTradingViewTickerTape(allTrades);
     renderTradingViewActiveDeck(allTrades);
     const searchVal = (document.getElementById('adv-search-input')?.value || '').trim().toLowerCase();
     const todayStrRef = advisoryTrackerData?.last_updated ? advisoryTrackerData.last_updated.split(',')[0].trim() : '';
