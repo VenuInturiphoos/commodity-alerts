@@ -1486,7 +1486,7 @@ class MarketRegimeDetector:
         regime = regime_info.get("regime") if isinstance(regime_info, dict) else str(regime_info)
         setup_lower = (setup_name or "").lower()
         act_upper = (action or "").upper()
-        is_reversal = any(term in setup_lower for term in ['reversal', 'mean-reversion', 'mean_reversion', 'rebound', 'oversold bounce', 'overbought fade', 'exhaustion', 'floor bounce', 'ceiling fade', 'top & low', 'top and low'])
+        is_reversal = any(term in setup_lower for term in ['reversal', 'mean-reversion', 'mean_reversion', 'rebound', 'oversold bounce', 'overbought fade', 'exhaustion', 'floor bounce', 'ceiling fade', 'top & low', 'top and low', 'spring', 'wyckoff', 'upthrust'])
         is_breakout = any(term in setup_lower for term in ['breakout', 'breakdown', 'expansion', 'impulse', 'momentum'])
         is_coil = any(term in setup_lower for term in ['pre-ignition', 'coil', 'volatility coil', 'pre-move'])
         adx_val = float(regime_info.get('adx') or 0.0) if isinstance(regime_info, dict) else 0.0

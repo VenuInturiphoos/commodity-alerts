@@ -5271,7 +5271,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                             sl = pm_sig.stop_loss
                             risk_pts = max(abs(cur_p - sl), 0.20 * atr_val)
                             # Ensure risk does not exceed single-trade budget
-                            eff_lot = adaptive_lot if adaptive_lot > 0 else 1
+                            eff_lot = lot_size if (lot_size and lot_size > 0) else 1
                             max_allowed_pts = (MAX_LOSS_PER_TRADE_INR * 0.90) / eff_lot
                             risk_pts = min(risk_pts, max_allowed_pts)
                             sl = round(cur_p - risk_pts, 2) if action == 'BUY' else round(cur_p + risk_pts, 2)
@@ -5281,7 +5281,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                             coil_mid = round((cur_p + pm_sig.stop_loss) / 2.0, 2) if pm_sig.stop_loss > 0 else cur_p
                             sl = min(session_mid, coil_mid) if action == 'BUY' else max(session_mid, coil_mid)
                             risk_pts = max(abs(cur_p - sl), 0.25 * atr_val)
-                            eff_lot = adaptive_lot if adaptive_lot > 0 else 1
+                            eff_lot = lot_size if (lot_size and lot_size > 0) else 1
                             max_allowed_pts = (MAX_LOSS_PER_TRADE_INR * 0.90) / eff_lot
                             risk_pts = min(risk_pts, max_allowed_pts)
                             sl = round(cur_p - risk_pts, 2) if action == 'BUY' else round(cur_p + risk_pts, 2)
