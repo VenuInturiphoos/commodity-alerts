@@ -1832,6 +1832,14 @@ class PriceChecker:
             
         if len(circuits) == 0:
             print(f"⚠️ Warning: 0 commodities fetched at {now_ist}. Preserving previous circuits_data.json to prevent data loss.")
+            if os.path.exists(output_path):
+                try:
+                    with open(output_path, 'r') as f:
+                        disk_data = json.load(f)
+                    if disk_data.get('commodities') and len(disk_data['commodities']) > 0:
+                        return disk_data
+                except Exception:
+                    pass
             return self._cached_circuits_data or {}
 
         out_data = {

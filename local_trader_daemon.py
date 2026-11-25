@@ -169,6 +169,7 @@ def run_daemon():
                 importlib.reload(pc_mod)
                 check_and_execute_intraday_targets_and_stops = advisory_tracker.check_and_execute_intraday_targets_and_stops
                 evaluate_realtime_technical_triggers = advisory_tracker.evaluate_realtime_technical_triggers
+                checker = pc_mod.PriceChecker(config)
                 dhan_exec = dhan_mod.DhanLiveExecutor()
             except Exception as e:
                 pass
