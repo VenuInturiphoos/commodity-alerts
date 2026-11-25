@@ -2045,18 +2045,19 @@ async function fetchCircuitsData(forceNetwork = false) {
     try {
         let loaded = false;
         
-        // 1. Fetch latest precomputed exchange circuit data with cache busting (raw GitHub first for instantaneous updates)
+        // 1. Fetch latest precomputed exchange circuit data with cache busting
         const candidateUrls = [
-            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/circuits_data.json?t=' + Date.now(),
             'circuits_data.json?t=' + Date.now(),
-            'web/circuits_data.json?t=' + Date.now(),
-            'https://venuinturiphoos.github.io/commodity-alerts/circuits_data.json?t=' + Date.now(),
-            'https://venuinturiphoos.github.io/commodity-alerts/web/circuits_data.json?t=' + Date.now()
+            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/circuits_data.json?t=' + Date.now(),
+            'web/circuits_data.json?t=' + Date.now()
         ];
         
         for (const url of candidateUrls) {
             try {
-                const res = await fetch(url, { cache: 'no-store' });
+                const ctrl = new AbortController();
+                const tid = setTimeout(() => ctrl.abort(), 3500);
+                const res = await fetch(url, { cache: 'no-store', signal: ctrl.signal });
+                clearTimeout(tid);
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.commodities && data.commodities.length > 0) {
@@ -7525,15 +7526,6 @@ async function loadAdvisoryTracker(forceNetwork = false) {
     const timeEl = document.getElementById('tracker-last-updated');
     const now = Date.now();
 
-    // Ensure authoritative MCX circuit limits and live commodity prices are loaded
-    if (typeof fetchCircuitsData === 'function' && (!rawCircuitsData || rawCircuitsData.length === 0 || forceNetwork)) {
-        try {
-            await fetchCircuitsData(forceNetwork);
-        } catch (err) {
-            console.warn("Could not pre-fetch circuits data for advisory tracker:", err);
-        }
-    }
-
     // Fast-path: If freshly loaded within last 25s and not forced, render from in-memory cache instantly
     if (!forceNetwork && activeTrackerCache && (now - lastAdvisoryFetchTime < 25000)) {
         populateAdvisoryMonthDropdown();
@@ -7547,6 +7539,13 @@ async function loadAdvisoryTracker(forceNetwork = false) {
 
     if (timeEl) timeEl.textContent = 'Syncing...';
 
+    // Trigger authoritative MCX circuit limits and live commodity prices asynchronously in background
+    if (typeof fetchCircuitsData === 'function' && (!rawCircuitsData || rawCircuitsData.length === 0 || forceNetwork)) {
+        fetchCircuitsData(forceNetwork).catch(err => {
+            console.warn("Could not background fetch circuits data for advisory tracker:", err);
+        });
+    }
+
     try {
         const fetchOptions = {
             cache: 'no-store',
@@ -7557,16 +7556,18 @@ async function loadAdvisoryTracker(forceNetwork = false) {
         };
         const cacheBuster = '?v=' + Date.now();
         const liveCandidates = [
-            'web/advisory_trades_tracker.json' + cacheBuster,
             'advisory_trades_tracker.json' + cacheBuster,
-            'https://venuinturiphoos.github.io/commodity-alerts/web/advisory_trades_tracker.json' + cacheBuster,
-            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_tracker.json' + cacheBuster
+            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_tracker.json' + cacheBuster,
+            'web/advisory_trades_tracker.json' + cacheBuster
         ];
 
         // 1. Fetch live active tracker (Current Month)
         for (const u of liveCandidates) {
             try {
-                const res = await fetch(u, fetchOptions);
+                const ctrl = new AbortController();
+                const tid = setTimeout(() => ctrl.abort(), 3500);
+                const res = await fetch(u, { ...fetchOptions, signal: ctrl.signal });
+                clearTimeout(tid);
                 if (res && res.ok) {
                     activeTrackerCache = await res.json();
                     lastAdvisoryFetchTime = Date.now();
@@ -7581,12 +7582,15 @@ async function loadAdvisoryTracker(forceNetwork = false) {
         if (!archiveTrackerCache || forceNetwork) {
             const archiveCandidates = [
                 'advisory_trades_history_archive.json',
-                'web/advisory_trades_history_archive.json',
-                'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_history_archive.json'
+                'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_history_archive.json',
+                'web/advisory_trades_history_archive.json'
             ];
             for (const u of archiveCandidates) {
                 try {
-                    const res = await fetch(u);
+                    const ctrl = new AbortController();
+                    const tid = setTimeout(() => ctrl.abort(), 3500);
+                    const res = await fetch(u, { signal: ctrl.signal });
+                    clearTimeout(tid);
                     if (res && res.ok) {
                         archiveTrackerCache = await res.json();
                         break;
