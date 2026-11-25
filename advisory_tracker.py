@@ -4884,8 +4884,16 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
     # =========================================================================
     # PART 1: MCX COMMODITIES CONTINUOUS SCANNER
     # =========================================================================
-    circuits_res = checker.generate_circuits_data() if checker else {}
-    commodities = circuits_res.get('commodities', []) if (checker and len(active_commodity_trades) < MAX_CONCURRENT_COMMODITIES) else []
+    if checker:
+        circuits_res = checker.generate_circuits_data()
+    else:
+        circuits_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'circuits_data.json')
+        if os.path.exists(circuits_path):
+            with open(circuits_path, 'r') as cf:
+                circuits_res = json.load(cf)
+        else:
+            circuits_res = {}
+    commodities = circuits_res.get('commodities', []) if len(active_commodity_trades) < MAX_CONCURRENT_COMMODITIES else []
     commodities_map = {c.get('symbol'): c for c in commodities if c.get('symbol')}
 
     # 🎯 Institutional Directional Movement Ranking for Commodities:
@@ -5010,6 +5018,9 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             avg_vol = quote_item.get('avg_volume_10d', 0) or avg_vol
             vol_ratio = (vol / avg_vol) if (avg_vol > 0 and vol > 0) else vol_ratio
             atr_val = atr if (atr and atr > 0) else (cur_p * 0.008)
+
+        bb_lower = float(quote_item.get('bb_lower') or (cur_p - 2.0 * atr_val))
+        bb_upper = float(quote_item.get('bb_upper') or (cur_p + 2.0 * atr_val))
 
         triggered = False
         action = None
@@ -5425,7 +5436,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             # 1. Institutional Market Regime Classifier & False Signal Filter
             regime_info = MarketRegimeDetector.classify_regime(
                 symbol=sym, close=cur_p, ema50=ema50, ema200=(ema50 or cur_p),
-                adx=adx, rsi=rsi, bb_lower=bb_low, bb_upper=bb_high, atr=atr_val,
+                adx=adx, rsi=rsi, bb_lower=bb_lower, bb_upper=bb_upper, atr=atr_val,
                 chg_pct=chg_pct, day_h=day_h, day_l=day_l
             )
             regime_check = MarketRegimeDetector.validate_signal(regime_info, action, setup_name)
