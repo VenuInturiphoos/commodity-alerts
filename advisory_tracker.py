@@ -4847,6 +4847,24 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
     tracker = load_tracker()
     trades = tracker.get('trades', [])
     
+    # 0. Resilient Entry Alert Catch-Up: Deliver any active trade entry alert interrupted by daemon restart/socket drop
+    if alerter:
+        catchup_modified = False
+        for t in trades:
+            pt = t.get('paper_trade', {})
+            if pt.get('status') == 'ACTIVE' and not t.get('entry_alert_sent', False) and t.get('entry_alert'):
+                al = t['entry_alert']
+                print(f"🔄 [RESILIENT CATCH-UP] Retrying interrupted entry alert for {t.get('name')}...")
+                try:
+                    success, _ = alerter.send_alert(al['subject'], al['body'])
+                    if success:
+                        t['entry_alert_sent'] = True
+                        catchup_modified = True
+                except Exception as ex:
+                    print(f"Error in resilient entry alert catch-up: {ex}")
+        if catchup_modified:
+            save_tracker(tracker)
+    
     # 1. Portfolio Circuit Breaker: Max Daily Loss Cap (₹6,000 / 2% of ₹3 Lakhs)
     today_realized_loss = sum(abs(t.get('paper_trade', {}).get('pnl_inr', 0.0)) 
                               for t in trades if t.get('date') == today_str and t.get('paper_trade', {}).get('pnl_inr', 0.0) < 0)
@@ -5754,6 +5772,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     f"• <b>Status</b>: Active paper trade running. Automatic trailing breakeven & auto-exit enabled.\n\n"
                     f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
                 )
+            entry_obj["entry_alert"] = {'subject': subject, 'body': body}
+            entry_obj["entry_alert_sent"] = False
             alerts_to_send.append({'subject': subject, 'body': body})
             print(f"⚡ Technical Trigger Fired: {name} {action} @ ₹{cur_p:,.2f} ({setup_name}) | Replay: {mc_badge}")
 
@@ -6398,6 +6418,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                                 f"• <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit\n\n"
                                                 f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
                                             )
+                                            entry_obj["entry_alert"] = {'subject': subject, 'body': body}
+                                            entry_obj["entry_alert_sent"] = False
                                             alerts_to_send.append({'subject': subject, 'body': body})
                                             print(f"🎯 NSE Stock Future Trigger Fired: {sfc['name']} {eq_action} @ ₹{fut_entry_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
                                             can_enter_futures = False
@@ -6664,6 +6686,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                             f"• <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit (Zero overnight risk)\n\n"
                             f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
                         )
+                        entry_obj["entry_alert"] = {'subject': subject, 'body': body}
+                        entry_obj["entry_alert_sent"] = False
                         alerts_to_send.append({'subject': subject, 'body': body})
                         print(f"⚡ Nifty Intraday Stock Trigger Fired: {name} {eq_action} @ ₹{cur_p:,.2f} ({eq_setup}) | Replay: {mc_badge}")
                         can_enter_equity = (len(active_intraday_trades) + len(new_trades) < MAX_CONCURRENT_EQUITIES)
@@ -6676,7 +6700,12 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         if alerter and alerts_to_send:
             for al in alerts_to_send:
                 try:
-                    alerter.send_alert(al['subject'], al['body'])
+                    success, _ = alerter.send_alert(al['subject'], al['body'])
+                    if success:
+                        for nt in new_trades:
+                            if nt.get('entry_alert', {}).get('subject') == al['subject']:
+                                nt['entry_alert_sent'] = True
+                        save_tracker(tracker)
                 except Exception as e:
                     print(f"Error sending technical trigger alert: {e}")
         return True
