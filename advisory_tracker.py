@@ -5307,8 +5307,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                              f"RSI {f'{rsi:.1f}' if rsi else 'N/A'}. Capturing early trend expansion.")
 
         if triggered and action:
-            is_reversal = any(term in setup_name for term in ["Exhaustion", "Reversal", "Mean-Reversion", "Floor Bounce", "Ceiling Fade", "Top & Low"])
-            is_breakout = ("Breakout" in setup_name or "Breakdown" in setup_name or "Expansion" in setup_name)
+            is_reversal = any(term in setup_name for term in ["Exhaustion", "Reversal", "Mean-Reversion", "Floor Bounce", "Ceiling Fade", "Top & Low", "Spring", "Upthrust", "Wyckoff"])
+            is_breakout = any(term in setup_name for term in ["Breakout", "Breakdown", "Expansion", "Coil"])
             is_pullback = ("Pullback" in setup_name or "Retest" in setup_name)
 
             # 🚫 Universal Anti-Bottom-Shorting / Anti-Top-Buying Guard:
