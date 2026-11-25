@@ -5312,10 +5312,10 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
             is_pullback = ("Pullback" in setup_name or "Retest" in setup_name)
 
             # 🚫 Universal Anti-Bottom-Shorting / Anti-Top-Buying Guard:
-            # For pullbacks/reversals, prevent buying into exhausted ceilings (RSI >= 68) or selling into floors (RSI <= 32).
-            # For genuine breakouts/expansions, allow momentum to run up to extreme exhaustion (RSI >= 82 for BUY, RSI <= 18 for SELL).
+            # For pullbacks/reversals, prevent buying into exhausted ceilings (RSI >= 68) or selling into floors (RSI <= 30).
+            # For genuine breakouts/expansions, allow momentum to run up to extreme exhaustion (RSI >= 82 for BUY, RSI <= 14 for SELL).
             max_buy_rsi = 82.0 if is_breakout else 68.0
-            min_sell_rsi = 18.0 if is_breakout else 32.0
+            min_sell_rsi = 14.0 if is_breakout else 30.0
 
             if action == "SELL" and (rsi is not None and rsi <= min_sell_rsi):
                 print(f"🚫 Universal Exhaustion Guard: Blocked {sym} SELL. RSI ({rsi:.1f}) is <= {min_sell_rsi:.1f} (extreme oversold). Selling into exhausted floor strictly prohibited.")

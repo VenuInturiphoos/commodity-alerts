@@ -546,12 +546,16 @@ class PreMoveDetector:
                     tgt2 = round(current_price + (3.0 * risk_pts), 2)  # 3.0R runner target
                     rrr = round((tgt1 - current_price) / risk_pts, 2)
 
-            # 4. Standard Bearish Expansion (Pinned below baseline and expanding DOWN)
+            # 4. Bearish Expansion & Trend-Continuation Breakdown (Downside Waterfall Override)
             elif mom_dir == "BEARISH_EXPANDING":
-                # Hard Oversold Guard: Never SELL into exhausted oversold conditions
-                if rsi is not None and rsi < 35.0:
+                # Downside Waterfall Override: When price is breaking through the Day Low or expanding out of a coil,
+                # allow the high-momentum trend continuation breakdown unless RSI hits extreme terminal exhaustion (< 14.0).
+                is_breakdown_expansion = (day_low > 0 and current_price <= (day_low * 1.003)) or is_compressed
+                min_sell_rsi_limit = 14.0 if is_breakdown_expansion else 32.0
+
+                if rsi is not None and rsi < min_sell_rsi_limit:
                     status = "OVERSOLD_EXHAUSTION_BLOCKED"
-                    reasons.append(f"Hard Guard: SELL blocked because RSI ({rsi:.1f}) is oversold (< 35.0). High risk of sharp short-covering bounce.")
+                    reasons.append(f"Hard Guard: SELL blocked because RSI ({rsi:.1f}) is below terminal exhaustion threshold (< {min_sell_rsi_limit:.1f}). Extreme circuit lock risk.")
                 else:
                     action = "SELL"
                     status = "PRE_MOVE_SELL_TRIGGER"
@@ -565,6 +569,7 @@ class PreMoveDetector:
                     tgt1 = round(current_price - (1.8 * risk_pts), 2)  # 1.8R primary asymmetric target
                     tgt2 = round(current_price - (3.0 * risk_pts), 2)  # 3.0R runner target
                     rrr = round((current_price - tgt1) / risk_pts, 2)
+                    reasons.append(f"Downside Waterfall Expansion: Trend continuation release in dominant intraday flow direction. RSI ({rsi:.1f}) permitted above {min_sell_rsi_limit:.1f}.")
 
         return PreMoveSignal(
             symbol=symbol,
