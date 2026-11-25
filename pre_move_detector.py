@@ -475,6 +475,9 @@ class PreMoveDetector:
         if rsi is not None and (42.0 <= rsi <= 64.0):
             pmri_score += 10.0
             reasons.append(f"Neutral RSI ({rsi:.1f}) provides maximum expansion runway without exhaustion.")
+        elif rsi is not None and (rsi <= 35.0 or rsi >= 65.0):
+            pmri_score += 10.0
+            reasons.append(f"Extreme RSI ({rsi:.1f}) indicates potential Wyckoff Spring/Upthrust mean-reversion coil pressure.")
 
         pmri_score = min(100.0, round(pmri_score, 1))
 

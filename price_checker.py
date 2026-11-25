@@ -1830,6 +1830,10 @@ class PriceChecker:
                 "regime_mandate": regime_info.get('mandate') if regime_info else '',
             })
             
+        if len(circuits) == 0:
+            print(f"⚠️ Warning: 0 commodities fetched at {now_ist}. Preserving previous circuits_data.json to prevent data loss.")
+            return self._cached_circuits_data or {}
+
         out_data = {
             "last_updated": now_ist,
             "source": "Direct Exchange Feed (MCX / TradingView Internet)",
