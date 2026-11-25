@@ -1,10 +1,10 @@
 {
-  "last_updated": "25 Nov 2026, 11:12 AM IST",
+  "last_updated": "25 Nov 2026, 11:13 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 126,
-    "executed_count": 16,
+    "total_signals": 127,
+    "executed_count": 17,
     "correct_count": 6,
     "wrong_count": 9,
     "protected_count": 110,
@@ -17,15 +17,145 @@
     "intraday_pnl_inr": 685.31,
     "intraday_booked_profit_inr": 685.31,
     "intraday_pool_balance_inr": 30685.31,
-    "avg_trade_pnl_inr": -434.45,
-    "active_trades_count": 1,
+    "avg_trade_pnl_inr": -408.89,
+    "active_trades_count": 2,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 293048.81,
-    "used_margin_inr": 10253.55,
-    "available_cash_inr": 282795.26,
+    "used_margin_inr": 20342.17,
+    "available_cash_inr": 272706.64,
     "net_worth_inr": 293048.81
   },
   "trades": [
+    {
+      "id": "ADV-25Nov2026-1112-MANKIND",
+      "date": "25 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "11:12 AM IST",
+      "time_6pm": "11:12 AM IST",
+      "time_validation": "11:12 AM IST",
+      "time_615": "11:12 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "MANKIND.NS",
+      "name": "Mankind Pharma Ltd.",
+      "lot_size": 19,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 62.4). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 62.4,
+        "change_pct": 0.0,
+        "bb_width_pct": 10.59,
+        "daily_vol_pct": 1.5,
+        "close": 2654.9,
+        "ema50": 2500.23,
+        "ema200": 2404.87
+      },
+      "time_machine": {
+        "replays": 1000,
+        "passed": true,
+        "verdict": "PARAMETRIC_STATISTICAL_PASS",
+        "verdict_text": "Statistically Favorable \ud83c\udfaf (Parametric)",
+        "p_target_pct": 57.5,
+        "p_stop_pct": 31.9,
+        "p_neither_pct": 10.6,
+        "resolved_win_rate": 64.3,
+        "resolved_win_rate_pct": 64.3,
+        "expected_r": 0.371,
+        "target_r": 1.2,
+        "sample_bars": 0,
+        "summary": "Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 558.22,
+        "potential_gain_inr": 669.94,
+        "broker": "Dhan",
+        "est_charges_inr": 53.13,
+        "net_loss_at_stop_inr": 611.35
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b92,654.90 breaking above range high \u20b92,660.20 with volume confirmation."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "pullback_check": {
+        "passed": true,
+        "status": "CONFIRMED",
+        "reason": "Standard pullback confluence."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b92,654.90",
+        "rationale": "High-Beta breakout momentum (Chg: +1.52%) with healthy RSI (62.4) holding above VWAP. Sized with realistic intraday 1.2R target. Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R",
+        "reference_price": 2654.9,
+        "stop_loss": 2625.52,
+        "target": 2690.16
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 2654.9,
+        "action_taken": "Entered BUY 19 shares @ \u20b92,654.90",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.52%) with healthy RSI (62.4) holding above VWAP. Sized with realistic intraday 1.2R target. | Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 19,
+        "entry_price": 2654.9,
+        "entry_time": "11:12 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": -1.0,
+        "pnl_inr": -19.0,
+        "status": "ACTIVE",
+        "target": 2690.16,
+        "stop_loss": 2625.52,
+        "initial_stop_loss": 2625.52,
+        "original_sl": 2625.52,
+        "peak_high": 2654.9,
+        "trough_low": 2653.9,
+        "margin_required_inr": 10088.62,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b92,654.90 (Target: \u20b92,690.16, SL: \u20b92,625.52) | Parametric Model: 57.5% Target | 31.9% Stop | Expected: +0.37R"
+      },
+      "live_price_data": {
+        "current_price": 2653.9,
+        "change_pct": -0.04
+      }
+    },
     {
       "id": "ADV-25Nov2026-0957-AUBANK",
       "date": "25 Nov 2026",
@@ -130,8 +260,8 @@
         "entry_time": "09:57 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": 8.6,
-        "pnl_inr": 438.6,
+        "pnl_points": 8.5,
+        "pnl_inr": 433.5,
         "status": "ACTIVE",
         "target": 1023.35,
         "stop_loss": 990.17,
@@ -151,8 +281,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b91,005.25 (Target: \u20b91,023.35, SL: \u20b9990.17) | 3,000 Replays: 30.6% Target | 20.0% Stop | Expected: +0.17R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "live_price_data": {
-        "current_price": 1013.85,
-        "change_pct": 0.86
+        "current_price": 1013.75,
+        "change_pct": 0.85
       }
     },
     {
