@@ -1,5 +1,5 @@
 {
-  "last_updated": "25 Nov 2026, 01:40 PM IST",
+  "last_updated": "25 Nov 2026, 01:45 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -42,17 +42,17 @@
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / HARD RISK STOP",
-        "rationale": "Reward:Risk ratio 0.61 is below minimum requirement of 1.1R (Risk: 3509.5 pts, Reward: 2142.8 pts).",
-        "reference_price": 120360.0,
+        "rationale": "Reward:Risk ratio 0.68 is below minimum requirement of 1.1R (Risk: 3393.2 pts, Reward: 2300.2 pts).",
+        "reference_price": 120447.0,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "HARD_RISK_STAND_ASIDE",
-        "price_615": 120360.0,
+        "price_615": 120447.0,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "Reward:Risk ratio 0.61 is below minimum requirement of 1.1R (Risk: 3509.5 pts, Reward: 2142.8 pts)."
+        "detail": "Reward:Risk ratio 0.68 is below minimum requirement of 1.1R (Risk: 3393.2 pts, Reward: 2300.2 pts)."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -72,7 +72,7 @@
         "outcome": "PROTECTED",
         "badge": "Risk Protected \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside: Reward:Risk ratio 0.61 is below minimum requirement of 1.1R (Risk: 3509.5 pts, Reward: 2142.8 pts)."
+        "summary": "Stood aside: Reward:Risk ratio 0.68 is below minimum requirement of 1.1R (Risk: 3393.2 pts, Reward: 2300.2 pts)."
       }
     },
     {
@@ -92,14 +92,14 @@
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
         "rationale": "Trading within morning Asian range [\u20b9147,798.00 \u2013 \u20b9152,176.00]. Standing aside awaiting range breakout.",
-        "reference_price": 148100.0,
+        "reference_price": 148184.0,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 148100.0,
+        "price_615": 148184.0,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Inside Asian morning range. Awaiting breakout."
       },
@@ -135,22 +135,22 @@
       "time_exit": "11:45 PM IST",
       "symbol": "CRUDEOILM",
       "name": "Crude Oil Mini",
-      "lot_size": 70,
-      "event_context": "Hard Risk Stop Guard (No Choked Stops)",
+      "lot_size": 10,
+      "event_context": "Range-Bound Asian Range [\u20b97,420.00 \u2013 \u20b97,548.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / HARD RISK STOP",
-        "rationale": "Reward:Risk ratio 0.46 is below minimum requirement of 1.1R (Risk: 360.7 pts, Reward: 164.6 pts).",
-        "reference_price": 7431.0,
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b97,420.00 \u2013 \u20b97,548.00]. Standing aside awaiting range breakout.",
+        "reference_price": 7437.0,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
-        "status": "HARD_RISK_STAND_ASIDE",
-        "price_615": 7431.0,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 7437.0,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "Reward:Risk ratio 0.46 is below minimum requirement of 1.1R (Risk: 360.7 pts, Reward: 164.6 pts)."
+        "detail": "Inside Asian morning range. Awaiting breakout."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -168,9 +168,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside: Reward:Risk ratio 0.46 is below minimum requirement of 1.1R (Risk: 360.7 pts, Reward: 164.6 pts)."
+        "summary": "Stood aside on range-bound asset. Capital protected."
       }
     },
     {
@@ -239,14 +239,14 @@
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
         "rationale": "Trading within morning Asian range [\u20b91,113.00 \u2013 \u20b91,135.70]. Standing aside awaiting range breakout.",
-        "reference_price": 1118.0,
+        "reference_price": 1120.25,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 1118.0,
+        "price_615": 1120.25,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Inside Asian morning range. Awaiting breakout."
       },
@@ -282,27 +282,22 @@
       "time_exit": "11:45 PM IST",
       "symbol": "ZINCMINI",
       "name": "Zinc Mini",
-      "lot_size": 4000,
-      "event_context": "Pre-Trade Risk Filter Guard",
-      "risk_check": {
-        "passed": false,
-        "reason": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
-        "loss_at_stop_inr": 39800.0
-      },
+      "lot_size": 1000,
+      "event_context": "Range-Bound Asian Range [\u20b9352.05 \u2013 \u20b9365.05]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / RISK GUARD",
-        "rationale": "Risk check failed: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
-        "reference_price": 352.1,
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b9352.05 \u2013 \u20b9365.05]. Standing aside awaiting range breakout.",
+        "reference_price": 353.0,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
-        "status": "RISK_GUARD_STAND_ASIDE",
-        "price_615": 352.1,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 353.0,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+        "detail": "Inside Asian morning range. Awaiting breakout."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -320,9 +315,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+        "summary": "Stood aside on range-bound asset. Capital protected."
       }
     },
     {
@@ -340,23 +335,23 @@
       "event_context": "Pre-Trade Risk Filter Guard",
       "risk_check": {
         "passed": false,
-        "reason": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b940,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
-        "loss_at_stop_inr": 40800.0
+        "reason": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
+        "loss_at_stop_inr": 39600.0
       },
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RISK GUARD",
-        "rationale": "Risk check failed: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b940,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
-        "reference_price": 295.45,
+        "rationale": "Risk check failed: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
+        "reference_price": 295.6,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RISK_GUARD_STAND_ASIDE",
-        "price_615": 295.45,
+        "price_615": 295.6,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b940,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+        "detail": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -376,7 +371,7 @@
         "outcome": "PROTECTED",
         "badge": "Risk Protected \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b940,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+        "summary": "Stood aside: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
       }
     },
     {
@@ -390,27 +385,22 @@
       "time_exit": "11:45 PM IST",
       "symbol": "ZINCMINI",
       "name": "Zinc Mini",
-      "lot_size": 4000,
-      "event_context": "Pre-Trade Risk Filter Guard",
-      "risk_check": {
-        "passed": false,
-        "reason": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
-        "loss_at_stop_inr": 39800.0
-      },
+      "lot_size": 1000,
+      "event_context": "Range-Bound Asian Range [\u20b9352.05 \u2013 \u20b9365.05]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / RISK GUARD",
-        "rationale": "Risk check failed: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
-        "reference_price": 352.1,
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b9352.05 \u2013 \u20b9365.05]. Standing aside awaiting range breakout.",
+        "reference_price": 353.0,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
-        "status": "RISK_GUARD_STAND_ASIDE",
-        "price_615": 352.1,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 353.0,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+        "detail": "Inside Asian morning range. Awaiting breakout."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -428,9 +418,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+        "summary": "Stood aside on range-bound asset. Capital protected."
       }
     },
     {
@@ -448,23 +438,23 @@
       "event_context": "Pre-Trade Risk Filter Guard",
       "risk_check": {
         "passed": false,
-        "reason": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b940,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
-        "loss_at_stop_inr": 40800.0
+        "reason": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
+        "loss_at_stop_inr": 39600.0
       },
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RISK GUARD",
-        "rationale": "Risk check failed: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b940,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
-        "reference_price": 295.45,
+        "rationale": "Risk check failed: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
+        "reference_price": 295.6,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RISK_GUARD_STAND_ASIDE",
-        "price_615": 295.45,
+        "price_615": 295.6,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b940,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+        "detail": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -484,7 +474,7 @@
         "outcome": "PROTECTED",
         "badge": "Risk Protected \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b940,800.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+        "summary": "Stood aside: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
       }
     },
     {
@@ -772,8 +762,8 @@
         "entry_time": "09:57 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": -6.45,
-        "pnl_inr": -328.95,
+        "pnl_points": -5.3,
+        "pnl_inr": -270.3,
         "status": "ACTIVE",
         "target": 1023.35,
         "stop_loss": 990.17,
@@ -793,8 +783,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b91,005.25 (Target: \u20b91,023.35, SL: \u20b9990.17) | 3,000 Replays: 30.6% Target | 20.0% Stop | Expected: +0.17R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "live_price_data": {
-        "current_price": 998.8,
-        "change_pct": -0.64
+        "current_price": 999.95,
+        "change_pct": -0.53
       }
     },
     {
