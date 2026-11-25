@@ -1,5 +1,5 @@
 {
-  "last_updated": "25 Nov 2026, 01:45 PM IST",
+  "last_updated": "25 Nov 2026, 01:50 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -37,69 +37,20 @@
       "time_exit": "11:45 PM IST",
       "symbol": "GOLDTEN",
       "name": "Gold Ten (Micro)",
-      "lot_size": 12,
-      "event_context": "Hard Risk Stop Guard (No Choked Stops)",
-      "suggestion_6pm": {
-        "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / HARD RISK STOP",
-        "rationale": "Reward:Risk ratio 0.68 is below minimum requirement of 1.1R (Risk: 3393.2 pts, Reward: 2300.2 pts).",
-        "reference_price": 120447.0,
-        "stop_loss": null,
-        "target": null
-      },
-      "check_615": {
-        "checked": true,
-        "status": "HARD_RISK_STAND_ASIDE",
-        "price_615": 120447.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Reward:Risk ratio 0.68 is below minimum requirement of 1.1R (Risk: 3393.2 pts, Reward: 2300.2 pts)."
-      },
-      "paper_trade": {
-        "user": "venu.photos1@gmail.com",
-        "action": "STAND_ASIDE",
-        "quantity": 0,
-        "entry_price": null,
-        "entry_time": "01:30 PM IST",
-        "exit_price": null,
-        "exit_time": null,
-        "pnl_points": 0.0,
-        "pnl_inr": 0.0,
-        "status": "STAND_ASIDE"
-      },
-      "eod_outcome": {
-        "session_close": null,
-        "circuit_limit": null,
-        "outcome": "PROTECTED",
-        "badge": "Risk Protected \ud83d\udee1\ufe0f",
-        "pnl_display": "\u20b90.00",
-        "summary": "Stood aside: Reward:Risk ratio 0.68 is below minimum requirement of 1.1R (Risk: 3393.2 pts, Reward: 2300.2 pts)."
-      }
-    },
-    {
-      "id": "ADV-25Nov2026-1330-SILVERMIC",
-      "date": "25 Nov 2026",
-      "session_name": "London Breakout (1:30 PM)",
-      "time_trigger": "01:30 PM IST",
-      "time_6pm": "01:30 PM IST",
-      "time_validation": "01:45 PM IST",
-      "time_615": "01:45 PM IST",
-      "time_exit": "11:45 PM IST",
-      "symbol": "SILVERMIC",
-      "name": "Silver Micro",
       "lot_size": 1,
-      "event_context": "Range-Bound Asian Range [\u20b9147,798.00 \u2013 \u20b9152,176.00]",
+      "event_context": "Range-Bound Asian Range [\u20b9120,314.00 \u2013 \u20b9122,120.00]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [\u20b9147,798.00 \u2013 \u20b9152,176.00]. Standing aside awaiting range breakout.",
-        "reference_price": 148184.0,
+        "rationale": "Trading within morning Asian range [\u20b9120,314.00 \u2013 \u20b9122,120.00]. Standing aside awaiting range breakout.",
+        "reference_price": 120529.0,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 148184.0,
+        "price_615": 120529.0,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Inside Asian morning range. Awaiting breakout."
       },
@@ -125,6 +76,55 @@
       }
     },
     {
+      "id": "ADV-25Nov2026-1330-SILVERMIC",
+      "date": "25 Nov 2026",
+      "session_name": "London Breakout (1:30 PM)",
+      "time_trigger": "01:30 PM IST",
+      "time_6pm": "01:30 PM IST",
+      "time_validation": "01:45 PM IST",
+      "time_615": "01:45 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "SILVERMIC",
+      "name": "Silver Micro",
+      "lot_size": 6,
+      "event_context": "Hard Risk Stop Guard (No Choked Stops)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / HARD RISK STOP",
+        "rationale": "Reward:Risk ratio 0.71 is below minimum requirement of 1.1R (Risk: 7645.5 pts, Reward: 5460.6 pts).",
+        "reference_price": 148005.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "HARD_RISK_STAND_ASIDE",
+        "price_615": 148005.0,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Reward:Risk ratio 0.71 is below minimum requirement of 1.1R (Risk: 7645.5 pts, Reward: 5460.6 pts)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "01:30 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Reward:Risk ratio 0.71 is below minimum requirement of 1.1R (Risk: 7645.5 pts, Reward: 5460.6 pts)."
+      }
+    },
+    {
       "id": "ADV-25Nov2026-1330-CRUDEOILM",
       "date": "25 Nov 2026",
       "session_name": "London Breakout (1:30 PM)",
@@ -141,14 +141,14 @@
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
         "rationale": "Trading within morning Asian range [\u20b97,420.00 \u2013 \u20b97,548.00]. Standing aside awaiting range breakout.",
-        "reference_price": 7437.0,
+        "reference_price": 7450.0,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 7437.0,
+        "price_615": 7450.0,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Inside Asian morning range. Awaiting breakout."
       },
@@ -190,14 +190,14 @@
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
         "rationale": "Trading within morning Asian range [\u20b9335.70 \u2013 \u20b9347.10]. Standing aside awaiting range breakout.",
-        "reference_price": 336.5,
+        "reference_price": 336.9,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 336.5,
+        "price_615": 336.9,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Inside Asian morning range. Awaiting breakout."
       },
@@ -239,14 +239,14 @@
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
         "rationale": "Trading within morning Asian range [\u20b91,113.00 \u2013 \u20b91,135.70]. Standing aside awaiting range breakout.",
-        "reference_price": 1120.25,
+        "reference_price": 1120.05,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 1120.25,
+        "price_615": 1120.05,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Inside Asian morning range. Awaiting breakout."
       },
@@ -288,14 +288,14 @@
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
         "rationale": "Trading within morning Asian range [\u20b9352.05 \u2013 \u20b9365.05]. Standing aside awaiting range breakout.",
-        "reference_price": 353.0,
+        "reference_price": 353.7,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 353.0,
+        "price_615": 353.7,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Inside Asian morning range. Awaiting breakout."
       },
@@ -331,27 +331,22 @@
       "time_exit": "11:45 PM IST",
       "symbol": "ALUMINI",
       "name": "Aluminium Mini",
-      "lot_size": 5000,
-      "event_context": "Pre-Trade Risk Filter Guard",
-      "risk_check": {
-        "passed": false,
-        "reason": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
-        "loss_at_stop_inr": 39600.0
-      },
+      "lot_size": 1000,
+      "event_context": "Range-Bound Asian Range [\u20b9295.30 \u2013 \u20b9307.35]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / RISK GUARD",
-        "rationale": "Risk check failed: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
-        "reference_price": 295.6,
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b9295.30 \u2013 \u20b9307.35]. Standing aside awaiting range breakout.",
+        "reference_price": 296.1,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
-        "status": "RISK_GUARD_STAND_ASIDE",
-        "price_615": 295.6,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 296.1,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+        "detail": "Inside Asian morning range. Awaiting breakout."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -369,9 +364,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+        "summary": "Stood aside on range-bound asset. Capital protected."
       }
     },
     {
@@ -391,14 +386,14 @@
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
         "rationale": "Trading within morning Asian range [\u20b9352.05 \u2013 \u20b9365.05]. Standing aside awaiting range breakout.",
-        "reference_price": 353.0,
+        "reference_price": 353.7,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 353.0,
+        "price_615": 353.7,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Inside Asian morning range. Awaiting breakout."
       },
@@ -434,27 +429,22 @@
       "time_exit": "11:45 PM IST",
       "symbol": "ALUMINI",
       "name": "Aluminium Mini",
-      "lot_size": 5000,
-      "event_context": "Pre-Trade Risk Filter Guard",
-      "risk_check": {
-        "passed": false,
-        "reason": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
-        "loss_at_stop_inr": 39600.0
-      },
+      "lot_size": 1000,
+      "event_context": "Range-Bound Asian Range [\u20b9295.30 \u2013 \u20b9307.35]",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / RISK GUARD",
-        "rationale": "Risk check failed: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked.",
-        "reference_price": 295.6,
+        "action_text": "STAND ASIDE / RANGE-BOUND",
+        "rationale": "Trading within morning Asian range [\u20b9295.30 \u2013 \u20b9307.35]. Standing aside awaiting range breakout.",
+        "reference_price": 296.1,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
-        "status": "RISK_GUARD_STAND_ASIDE",
-        "price_615": 295.6,
+        "status": "RANGE_BOUND_STAND_ASIDE",
+        "price_615": 296.1,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+        "detail": "Inside Asian morning range. Awaiting breakout."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -472,9 +462,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "badge": "Avoided Range \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b939,600.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+        "summary": "Stood aside on range-bound asset. Capital protected."
       }
     },
     {
@@ -762,8 +752,8 @@
         "entry_time": "09:57 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": -5.3,
-        "pnl_inr": -270.3,
+        "pnl_points": -8.3,
+        "pnl_inr": -423.3,
         "status": "ACTIVE",
         "target": 1023.35,
         "stop_loss": 990.17,
@@ -783,8 +773,8 @@
         "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b91,005.25 (Target: \u20b91,023.35, SL: \u20b9990.17) | 3,000 Replays: 30.6% Target | 20.0% Stop | Expected: +0.17R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
       },
       "live_price_data": {
-        "current_price": 999.95,
-        "change_pct": -0.53
+        "current_price": 996.95,
+        "change_pct": -0.83
       }
     },
     {
