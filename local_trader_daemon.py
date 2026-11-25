@@ -160,9 +160,13 @@ def run_daemon():
                 import trader_engine_bridge
                 import advisory_tracker
                 import dhan_live_executor as dhan_mod
+                import pre_move_detector as pm_mod
+                import price_checker as pc_mod
                 importlib.reload(trader_engine_bridge)
                 importlib.reload(advisory_tracker)
                 importlib.reload(dhan_mod)
+                importlib.reload(pm_mod)
+                importlib.reload(pc_mod)
                 check_and_execute_intraday_targets_and_stops = advisory_tracker.check_and_execute_intraday_targets_and_stops
                 evaluate_realtime_technical_triggers = advisory_tracker.evaluate_realtime_technical_triggers
                 dhan_exec = dhan_mod.DhanLiveExecutor()

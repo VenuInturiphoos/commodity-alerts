@@ -177,19 +177,22 @@ def get_canonical_commodity_root(s):
         return 'NICKEL'
     return u
 
-def check_commodity_cooldown(symbol, trades=None, today_str=None, now_dt=None):
+def check_commodity_cooldown(symbol, trades=None, today_str=None, now_dt=None, requested_action=None, is_reversal=False):
     """
     Authoritative Universal Commodity Cooldown Guard.
-    Applies strictly BEFORE taking ANY new trade (whether BUY or SELL) on a commodity.
+    Applies strictly BEFORE taking ANY new trade on a commodity.
     
     Rules:
     - Normalizes symbol to canonical root (e.g. ALUMINI -> ALUMINIUM, CRUDEOILM -> CRUDEOIL).
-    - If prior trade hit STOP LOSS: 120 minutes (2 hours) mandatory lockout.
-    - If prior trade hit TARGET: 120 minutes (2 hours) mandatory lockout.
-    - If prior trade closed standard / breakeven / stagnation: 90 minutes mandatory lockout.
+    - If prior trade hit STOP LOSS: 60 minutes mandatory lockout for SAME-DIRECTION re-entries.
+    - If prior trade hit TARGET: 45 minutes mandatory lockout for SAME-DIRECTION re-entries.
+    - If prior trade closed standard / breakeven: 45 minutes lockout for SAME-DIRECTION re-entries.
+    - REVERSAL & WYCKOFF SPRING EXCEPTION:
+      If requested_action is opposite to prior action (e.g. BUY after SELL), or is_reversal is True,
+      only a 5-minute stabilization pause is enforced. This ensures the engine captures
+      high-probability oversold Wyckoff Springs and V-reversal bounces without churning.
     - If any trade in this canonical commodity is currently ACTIVE or PENDING_LIMIT:
       Blocks new trade (prevents simultaneous overlapping exposure).
-    - APPLIES TO BOTH BUY AND SELL (Strict anti-churning & anti-revenge trading).
       
     Returns:
     (is_in_cooldown: bool, reason: str, remaining_mins: float)
@@ -256,6 +259,23 @@ def check_commodity_cooldown(symbol, trades=None, today_str=None, now_dt=None):
     is_target_hit = ('TARGET' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) > 500.0) or (last_t.get('eod_outcome', {}).get('outcome') == 'CORRECT')
     is_sl_hit = ('STOP_LOSS' in last_exit_trigger) or (last_pt.get('pnl_inr', 0.0) < 0)
 
+    last_action = (last_pt.get('action') or '').upper()
+    req_action_clean = (requested_action or '').upper()
+    is_opposite_direction = bool(req_action_clean and last_action and req_action_clean != last_action)
+
+    # ⚡ REVERSAL & WYCKOFF SPRING OVERRIDE
+    # When an asset forms an oversold Wyckoff Spring bounce (BUY after SELL) or Upthrust (SELL after BUY),
+    # do NOT lock the trader out for 45-60m. A 5-minute stabilization pause is enforced to eliminate
+    # single-candle churn while allowing immediate capture of the bounce back!
+    if is_reversal or is_opposite_direction:
+        min_reversal_buffer = 5.0  # 5-minute post-exit stabilization pause
+        if diff_mins < min_reversal_buffer:
+            remaining = round(min_reversal_buffer - diff_mins, 1)
+            msg = f"{canon_sym}: Reversal stabilization active ({int(diff_mins)}m elapsed, {int(remaining)}m remaining of 5m pause)."
+            return True, msg, remaining
+        else:
+            return False, f"Reversal unlocked ({int(diff_mins)}m elapsed >= 5m stabilization pause).", 0.0
+
     if is_sl_hit:
         required_cooldown = 60.0  # 60m intraday reset after SL
         reason_label = "Post-Stop-Loss 60m Reset"
@@ -269,7 +289,7 @@ def check_commodity_cooldown(symbol, trades=None, today_str=None, now_dt=None):
     if diff_mins < required_cooldown:
         remaining = round(required_cooldown - diff_mins, 1)
         action_desc = last_pt.get('action') or 'TRADE'
-        msg = f"{canon_sym} in mandatory cooldown ({reason_label}): Prior {action_desc} exited {int(diff_mins)}m ago ({int(remaining)}m remaining of {int(required_cooldown)}m lockout). Applicable to BOTH BUY and SELL."
+        msg = f"{canon_sym} in mandatory cooldown ({reason_label}): Prior {action_desc} exited {int(diff_mins)}m ago ({int(remaining)}m remaining of {int(required_cooldown)}m lockout). Same-direction re-entry blocked."
         return True, msg, remaining
     else:
         return False, f"Cooldown expired ({int(diff_mins)}m elapsed >= {int(required_cooldown)}m required).", 0.0
@@ -4982,11 +5002,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
         if len(sym_today_trades) >= MAX_TRADES_PER_SYMBOL_DAY:
             continue  # Max 3 trades per commodity per day
 
-        # Universal Cooldown Guard: Enforces 120m post-SL, 120m post-target, and 90m standard lockout (BOTH BUY & SELL)
-        is_cd, cd_msg, cd_rem = check_commodity_cooldown(sym, trades=(trades + new_trades), today_str=today_str, now_dt=now_dt)
-        if is_cd:
-            print(f"⏱️ Cooldown Active for {sym}: {cd_msg}")
-            continue
+        # Note: Universal Cooldown Guard is evaluated at signal execution time (with requested_action & reversal awareness)
+        # to ensure indicator tracking, coil squeeze detection, and Wyckoff Spring bounces are NEVER blinded.
 
         cur_p = float(item.get('current_price') or 0)
         # Fetch authoritative live execution price if broker API is connected
@@ -5218,6 +5235,28 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     macro_aligned = (pm_sig.action == 'BUY' and (is_spring_setup or ema50 is None or cur_p >= ema50 * 0.997)) or \
                                     (pm_sig.action == 'SELL' and (is_spring_setup or ema50 is None or cur_p <= ema50 * 1.003))
 
+                    # ⚡ EVENT IDENTIFICATION: Dispatch immediate alert whenever a Wyckoff Spring / V-Reversal is confirmed
+                    if is_spring_setup and alerter:
+                        bounce_pct = ((cur_p - day_l) / day_l * 100.0) if day_l > 0 else 0.0
+                        b_sub = f"⚡ [WYCKOFF SPRING BOUNCE ALERT] {name} Rebounded +{bounce_pct:.2f}% off Low @ ₹{cur_p:,.2f} ({now_time_str})"
+                        b_bdy = (
+                            f"⚡ <b>WYCKOFF SPRING REVERSAL BOUNCE IDENTIFIED</b>\n"
+                            f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                            f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                            f"• <b>Asset</b>: {name} ({sym})\n"
+                            f"• <b>Current Price</b>: ₹{cur_p:,.2f}\n"
+                            f"• <b>Day Low</b>: ₹{day_l:,.2f} | <b>Rebound from Low</b>: <b>+{bounce_pct:.2f}%</b>\n"
+                            f"• <b>Setup</b>: {pm_sig.setup_name}\n"
+                            f"• <b>PMRI Score</b>: {pm_sig.pmri_score:.1f}/100\n"
+                            f"• <b>Technical Context</b>: {' | '.join(pm_sig.reasons)}\n"
+                            f"• <b>Action Engine</b>: {'Evaluating Option A Entry' if macro_aligned else 'Monitoring Reversal Reaction'}\n\n"
+                            f"🛡️ <i>Pre-Move Volatility Engine Active | Bounce Captured & Identified</i>"
+                        )
+                        try:
+                            alerter.send_alert(b_sub, b_bdy)
+                        except Exception as ex:
+                            print(f"Error dispatching Wyckoff Spring alert for {sym}: {ex}")
+
                     if macro_aligned and not triggered:
                         triggered = True
                         action = pm_sig.action
@@ -5358,6 +5397,17 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
             if action == "BUY" and (rsi is not None and rsi >= max_buy_rsi):
                 print(f"🚫 Universal Exhaustion Guard: Blocked {sym} BUY. RSI ({rsi:.1f}) is >= {max_buy_rsi:.1f} (extreme overbought). Buying into exhausted ceiling strictly prohibited.")
+                continue
+
+            # 🛡️ Universal Commodity Cooldown Guard (trader-risk skill):
+            # Enforces post-trade lockout for SAME-DIRECTION re-entries.
+            # Allows opposite-direction Wyckoff Springs / Reversals after 5-minute stabilization pause!
+            is_cd, cd_msg, cd_rem = check_commodity_cooldown(
+                sym, trades=(trades + new_trades), today_str=today_str, now_dt=now_dt,
+                requested_action=action, is_reversal=is_reversal
+            )
+            if is_cd:
+                print(f"⏱️ Cooldown Active for {sym} {action}: {cd_msg}")
                 continue
 
             # 🛡️ Consecutive Directional Loss Guard (trader-risk skill / Anti-Whipsaw Freeze):

@@ -493,41 +493,45 @@ class PreMoveDetector:
         bounce_from_low_pct = ((current_price - day_low) / day_low * 100.0) if (day_low and day_low > 0) else 0.0
         rejection_from_high_pct = ((day_high - current_price) / day_high * 100.0) if (day_high and day_high > 0) else 0.0
 
-        if pmri_score >= cls.MIN_PMRI_TRIGGER and is_compressed:
-            # 1. ⚡ Wyckoff Spring Reversal (Oversold Liquidity Sweep & V-Bounce)
-            # When an asset is heavily oversold (RSI <= 35.0), sweeps the Day Low / Coil Floor,
-            # and bounces >= +0.30% with volume absorption, catch the mean-reversion coil release!
-            if (rsi is not None and rsi <= 35.0) and bounce_from_low_pct >= 0.30:
-                is_wyckoff_spring = True
-                action = "BUY"
-                status = "PRE_MOVE_SPRING_BUY_TRIGGER"
-                raw_sl = min(day_low - (0.10 * atr_val), current_price - (0.25 * atr_val))
-                min_risk = 0.25 * atr_val
-                max_risk = 0.60 * atr_val
-                risk_pts = max(min_risk, min(current_price - raw_sl, max_risk))
-                sl = round(current_price - risk_pts, 2)
-                tgt1 = round(current_price + (1.8 * risk_pts), 2)  # 1.8R Option A Target
-                tgt2 = round(current_price + (3.0 * risk_pts), 2)  # 3.0R Runner Target
-                rrr = round((tgt1 - current_price) / risk_pts, 2)
-                reasons.append(f"⚡ Wyckoff Spring Reversal: Severe oversold exhaustion (RSI {rsi:.1f} <= 35) rejected off Day Low (₹{day_low:,.2f}) with +{bounce_from_low_pct:.2f}% bounce. Mean reversion release triggered.")
+        # ⚡ 1. WYCKOFF SPRING & UPTHRUST REVERSALS (Decoupled from BB squeeze)
+        # Wyckoff Springs and Upthrusts occur AFTER wide-range selloffs or blowoffs.
+        # They represent liquidity sweeps and aggressive V-reversals, not narrow range compressions.
+        is_spring_setup = (rsi is not None and rsi <= 38.0) and bounce_from_low_pct >= 0.30
+        is_upthrust_setup = (rsi is not None and rsi >= 62.0) and rejection_from_high_pct >= 0.30
 
-            # 2. ⚡ Wyckoff Upthrust Reversal (Overbought Liquidity Sweep & Rejection)
-            elif (rsi is not None and rsi >= 65.0) and rejection_from_high_pct >= 0.30:
-                is_wyckoff_upthrust = True
-                action = "SELL"
-                status = "PRE_MOVE_UPTHRUST_SELL_TRIGGER"
-                raw_sl = max(day_high + (0.10 * atr_val), current_price + (0.25 * atr_val))
-                min_risk = 0.25 * atr_val
-                max_risk = 0.60 * atr_val
-                risk_pts = max(min_risk, min(raw_sl - current_price, max_risk))
-                sl = round(current_price + risk_pts, 2)
-                tgt1 = round(current_price - (1.8 * risk_pts), 2)
-                tgt2 = round(current_price - (3.0 * risk_pts), 2)
-                rrr = round((current_price - tgt1) / risk_pts, 2)
-                reasons.append(f"⚡ Wyckoff Upthrust Reversal: Overbought exhaustion (RSI {rsi:.1f} >= 65) rejected off Day High (₹{day_high:,.2f}) with -{rejection_from_high_pct:.2f}% drop. Mean reversion breakdown triggered.")
+        if is_spring_setup:
+            is_wyckoff_spring = True
+            action = "BUY"
+            status = "PRE_MOVE_SPRING_BUY_TRIGGER"
+            pmri_score = max(pmri_score, 78.0)
+            raw_sl = min(day_low - (0.10 * atr_val), current_price - (0.25 * atr_val))
+            min_risk = 0.25 * atr_val
+            max_risk = 0.60 * atr_val
+            risk_pts = max(min_risk, min(current_price - raw_sl, max_risk))
+            sl = round(current_price - risk_pts, 2)
+            tgt1 = round(current_price + (1.8 * risk_pts), 2)  # 1.8R Option A Target
+            tgt2 = round(current_price + (3.0 * risk_pts), 2)  # 3.0R Runner Target
+            rrr = round((tgt1 - current_price) / risk_pts, 2)
+            reasons.append(f"⚡ Wyckoff Spring Reversal: Severe oversold exhaustion (RSI {rsi:.1f} <= 38) rejected off Day Low (₹{day_low:,.2f}) with +{bounce_from_low_pct:.2f}% bounce. Mean reversion release triggered.")
 
-            # 3. Standard Bullish Expansion (Holding baseline and expanding UP)
-            elif mom_dir == "BULLISH_EXPANDING":
+        elif is_upthrust_setup:
+            is_wyckoff_upthrust = True
+            action = "SELL"
+            status = "PRE_MOVE_UPTHRUST_SELL_TRIGGER"
+            pmri_score = max(pmri_score, 78.0)
+            raw_sl = max(day_high + (0.10 * atr_val), current_price + (0.25 * atr_val))
+            min_risk = 0.25 * atr_val
+            max_risk = 0.60 * atr_val
+            risk_pts = max(min_risk, min(raw_sl - current_price, max_risk))
+            sl = round(current_price + risk_pts, 2)
+            tgt1 = round(current_price - (1.8 * risk_pts), 2)
+            tgt2 = round(current_price - (3.0 * risk_pts), 2)
+            rrr = round((current_price - tgt1) / risk_pts, 2)
+            reasons.append(f"⚡ Wyckoff Upthrust Reversal: Overbought exhaustion (RSI {rsi:.1f} >= 62) rejected off Day High (₹{day_high:,.2f}) with -{rejection_from_high_pct:.2f}% drop. Mean reversion breakdown triggered.")
+
+        elif pmri_score >= cls.MIN_PMRI_TRIGGER and is_compressed:
+            # 2. Standard Bullish Expansion (Holding baseline and expanding UP)
+            if mom_dir == "BULLISH_EXPANDING":
                 # Hard Overbought Guard: Never BUY into exhausted overbought conditions
                 if rsi is not None and rsi > 65.0:
                     status = "OVERBOUGHT_EXHAUSTION_BLOCKED"
