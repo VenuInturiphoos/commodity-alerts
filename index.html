@@ -8104,6 +8104,70 @@ function renderTradingViewTickerTape(allTrades) {
     container.appendChild(script);
 }
 
+function updateActiveDeckCardLive(t, idx) {
+    const pt = t.paper_trade || {};
+    const entryPrice = Number(pt.entry_price || 0);
+    const slPrice = Number(pt.stop_loss || 0);
+    const tgtPrice = Number(pt.target || 0);
+
+    const liveData = getAdvisoryTradeLivePriceData(t);
+    const curPrice = (liveData && liveData.current_price) 
+        ? Number(liveData.current_price) 
+        : (Number(t.live_price_data?.current_price) || entryPrice);
+    const chgPct = (liveData && liveData.change_pct !== undefined) 
+        ? Number(liveData.change_pct) 
+        : (Number(t.live_price_data?.change_pct) || 0);
+
+    const ptsDiff = pt.action === 'BUY' ? (curPrice - entryPrice) : (entryPrice - curPrice);
+    const lotSize = pt.quantity || t.lot_size || 1;
+    const livePnlInr = ptsDiff * lotSize;
+    const pnlColor = livePnlInr >= 0 ? '#4ade80' : '#fb7185';
+    const pnlSign = livePnlInr >= 0 ? '+' : '';
+
+    const priceEl = document.getElementById(`deck-cur-price-${idx}`);
+    if (priceEl) priceEl.textContent = '₹' + curPrice.toLocaleString('en-IN', {minimumFractionDigits: 2});
+
+    const chgEl = document.getElementById(`deck-chg-pct-${idx}`);
+    if (chgEl) {
+        chgEl.textContent = `(${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%)`;
+        chgEl.style.color = chgPct >= 0 ? '#4ade80' : '#fb7185';
+    }
+
+    const pnlEl = document.getElementById(`deck-pnl-${idx}`);
+    if (pnlEl) {
+        pnlEl.innerHTML = `${pnlSign}₹${Math.abs(livePnlInr).toLocaleString('en-IN', {minimumFractionDigits: 2})} <span style="font-size: 0.75rem; font-weight: 600; opacity: 0.85;">(${pnlSign}${ptsDiff.toFixed(2)} pts)</span>`;
+        pnlEl.style.color = pnlColor;
+    }
+
+    const totalSpan = Math.abs(tgtPrice - slPrice);
+    let progressPct = 50;
+    if (totalSpan > 0) {
+        if (pt.action === 'BUY') {
+            progressPct = Math.max(0, Math.min(100, ((curPrice - slPrice) / totalSpan) * 100));
+        } else {
+            progressPct = Math.max(0, Math.min(100, ((slPrice - curPrice) / totalSpan) * 100));
+        }
+    }
+
+    const pinEl = document.getElementById(`deck-progress-pin-${idx}`);
+    if (pinEl) {
+        pinEl.style.left = `${progressPct}%`;
+        pinEl.style.background = pnlColor;
+        pinEl.style.boxShadow = `0 0 10px ${pnlColor}`;
+    }
+
+    const distToTgtPts = pt.action === 'BUY' ? Math.max(0, tgtPrice - curPrice) : Math.max(0, curPrice - tgtPrice);
+    const distToTgtPct = curPrice > 0 ? ((distToTgtPts / curPrice) * 100).toFixed(2) : '0.00';
+    const distToSlPts = pt.action === 'BUY' ? Math.max(0, curPrice - slPrice) : Math.max(0, slPrice - curPrice);
+    const distToSlPct = curPrice > 0 ? ((distToSlPts / curPrice) * 100).toFixed(2) : '0.00';
+
+    const distSlEl = document.getElementById(`deck-dist-sl-${idx}`);
+    if (distSlEl) distSlEl.textContent = `Buffer: ${distToSlPct}% (${distToSlPts.toFixed(2)} pts)`;
+
+    const distTgtEl = document.getElementById(`deck-dist-tgt-${idx}`);
+    if (distTgtEl) distTgtEl.textContent = `Remaining: ${distToTgtPct}% (${distToTgtPts.toFixed(2)} pts)`;
+}
+
 function renderTradingViewActiveDeck(allTrades) {
     const deckEl = document.getElementById('tv-active-trades-deck');
     if (!deckEl) return;
@@ -8125,6 +8189,10 @@ function renderTradingViewActiveDeck(allTrades) {
 
     const newKey = activeTrades.map(t => `${t.id || t.symbol}_${t.symbol}`).sort().join('|');
     if (newKey === currentTvDeckKey) {
+        // Fast-path: update real-time values directly without DOM flicker
+        activeTrades.forEach((t, idx) => {
+            updateActiveDeckCardLive(t, idx);
+        });
         deckEl.style.display = 'block';
         return;
     }
@@ -8135,59 +8203,6 @@ function renderTradingViewActiveDeck(allTrades) {
     const cardsHtml = activeTrades.map((t, idx) => {
         const pt = t.paper_trade || {};
         const sym = (t.symbol || '').toUpperCase();
-        const actionColor = pt.action === 'BUY' ? '#4ade80' : '#fb7185';
-        const actionBadge = pt.action === 'BUY' ? 'BUY (LONG)' : 'SELL (SHORT)';
-        const entryPrice = Number(pt.entry_price || 0).toLocaleString('en-IN', {minimumFractionDigits: 2});
-        const slPrice = Number(pt.stop_loss || 0).toLocaleString('en-IN', {minimumFractionDigits: 2});
-        const tgtPrice = Number(pt.target || 0).toLocaleString('en-IN', {minimumFractionDigits: 2});
-
-        return `
-            <div style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 12px; padding: 12px; min-width: 310px; flex: 1; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <div>
-                        <span style="font-weight: 700; color: #f8fafc; font-size: 0.95rem;">${t.name}</span>
-                        <span style="font-size: 0.75rem; color: #94a3b8; margin-left: 6px;">(${sym})</span>
-                    </div>
-                    <span style="background: ${actionColor}22; border: 1px solid ${actionColor}55; color: ${actionColor}; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 999px;">
-                        ${actionBadge}
-                    </span>
-                </div>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px; font-size: 0.78rem; background: rgba(0,0,0,0.25); padding: 6px 10px; border-radius: 6px; flex-wrap: wrap;">
-                    <div><span style="color:#94a3b8;">Entry:</span> <strong style="color:#f8fafc;">₹${entryPrice}</strong></div>
-                    <div><span style="color:#94a3b8;">SL:</span> <strong style="color:#fb7185;">₹${slPrice}</strong></div>
-                    <div><span style="color:#94a3b8;">Target:</span> <strong style="color:#4ade80;">₹${tgtPrice}</strong></div>
-                </div>
-                <!-- TradingView Mini Symbol Overview Widget (Authorized 1s Live Stream) -->
-                <div id="tv-widget-card-${idx}" class="tradingview-widget-container" style="border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); min-height: 180px;">
-                    <div class="tradingview-widget-container__widget"></div>
-                </div>
-            </div>
-        `;
-    }).join('');
-
-    deckEl.innerHTML = `
-        <div style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 14px; padding: 14px; margin-bottom: 0.5rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 10px #22c55e; animation:pulse 1s infinite;"></span>
-                    <strong style="color: #f8fafc; font-size: 0.92rem;"><i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Official TradingView Authorized Live Stream</strong>
-                    <span style="font-size: 0.75rem; color: #a5b4fc; background: rgba(99, 102, 241, 0.2); padding: 2px 8px; border-radius: 4px; font-weight: 600;">1-Sec Real-Time Ticks</span>
-                </div>
-                <div style="font-size: 0.78rem; color: var(--text-secondary);">
-                    Streaming active open positions directly from official exchange feed
-                </div>
-            </div>
-            <div style="display: flex; gap: 14px; flex-wrap: wrap;">
-                ${cardsHtml}
-            </div>
-        </div>
-    `;
-
-    // Mount official TradingView mini widgets dynamically into each card container
-    activeTrades.forEach((t, idx) => {
-        const cardWidgetContainer = document.getElementById(`tv-widget-card-${idx}`);
-        if (!cardWidgetContainer) return;
-        const sym = (t.symbol || '').toUpperCase();
         let tvSym = sym;
         if (sym.includes('.NS') || t.asset_type === 'INTRADAY_STOCK' || t.asset_type === 'EQUITY') {
             tvSym = `NSE:${sym.replace('.NS', '').trim()}`;
@@ -8197,23 +8212,144 @@ function renderTradingViewActiveDeck(allTrades) {
             tvSym = `MCX:${sym.replace('.NS', '').trim()}1!`;
         }
 
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
-        script.async = true;
-        script.text = JSON.stringify({
-            "symbol": tvSym,
-            "width": "100%",
-            "height": 180,
-            "locale": "en",
-            "dateRange": "1D",
-            "colorTheme": "dark",
-            "isTransparent": true,
-            "autosize": true,
-            "largeChartUrl": ""
-        });
-        cardWidgetContainer.appendChild(script);
-    });
+        const actionColor = pt.action === 'BUY' ? '#4ade80' : '#fb7185';
+        const actionBadge = pt.action === 'BUY' ? 'BUY (LONG)' : 'SELL (SHORT)';
+        const entryPrice = Number(pt.entry_price || 0);
+        const slPrice = Number(pt.stop_loss || 0);
+        const tgtPrice = Number(pt.target || 0);
+
+        const liveData = getAdvisoryTradeLivePriceData(t);
+        const curPrice = (liveData && liveData.current_price) 
+            ? Number(liveData.current_price) 
+            : (Number(t.live_price_data?.current_price) || entryPrice);
+        const chgPct = (liveData && liveData.change_pct !== undefined) 
+            ? Number(liveData.change_pct) 
+            : (Number(t.live_price_data?.change_pct) || 0);
+
+        const ptsDiff = pt.action === 'BUY' ? (curPrice - entryPrice) : (entryPrice - curPrice);
+        const lotSize = pt.quantity || t.lot_size || 1;
+        const livePnlInr = ptsDiff * lotSize;
+        const pnlColor = livePnlInr >= 0 ? '#4ade80' : '#fb7185';
+        const pnlSign = livePnlInr >= 0 ? '+' : '';
+
+        // Progress calculation between SL (0%) and Target (100%)
+        let progressPct = 50;
+        let entryPct = 50;
+        const totalSpan = Math.abs(tgtPrice - slPrice);
+        if (totalSpan > 0) {
+            if (pt.action === 'BUY') {
+                progressPct = Math.max(0, Math.min(100, ((curPrice - slPrice) / totalSpan) * 100));
+                entryPct = Math.max(0, Math.min(100, ((entryPrice - slPrice) / totalSpan) * 100));
+            } else {
+                progressPct = Math.max(0, Math.min(100, ((slPrice - curPrice) / totalSpan) * 100));
+                entryPct = Math.max(0, Math.min(100, ((slPrice - entryPrice) / totalSpan) * 100));
+            }
+        }
+
+        const distToTgtPts = pt.action === 'BUY' ? Math.max(0, tgtPrice - curPrice) : Math.max(0, curPrice - tgtPrice);
+        const distToTgtPct = curPrice > 0 ? ((distToTgtPts / curPrice) * 100).toFixed(2) : '0.00';
+        const distToSlPts = pt.action === 'BUY' ? Math.max(0, curPrice - slPrice) : Math.max(0, slPrice - curPrice);
+        const distToSlPct = curPrice > 0 ? ((distToSlPts / curPrice) * 100).toFixed(2) : '0.00';
+
+        const tvChartUrl = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tvSym)}`;
+        const dhanUrl = 'https://trading.dhan.co';
+
+        return `
+            <div id="deck-card-${idx}" style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.98)); border: 1px solid rgba(99, 102, 241, 0.45); border-radius: 12px; padding: 16px; min-width: 320px; flex: 1; box-shadow: 0 4px 24px rgba(0,0,0,0.35);">
+                <!-- Header -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-weight: 700; color: #f8fafc; font-size: 1.05rem;">${t.name}</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8; background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">${tvSym}</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: #a5b4fc; margin-top: 2px;">
+                            ${t.asset_type === 'INTRADAY_STOCK' ? '⚡ 5x MIS Intraday Equity Day-Trade' : '🔥 MCX High-Confluence Commodity Future'}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="background: ${actionColor}22; border: 1px solid ${actionColor}55; color: ${actionColor}; font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: 999px;">
+                            ${actionBadge}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Price & Live PnL Row -->
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div>
+                        <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Live Market Price</div>
+                        <div style="font-size: 1.25rem; font-weight: 800; color: #f8fafc; display: flex; align-items: baseline; gap: 6px;">
+                            <span id="deck-cur-price-${idx}">₹${curPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                            <span id="deck-chg-pct-${idx}" style="font-size: 0.8rem; font-weight: 600; color: ${chgPct >= 0 ? '#4ade80' : '#fb7185'};">
+                                (${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%)
+                            </span>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Unrealized P&L (MTM)</div>
+                        <div id="deck-pnl-${idx}" style="font-size: 1.15rem; font-weight: 800; color: ${pnlColor};">
+                            ${pnlSign}₹${Math.abs(livePnlInr).toLocaleString('en-IN', {minimumFractionDigits: 2})}
+                            <span style="font-size: 0.75rem; font-weight: 600; opacity: 0.85;">(${pnlSign}${ptsDiff.toFixed(2)} pts)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Execution Progress Gauge (SL -> Entry -> Target) -->
+                <div style="margin-bottom: 14px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px;">
+                        <span><strong style="color: #fb7185;">SL:</strong> ₹${slPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                        <span><strong style="color: #c7d2fe;">Entry:</strong> ₹${entryPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                        <span><strong style="color: #4ade80;">Target:</strong> ₹${tgtPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                    </div>
+
+                    <!-- Progress Bar Track -->
+                    <div style="position: relative; height: 10px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: visible; margin: 12px 0 8px 0;">
+                        <!-- Red SL zone (0% to entryPct) -->
+                        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: ${entryPct}%; background: linear-gradient(90deg, #ef444455, #f59e0b44); border-radius: 999px 0 0 999px;"></div>
+                        <!-- Green Profit zone (entryPct to 100%) -->
+                        <div style="position: absolute; left: ${entryPct}%; top: 0; bottom: 0; width: ${100 - entryPct}%; background: linear-gradient(90deg, #10b98144, #22c55e66); border-radius: 0 999px 999px 0;"></div>
+                        <!-- Entry Marker Line -->
+                        <div style="position: absolute; left: ${entryPct}%; top: -3px; bottom: -3px; width: 2px; background: #c7d2fe; z-index: 2;" title="Entry Price: ₹${entryPrice}"></div>
+                        <!-- Current Price Glowing Dot Marker -->
+                        <div id="deck-progress-pin-${idx}" style="position: absolute; left: ${progressPct}%; top: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; border-radius: 50%; background: ${pnlColor}; box-shadow: 0 0 10px ${pnlColor}; border: 2px solid #ffffff; z-index: 3;" title="Current Price: ₹${curPrice}"></div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">
+                        <span id="deck-dist-sl-${idx}" style="color: #fb7185;">Buffer: ${distToSlPct}% (${distToSlPts.toFixed(2)} pts)</span>
+                        <span id="deck-dist-tgt-${idx}" style="color: #4ade80;">Remaining: ${distToTgtPct}% (${distToTgtPts.toFixed(2)} pts)</span>
+                    </div>
+                </div>
+
+                <!-- Footer Action Buttons -->
+                <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+                    <a href="${tvChartUrl}" target="_blank" rel="noopener noreferrer" style="flex: 1; min-width: 140px; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.45); color: #c7d2fe; padding: 7px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 600; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fa-solid fa-chart-line"></i> Open Full TradingView Chart <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.65rem;"></i>
+                    </a>
+                    <a href="${dhanUrl}" target="_blank" rel="noopener noreferrer" style="background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #86efac; padding: 7px 14px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 600; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fa-solid fa-bolt"></i> Dhan Terminal <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.65rem;"></i>
+                    </a>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    deckEl.innerHTML = `
+        <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 14px; padding: 14px; margin-bottom: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 10px #22c55e; animation:pulse 1s infinite;"></span>
+                    <strong style="color: #f8fafc; font-size: 0.95rem;"><i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Active Trade Real-Time Position Monitor</strong>
+                    <span style="font-size: 0.72rem; color: #a5b4fc; background: rgba(99, 102, 241, 0.2); padding: 2px 8px; border-radius: 4px; font-weight: 600;">1-Sec Live Exchange Stream</span>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary);">
+                    Tracking active intraday positions with Option A tight trailing protection & 1.8R target
+                </div>
+            </div>
+            <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+                ${cardsHtml}
+            </div>
+        </div>
+    `;
 }
 
 function renderAdvisoryTradesTable() {
