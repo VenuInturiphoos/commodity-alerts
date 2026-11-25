@@ -5745,9 +5745,22 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 equity_stocks = []
 
             # Pillar 2: Nifty 50 Market Breadth Gate (Trade WITH the Tide)
-            # Calculate broad market breadth across the 100-stock universe before candidate curation
+            # Authoritative Real-Time Benchmark Check (Direct Index Quote via Yahoo / Live Market):
+            live_nifty_chg = None
+            try:
+                import yfinance as yf
+                n_df = yf.Ticker('^NSEI').history(period='2d')
+                if len(n_df) >= 2:
+                    p_close = float(n_df['Close'].iloc[-2])
+                    cur_close = float(n_df['Close'].iloc[-1])
+                    if p_close > 0:
+                        live_nifty_chg = round(((cur_close - p_close) / p_close) * 100.0, 2)
+            except Exception:
+                pass
+
             all_nifty_stocks = nifty_data.get('stocks', [])
-            nifty_benchmark_chg = round(sum(float(st.get('change_pct', 0.0) or 0.0) for st in all_nifty_stocks) / max(len(all_nifty_stocks), 1), 2)
+            stock_breadth_chg = round(sum(float(st.get('change_pct', 0.0) or 0.0) for st in all_nifty_stocks) / max(len(all_nifty_stocks), 1), 2)
+            nifty_benchmark_chg = live_nifty_chg if live_nifty_chg is not None else stock_breadth_chg
 
             # Institutional Intraday Stock Selection Engine:
             # When broad market is negative (< -0.15%), block BUY breakouts and prioritize high-velocity shorts.
