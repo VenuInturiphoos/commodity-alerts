@@ -1981,7 +1981,7 @@ function initApp() {
         }
     }, 45000);
 
-    // Live background polling for Advisory Trades, Stock Investments & Nifty Scanner (every 30 seconds)
+    // Live background polling for Advisory Trades, Stock Investments & Nifty Scanner (every 12 seconds)
     setInterval(() => {
         const tradingTab = document.getElementById('trading-tab');
         const investingTab = document.getElementById('investing-tab');
@@ -1997,7 +1997,7 @@ function initApp() {
         if (niftyTab && niftyTab.classList.contains('active')) {
             if (typeof fetchNiftyOpportunities === 'function') fetchNiftyOpportunities(false);
         }
-    }, 30000);
+    }, 12000);
 }
 
 // ==========================================
@@ -7530,9 +7530,10 @@ async function loadAdvisoryTracker(forceNetwork = false) {
         };
         const cacheBuster = '?v=' + Date.now();
         const liveCandidates = [
-            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_tracker.json' + cacheBuster,
+            'web/advisory_trades_tracker.json' + cacheBuster,
             'advisory_trades_tracker.json' + cacheBuster,
-            'web/advisory_trades_tracker.json' + cacheBuster
+            'https://venuinturiphoos.github.io/commodity-alerts/web/advisory_trades_tracker.json' + cacheBuster,
+            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/advisory_trades_tracker.json' + cacheBuster
         ];
 
         // 1. Fetch live active tracker (Current Month)
@@ -8103,7 +8104,10 @@ function renderAdvisoryTradesTable() {
         let curPriceHtml = '<span style="color:#64748b; font-size:0.8rem;">--</span>';
         if (liveSource && liveSource.current_price) {
             const cp = Number(liveSource.current_price);
-            const chg = Number(liveSource.change_pct || 0);
+            let chg = Number(liveSource.change_pct || 0);
+            if (chg === 0 && pt.entry_price && Number(pt.entry_price) > 0) {
+                chg = ((cp - Number(pt.entry_price)) / Number(pt.entry_price)) * 100;
+            }
             const chgColor = chg >= 0 ? '#4ade80' : '#fb7185';
             const chgIcon = chg >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
             const isLiveActive = (pt.status === 'ACTIVE' && (!isSessionExpired || isTodayTrade)) || (pt.status === 'PENDING_615' && !isPastVal);
