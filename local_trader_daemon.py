@@ -193,12 +193,12 @@ def run_daemon():
             import traceback
             traceback.print_exc()
 
-        # Wait 60 seconds before next iteration
-        print(f"[{datetime.now(IST).strftime('%I:%M:%S %p')}] Cycle finished. Waiting 60s for next scan...")
-        for _ in range(6):
+        # Rapid 25-second cycle during market hours for fresh real-time ticks
+        print(f"[{datetime.now(IST).strftime('%I:%M:%S %p')}] Cycle finished. Waiting 25s for next scan...")
+        for _ in range(5):
             if not RUNNING:
                 break
-            time.sleep(10)
+            time.sleep(5)
 
     print("\n🛑 Local Autopilot Trading Daemon stopped safely.")
 
