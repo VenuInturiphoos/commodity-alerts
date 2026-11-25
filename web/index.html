@@ -8128,18 +8128,9 @@ function renderTradingViewActiveDeck(allTrades) {
     currentTvDeckKey = newKey;
     deckEl.style.display = 'block';
 
-    const cardsHtml = activeTrades.map(t => {
+    const cardsHtml = activeTrades.map((t, idx) => {
         const pt = t.paper_trade || {};
         const sym = (t.symbol || '').toUpperCase();
-        let tvSym = sym;
-        if (sym.includes('.NS') || t.asset_type === 'INTRADAY_STOCK' || t.asset_type === 'EQUITY') {
-            tvSym = `NSE:${sym.replace('.NS', '').trim()}`;
-        } else if (sym.includes('-FUT') || t.asset_type === 'STOCK_FUTURES') {
-            tvSym = `NSE:${sym.replace('-FUT', '').replace('.NS', '').trim()}1!`;
-        } else {
-            tvSym = `MCX:${sym.replace('.NS', '').trim()}1!`;
-        }
-
         const actionColor = pt.action === 'BUY' ? '#4ade80' : '#fb7185';
         const actionBadge = pt.action === 'BUY' ? 'BUY (LONG)' : 'SELL (SHORT)';
         const entryPrice = Number(pt.entry_price || 0).toLocaleString('en-IN', {minimumFractionDigits: 2});
@@ -8163,21 +8154,8 @@ function renderTradingViewActiveDeck(allTrades) {
                     <div><span style="color:#94a3b8;">Target:</span> <strong style="color:#4ade80;">₹${tgtPrice}</strong></div>
                 </div>
                 <!-- TradingView Mini Symbol Overview Widget (Authorized 1s Live Stream) -->
-                <div class="tradingview-widget-container" style="border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
+                <div id="tv-widget-card-${idx}" class="tradingview-widget-container" style="border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); min-height: 180px;">
                     <div class="tradingview-widget-container__widget"></div>
-                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
-                    {
-                        "symbol": "${tvSym}",
-                        "width": "100%",
-                        "height": 180,
-                        "locale": "en",
-                        "dateRange": "1D",
-                        "colorTheme": "dark",
-                        "isTransparent": true,
-                        "autosize": true,
-                        "largeChartUrl": ""
-                    }
-                    </script>
                 </div>
             </div>
         `;
@@ -8201,12 +8179,36 @@ function renderTradingViewActiveDeck(allTrades) {
         </div>
     `;
 
-    // Re-execute embed scripts dynamically
-    deckEl.querySelectorAll('script').forEach(oldScript => {
-        const newScript = document.createElement('script');
-        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-        oldScript.parentNode.replaceChild(newScript, oldScript);
+    // Mount official TradingView mini widgets dynamically into each card container
+    activeTrades.forEach((t, idx) => {
+        const cardWidgetContainer = document.getElementById(`tv-widget-card-${idx}`);
+        if (!cardWidgetContainer) return;
+        const sym = (t.symbol || '').toUpperCase();
+        let tvSym = sym;
+        if (sym.includes('.NS') || t.asset_type === 'INTRADAY_STOCK' || t.asset_type === 'EQUITY') {
+            tvSym = `NSE:${sym.replace('.NS', '').trim()}`;
+        } else if (sym.includes('-FUT') || t.asset_type === 'STOCK_FUTURES') {
+            tvSym = `NSE:${sym.replace('-FUT', '').replace('.NS', '').trim()}1!`;
+        } else {
+            tvSym = `MCX:${sym.replace('.NS', '').trim()}1!`;
+        }
+
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
+        script.async = true;
+        script.text = JSON.stringify({
+            "symbol": tvSym,
+            "width": "100%",
+            "height": 180,
+            "locale": "en",
+            "dateRange": "1D",
+            "colorTheme": "dark",
+            "isTransparent": true,
+            "autosize": true,
+            "largeChartUrl": ""
+        });
+        cardWidgetContainer.appendChild(script);
     });
 }
 
