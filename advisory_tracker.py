@@ -5329,6 +5329,15 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 print(f"🚫 Universal Exhaustion Guard: Blocked {sym} SELL. RSI ({rsi:.1f}) is <= {min_sell_rsi:.1f} (extreme oversold). Selling into exhausted floor strictly prohibited.")
                 continue
 
+            # 🛡️ Lower Circuit Runway Guard: Never SHORT into an exchange trading halt
+            if action == "SELL":
+                if dist_lc is not None and dist_lc < 0.8:
+                    print(f"🛡️ Circuit Runway Guard: Blocked {sym} SELL. Distance to Lower Circuit is only {dist_lc:.2f}% (< 0.80%). Insufficient runway before exchange trading halt.")
+                    continue
+                if tgt and lc and tgt <= lc:
+                    print(f"🛡️ Circuit Runway Guard: Blocked {sym} SELL. Target (₹{tgt:,.2f}) penetrates Lower Circuit (₹{lc:,.2f}). Unachievable target.")
+                    continue
+
             if action == "BUY" and (rsi is not None and rsi >= max_buy_rsi):
                 print(f"🚫 Universal Exhaustion Guard: Blocked {sym} BUY. RSI ({rsi:.1f}) is >= {max_buy_rsi:.1f} (extreme overbought). Buying into exhausted ceiling strictly prohibited.")
                 continue
