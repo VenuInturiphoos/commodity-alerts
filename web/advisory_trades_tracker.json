@@ -1,13 +1,13 @@
 {
-  "last_updated": "25 Nov 2026, 06:48 PM IST",
+  "last_updated": "25 Nov 2026, 07:16 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 138,
+    "total_signals": 147,
     "executed_count": 19,
     "correct_count": 7,
     "wrong_count": 10,
-    "protected_count": 119,
+    "protected_count": 128,
     "win_rate_pct": 41.2,
     "broker": "Dhan",
     "total_gross_pnl_inr": -9703.18,
@@ -26,6 +26,449 @@
     "net_worth_inr": 288113.12
   },
   "trades": [
+    {
+      "id": "ADV-25Nov2026-1900-GOLDTEN",
+      "date": "25 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "GOLDTEN",
+      "name": "Gold Ten (Micro)",
+      "lot_size": 1,
+      "event_context": "US Pit Open Lower Circuit Test (15-Min Rule Enforced)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "US Pit Open Lower Circuit fade blocked: Intraday Bearish Session Momentum: Price (\u20b9119,346.0) trading below VWAP (\u20b9120,380.4) and Day Open (\u20b9121,900.0) with downward expansion (-2.44%).. Knife-catching prohibited.",
+        "reference_price": 119346.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 119331.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9119,331.00 (-2.38%) confirmed no extreme circuit imbalance."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 118659.13,
+        "outcome": "PENDING",
+        "badge": "Awaiting 07:15 \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "15-minute confirmation check scheduled for 07:15 PM IST."
+      }
+    },
+    {
+      "id": "ADV-25Nov2026-1900-SILVERMIC",
+      "date": "25 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "SILVERMIC",
+      "name": "Silver Micro",
+      "lot_size": 1,
+      "event_context": "US Pit Open Lower Circuit Test (15-Min Rule Enforced)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "US Pit Open Lower Circuit fade blocked: Aligned with HTF Bear Trend (50E: \u20b9192,505.9) & trading below Session VWAP (\u20b9146,521.4).. Knife-catching prohibited.",
+        "reference_price": 144914.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 144914.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9144,914.00 (-4.55%) confirmed no extreme circuit imbalance."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 145748.16,
+        "outcome": "PENDING",
+        "badge": "Awaiting 07:15 \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "15-minute confirmation check scheduled for 07:15 PM IST."
+      }
+    },
+    {
+      "id": "ADV-25Nov2026-1900-CRUDEOILM",
+      "date": "25 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "CRUDEOILM",
+      "name": "Crude Oil Mini",
+      "lot_size": 10,
+      "event_context": "Safe Normal Range (Range-Bound Chop)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / RANGE-BOUND CHOP",
+        "rationale": "Asset within tight range (+0.98%). Conflict: HTF is Bearish but price (\u20b97,655.0) is trading above Session VWAP (\u20b97,586.2). Counter-trend short blocked.. Capital preserved in cash.",
+        "reference_price": 7655.0,
+        "stop_loss": 7277.76,
+        "target": 7581.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 7655.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b97,655.00 (+0.98%) confirmed no extreme circuit imbalance."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 7655.0,
+        "entry_time": "07:00 PM IST",
+        "exit_price": 7655.0,
+        "exit_time": "11:45 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "CLOSED"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 7277.76,
+        "outcome": "PROTECTED",
+        "badge": "Capital Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Stood aside on flat consolidation. 100% capital preserved in cash."
+      }
+    },
+    {
+      "id": "ADV-25Nov2026-1900-NATURALGASM",
+      "date": "25 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "NATURALGASM",
+      "name": "Natural Gas Mini",
+      "lot_size": 2250,
+      "event_context": "US Pit Open Trend Momentum Sell (NYMEX/COMEX Open)",
+      "suggestion_6pm": {
+        "status": "WAIT_615",
+        "action_text": "WAIT FOR 07:15 PM IST CANDLE CLOSE before entering SELL NATURALGASM",
+        "rationale": "US Pit Open Momentum: Aligned with HTF Bear Trend (50E: \u20b9350.8) & trading below Session VWAP (\u20b9340.6). Target 1.2R calibrated to ATR.",
+        "reference_price": 340.4,
+        "stop_loss": 345.4,
+        "target": 334.9
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 340.4,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9340.40 (-1.50%) confirmed no extreme circuit imbalance."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 340.4,
+        "entry_time": null,
+        "exit_price": 340.4,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE",
+        "target": 334.9,
+        "stop_loss": 345.4
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 345.4,
+        "outcome": "PROTECTED",
+        "badge": "Risk Filter \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Risk engine blocked 6:15 PM entry: MAX_LOSS_EXCEEDED: Potential loss at stop (\u20b911,250.00) exceeds strict limit (\u20b96,000.00). Trade blocked."
+      }
+    },
+    {
+      "id": "ADV-25Nov2026-1900-COPPERM",
+      "date": "25 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "COPPERM",
+      "name": "Copper Mini",
+      "lot_size": 1000,
+      "event_context": "Option 2: Pullback Required Before Entry",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / PULLBACK REQUIRED",
+        "rationale": "PULLBACK_REQUIRED: Extended from resistance (Gap: 6.55 pts > Max Allowed: 5.00 pts from \u20b91,124.35). Wait for price to bounce closer to resistance before shorting. Standing aside to avoid chasing at range extremes.",
+        "reference_price": 1117.8,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 1117.8,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b91,117.80 (-1.44%) confirmed no extreme circuit imbalance."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": 1117.8,
+        "entry_time": "07:00 PM IST",
+        "exit_price": 1117.8,
+        "exit_time": "11:45 PM IST",
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Pullback Guard \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00 (Protected)",
+        "summary": "Option 2 discipline: Price extended from resistance. Stood aside until pullback into supply."
+      }
+    },
+    {
+      "id": "ADV-25Nov2026-1900-ZINCMINI",
+      "date": "25 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 1000,
+      "event_context": "US Pit Open Lower Circuit Test (15-Min Rule Enforced)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "US Pit Open Lower Circuit fade blocked: Intraday Bearish Session Momentum: Price (\u20b9354.1) trading below VWAP (\u20b9357.8) and Day Open (\u20b9364.4) with downward expansion (-2.88%).. Knife-catching prohibited.",
+        "reference_price": 354.1,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 354.1,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9354.10 (-2.88%) confirmed no extreme circuit imbalance."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 350.02,
+        "outcome": "PENDING",
+        "badge": "Awaiting 07:15 \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "15-minute confirmation check scheduled for 07:15 PM IST."
+      }
+    },
+    {
+      "id": "ADV-25Nov2026-1900-ALUMINI",
+      "date": "25 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 1000,
+      "event_context": "US Pit Open Lower Circuit Test (15-Min Rule Enforced)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "US Pit Open Lower Circuit fade blocked: Intraday Bearish Session Momentum: Price (\u20b9296.0) trading below VWAP (\u20b9299.6) and Day Open (\u20b9304.6) with downward expansion (-4.01%).. Knife-catching prohibited.",
+        "reference_price": 296.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 296.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9296.00 (-4.01%) confirmed no extreme circuit imbalance."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 296.02,
+        "outcome": "PENDING",
+        "badge": "Awaiting 07:15 \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "15-minute confirmation check scheduled for 07:15 PM IST."
+      }
+    },
+    {
+      "id": "ADV-25Nov2026-1900-ZINCMINI",
+      "date": "25 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 1000,
+      "event_context": "US Pit Open Lower Circuit Test (15-Min Rule Enforced)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "US Pit Open Lower Circuit fade blocked: Intraday Bearish Session Momentum: Price (\u20b9354.1) trading below VWAP (\u20b9358.0) and Day Open (\u20b9364.6) with downward expansion (-2.88%).. Knife-catching prohibited.",
+        "reference_price": 354.1,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 354.1,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9354.10 (-2.88%) confirmed no extreme circuit imbalance."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 350.02,
+        "outcome": "PENDING",
+        "badge": "Awaiting 07:15 \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "15-minute confirmation check scheduled for 07:15 PM IST."
+      }
+    },
+    {
+      "id": "ADV-25Nov2026-1900-ALUMINI",
+      "date": "25 Nov 2026",
+      "session_name": "US Pit Open (07:00)",
+      "time_trigger": "07:00 PM IST",
+      "time_6pm": "07:00 PM IST",
+      "time_validation": "07:15 PM IST",
+      "time_615": "07:15 PM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 1000,
+      "event_context": "US Pit Open Lower Circuit Test (15-Min Rule Enforced)",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "US Pit Open Lower Circuit fade blocked: Intraday Bearish Session Momentum: Price (\u20b9296.0) trading below VWAP (\u20b9299.9) and Day Open (\u20b9305.0) with downward expansion (-4.01%).. Knife-catching prohibited.",
+        "reference_price": 296.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 296.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9296.00 (-4.01%) confirmed no extreme circuit imbalance."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": 296.02,
+        "outcome": "PENDING",
+        "badge": "Awaiting 07:15 \u23f3",
+        "pnl_display": "Pending Confirmation",
+        "summary": "15-minute confirmation check scheduled for 07:15 PM IST."
+      }
+    },
     {
       "id": "ADV-25Nov2026-1820-SILVERMIC",
       "date": "25 Nov 2026",
@@ -401,10 +844,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 120915.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 119331.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9119,331.00 (-2.38%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -450,10 +893,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 148600.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 144914.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9144,914.00 (-4.55%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -499,10 +942,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "BULL_TRAP_AVOIDED",
-        "price_615": 7545.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Counter-trend BUY blocked by Macro CPR Filter."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 7655.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b97,655.00 (+0.98%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -548,10 +991,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "HARD_RISK_STAND_ASIDE",
-        "price_615": 335.4,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Reward:Risk ratio 1.03 is below minimum requirement of 1.1R (Risk: 14.6 pts, Reward: 14.9 pts)."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 340.4,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9340.40 (-1.50%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -597,10 +1040,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 1121.45,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 1117.8,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b91,117.80 (-1.44%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -646,10 +1089,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 354.35,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 354.1,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9354.10 (-2.88%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -695,10 +1138,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 296.65,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 296.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9296.00 (-4.01%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -744,10 +1187,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 354.35,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 354.1,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9354.10 (-2.88%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -793,10 +1236,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 296.65,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 296.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9296.00 (-4.01%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1199,10 +1642,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "NO_GAP_STAND_ASIDE",
-        "price_615": 122022.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 119331.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9119,331.00 (-2.38%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1248,10 +1691,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "NO_GAP_STAND_ASIDE",
-        "price_615": 146488.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 144914.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9144,914.00 (-4.55%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1297,10 +1740,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "NO_GAP_STAND_ASIDE",
-        "price_615": 7525.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 7655.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b97,655.00 (+0.98%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1348,10 +1791,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "HARD_RISK_STAND_ASIDE",
-        "price_615": 342.4,
-        "action_taken": "Stood Aside",
-        "detail": "Reward:Risk ratio 0.03 is below minimum requirement of 1.1R (Risk: 15.2 pts, Reward: 0.4 pts)."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 340.4,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9340.40 (-1.50%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1397,10 +1840,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "NO_GAP_STAND_ASIDE",
-        "price_615": 1133.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 1117.8,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b91,117.80 (-1.44%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1446,10 +1889,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "NO_GAP_STAND_ASIDE",
-        "price_615": 364.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 354.1,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9354.10 (-2.88%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1495,10 +1938,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "NO_GAP_STAND_ASIDE",
-        "price_615": 306.25,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 296.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9296.00 (-4.01%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1544,10 +1987,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "NO_GAP_STAND_ASIDE",
-        "price_615": 364.0,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 354.1,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9354.10 (-2.88%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -1593,10 +2036,10 @@
       },
       "check_615": {
         "checked": true,
-        "status": "NO_GAP_STAND_ASIDE",
-        "price_615": 306.25,
-        "action_taken": "Stood Aside (0 Units)",
-        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+        "status": "CONFIRMED_STAND_ASIDE",
+        "price_615": 296.0,
+        "action_taken": "15-Min candle confirmed range held. Stood aside to preserve capital.",
+        "detail": "Price at 6:15 PM \u20b9296.00 (-4.01%) confirmed no extreme circuit imbalance."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -9264,5 +9707,5 @@
       }
     }
   ],
-  "check_715_sent_date": "24 Nov 2026"
+  "check_715_sent_date": "25 Nov 2026"
 }
