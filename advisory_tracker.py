@@ -5097,21 +5097,22 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     except Exception as ex:
                         print(f"Error dispatching pre-volatility coil alert: {ex}")
 
-            if sig.action in ['BUY', 'SELL'] and sig.confluence_score >= 85.0:
+            is_coil_expansion = (sig.archetype == "VOLATILITY_COIL_EXPANSION" and sig.confluence_score >= 70.0)
+            if (sig.action in ['BUY', 'SELL'] and sig.confluence_score >= 85.0) or is_coil_expansion:
                 triggered = True
                 action = sig.action
                 if sig.archetype == "VOLATILITY_COIL_EXPANSION":
-                    setup_name = "Pre-Volatility Coil Expansion Engine"
+                    setup_name = "Pre-Volatility Coil Expansion Engine (Option A)"
                 else:
                     setup_name = f"Elite Institutional Confluence ({sig.archetype.replace('_', ' ').title()})"
                 sl = sig.stop_loss
-                tgt = sig.target_2  # Target 2 (Runner 2.5R to 3.5R)
-                target_1 = sig.target_1  # Target 1 (Breakeven Trail Milestone 1.5R)
+                tgt = sig.target_1  # 1.8R Target for Option A
+                target_1 = sig.target_1
                 confluence_score = sig.confluence_score
                 is_institutional_swing = False  # Strictly intraday per user specification
                 rationale = (f"Elite Confluence (+{sig.confluence_score:.0f}/100) on {sym}: {sig.rationale} "
                              f"Archetype: {sig.archetype}. Intraday trade active. "
-                             f"Target 1 (Breakeven Trail): ₹{target_1:,.2f} | Target 2 (Runner): ₹{tgt:,.2f} | SL: ₹{sl:,.2f}.")
+                             f"Target 1 (1.8R): ₹{target_1:,.2f} | Runner: ₹{sig.target_2:,.2f} | SL (Midpoint): ₹{sl:,.2f}.")
             else:
                 # Elite Confluence Gate: Reject lower quality setups on Gold and Crude to prevent fee churn
                 print(f"🛡️ Elite Institutional Gate: {sym} Confluence score {sig.confluence_score:.0f}/100 < 85. Standing aside to protect capital and eliminate churn.")
@@ -5172,7 +5173,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     adx=adx, rsi=rsi, atr=atr_val, ema20=ema20, ema50=ema50,
                     volume=vol, avg_volume=avg_vol
                 )
-                if pm_sig and pm_sig.squeeze_active and pm_sig.squeeze_bars >= 3:
+                if pm_sig and pm_sig.squeeze_active and pm_sig.squeeze_bars >= 3 and not (pm_sig.action in ['BUY', 'SELL']):
                     coil_sub = f"⚡ [PRE-VOLATILITY COIL ALERT] {name} Compression Active ({pm_sig.squeeze_bars} bars) @ ₹{cur_p:,.2f} ({now_time_str})"
                     coil_bdy = (
                         f"⚡ <b>PRE-VOLATILITY COIL DETECTED (ENERGY COMPRESSION)</b>\n"
@@ -5183,7 +5184,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                         f"• <b>Coil Status</b>: <b>Active Volatility Squeeze for {pm_sig.squeeze_bars} bars</b>\n"
                         f"• <b>PMRI Score</b>: {pm_sig.pmri_score:.1f}/100\n"
                         f"• <b>Momentum Vector</b>: {pm_sig.momentum_direction}\n"
-                        f"• <b>Execution Rule</b>: Standing aside inside the compression. Engine primed for breakout.\n\n"
+                        f"• <b>Execution Rule</b>: Standing aside inside compression. Engine waiting for breakout expansion candle.\n\n"
                         f"🛡️ <i>Pre-Move Volatility Engine Active | Standing By for Ignition</i>"
                     )
                     if alerter:
@@ -5191,8 +5192,33 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                             alerter.send_alert(coil_sub, coil_bdy)
                         except Exception as ex:
                             print(f"Error dispatching coil alert for {sym}: {ex}")
-            except Exception:
-                pass
+
+                # ⚡ OPTION A: DIRECTIONAL FUTURES COIL EXPANSION TRIGGER
+                if pm_sig and pm_sig.action in ['BUY', 'SELL'] and pm_sig.status in ['PRE_MOVE_BUY_TRIGGER', 'PRE_MOVE_SELL_TRIGGER']:
+                    # Macro Trend Alignment Guard: Only trade with higher-timeframe 50-EMA tide
+                    macro_aligned = (pm_sig.action == 'BUY' and (ema50 is None or cur_p >= ema50 * 0.997)) or \
+                                    (pm_sig.action == 'SELL' and (ema50 is None or cur_p <= ema50 * 1.003))
+
+                    if macro_aligned and not triggered:
+                        triggered = True
+                        action = pm_sig.action
+                        setup_name = f"Pre-Volatility Coil Expansion ({action.title()} Futures - Option A)"
+
+                        # Sizing: Invalidation Stop tucked at Coil Midpoint
+                        session_mid = round((day_h + day_l) / 2.0, 2) if day_h > day_l else cur_p
+                        coil_mid = round((cur_p + pm_sig.stop_loss) / 2.0, 2)
+                        sl = min(session_mid, coil_mid) if action == 'BUY' else max(session_mid, coil_mid)
+                        risk_pts = max(abs(cur_p - sl), 0.30 * atr_val)
+                        sl = round(cur_p - risk_pts, 2) if action == 'BUY' else round(cur_p + risk_pts, 2)
+                        tgt = round(cur_p + (1.8 * risk_pts), 2) if action == 'BUY' else round(cur_p - (1.8 * risk_pts), 2)
+                        target_1 = tgt
+
+                        rationale = (f"Option A Directional Futures: {action} confirmed on {sym}. "
+                                     f"Pre-Volatility Coil squeeze released with macro trend alignment ({'Above 50-EMA' if action == 'BUY' else 'Below 50-EMA'}). "
+                                     f"PMRI Score: {pm_sig.pmri_score:.1f}/100. "
+                                     f"Entry: ₹{cur_p:,.2f} | Stop tucked at Coil Midpoint: ₹{sl:,.2f} | Target (1.8R): ₹{tgt:,.2f}.")
+            except Exception as e:
+                print(f"Error evaluating pre-move detector for {sym}: {e}")
 
         # --- SETUP 2: Standard Day-High / Day-Low Volatility Breakout (For Non-Tailored Assets) ---
         if not triggered and not is_trend_asset and not is_momentum_asset:

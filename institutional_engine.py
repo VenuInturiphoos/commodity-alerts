@@ -506,22 +506,27 @@ class InstitutionalConfluenceEngine:
         CONFLUENCE_THRESHOLD = min_confluence
 
         # Check Bullish Confluence (Archetype A, B, or C)
-        if score_c_bull >= CONFLUENCE_THRESHOLD:
-            # Archetype C: Volatility Coil Expansion BUY (Ultra-tight stop tucked at coil floor)
-            sl = round(coil_data["coil_floor"] - 0.10 * atr, 2)
-            risk = max(abs(cur_p - sl), 0.25 * atr)
-            t1 = round(cur_p + 2.0 * risk, 2)
-            t2 = round(cur_p + 3.5 * risk, 2)
+        # Option A Volatility Coil Expansion: Threshold calibrated to 70.0 (Base 35 + Trend 25 + Volume/KER/VWAP >= 70)
+        if score_c_bull >= 70.0:
+            # Archetype C: Volatility Coil Expansion BUY (Option A: Invalidation Stop at Coil Midpoint)
+            c_floor = coil_data["coil_floor"]
+            c_roof = coil_data["coil_roof"]
+            c_mid = round((c_floor + c_roof) / 2.0, 2)
+            sl = c_mid
+            risk = max(abs(cur_p - sl), 0.30 * atr)
+            sl = round(cur_p - risk, 2)
+            t1 = round(cur_p + 1.8 * risk, 2)
+            t2 = round(cur_p + 3.0 * risk, 2)
             return InstitutionalSignal(
                 symbol=symbol, action="BUY", archetype="VOLATILITY_COIL_EXPANSION",
                 confluence_score=score_c_bull, current_price=cur_p, entry_price=cur_p,
-                stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=3.5,
+                stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=1.8,
                 ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=False,
                 coil_active=coil_data["is_in_coil"], coil_bars=coil_data["coil_bars"],
                 coil_floor=coil_data["coil_floor"], coil_roof=coil_data["coil_roof"],
                 daily_ema50=daily_ema50,
-                rationale=f"Volatility Coil Expansion BUY: {coil_data['coil_bars']}-bar squeeze fired UP above Keltner Channel. "
-                          f"Aligned above Daily 50-EMA with ultra-tight coil floor stop ₹{sl:,.2f} (+{score_c_bull:.0f}/100 confluence).",
+                rationale=f"Option A Directional Futures BUY: {coil_data['coil_bars']}-bar squeeze fired UP above Keltner Channel. "
+                          f"Aligned with Daily 50-EMA trend. Stop tucked at Coil Midpoint ₹{sl:,.2f} (+{score_c_bull:.0f}/100 confluence).",
                 reasons=reasons
             )
 
@@ -565,22 +570,27 @@ class InstitutionalConfluenceEngine:
             )
 
         # Check Bearish Confluence (Archetype A, B, or C)
-        if score_c_bear >= CONFLUENCE_THRESHOLD:
-            # Archetype C: Volatility Coil Expansion SELL (Ultra-tight stop tucked at coil roof)
-            sl = round(coil_data["coil_roof"] + 0.10 * atr, 2)
-            risk = max(abs(sl - cur_p), 0.25 * atr)
-            t1 = round(cur_p - 2.0 * risk, 2)
-            t2 = round(cur_p - 3.5 * risk, 2)
+        # Option A Volatility Coil Expansion: Threshold calibrated to 70.0 (Base 35 + Trend 25 + Volume/KER/VWAP >= 70)
+        if score_c_bear >= 70.0:
+            # Archetype C: Volatility Coil Expansion SELL (Option A: Invalidation Stop at Coil Midpoint)
+            c_floor = coil_data["coil_floor"]
+            c_roof = coil_data["coil_roof"]
+            c_mid = round((c_floor + c_roof) / 2.0, 2)
+            sl = c_mid
+            risk = max(abs(sl - cur_p), 0.30 * atr)
+            sl = round(cur_p + risk, 2)
+            t1 = round(cur_p - 1.8 * risk, 2)
+            t2 = round(cur_p - 3.0 * risk, 2)
             return InstitutionalSignal(
                 symbol=symbol, action="SELL", archetype="VOLATILITY_COIL_EXPANSION",
                 confluence_score=score_c_bear, current_price=cur_p, entry_price=cur_p,
-                stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=3.5,
+                stop_loss=round(sl, 2), target_1=t1, target_2=t2, reward_risk_ratio=1.8,
                 ker_efficiency=ker, volume_profile=vp, avwap=avwap, is_sweep=False,
                 coil_active=coil_data["is_in_coil"], coil_bars=coil_data["coil_bars"],
                 coil_floor=coil_data["coil_floor"], coil_roof=coil_data["coil_roof"],
                 daily_ema50=daily_ema50,
-                rationale=f"Volatility Coil Expansion SELL: {coil_data['coil_bars']}-bar squeeze fired DOWN below Keltner Channel. "
-                          f"Aligned below Daily 50-EMA with ultra-tight coil ceiling stop ₹{sl:,.2f} (+{score_c_bear:.0f}/100 confluence).",
+                rationale=f"Option A Directional Futures SELL: {coil_data['coil_bars']}-bar squeeze fired DOWN below Keltner Channel. "
+                          f"Aligned below Daily 50-EMA trend. Stop tucked at Coil Midpoint ₹{sl:,.2f} (+{score_c_bear:.0f}/100 confluence).",
                 reasons=reasons
             )
 
