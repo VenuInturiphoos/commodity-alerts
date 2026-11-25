@@ -5193,30 +5193,40 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                         except Exception as ex:
                             print(f"Error dispatching coil alert for {sym}: {ex}")
 
-                # ⚡ OPTION A: DIRECTIONAL FUTURES COIL EXPANSION TRIGGER
-                if pm_sig and pm_sig.action in ['BUY', 'SELL'] and pm_sig.status in ['PRE_MOVE_BUY_TRIGGER', 'PRE_MOVE_SELL_TRIGGER']:
-                    # Macro Trend Alignment Guard: Only trade with higher-timeframe 50-EMA tide
-                    macro_aligned = (pm_sig.action == 'BUY' and (ema50 is None or cur_p >= ema50 * 0.997)) or \
-                                    (pm_sig.action == 'SELL' and (ema50 is None or cur_p <= ema50 * 1.003))
+                # ⚡ OPTION A: DIRECTIONAL FUTURES COIL EXPANSION & WYCKOFF SPRING TRIGGER
+                if pm_sig and pm_sig.action in ['BUY', 'SELL'] and pm_sig.status in ['PRE_MOVE_BUY_TRIGGER', 'PRE_MOVE_SELL_TRIGGER', 'PRE_MOVE_SPRING_BUY_TRIGGER', 'PRE_MOVE_UPTHRUST_SELL_TRIGGER']:
+                    is_spring_setup = (pm_sig.wyckoff_spring or 'SPRING' in pm_sig.status or 'UPTHRUST' in pm_sig.status)
+                    # Macro Trend Alignment Guard: Standard breakouts require 50-EMA tide; Wyckoff Springs are explicit oversold V-reversals
+                    macro_aligned = (pm_sig.action == 'BUY' and (is_spring_setup or ema50 is None or cur_p >= ema50 * 0.997)) or \
+                                    (pm_sig.action == 'SELL' and (is_spring_setup or ema50 is None or cur_p <= ema50 * 1.003))
 
                     if macro_aligned and not triggered:
                         triggered = True
                         action = pm_sig.action
-                        setup_name = f"Pre-Volatility Coil Expansion ({action.title()} Futures - Option A)"
+                        if is_spring_setup:
+                            setup_name = f"Pre-Volatility Coil Wyckoff Spring ({action.title()} Futures - Option A)" if action == 'BUY' else f"Pre-Volatility Coil Wyckoff Upthrust ({action.title()} Futures - Option A)"
+                        else:
+                            setup_name = f"Pre-Volatility Coil Expansion ({action.title()} Futures - Option A)"
 
-                        # Sizing: Invalidation Stop tucked at Coil Midpoint
-                        session_mid = round((day_h + day_l) / 2.0, 2) if day_h > day_l else cur_p
-                        coil_mid = round((cur_p + pm_sig.stop_loss) / 2.0, 2)
-                        sl = min(session_mid, coil_mid) if action == 'BUY' else max(session_mid, coil_mid)
-                        risk_pts = max(abs(cur_p - sl), 0.30 * atr_val)
-                        sl = round(cur_p - risk_pts, 2) if action == 'BUY' else round(cur_p + risk_pts, 2)
-                        tgt = round(cur_p + (1.8 * risk_pts), 2) if action == 'BUY' else round(cur_p - (1.8 * risk_pts), 2)
+                        # Sizing: Invalidation Stop
+                        if is_spring_setup and pm_sig.stop_loss > 0:
+                            sl = pm_sig.stop_loss
+                            risk_pts = max(abs(cur_p - sl), 0.25 * atr_val)
+                            sl = round(cur_p - risk_pts, 2) if action == 'BUY' else round(cur_p + risk_pts, 2)
+                            tgt = round(cur_p + (1.8 * risk_pts), 2) if action == 'BUY' else round(cur_p - (1.8 * risk_pts), 2)
+                        else:
+                            session_mid = round((day_h + day_l) / 2.0, 2) if day_h > day_l else cur_p
+                            coil_mid = round((cur_p + pm_sig.stop_loss) / 2.0, 2)
+                            sl = min(session_mid, coil_mid) if action == 'BUY' else max(session_mid, coil_mid)
+                            risk_pts = max(abs(cur_p - sl), 0.30 * atr_val)
+                            sl = round(cur_p - risk_pts, 2) if action == 'BUY' else round(cur_p + risk_pts, 2)
+                            tgt = round(cur_p + (1.8 * risk_pts), 2) if action == 'BUY' else round(cur_p - (1.8 * risk_pts), 2)
                         target_1 = tgt
 
                         rationale = (f"Option A Directional Futures: {action} confirmed on {sym}. "
-                                     f"Pre-Volatility Coil squeeze released with macro trend alignment ({'Above 50-EMA' if action == 'BUY' else 'Below 50-EMA'}). "
+                                     f"{'Wyckoff Spring V-Reversal from oversold liquidity sweep' if is_spring_setup else 'Pre-Volatility Coil squeeze released with macro trend alignment'}. "
                                      f"PMRI Score: {pm_sig.pmri_score:.1f}/100. "
-                                     f"Entry: ₹{cur_p:,.2f} | Stop tucked at Coil Midpoint: ₹{sl:,.2f} | Target (1.8R): ₹{tgt:,.2f}.")
+                                     f"Entry: ₹{cur_p:,.2f} | Stop tucked under structure: ₹{sl:,.2f} | Target (1.8R): ₹{tgt:,.2f}.")
             except Exception as e:
                 print(f"Error evaluating pre-move detector for {sym}: {e}")
 

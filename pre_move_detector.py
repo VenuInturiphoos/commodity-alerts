@@ -484,9 +484,47 @@ class PreMoveDetector:
         tgt1 = 0.0
         tgt2 = 0.0
         rrr = 0.0
+        is_wyckoff_spring = False
+        is_wyckoff_upthrust = False
+
+        bounce_from_low_pct = ((current_price - day_low) / day_low * 100.0) if (day_low and day_low > 0) else 0.0
+        rejection_from_high_pct = ((day_high - current_price) / day_high * 100.0) if (day_high and day_high > 0) else 0.0
 
         if pmri_score >= cls.MIN_PMRI_TRIGGER and is_compressed:
-            if mom_dir == "BULLISH_EXPANDING":
+            # 1. ⚡ Wyckoff Spring Reversal (Oversold Liquidity Sweep & V-Bounce)
+            # When an asset is heavily oversold (RSI <= 35.0), sweeps the Day Low / Coil Floor,
+            # and bounces >= +0.30% with volume absorption, catch the mean-reversion coil release!
+            if (rsi is not None and rsi <= 35.0) and bounce_from_low_pct >= 0.30:
+                is_wyckoff_spring = True
+                action = "BUY"
+                status = "PRE_MOVE_SPRING_BUY_TRIGGER"
+                raw_sl = min(day_low - (0.10 * atr_val), current_price - (0.25 * atr_val))
+                min_risk = 0.25 * atr_val
+                max_risk = 0.60 * atr_val
+                risk_pts = max(min_risk, min(current_price - raw_sl, max_risk))
+                sl = round(current_price - risk_pts, 2)
+                tgt1 = round(current_price + (1.8 * risk_pts), 2)  # 1.8R Option A Target
+                tgt2 = round(current_price + (3.0 * risk_pts), 2)  # 3.0R Runner Target
+                rrr = round((tgt1 - current_price) / risk_pts, 2)
+                reasons.append(f"⚡ Wyckoff Spring Reversal: Severe oversold exhaustion (RSI {rsi:.1f} <= 35) rejected off Day Low (₹{day_low:,.2f}) with +{bounce_from_low_pct:.2f}% bounce. Mean reversion release triggered.")
+
+            # 2. ⚡ Wyckoff Upthrust Reversal (Overbought Liquidity Sweep & Rejection)
+            elif (rsi is not None and rsi >= 65.0) and rejection_from_high_pct >= 0.30:
+                is_wyckoff_upthrust = True
+                action = "SELL"
+                status = "PRE_MOVE_UPTHRUST_SELL_TRIGGER"
+                raw_sl = max(day_high + (0.10 * atr_val), current_price + (0.25 * atr_val))
+                min_risk = 0.25 * atr_val
+                max_risk = 0.60 * atr_val
+                risk_pts = max(min_risk, min(raw_sl - current_price, max_risk))
+                sl = round(current_price + risk_pts, 2)
+                tgt1 = round(current_price - (1.8 * risk_pts), 2)
+                tgt2 = round(current_price - (3.0 * risk_pts), 2)
+                rrr = round((current_price - tgt1) / risk_pts, 2)
+                reasons.append(f"⚡ Wyckoff Upthrust Reversal: Overbought exhaustion (RSI {rsi:.1f} >= 65) rejected off Day High (₹{day_high:,.2f}) with -{rejection_from_high_pct:.2f}% drop. Mean reversion breakdown triggered.")
+
+            # 3. Standard Bullish Expansion (Holding baseline and expanding UP)
+            elif mom_dir == "BULLISH_EXPANDING":
                 # Hard Overbought Guard: Never BUY into exhausted overbought conditions
                 if rsi is not None and rsi > 65.0:
                     status = "OVERBOUGHT_EXHAUSTION_BLOCKED"
@@ -497,14 +535,15 @@ class PreMoveDetector:
                     # Ultra-tight invalidation stop: placed strictly under the coil support floor
                     coil_floor = bb_lower if (bb_lower and bb_lower > 0 and bb_lower < current_price) else (current_price - (0.35 * atr_val))
                     raw_sl = min(current_price - (0.25 * atr_val), coil_floor - (0.05 * atr_val))
-                    # Bound stop loss between 0.20 * atr_val and 0.45 * atr_val to guarantee MINIMUM stoploss
                     min_risk = 0.20 * atr_val
                     max_risk = 0.45 * atr_val
                     risk_pts = max(min_risk, min(current_price - raw_sl, max_risk))
                     sl = round(current_price - risk_pts, 2)
-                    tgt1 = round(current_price + (2.5 * risk_pts), 2)  # 2.5R primary asymmetric target
-                    tgt2 = round(current_price + (4.5 * risk_pts), 2)  # 4.5R explosive runner target
+                    tgt1 = round(current_price + (1.8 * risk_pts), 2)  # 1.8R primary asymmetric target
+                    tgt2 = round(current_price + (3.0 * risk_pts), 2)  # 3.0R runner target
                     rrr = round((tgt1 - current_price) / risk_pts, 2)
+
+            # 4. Standard Bearish Expansion (Pinned below baseline and expanding DOWN)
             elif mom_dir == "BEARISH_EXPANDING":
                 # Hard Oversold Guard: Never SELL into exhausted oversold conditions
                 if rsi is not None and rsi < 35.0:
@@ -520,8 +559,8 @@ class PreMoveDetector:
                     max_risk = 0.45 * atr_val
                     risk_pts = max(min_risk, min(raw_sl - current_price, max_risk))
                     sl = round(current_price + risk_pts, 2)
-                    tgt1 = round(current_price - (2.5 * risk_pts), 2)  # 2.5R primary asymmetric target
-                    tgt2 = round(current_price - (4.5 * risk_pts), 2)  # 4.5R explosive runner target
+                    tgt1 = round(current_price - (1.8 * risk_pts), 2)  # 1.8R primary asymmetric target
+                    tgt2 = round(current_price - (3.0 * risk_pts), 2)  # 3.0R runner target
                     rrr = round((current_price - tgt1) / risk_pts, 2)
 
         return PreMoveSignal(
@@ -541,8 +580,8 @@ class PreMoveDetector:
             momentum_value=round(change_pct, 2),
             bandwidth_percentile=round(day_range_pct, 2),
             volume_ratio=round(vol_ratio, 2),
-            wyckoff_spring=False,
+            wyckoff_spring=(is_wyckoff_spring or is_wyckoff_upthrust),
             reasons=reasons,
-            setup_name="Pre-Ignition Volatility Coil"
+            setup_name="Pre-Volatility Coil Wyckoff Spring (V-Reversal)" if is_wyckoff_spring else ("Pre-Volatility Coil Wyckoff Upthrust (Exhaustion Reversal)" if is_wyckoff_upthrust else "Pre-Ignition Volatility Coil")
         )
 
