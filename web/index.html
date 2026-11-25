@@ -7317,8 +7317,8 @@ function getAdvisoryTradeLivePriceData(t) {
     if (!t) return null;
     const cleanSym = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
 
-    // Priority 1: Real-time 1-second dynamic tick from TradingView WebStream
-    if (t.live_price_data && t.live_price_data.current_price !== undefined && t.live_price_data.current_price !== null && !isNaN(Number(t.live_price_data.current_price)) && t._is_live_streamed) {
+    // Priority 1: Real-time dynamic tick from TradingView WebStream or live snapshot
+    if (t.live_price_data && t.live_price_data.current_price !== undefined && t.live_price_data.current_price !== null && !isNaN(Number(t.live_price_data.current_price))) {
         return {
             current_price: Number(t.live_price_data.current_price),
             change_pct: Number(t.live_price_data.change_pct || 0)
