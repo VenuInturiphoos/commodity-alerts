@@ -1,10 +1,10 @@
 {
-  "last_updated": "26 Nov 2026, 11:45 AM IST",
+  "last_updated": "26 Nov 2026, 11:50 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 160,
-    "executed_count": 23,
+    "total_signals": 161,
+    "executed_count": 24,
     "correct_count": 8,
     "wrong_count": 11,
     "protected_count": 137,
@@ -17,15 +17,164 @@
     "intraday_pnl_inr": 1246.02,
     "intraday_booked_profit_inr": 1246.02,
     "intraday_pool_balance_inr": 51246.02,
-    "avg_trade_pnl_inr": -516.82,
-    "active_trades_count": 4,
+    "avg_trade_pnl_inr": -495.29,
+    "active_trades_count": 5,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 288113.12,
-    "used_margin_inr": 99206.34,
-    "available_cash_inr": 188906.78,
+    "used_margin_inr": 144410.04,
+    "available_cash_inr": 143703.08,
     "net_worth_inr": 288113.12
   },
   "trades": [
+    {
+      "id": "ADV-26Nov2026-1148-SILVERMIC",
+      "date": "26 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (Pre-Volatility Coil Expansion (Sell Futures - Option A))",
+      "time_trigger": "11:48 AM IST",
+      "time_6pm": "11:48 AM IST",
+      "time_validation": "11:48 AM IST",
+      "time_615": "11:48 AM IST",
+      "time_exit": "11:45 PM IST",
+      "holding_type": "INTRADAY",
+      "is_swing_trade": false,
+      "confluence_score": null,
+      "target_1": 145702.09,
+      "target_2": 145702.09,
+      "symbol": "SILVERMIC",
+      "name": "Silver Micro",
+      "lot_size": 2,
+      "event_context": "Indicator Confluence: Pre-Volatility Coil Expansion (Sell Futures - Option A)",
+      "regime": {
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 60.8, RSI: 24.3). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "SHORT_FUTURES"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 60.8,
+        "rsi": 24.3,
+        "change_pct": 1.91,
+        "bb_width_pct": 18.35,
+        "daily_vol_pct": 4.59,
+        "close": 150679.0,
+        "ema50": 198674.0433442683,
+        "ema200": 198674.0433442683
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "BREAKOUT_MOMENTUM_EXPANSION",
+        "verdict_text": "Breakout Momentum Expansion \u26a1 (High-Conviction Breakout)",
+        "p_target_pct": 5.5,
+        "p_stop_pct": 22.7,
+        "p_neither_pct": 71.7,
+        "resolved_win_rate_pct": 19.6,
+        "expected_r": -0.113,
+        "target_r": 2.07,
+        "sample_bars": 2261,
+        "summary": "3,000 Replays: 5.5% Target | 22.7% Stop | Expected: -0.11R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 2.07,
+        "loss_at_stop_inr": 4800.0,
+        "potential_gain_inr": 9953.82,
+        "broker": "Dhan",
+        "est_charges_inr": 99.24,
+        "net_loss_at_stop_inr": 4899.24
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b9150,679.00",
+        "rationale": "Option A Directional Futures: SELL confirmed on SILVERMIC. Pre-Volatility Coil squeeze released with macro trend alignment. PMRI Score: 70.0/100. Entry: \u20b9150,679.00 | Stop tucked under structure: \u20b9153,443.95 | Target (1.8R): \u20b9145,702.09. 3,000 Replays: 5.5% Target | 22.7% Stop | Expected: -0.11R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))",
+        "reference_price": 150679.0,
+        "stop_loss": 153079.0,
+        "target": 145702.09,
+        "target_1": 145702.09,
+        "target_2": 145702.09,
+        "original_stop_loss": 153079.0,
+        "original_target": 145702.09
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 150679.0,
+        "action_taken": "Entered SELL 2 units @ \u20b9150,679.00",
+        "detail": "Pre-Volatility Coil Expansion (Sell Futures - Option A): Option A Directional Futures: SELL confirmed on SILVERMIC. Pre-Volatility Coil squeeze released with macro trend alignment. PMRI Score: 70.0/100. Entry: \u20b9150,679.00 | Stop tucked under structure: \u20b9153,443.95 | Target (1.8R): \u20b9145,702.09. | 3,000 Replays: 5.5% Target | 22.7% Stop | Expected: -0.11R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 2,
+        "entry_price": 150679.0,
+        "entry_time": "11:48 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": -441.0,
+        "pnl_inr": -882.0,
+        "status": "ACTIVE",
+        "margin_required_inr": 45203.7,
+        "holding_type": "INTRADAY",
+        "target": 145702.09,
+        "target_1": 145702.09,
+        "target_2": 145702.09,
+        "breakeven_active": false,
+        "stop_loss": 153079.0,
+        "initial_stop_loss": 153079.0,
+        "original_sl": 153079.0,
+        "peak_high": 151120.0,
+        "trough_low": 150679.0,
+        "entry_day_high": 150679.0,
+        "entry_day_low": 150679.0,
+        "live_broker_order": {
+          "status": "REJECTED",
+          "reason": {
+            "error_code": "DH-901",
+            "error_type": "Invalid_Authentication",
+            "error_message": "Client ID or user generated access token is invalid or expired."
+          },
+          "dhan_response": {
+            "status": "failure",
+            "remarks": {
+              "error_code": "DH-901",
+              "error_type": "Invalid_Authentication",
+              "error_message": "Client ID or user generated access token is invalid or expired."
+            },
+            "data": ""
+          }
+        }
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Pre-Volatility Coil Expansion (Sell Futures - Option A) active: SELL @ \u20b9150,679.00 (Target: \u20b9145,702.09, SL: \u20b9153,079.00) | 3,000 Replays: 5.5% Target | 22.7% Stop | Expected: -0.11R (Breakout Momentum Expansion \u26a1 (High-Conviction Breakout))"
+      },
+      "entry_alert": {
+        "subject": "\u26a1 [PRE-VOLATILITY COIL TRIGGER] Silver Micro SELL @ \u20b9150,679.00 (11:48 AM IST)",
+        "body": "\u26a1 <b>PRE-VOLATILITY COIL EXPANSION TRIGGERED</b>\n\ud83d\udcc5 <i>26 Nov 2026, 11:48 AM IST</i>\n\ud83d\udc64 Account: <b>venu.photos1@gmail.com</b>\n\n\u2022 <b>Asset</b>: Silver Micro (SILVERMIC)\n\u2022 <b>Signal</b>: <b>SELL 2 units @ \u20b9150,679.00</b>\n\u2022 <b>Setup</b>: Pre-Volatility Coil Expansion (Sell Futures - Option A)\n\u2022 <b>Technical Rationale</b>: Option A Directional Futures: SELL confirmed on SILVERMIC. Pre-Volatility Coil squeeze released with macro trend alignment. PMRI Score: 70.0/100. Entry: \u20b9150,679.00 | Stop tucked under structure: \u20b9153,443.95 | Target (1.8R): \u20b9145,702.09.\n\u2022 <b>\ud83c\udfb2 Monte Carlo Replay (3,000 runs)</b>: <b>5.5% Win Prob | -0.11R Expectancy</b>\n\u2022 <b>Stop-Loss</b>: \u20b9153,079.00 (Ultra-tight Coil Boundary Invalidation Stop)\n\u2022 <b>Target 1 (Breakeven Trail)</b>: \u20b9145,702.09 (1.5R to 2.0R)\n\u2022 <b>Target 2 (Runner)</b>: \u20b9145,702.09 (3.5R Explosive Runner)\n\u2022 <b>Capital Sizing</b>: \u20b91,50,000 Margin Allocated (Split into 2 concurrent trades on \u20b93 Lakhs capital)\n\u2022 <b>Status</b>: Active intraday paper trade running. Automatic trailing breakeven & 23:15 IST square-off enabled.\n\n\ud83c\udf10 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+      },
+      "entry_alert_sent": true,
+      "live_price_data": {
+        "current_price": 151120.0,
+        "change_pct": 0.29
+      }
+    },
     {
       "id": "ADV-26Nov2026-1121-SUNPHARMA",
       "date": "26 Nov 2026",
@@ -130,8 +279,8 @@
         "entry_time": "11:21 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": 3.4,
-        "pnl_inr": 91.8,
+        "pnl_points": -0.6,
+        "pnl_inr": -16.2,
         "status": "ACTIVE",
         "target": 1959.67,
         "stop_loss": 1899.04,
@@ -156,8 +305,8 @@
       },
       "entry_alert_sent": true,
       "live_price_data": {
-        "current_price": 1930.0,
-        "change_pct": 0.18
+        "current_price": 1926.0,
+        "change_pct": -0.03
       }
     },
     {
@@ -264,8 +413,8 @@
         "entry_time": "10:18 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": -0.1,
-        "pnl_inr": -2.1,
+        "pnl_points": -1.1,
+        "pnl_inr": -23.1,
         "status": "ACTIVE",
         "target": 2537.4,
         "stop_loss": 2458.93,
@@ -290,8 +439,8 @@
       },
       "entry_alert_sent": true,
       "live_price_data": {
-        "current_price": 2494.5,
-        "change_pct": -0.0
+        "current_price": 2493.5,
+        "change_pct": -0.04
       }
     },
     {
@@ -398,8 +547,8 @@
         "entry_time": "10:18 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": -4.8,
-        "pnl_inr": -134.4,
+        "pnl_points": -6.6,
+        "pnl_inr": -184.8,
         "status": "ACTIVE",
         "target": 1863.42,
         "stop_loss": 1808.2,
@@ -424,8 +573,8 @@
       },
       "entry_alert_sent": true,
       "live_price_data": {
-        "current_price": 1828.5,
-        "change_pct": -0.26
+        "current_price": 1826.7,
+        "change_pct": -0.36
       }
     },
     {
@@ -525,8 +674,8 @@
         "entry_time": "10:08 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": -1.5,
-        "pnl_inr": -3000.0,
+        "pnl_points": -0.9,
+        "pnl_inr": -1800.0,
         "status": "ACTIVE",
         "margin_required_inr": 68058.9,
         "holding_type": "INTRADAY",
@@ -556,8 +705,8 @@
       },
       "entry_alert_sent": true,
       "live_price_data": {
-        "current_price": 358.6,
-        "change_pct": -0.42
+        "current_price": 359.2,
+        "change_pct": -0.25
       }
     },
     {
