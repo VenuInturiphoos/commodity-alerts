@@ -991,22 +991,16 @@ class PositionSizer:
             # Ample margin: deploy canonical lot reaching ~₹1.5L margin
             resolved_lot = canonical_lot
 
-        # 3. Commodity Margin Integrity Mandate:
-        # For MCX Commodities, each position is calibrated to ~₹1.5L margin.
-        # Do NOT artificially downscale whole commodity contracts below ~₹1.5L target margin
-        # just because structural stop-loss distance exceeds an arbitrary cap.
-        # Both PreTradeRiskEngine and InstitutionalDirectionEngine follow the Movement-First Mandate
-        # and accept the high-conviction risk.
-        is_commodity = bool(spec_150k or mini_info or resolved_sym in cls.MARGIN_RATES or base_sym in cls.MARGIN_RATES)
-        if not is_commodity:
-            # Non-commodity / Equities: apply risk cap scaling
-            risk_pts = abs(entry - stop)
-            total_trade_risk = risk_pts * resolved_lot
-            if max_risk_inr and max_risk_inr > 0 and total_trade_risk > max_risk_inr:
-                single_risk = risk_pts * base_unit
-                if single_risk > 0:
-                    affordable_lots = int(max_risk_inr // single_risk)
-                    resolved_lot = max(1, affordable_lots) * base_unit
+        # 3. Strict Single-Trade Risk Cap Enforcement (Commodities & Equities):
+        # Sizing by margin must NEVER breach the single-trade risk limit (<= ₹6,000 max risk).
+        # If total risk at stop-loss exceeds max_risk_inr, downscale whole contract lots to fit inside budget.
+        risk_pts = abs(entry - stop)
+        total_trade_risk = risk_pts * resolved_lot
+        if max_risk_inr and max_risk_inr > 0 and total_trade_risk > max_risk_inr:
+            single_risk = risk_pts * base_unit
+            if single_risk > 0:
+                affordable_lots = int(max_risk_inr // single_risk)
+                resolved_lot = max(1, affordable_lots) * base_unit
 
         # Absolute guarantee: resolved_lot is never 0 on a valid entry
         if resolved_lot <= 0:
