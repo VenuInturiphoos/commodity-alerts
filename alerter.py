@@ -373,11 +373,6 @@ class EmailAlerter:
         if not alerts:
             return False, []
 
-        # GUARD: Ephemeral cloud CI/CD runners (GitHub Actions) MUST NEVER send trade alerts
-        # when the user's local daemon is running on their Mac. This eliminates duplicate email dispatch.
-        if os.environ.get('GITHUB_ACTIONS') == 'true' or os.environ.get('CI') == 'true':
-            print("🛡️ [CI CLOUD GUARD] Email dispatch disabled in GitHub Actions runner to prevent duplicate emails (Local Mac Daemon is authoritative).")
-            return True, []
 
         telegram_sent_indices = set()
         # 1. Send Telegram notifications
