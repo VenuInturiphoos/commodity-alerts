@@ -2046,9 +2046,14 @@ async function fetchCircuitsData(forceNetwork = false) {
         let loaded = false;
         
         // 1. Fetch latest precomputed exchange circuit data with cache busting
-        const candidateUrls = [
+        const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname;
+        const candidateUrls = isLocalHost ? [
             'circuits_data.json?t=' + Date.now(),
+            'web/circuits_data.json?t=' + Date.now(),
+            'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/circuits_data.json?t=' + Date.now()
+        ] : [
             'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/circuits_data.json?t=' + Date.now(),
+            'circuits_data.json?t=' + Date.now(),
             'web/circuits_data.json?t=' + Date.now()
         ];
         
@@ -2995,12 +3000,20 @@ async function loadStockInvestmentsTracker() {
     try {
         let res = null;
         const rawUrl = 'https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/stock_investments_tracker.json?t=' + Date.now();
-        try {
-            res = await fetch('stock_investments_tracker.json?t=' + Date.now(), { cache: 'no-store' });
-            if (!res.ok) throw new Error("Local fetch returned status " + res.status);
-        } catch (localErr) {
-            console.log("Local stock tracker fetch failed, falling back to raw GitHub:", localErr.message);
-            res = await fetch(rawUrl, { cache: 'no-store' });
+        const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname;
+        if (!isLocalHost) {
+            try {
+                res = await fetch(rawUrl, { cache: 'no-store' });
+            } catch(e) {}
+        }
+        if (!res || !res.ok) {
+            try {
+                res = await fetch('stock_investments_tracker.json?t=' + Date.now(), { cache: 'no-store' });
+                if (!res.ok) throw new Error("Local fetch returned status " + res.status);
+            } catch (localErr) {
+                console.log("Local stock tracker fetch failed, falling back to raw GitHub:", localErr.message);
+                res = await fetch(rawUrl, { cache: 'no-store' });
+            }
         }
         if (!res || !res.ok) return;
         stockInvestmentsData = await res.json();
