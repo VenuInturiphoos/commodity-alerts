@@ -5906,7 +5906,13 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
     is_equity_window = ((hour == 9 and minute >= 30) or (10 <= hour < 14) or (hour == 14 and minute <= 45))
     cur_equity_positions = len(active_equity_trades) + sum(1 for t in new_trades if t.get('asset_type') in ['EQUITY', 'INTRADAY_STOCK'])
 
-    if ENABLE_EQUITY_DERIVATIVES_SCANNER and is_equity_window and cur_equity_positions < MAX_CONCURRENT_EQUITIES:
+    MAX_DISCRETIONARY_ALERTS_PER_DAY = 5
+    total_equity_alerts_today = len([
+        t for t in trades 
+        if t.get('date') == today_str and t.get('asset_type') == 'INTRADAY_STOCK'
+    ])
+
+    if ENABLE_EQUITY_DERIVATIVES_SCANNER and is_equity_window and (cur_equity_positions < MAX_CONCURRENT_EQUITIES or total_equity_alerts_today < (MAX_CONCURRENT_EQUITIES + MAX_DISCRETIONARY_ALERTS_PER_DAY)):
         if os.path.exists(NIFTY_JSON_FILE):
             try:
                 with open(NIFTY_JSON_FILE, 'r') as nf:
@@ -6011,8 +6017,9 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
                 can_enter_futures = (cur_active_stock_futures < MAX_CONCURRENT_STOCK_FUTURES)
                 can_enter_equity = (cur_active_equity < MAX_CONCURRENT_EQUITIES)
+                can_alert_discretionary_equity = (total_equity_alerts_today < (MAX_CONCURRENT_EQUITIES + MAX_DISCRETIONARY_ALERTS_PER_DAY))
 
-                if not can_enter_futures and not can_enter_equity:
+                if not can_enter_futures and not can_enter_equity and not can_alert_discretionary_equity:
                     break
 
                 sym = s.get('symbol', '')
@@ -6543,10 +6550,11 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                             can_enter_futures = False
                                             continue
 
-                    # PATH B: Enter as an Intraday Stock (MIS with 5x leverage from ₹10k pool)
-                    if can_enter_equity:
+                    # PATH B: Enter as an Intraday Stock (MIS with 5x leverage from ₹10k pool) or Discretionary Alert
+                    if can_enter_equity or can_alert_discretionary_equity:
                         trade_id = f"ADV-{today_str.replace(' ', '')}-{now_dt.strftime('%H%M')}-{clean_sym}"
-                        if any(t.get('id') == trade_id for t in (trades + new_trades)):
+                        # Check if this stock was already traded or alerted today
+                        if any(t.get('date') == today_str and (clean_sym in str(t.get('symbol', '')).upper() or clean_sym in str(t.get('id', '')).upper()) for t in (trades + new_trades)):
                             continue
 
                         # 4. Adaptive Position Sizing with 5x MIS Leverage (trader-budget skill):
@@ -6562,34 +6570,28 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                         intraday_pool_info = get_intraday_margin_pool(tracker)
                         # Dedicated ₹30,000 daily MIS margin pool (~₹10,000 margin / ₹50,000 buying power per stock)
                         avail_intraday_margin = max(0.0, intraday_pool_info['base_pool'] - used_intraday_margin)
-                        target_margin_per_stock = round(min(avail_intraday_margin, intraday_pool_info['base_pool'] / MAX_CONCURRENT_EQUITIES), 2)
-                        if target_margin_per_stock < 9500.0 and avail_intraday_margin >= 9500.0:
-                            target_margin_per_stock = min(avail_intraday_margin, 10000.0)
                         margin_per_share = cur_p * 0.20  # 20% SEBI MIS intraday margin requirement (5x leverage)
                         if margin_per_share <= 0:
                             continue
 
-                        # Strict Balance Check Before Buying: Must have sufficient MIS margin pool
-                        if avail_intraday_margin < margin_per_share:
-                            print(f"🛡️ Margin Deficit Guard: Blocked {clean_sym} Stock Purchase. Available MIS Margin (₹{avail_intraday_margin:,.2f}) < Required 1-Share Margin (₹{margin_per_share:,.2f}).")
-                            has_equity_margin = False
-                            eq_shares = 0
-                            req_margin_equity = margin_per_share
-                        else:
-                            # Sized to approximately ₹10,000 margin per trade (5x leverage = ~₹50,000 position)
+                        # If we have available managed pool margin and slot, size for auto paper execution; otherwise size hypothetically for discretionary alert
+                        if can_enter_equity and avail_intraday_margin >= margin_per_share:
+                            target_margin_per_stock = round(min(avail_intraday_margin, intraday_pool_info['base_pool'] / MAX_CONCURRENT_EQUITIES), 2)
+                            if target_margin_per_stock < 9500.0 and avail_intraday_margin >= 9500.0:
+                                target_margin_per_stock = min(avail_intraday_margin, 10000.0)
                             target_shares = round(target_margin_per_stock / margin_per_share)
                             max_shares = math.floor(avail_intraday_margin / margin_per_share)
                             eq_shares = max(1, min(target_shares, max_shares))
                             while eq_shares > 1 and (cur_p * eq_shares * 0.20) > avail_intraday_margin:
                                 eq_shares -= 1
-
-                            if eq_shares < 1:
-                                has_equity_margin = False
-                                eq_shares = 0
-                                req_margin_equity = margin_per_share
-                            else:
-                                req_margin_equity = round(cur_p * eq_shares * 0.20, 2)
-                                has_equity_margin = (eq_shares >= 1 and req_margin_equity <= avail_intraday_margin)
+                            req_margin_equity = round(cur_p * eq_shares * 0.20, 2)
+                            has_equity_margin = (eq_shares >= 1 and req_margin_equity <= avail_intraday_margin)
+                        else:
+                            # Margin exhausted / max active slots filled: Size hypothetically to standard ₹10k margin slot for discretionary alert
+                            has_equity_margin = False
+                            eq_shares = max(1, round(10000.0 / margin_per_share))
+                            req_margin_equity = round(cur_p * eq_shares * 0.20, 2)
+                            print(f"📢 Discretionary Alert Candidate {clean_sym}: Margin Pool Exhausted (Req: ₹{req_margin_equity:,.2f} > Avail: ₹{avail_intraday_margin:,.2f}). Sizing hypothetically to {eq_shares} shares for manual broker alert.")
 
                         risk_per_share = abs(cur_p - eq_sl)
 
