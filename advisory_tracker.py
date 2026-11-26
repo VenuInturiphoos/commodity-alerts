@@ -1278,6 +1278,10 @@ def save_tracker(tracker_data):
                     t['eod_outcome']['gross_pnl_inr'] = gross_pnl
                     t['eod_outcome']['charges'] = charges
                     t['eod_outcome']['net_pnl_inr'] = net_pnl
+                    if net_pnl < 0 and t['eod_outcome'].get('outcome') == 'PROTECTED':
+                        t['eod_outcome']['outcome'] = 'WRONG'
+                    elif net_pnl > 0 and t['eod_outcome'].get('outcome') == 'PROTECTED':
+                        t['eod_outcome']['outcome'] = 'CORRECT'
     
     # Strictly distinguish executed positions from protected / filtered signals
     executed_trades = [t for t in trades if t.get('paper_trade', {}).get('action') in ['BUY', 'SELL']]
