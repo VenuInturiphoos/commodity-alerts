@@ -7091,9 +7091,9 @@ function switchTradingSubTab(subtab) {
         if (descEl) descEl.innerHTML = `Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions active till ${isDstNow ? '11:20 PM IST (Summer EDT)' : '11:45 PM IST (Winter EST)'}.`;
         if (sessionFilterContainer) sessionFilterContainer.style.display = 'block';
     } else {
-        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday MIS Allocation: Base ₹50,000 Margin (+ Booked Profits) | 5x Buying Power';
+        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday MIS Allocation: Base ₹30,000 Margin (+ Booked Profits) | 5x Buying Power';
         if (titleEl) titleEl.innerHTML = '⚡ Intraday Stock Trading Tracker (MIS Margin Benefit)';
-        if (descEl) descEl.innerHTML = 'Autonomous Nifty 50 intraday stock day-trades with 5x MIS margin benefit (Base ₹50,000 daily refreshed margin + booked profits). Mandatory 03:20 PM IST EOD square-off (Zero overnight risk).';
+        if (descEl) descEl.innerHTML = 'Autonomous Nifty 50 intraday stock day-trades with 5x MIS margin benefit (Base ₹30,000 daily refreshed margin + booked profits). Mandatory 03:20 PM IST EOD square-off (Zero overnight risk).';
         if (sessionFilterContainer) sessionFilterContainer.style.display = 'none';
     }
 
@@ -7901,7 +7901,7 @@ function renderAdvisorySummaryCards() {
     });
 
     const todayTotalPnl = todayRealizedPnl + todayUnrealizedPnl;
-    const basePoolCap = isIntradayActive ? 50000 : 300000;
+    const basePoolCap = isIntradayActive ? 30000 : 300000;
     const todayReturnPct = ((todayTotalPnl / basePoolCap) * 100).toFixed(2);
 
     const todayTitleEl = document.getElementById('kpi-adv-today-title');
@@ -7942,7 +7942,7 @@ function renderAdvisorySummaryCards() {
     const intradayClosedTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'CLOSED');
     const intradayRealizedPnl = intradayClosedTrades.reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
     const intradayBookedProfit = Math.max(0, intradayRealizedPnl);
-    const intradayBasePool = 50000 + intradayBookedProfit;
+    const intradayBasePool = 30000 + intradayBookedProfit;
 
     const activeStockTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'ACTIVE');
     const activeStockVal = activeStockTrades.reduce((sum, t) => sum + ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0)), 0);
@@ -8006,9 +8006,9 @@ function renderAdvisorySummaryCards() {
     if (marginSubEl) {
         if (isIntradayActive) {
             if (intradayBookedProfit > 0) {
-                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Pool: <strong>₹${intradayBasePool.toLocaleString('en-IN', {minimumFractionDigits: 0})}</strong> (₹50k Base + ₹${intradayBookedProfit.toFixed(0)} Profit) | Flat 03:25 PM`;
+                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Pool: <strong>₹${intradayBasePool.toLocaleString('en-IN', {minimumFractionDigits: 0})}</strong> (₹30k Base + ₹${intradayBookedProfit.toFixed(0)} Profit) | Flat 03:25 PM`;
             } else {
-                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Base ₹50,000 (Refreshed Daily) | Flat 03:25 PM`;
+                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Base ₹30,000 (Refreshed Daily) | Flat 03:25 PM`;
             }
         } else {
             if (intradayBookedProfit > 0) {
