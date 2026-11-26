@@ -8717,4 +8717,2035 @@ function renderAdvisoryTradesTable() {
                 <div>
                     <span class="adv-action-tag ${actColor}">${pt.action}</span>
                     <strong style="color:#f8fafc; font-size:0.85rem; margin-left:4px;">${pt.quantity} ${unitLabel}</strong>
-... [truncated for diff preview]
+                    <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 5px; border-radius:4px; margin-left:4px; font-weight:600;">${multLabel}</span>
+                    <div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2})} (${pt.entry_time || 'Trigger'})</div>
+                </div>
+            `;
+        }
+
+        // Format Exit Price & Logged Exit Time
+        const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || (isEqTrade ? '03:20 PM Close' : '11:45 PM Close');
+        let exitDetailHtml = `<div style="font-size:0.75rem; color:#94a3b8;"><i class="fa-regular fa-clock"></i> ${exitTimeStr}</div>`;
+        
+        if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#fbbf24;"><i class="fa-solid fa-bell"></i> Discretionary Alert Only</div>`;
+        } else if (pt.status === 'ACTIVE') {
+            if (isSlBreached) {
+                const isProfitLock = Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active);
+                exitDetailHtml = isProfitLock
+                    ? `<div style="font-size:0.75rem; color:#4ade80; font-weight:700;"><i class="fa-solid fa-lock"></i> Profit Secured</div>`
+                    : `<div style="font-size:0.75rem; color:#fb7185; font-weight:700;"><i class="fa-solid fa-shield"></i> Stop Triggered</div>`;
+            } else if (isSessionExpired) {
+                exitDetailHtml = isEqTrade
+                    ? `<div style="font-size:0.75rem; color:#f59e0b; font-weight:700;"><i class="fa-solid fa-clock"></i> Intraday Exit (03:20 PM)</div>`
+                    : `<div style="font-size:0.75rem; color:#4ade80; font-weight:700;"><i class="fa-solid fa-clock"></i> Session Close (${t.time_exit || '11:45 PM'})</div>`;
+            } else {
+                exitDetailHtml = `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</div>`;
+            }
+        } else if (pt.status === 'PENDING_615') {
+            exitDetailHtml = isPastVal
+                ? `<div style="font-size:0.75rem; color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</div>`
+                : `<div style="font-size:0.75rem; color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Pending Check</div>`;
+        } else if (pt.exit_trigger === 'TARGET_RUNNER_EXIT' || pt.exit_trigger === 'TARGET_RUNNER_EOD' || outcome.badge?.includes('Target Runner') || outcome.summary?.includes('Target Runner')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#4ade80; font-weight:700;"><i class="fa-solid fa-rocket"></i> Target Runner (${exitTimeStr})</div>`;
+        } else if (pt.exit_trigger === 'TRAILING_PROFIT_HIT' || outcome.badge?.includes('Trailing Profit') || outcome.summary?.includes('Trailing Profit')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#38bdf8; font-weight:700;"><i class="fa-solid fa-sack-dollar"></i> Trailing Profit (${exitTimeStr})</div>`;
+        } else if (pt.exit_trigger === 'TRAILING_BREAKEVEN_HIT' || outcome.badge?.includes('Breakeven') || outcome.summary?.includes('Breakeven')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#60a5fa; font-weight:700;"><i class="fa-solid fa-shield-halved"></i> Breakeven Exit (${exitTimeStr})</div>`;
+        } else if (pt.exit_trigger === 'STAGNATION_EXIT' || outcome.badge?.includes('Stagnation') || outcome.summary?.includes('Stagnation')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#60a5fa; font-weight:700;"><i class="fa-solid fa-hourglass-end"></i> Stagnation Exit (${exitTimeStr})</div>`;
+        } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#4ade80; font-weight:700;"><i class="fa-solid fa-bullseye"></i> Target Hit (${exitTimeStr})</div>`;
+        } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || outcome.summary?.includes('Stop-Loss')) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#fb7185; font-weight:700;"><i class="fa-solid fa-shield"></i> Stop Loss (${exitTimeStr})</div>`;
+        } else if (isAvoidedAdvisoryTrade(t)) {
+            exitDetailHtml = `<div style="font-size:0.75rem; color:#64748b;">N/A (Avoided Trap)</div>`;
+        }
+
+        const assetBadge = isEqTrade 
+            ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-bolt"></i> MIS INTRADAY (5x)</span>`
+            : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
+
+        const initialSlVal = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
+        let displaySl = Number(pt.stop_loss || s6.stop_loss || 0);
+
+        // Hard Invariant: Stop-loss can NEVER widen or move in the direction of additional loss
+        if (initialSlVal > 0 && displaySl > 0) {
+            if (pt.action === 'BUY') {
+                displaySl = Math.max(displaySl, initialSlVal);
+            } else if (pt.action === 'SELL') {
+                displaySl = Math.min(displaySl, initialSlVal);
+            }
+        }
+
+        const isTargetScrapped = Boolean(pt.target_scrapped || pt.stage_3_target_approaching || pt.target_runner_active || (!s6.target && (pt.original_target || s6.original_target)));
+        const isTrailed = Boolean(pt.trailing_sl_active || pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active || (initialSlVal > 0 && Math.abs(Number(displaySl) - initialSlVal) > 0.01));
+        let slBadge = '';
+        let slColor = '#fb7185';
+
+        if (pt.target_runner_active) {
+            slBadge = '<span style="font-size:0.65rem; color:#4ade80; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Trailing 🚀</span>';
+            slColor = '#4ade80';
+        } else if (pt.stage_3_target_approaching || isTargetScrapped) {
+            slBadge = '<span style="font-size:0.65rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+65% Locked 💰</span>';
+            slColor = '#38bdf8';
+        } else if (pt.stage_2_profit_locked) {
+            slBadge = '<span style="font-size:0.65rem; color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">+35% Locked 💰</span>';
+            slColor = '#fbbf24';
+        } else if (pt.trailing_sl_active) {
+            slBadge = '<span style="font-size:0.65rem; color:#a5b4fc; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Breakeven 🛡️</span>';
+            slColor = '#a5b4fc';
+        } else if (isTrailed) {
+            slBadge = '<span style="font-size:0.65rem; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">Trailed 🛡️</span>';
+            slColor = '#38bdf8';
+        }
+
+        let tgtDisplayHtml = '';
+        if (isTargetScrapped && (pt.status === 'ACTIVE' || pt.stage_3_target_approaching || pt.target_runner_active)) {
+            tgtDisplayHtml = `<div style="font-size:0.75rem; color:#38bdf8; font-weight:700;" title="Target scrapped to let profits run with trailing stop-loss"><i class="fa-solid fa-infinity"></i> Target Removed (Relying on SL)</div>`;
+        } else if (s6.target) {
+            tgtDisplayHtml = `<div style="font-size:0.8rem; color:#4ade80; font-weight:600;">TGT: ₹${Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2})}</div>`;
+        } else {
+            tgtDisplayHtml = `<div style="font-size:0.75rem; color:#94a3b8;">TGT: --</div>`;
+        }
+
+        activeSummary = outcome.summary || '';
+        if (pt.status === 'ACTIVE' && isSlBreached) {
+            const isProfitLock = Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active);
+            activeSummary = isProfitLock
+                ? `Trailing Profit Stop triggered @ ₹${curSl.toFixed(2)}. Position gains secured.`
+                : `Stop-loss triggered @ ₹${curSl.toFixed(2)}. Position auto-exiting to limit risk.`;
+        } else if (pt.status === 'ACTIVE' && isTargetScrapped) {
+            const scrappedSl = Number(displaySl || curSl || 0);
+            activeSummary = `Target removed — Trailing Profit Stop (+65% locked @ ₹${scrappedSl.toFixed(2)}) active. Relying entirely on trailing stoploss.`;
+        } else if ((pt.status === 'CLOSED' || pt.exit_price) && activeSummary.startsWith('Dynamic Trailing Stop active')) {
+            const exitTimeTag = pt.exit_time || outcome.exit_time || '12:51 PM IST';
+            activeSummary = `Target Runner Trailing Stop Triggered (Exit ₹${Number(pt.exit_price || displaySl).toFixed(2)} | Profit locked) at ${exitTimeTag}.`;
+        }
+
+        return `
+            <tr>
+                <td>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                        <span style="font-weight:700; color:#f8fafc; font-size:0.9rem;">${t.name}</span>
+                        <span style="font-size:0.68rem; font-weight:700; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:2px 6px; border-radius:4px;">
+                            ${t.session_name || t.time_trigger || t.time_6pm || '06:00 PM IST'}
+                        </span>
+                    </div>
+                    <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${t.date} | ${t.symbol} ${assetBadge}</div>
+                    <div style="font-size:0.7rem; color:#818cf8; margin-top:2px;">${t.event_context || ''}</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:3px;">
+                        ${t.time_machine ? `
+                            <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine (3,000 empirical replays): ${t.time_machine.summary || ''}">
+                                🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
+                            </div>` : ''}
+                        ${t.risk_check?.passed ? `
+                            <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); color:#7dd3fc; padding:1px 5px; border-radius:4px; font-weight:600;" title="Pre-Trade Risk Engine: 14-Point Checks Passed">
+                                🛡️ 14-Pt Risk Pass
+                            </div>` : ''}
+                        ${t.orb_check?.passed && t.orb_check?.status !== 'CONFIRMED' ? `
+                            <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3); color:#d8b4fe; padding:1px 5px; border-radius:4px; font-weight:600;" title="ORB Timer: ${t.orb_check.reason || ''}">
+                                ⏱️ ORB Verified
+                            </div>` : ''}
+                    </div>
+                </td>
+                <td>
+                    <div style="font-size:0.85rem; font-weight:600; color:#f1f5f9;">${s6.action_text || '--'}</div>
+                    <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Ref: ₹${s6.reference_price ? Number(s6.reference_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
+                </td>
+                <td>${curPriceHtml}</td>
+                <td>${check615Html}</td>
+                <td>${paperTradeCell}</td>
+                <td>
+                    <div style="font-size:0.8rem; color:${slColor}; font-weight:600;">SL: ₹${displaySl ? Number(displaySl).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} ${slBadge}</div>
+                    ${isTrailed && initialSlVal > 0 && Math.abs(Number(displaySl) - initialSlVal) > 0.01 ? `<div style="font-size:0.68rem; color:#94a3b8; margin-top:1px;">(Initial SL: ₹${Number(initialSlVal).toLocaleString('en-IN', {minimumFractionDigits:2})})</div>` : ''}
+                    ${tgtDisplayHtml}
+                </td>
+                <td>
+                    <strong style="font-size:0.9rem; color:#f8fafc;">${pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : (isSlBreached ? (Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active) ? '<span style="color:#4ade80; font-size:0.85rem; font-weight:700;">₹' + Number(curSl).toFixed(2) + ' (Profit Locked)</span>' : '<span style="color:#fb7185; font-size:0.85rem; font-weight:700;">₹' + Number(curSl).toFixed(2) + ' (SL Hit)</span>') : (pt.status === 'ACTIVE' ? '<span style="color:#38bdf8; font-size:0.85rem;"><i class="fa-solid fa-arrows-spin"></i> Open Position</span>' : '--'))}</strong>
+                    ${exitDetailHtml}
+                </td>
+                <td style="font-weight:700; font-size:0.95rem; color:${pnlColor};">
+                    ${pnlText}
+                    ${ptsFormulaHtml}
+                </td>
+                <td>
+                    ${outcomeBadge}
+                    <div style="font-size:0.72rem; color:#94a3b8; margin-top:4px; max-width:180px; line-height:1.3;">${((pt.status === 'PENDING_615' || outcome.summary?.toLowerCase().includes('awaiting')) && (isPastVal || isStandAsideTrade)) ? '15-minute confirmation window elapsed. Stood aside to preserve capital.' : (typeof activeSummary !== 'undefined' ? activeSummary : (outcome.summary || ''))}</div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    const isTbodyHovered = Boolean(tbody.matches(':hover') || (document.activeElement && tbody.contains(document.activeElement)));
+    if (!isTbodyHovered) {
+        if (tbody.innerHTML !== newRowsHtml) {
+            tbody.innerHTML = newRowsHtml;
+        }
+    } else {
+        tbody.dataset.pendingHtml = newRowsHtml;
+    }
+
+    if (!tbody.dataset.hoverBound) {
+        tbody.dataset.hoverBound = 'true';
+        tbody.addEventListener('mouseleave', () => {
+            if (tbody.dataset.pendingHtml && tbody.dataset.pendingHtml !== tbody.innerHTML) {
+                tbody.innerHTML = tbody.dataset.pendingHtml;
+                delete tbody.dataset.pendingHtml;
+            }
+        });
+    }
+
+    // Dedicated Native Mobile Cards Rendering
+    const cardsFeed = document.getElementById('advisory-cards-feed');
+    if (cardsFeed) {
+        const newCardsHtml = filtered.map(t => {
+            const pt = t.paper_trade || {};
+            const s6 = t.suggestion_6pm || {};
+            const c15 = t.check_615 || {};
+            const outcome = t.eod_outcome || {};
+
+            const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
+            const valCutoff = getTradeValidationCutoff(t);
+            const isPastVal = isPastISTWindow(t.date, valCutoff.hour, valCutoff.min);
+            const exitCutoff = getTradeExitCutoff(t);
+            const isTodayTrade = isTodayISTTrade(t);
+            const isSessionExpired = isPastISTWindow(t.date, exitCutoff.hour, exitCutoff.min) && (pt.status !== 'ACTIVE' || !isTodayTrade);
+
+            // Find live market data from authoritative exchange / scanner feed
+            const liveSource = getAdvisoryTradeLivePriceData(t);
+            const initialSl = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
+            const rawCurSl = Number(pt.stop_loss || s6.stop_loss || 0);
+            const curSl = initialSl > 0 
+                ? (pt.action === 'BUY' ? Math.max(rawCurSl, initialSl) : (pt.action === 'SELL' ? Math.min(rawCurSl, initialSl) : rawCurSl))
+                : rawCurSl;
+            const isSlBreached = Boolean(curSl > 0 && liveSource && liveSource.current_price && ((pt.action === 'BUY' && Number(liveSource.current_price) <= curSl) || (pt.action === 'SELL' && Number(liveSource.current_price) >= curSl)));
+
+            const isEnteredTrade = Boolean((pt.entry_price && Number(pt.entry_price) > 0) || (pt.status === 'ACTIVE' && (pt.action === 'BUY' || pt.action === 'SELL')));
+            const isStandAsideTrade = !isEnteredTrade && (
+                isAvoidedAdvisoryTrade(t) ||
+                pt.status === 'STAND_ASIDE' ||
+                pt.action === 'STAND_ASIDE' ||
+                c15.status === 'CONFIRMATION_EXPIRED' ||
+                c15.status === 'CONFIRMED_STAND_ASIDE' ||
+                c15.status === 'NO_REVERSAL_STAND_ASIDE' ||
+                c15.status === 'NO_GAP_STAND_ASIDE' ||
+                c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' ||
+                outcome.outcome === 'PROTECTED'
+            );
+
+            let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
+            if (outcome.badge && outcome.badge.includes('Margin Skipped')) {
+                outcomeBadge = `<span class="adv-badge-protected" style="border:1px solid rgba(245, 158, 11, 0.5); background:rgba(245, 158, 11, 0.15); color:#fbbf24;"><i class="fa-solid fa-wallet"></i> Margin Skipped 🛡️</span>`;
+            } else if (pt.status === 'CLOSED' || pt.exit_price) {
+                const exitTimeTag = pt.exit_time || outcome.exit_time || 'Closed';
+                if (pt.exit_trigger === 'TARGET_RUNNER_EXIT' || pt.exit_trigger === 'TARGET_RUNNER_EOD' || outcome.badge?.includes('Target Runner') || (pt.target_runner_active && (pt.pnl_inr || 0) > 0)) {
+                    outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🎯🚀 (${exitTimeTag})</span>`;
+                } else if (pt.exit_trigger === 'TRAILING_PROFIT_HIT' || outcome.badge?.includes('Trailing Profit') || ((pt.stage_3_target_approaching || pt.stage_2_profit_locked) && (pt.pnl_inr || 0) > 0)) {
+                    outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(56,189,248,0.18); border:1px solid rgba(56,189,248,0.45); color:#38bdf8;"><i class="fa-solid fa-sack-dollar"></i> Trailing Profit 💰 (${exitTimeTag})</span>`;
+                } else if (pt.exit_trigger === 'TRAILING_BREAKEVEN_HIT' || outcome.badge?.includes('Breakeven') || (pt.trailing_sl_active && Math.abs(pt.pnl_inr || 0) < 1.0)) {
+                    outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Breakeven Exit 🛡️ (${exitTimeTag})</span>`;
+                } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || (pt.pnl_inr || 0) < 0) {
+                    outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> Stop Loss Hit 🛑 (${exitTimeTag})</span>`;
+                } else if ((pt.pnl_inr || 0) > 0) {
+                    outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> Correct ✅ (${exitTimeTag})</span>`;
+                } else {
+                    outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge && !outcome.badge.includes('Active') ? outcome.badge : 'Closed ✅'}</span>`;
+                }
+            } else if (outcome.outcome === 'WRONG') {
+                outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
+            } else if ((pt.status === 'PENDING_615' || outcome.badge?.includes('Awaiting 6:15 PM') || outcome.badge?.includes('Awaiting 7:15 PM')) && (isPastVal || isStandAsideTrade)) {
+                outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Window Lapsed 🛡️</span>`;
+            } else if (isStandAsideTrade) {
+                let badgeText = outcome.badge || 'Avoided Trap 🛡️';
+                if (badgeText.includes('Awaiting 6:15 PM') || badgeText.includes('Awaiting 7:15 PM')) {
+                    badgeText = isPastVal ? 'Window Lapsed 🛡️' : 'Avoided Trap 🛡️';
+                }
+                outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${badgeText}</span>`;
+            } else if (pt.status === 'ACTIVE') {
+                if (isSlBreached) {
+                    const isProfitLock = Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active);
+                    if (isProfitLock) {
+                        outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-lock"></i> Trailing Profit Locked 💰</span>`;
+                    } else if (pt.trailing_sl_active) {
+                        outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Breakeven Stop Hit 🛡️</span>`;
+                    } else {
+                        outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-circle-exclamation"></i> Stop-Loss Triggered 🛑</span>`;
+                    }
+                } else if (isSessionExpired) {
+                    const isWin = (pt.pnl_inr || 0) > 0;
+                    outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : (t.time_exit || '11:45 PM')})</span>`;
+                } else if (pt.target_runner_active) {
+                    outcomeBadge = `<span class="adv-badge-active" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🚀</span>`;
+                } else {
+                    outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
+                }
+            } else if (pt.status === 'PENDING_615' || outcome.outcome === 'PENDING') {
+                const confTimeStr = t.time_validation || '07:15 PM';
+                outcomeBadge = isPastVal
+                    ? `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Window Lapsed 🛡️</span>`
+                    : `<span class="adv-badge-active"><i class="fa-solid fa-hourglass-half"></i> Awaiting ${confTimeStr}</span>`;
+            }
+
+            let pnlColor = '#cbd5e1';
+            let pnlText = outcome.pnl_display || '₹0.00';
+            let mobilePtsFormulaHtml = '';
+            if (outcome.badge?.includes('Margin Skipped') || c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE') {
+                pnlColor = '#fbbf24';
+                pnlText = '₹0.00 <small style="font-size:0.68rem; color:#fbbf24; display:block; font-weight:400;">(Discretionary)</small>';
+            } else if (isStandAsideTrade) {
+                pnlColor = '#94a3b8';
+                pnlText = '₹0.00 <small style="font-size:0.68rem; color:#60a5fa; display:block; font-weight:400;">(Protected)</small>';
+            } else if (pt.status === 'ACTIVE' && (!isSessionExpired || isTodayTrade) && pt.entry_price) {
+                if (isSlBreached && curSl > 0) {
+                    const exitP = curSl;
+                    const pts = pt.action === 'BUY' ? (exitP - pt.entry_price) : (pt.entry_price - exitP);
+                    const lot = pt.quantity || t.lot_size || 1;
+                    const lockedPnl = Math.round(pts * lot * 100) / 100;
+                    const isProfitLock = Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active);
+                    pnlColor = lockedPnl >= 0 ? '#4ade80' : '#fb7185';
+                    pnlText = `${lockedPnl >= 0 ? '+' : ''}₹${lockedPnl.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <small style="font-size:0.68rem; color:${pnlColor}; display:block; font-weight:600;">(${isProfitLock ? 'Profit Locked' : 'SL Triggered'})</small>`;
+                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(${pts >= 0 ? '+' : ''}${pts.toFixed(2)} pts × ₹${lot})</div>`;
+                } else if (liveSource && liveSource.current_price) {
+                    const curPrice = Number(liveSource.current_price);
+                    const pts = pt.action === 'BUY' ? (curPrice - pt.entry_price) : (pt.entry_price - curPrice);
+                    const lot = pt.quantity || t.lot_size || 1;
+                    const liveMtm = Math.round(pts * lot * 100) / 100;
+                    pnlColor = liveMtm >= 0 ? '#4ade80' : '#fb7185';
+                    pnlText = `${liveMtm >= 0 ? '+' : ''}₹${liveMtm.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <small style="font-size:0.68rem; color:#94a3b8; display:block; font-weight:400;">(Live MTM)</small>`;
+                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(${pts >= 0 ? '+' : ''}${pts.toFixed(2)} pts × ₹${lot})</div>`;
+                } else {
+                    pnlText = '<span style="color:#fbbf24; font-size:0.8rem;">Ticking...</span>';
+                }
+            } else if (pt.pnl_inr !== undefined && pt.pnl_inr !== null) {
+                const pVal = Number(pt.pnl_inr);
+                const lot = pt.quantity || t.lot_size || 1;
+                const pts = pt.pnl_points !== undefined ? Number(pt.pnl_points) : (lot > 0 ? (pVal / lot) : 0);
+                const charges = pt.charges || calculateDhanCharges(t);
+                const gVal = pt.gross_pnl_inr !== undefined ? Number(pt.gross_pnl_inr) : (charges ? charges.gross_pnl : pVal);
+
+                if (pVal > 0) {
+                    pnlColor = '#4ade80';
+                    pnlText = `+₹${pVal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(+${pts.toFixed(2)} pts × ${lot})</div>`;
+                } else if (pVal < 0) {
+                    pnlColor = '#fb7185';
+                    pnlText = `-₹${Math.abs(pVal).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(${pts.toFixed(2)} pts × ${lot})</div>`;
+                } else {
+                    pnlColor = '#94a3b8';
+                    pnlText = `₹0.00 <small style="font-size:0.68rem; color:#60a5fa; display:block; font-weight:400;">(Breakeven)</small>`;
+                    mobilePtsFormulaHtml = `<div style="font-size:0.68rem; color:#94a3b8; font-weight:400;">(0.00 pts × ${lot})</div>`;
+                }
+
+                if (charges && charges.total_charges > 0) {
+                    const gColor = gVal >= 0 ? '#4ade80' : '#fb7185';
+                    const gSign = gVal >= 0 ? '+' : '-';
+                    mobilePtsFormulaHtml += `
+                        <div style="font-size:0.64rem; color:#94a3b8; margin-top:2px;">
+                            <span>Gross: <strong style="color:${gColor};">${gSign}₹${Math.abs(gVal).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong></span>
+                            <span>·</span>
+                            <span style="color:#f43f5e; font-weight:600;">Dhan: -₹${charges.total_charges.toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            let actionColor = '#94a3b8';
+            if (s6.action_text?.includes('BUY')) actionColor = '#4ade80';
+            else if (s6.action_text?.includes('SELL')) actionColor = '#fb7185';
+
+            let checkLabel = 'Direct Entry';
+            if (c15.status === 'REVERSAL_CONFIRMED') checkLabel = 'Reversal Confirmed';
+            else if (c15.status === 'BREAKOUT_ENTERED') checkLabel = 'London Breakout';
+            else if (c15.status === 'BREAKDOWN_ENTERED') checkLabel = 'London Breakdown';
+            else if (c15.status === 'GAP_FADE_ENTERED') checkLabel = 'Gap Fade Entered';
+            else if (c15.status === 'EXTENSION_CONFIRMED') checkLabel = 'Limit Broken (Stood Aside)';
+            else if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
+                checkLabel = 'Margin Deficit (Alert Sent)';
+            }
+            else if (c15.status === 'PENDING_615' || c15.status === 'PENDING_615_CHECK') {
+                checkLabel = isPastVal ? 'Window Lapsed (Stood Aside)' : 'Awaiting Confirmation';
+            }
+            else if (c15.status === 'EVENT_GUARD_STAND_ASIDE') checkLabel = 'Event Blackout (Protected)';
+            else if (c15.status === 'WICK_TRAP_STAND_ASIDE') checkLabel = 'Wick Trap Rejected';
+            else if (c15.status === 'SIM_GUARD_STAND_ASIDE') checkLabel = 'Simulation Guard';
+            else if (c15.status === 'RISK_GUARD_STAND_ASIDE') checkLabel = 'Risk Guard Block';
+            else if (c15.status === 'CONFIRMED_STAND_ASIDE' || c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') checkLabel = 'Stood Aside (Protected)';
+
+            const unitLabel = isEqTrade ? 'shares' : 'qty';
+            const multLabel = isEqTrade ? `1 pt = ₹${pt.quantity}` : `1 pt = ₹${t.lot_size || 1}`;
+
+            let executedText = 'Stood Aside';
+            if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
+                executedText = '<span style="color:#fbbf24;"><i class="fa-solid fa-ban"></i> Skipped (Margin Deficit)</span>';
+            } else if (pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price) {
+                executedText = `${pt.action} ${pt.quantity} ${unitLabel} <span style="font-size:0.68rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:1px 4px; border-radius:3px;">${multLabel}</span><div style="font-size:0.75rem; color:#cbd5e1; margin-top:2px;">@ ₹${Number(pt.entry_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</div>`;
+            }
+
+            const exitTimeStr = pt.exit_time || outcome.exit_time || t.time_exit || (isEqTrade ? '03:20 PM' : '11:45 PM');
+            let mobileExitLabel = 'Exit (EOD)';
+            let mobileExitVal = pt.exit_price ? '₹' + Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--';
+
+            if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
+                mobileExitLabel = 'Trade Status';
+                mobileExitVal = '<span style="color:#fbbf24;"><i class="fa-solid fa-bell"></i> Discretionary Alert Only</span>';
+            } else if (pt.status === 'ACTIVE') {
+                mobileExitLabel = 'Position Status';
+                mobileExitVal = isSlBreached
+                    ? (Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active)
+                        ? `<span style="color:#4ade80; font-weight:700;"><i class="fa-solid fa-lock"></i> Profit Secured @ ₹${Number(curSl).toFixed(2)}</span>`
+                        : `<span style="color:#fb7185; font-weight:700;"><i class="fa-solid fa-shield"></i> SL Hit @ ₹${Number(curSl).toFixed(2)}</span>`)
+                    : (isSessionExpired
+                        ? `<span style="color:#4ade80; font-weight:700;"><i class="fa-solid fa-clock"></i> Session Close (${isEqTrade ? '03:20 PM' : (t.time_exit || '11:45 PM')})</span>`
+                        : '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Active (Open)</span>');
+            } else if (pt.status === 'PENDING_615') {
+                mobileExitLabel = 'Position Status';
+                mobileExitVal = isPastVal
+                    ? '<span style="color:#94a3b8;"><i class="fa-regular fa-clock"></i> Window Lapsed</span>'
+                    : '<span style="color:#fbbf24; font-weight:700;"><i class="fa-solid fa-bolt"></i> Pending Check</span>';
+            } else if (pt.exit_trigger === 'TARGET_RUNNER_EXIT' || pt.exit_trigger === 'TARGET_RUNNER_EOD' || outcome.badge?.includes('Target Runner') || outcome.summary?.includes('Target Runner')) {
+                mobileExitLabel = `<i class="fa-solid fa-rocket" style="color:#4ade80;"></i> Target Runner`;
+                mobileExitVal = `<span style="color:#4ade80; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
+            } else if (pt.exit_trigger === 'TRAILING_PROFIT_HIT' || outcome.badge?.includes('Trailing Profit') || outcome.summary?.includes('Trailing Profit')) {
+                mobileExitLabel = `<i class="fa-solid fa-sack-dollar" style="color:#38bdf8;"></i> Trailing Profit`;
+                mobileExitVal = `<span style="color:#38bdf8; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
+            } else if (pt.exit_trigger === 'TRAILING_BREAKEVEN_HIT' || outcome.badge?.includes('Breakeven') || outcome.summary?.includes('Breakeven')) {
+                mobileExitLabel = `<i class="fa-solid fa-shield-halved" style="color:#60a5fa;"></i> Breakeven Exit`;
+                mobileExitVal = `<span style="color:#60a5fa; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
+            } else if (pt.exit_trigger === 'STAGNATION_EXIT' || outcome.badge?.includes('Stagnation') || outcome.summary?.includes('Stagnation')) {
+                mobileExitLabel = `<i class="fa-solid fa-hourglass-end" style="color:#60a5fa;"></i> Stagnation Exit`;
+                mobileExitVal = `<span style="color:#60a5fa; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
+        } else if (pt.exit_trigger === 'TARGET_HIT' || outcome.badge?.includes('Target') || outcome.summary?.includes('Target')) {
+                mobileExitLabel = `<i class="fa-solid fa-bullseye" style="color:#4ade80;"></i> Target Hit`;
+                mobileExitVal = `<span style="color:#4ade80; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
+            } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || outcome.summary?.includes('Stop-Loss')) {
+                mobileExitLabel = `<i class="fa-solid fa-shield" style="color:#fb7185;"></i> Stop Loss Hit`;
+                mobileExitVal = `<span style="color:#fb7185; font-weight:700;">₹${Number(pt.exit_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span> <small style="color:#94a3b8; font-size:0.7rem; display:block;">(${exitTimeStr})</small>`;
+            } else if (isStandAsideTrade) {
+                mobileExitLabel = 'Trade Action';
+                mobileExitVal = '<span style="color:#64748b;">N/A (Stood Aside)</span>';
+            } else if (pt.exit_price) {
+                mobileExitLabel = `Exit (${exitTimeStr})`;
+            }
+
+            const assetBadge = isEqTrade 
+                ? `<span style="font-size:0.65rem; font-weight:700; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fcd34d; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-bolt"></i> MIS INTRADAY (5x)</span>`
+                : `<span style="font-size:0.65rem; font-weight:700; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.4); color:#c7d2fe; padding:1px 6px; border-radius:4px; margin-left:6px;"><i class="fa-solid fa-chart-line"></i> FUTURES</span>`;
+
+            const mobInitialSlVal = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
+            let mobDisplaySl = Number(pt.stop_loss || s6.stop_loss || 0);
+            if (mobInitialSlVal > 0 && mobDisplaySl > 0) {
+                if (pt.action === 'BUY') {
+                    mobDisplaySl = Math.max(mobDisplaySl, mobInitialSlVal);
+                } else if (pt.action === 'SELL') {
+                    mobDisplaySl = Math.min(mobDisplaySl, mobInitialSlVal);
+                }
+            }
+            const mobIsTargetScrapped = Boolean(pt.target_scrapped || pt.stage_3_target_approaching || pt.target_runner_active || (!s6.target && (pt.original_target || s6.original_target)));
+            const mobIsTrailed = Boolean(pt.trailing_sl_active || pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active || (mobInitialSlVal > 0 && Math.abs(Number(mobDisplaySl) - mobInitialSlVal) > 0.01));
+            let mobSlBadge = '';
+            let mobSlColor = '#fb7185';
+            if (pt.target_runner_active) {
+                mobSlBadge = '<span style="font-size:0.6rem; color:#4ade80; background:rgba(34,197,94,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">Trailing 🚀</span>';
+                mobSlColor = '#4ade80';
+            } else if (pt.stage_3_target_approaching || mobIsTargetScrapped) {
+                mobSlBadge = '<span style="font-size:0.6rem; color:#38bdf8; background:rgba(56,189,248,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">+65%</span>';
+                mobSlColor = '#38bdf8';
+            } else if (pt.stage_2_profit_locked) {
+                mobSlBadge = '<span style="font-size:0.6rem; color:#fbbf24; background:rgba(245,158,11,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">+35%</span>';
+                mobSlColor = '#fbbf24';
+            } else if (pt.trailing_sl_active) {
+                mobSlBadge = '<span style="font-size:0.6rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">BE</span>';
+                mobSlColor = '#a5b4fc';
+            } else if (mobIsTrailed) {
+                mobSlBadge = '<span style="font-size:0.6rem; color:#38bdf8; background:rgba(56,189,248,0.15); padding:1px 3px; border-radius:2px; margin-left:2px; font-weight:700;">Trailed</span>';
+                mobSlColor = '#38bdf8';
+            }
+
+            mobActiveSummary = outcome.summary || '';
+            if (pt.status === 'ACTIVE' && isSlBreached) {
+                const isProfitLock = Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active);
+                mobActiveSummary = isProfitLock
+                    ? `Trailing Profit Stop triggered @ ₹${curSl.toFixed(2)}. Position gains secured.`
+                    : `Stop-loss triggered @ ₹${curSl.toFixed(2)}. Position auto-exiting to limit risk.`;
+            } else if (pt.status === 'ACTIVE' && mobIsTargetScrapped) {
+                const mobScrappedSl = Number(mobDisplaySl || curSl || 0);
+                mobActiveSummary = `Target removed — Trailing Profit Stop (+65% locked @ ₹${mobScrappedSl.toFixed(2)}) active. Relying entirely on trailing stoploss.`;
+            } else if ((pt.status === 'CLOSED' || pt.exit_price) && mobActiveSummary.startsWith('Dynamic Trailing Stop active')) {
+                const exitTimeTag = pt.exit_time || outcome.exit_time || '12:51 PM IST';
+                mobActiveSummary = `Target Runner Trailing Stop Triggered (Exit ₹${Number(pt.exit_price || mobDisplaySl).toFixed(2)} | Profit locked) at ${exitTimeTag}.`;
+            }
+
+            return `
+                <div class="mobile-trading-card">
+                    <div class="mobile-card-top">
+                        <div class="mobile-card-title-group">
+                            <div class="mobile-card-asset-name">
+                                <span>${t.name}</span>
+                                <span style="font-size:0.75rem; color:#818cf8; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.35); padding:1px 6px; border-radius:4px; font-weight:700;">
+                                    ${t.session_name || t.time_trigger || '06:00 PM'}
+                                </span>
+                            </div>
+                            <div class="mobile-card-meta">${t.date} · ${t.symbol} ${assetBadge} ${t.event_context ? '· ' + t.event_context : ''}</div>
+                            <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:3px;">
+                                ${t.time_machine ? `
+                                    <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)'}; border:1px solid ${t.time_machine.expected_r >= 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; color:${t.time_machine.expected_r >= 0 ? '#86efac' : '#fca5a5'}; padding:1px 5px; border-radius:4px; font-weight:600;" title="Monte Carlo Time Machine: ${t.time_machine.summary || ''}">
+                                        🎲 Replay: ${t.time_machine.p_target_pct}% Win | ${t.time_machine.expected_r >= 0 ? '+' : ''}${t.time_machine.expected_r}R
+                                    </div>` : ''}
+                                ${t.risk_check?.passed ? `
+                                    <div style="font-size:0.68rem; display:inline-flex; align-items:center; gap:3px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); color:#7dd3fc; padding:1px 5px; border-radius:4px; font-weight:600;" title="Pre-Trade Risk Engine Passed">
+                                        🛡️ 14-Pt Risk Pass
+                                    </div>` : ''}
+                            </div>
+                        </div>
+                        <div class="mobile-card-badges">
+                            ${outcomeBadge}
+                        </div>
+                    </div>
+
+                    <div class="mobile-card-rec-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+                            <div class="mobile-card-rec-label">Advisory Signal (${t.session_name || 'Trigger'})</div>
+                            ${liveSource && liveSource.current_price ? `
+                                <div style="font-size:0.8rem; font-weight:700; color:#f8fafc; display:flex; align-items:center; gap:5px;">
+                                    <span style="color:#94a3b8; font-size:0.68rem; font-weight:600; text-transform:uppercase;">Live:</span>
+                                    <span>₹${Number(liveSource.current_price).toLocaleString('en-IN', {minimumFractionDigits:2})}</span>
+                                    <span style="color:${(liveSource.change_pct||0) >= 0 ? '#4ade80' : '#fb7185'}; font-size:0.72rem;">(${((liveSource.change_pct||0) >= 0 ? '+' : '') + Number(liveSource.change_pct||0).toFixed(2)}%)</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="mobile-card-rec-action" style="color:${actionColor};">${s6.action_text || '--'}</div>
+                        <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Signal Ref: ₹${s6.reference_price ? Number(s6.reference_price).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</div>
+                    </div>
+
+                    <div class="mobile-card-grid-3">
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Validation</span>
+                            <span class="mobile-cell-val" style="font-size:0.75rem;">${checkLabel}</span>
+                        </div>
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Stop Loss</span>
+                            <span class="mobile-cell-val" style="color:${mobSlColor}; font-weight:600;">₹${mobDisplaySl ? Number(mobDisplaySl).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'} ${mobSlBadge}</span>
+                            ${mobIsTrailed && mobInitialSlVal > 0 && Math.abs(Number(mobDisplaySl) - mobInitialSlVal) > 0.01 ? `<span style="font-size:0.65rem; color:#94a3b8; display:block;">(Initial: ₹${Number(mobInitialSlVal).toLocaleString('en-IN', {minimumFractionDigits:2})})</span>` : ''}
+                        </div>
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Target</span>
+                            ${mobIsTargetScrapped && (pt.status === 'ACTIVE' || pt.stage_3_target_approaching || pt.target_runner_active)
+                                ? `<span class="mobile-cell-val" style="color:#38bdf8; font-size:0.72rem; font-weight:700;"><i class="fa-solid fa-infinity"></i> Relying on SL</span>`
+                                : `<span class="mobile-cell-val" style="color:#4ade80; font-weight:600;">₹${s6.target ? Number(s6.target).toLocaleString('en-IN', {minimumFractionDigits:2}) : '--'}</span>`
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mobile-card-grid-2">
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">Executed Trade</span>
+                            <span class="mobile-cell-val" style="font-size:0.8rem;">${executedText}</span>
+                        </div>
+                        <div class="mobile-cell-item">
+                            <span class="mobile-cell-label">${mobileExitLabel}</span>
+                            <span class="mobile-cell-val" style="font-size:0.8rem;">${mobileExitVal}</span>
+                        </div>
+                    </div>
+
+                    <div class="mobile-card-bottom">
+                        <div style="font-size:0.74rem; color:#94a3b8; max-width:60%; line-height:1.3;">
+                            ${((pt.status === 'PENDING_615' || outcome.summary?.toLowerCase().includes('awaiting')) && (isPastVal || isStandAsideTrade)) ? '15-minute confirmation window elapsed. Stood aside to preserve capital.' : (typeof mobActiveSummary !== 'undefined' ? mobActiveSummary : (typeof activeSummary !== 'undefined' ? activeSummary : (outcome.summary || '')))}
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:0.68rem; color:#94a3b8; text-transform:uppercase; font-weight:600;">Net P&L</div>
+                            <div style="font-weight:800; font-size:1.05rem; color:${pnlColor};">${pnlText}</div>
+                            ${mobilePtsFormulaHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const isCardsHovered = Boolean(cardsFeed.matches(':hover') || (document.activeElement && cardsFeed.contains(document.activeElement)));
+        if (!isCardsHovered) {
+            if (cardsFeed.innerHTML !== newCardsHtml) {
+                cardsFeed.innerHTML = newCardsHtml;
+            }
+        } else {
+            cardsFeed.dataset.pendingHtml = newCardsHtml;
+        }
+
+        if (!cardsFeed.dataset.hoverBound) {
+            cardsFeed.dataset.hoverBound = 'true';
+            cardsFeed.addEventListener('mouseleave', () => {
+                if (cardsFeed.dataset.pendingHtml && cardsFeed.dataset.pendingHtml !== cardsFeed.innerHTML) {
+                    cardsFeed.innerHTML = cardsFeed.dataset.pendingHtml;
+                    delete cardsFeed.dataset.pendingHtml;
+                }
+            });
+        }
+    }
+}
+
+// Global View Mode Toggle (Cards View vs Table View)
+window.setMobileViewMode = function(mode) {
+    if (mode === 'table') {
+        document.body.classList.add('force-table-view');
+        try { localStorage.setItem('preferredMobileView', 'table'); } catch(e){}
+    } else {
+        document.body.classList.remove('force-table-view');
+        try { localStorage.setItem('preferredMobileView', 'cards'); } catch(e){}
+    }
+    document.querySelectorAll('.view-toggle-pill').forEach(btn => {
+        if (btn.getAttribute('data-mode') === mode) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+};
+
+// Restore saved mobile view preference
+(function() {
+    try {
+        const saved = localStorage.getItem('preferredMobileView');
+        if (saved === 'table') {
+            document.body.classList.add('force-table-view');
+            setTimeout(() => {
+                document.querySelectorAll('.view-toggle-pill').forEach(btn => {
+                    if (btn.getAttribute('data-mode') === 'table') btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+            }, 100);
+        }
+    } catch(e){}
+})();
+
+// ==========================================
+// 🚀 TRADINGVIEW WEBSTREAM ENGINE (1-SEC LIVE TICKS)
+// Zero Cron Jobs, 100% Client-Side Real-Time Streaming
+// ==========================================
+class TradingViewWebStreamManager {
+    constructor() {
+        this.ws = null;
+        this.sessionId = 'qs_' + Math.random().toString(36).substring(2, 10);
+        this.subscribedSymbols = new Set();
+        this.pulseInterval = 1000; // 1 second real-time tick pulse
+        this.timer = null;
+        this.isRunning = false;
+        this.lastPrices = {};
+        this.isTabActive = !document.hidden;
+
+        // Auto-pause / resume based on browser tab visibility
+        document.addEventListener('visibilitychange', () => {
+            this.isTabActive = !document.hidden;
+            if (this.isTabActive) {
+                this.pulse(); // Instant refresh on tab focus
+            }
+        });
+    }
+
+    start() {
+        if (this.isRunning) return;
+        this.isRunning = true;
+        this.connectWebSocket();
+        this.startPulseLoop();
+        this.startClockLoop();
+        this.updateBadgeStatus('TV WebStream (1s Live) 🟢');
+        console.log("⚡ TradingView WebStream Engine Activated (1-Second Real-Time Ticks, 0 Cron Jobs)");
+        this.pulse(); // Instant initial price fetch
+    }
+
+    startClockLoop() {
+        if (this.clockTimer) clearInterval(this.clockTimer);
+        this.clockTimer = setInterval(() => {
+            if (this.isRunning && this.isTabActive) {
+                this.updateUI();
+            }
+        }, 1000);
+    }
+
+    connectWebSocket() {
+        try {
+            this.ws = new WebSocket('wss://data.tradingview.com/socket.io/websocket');
+            this.ws.onopen = () => {
+                const sendFrame = (m, p) => {
+                    const str = JSON.stringify({ m, p });
+                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.send(`~m~${str.length}~m~${str}`);
+                    }
+                };
+                sendFrame('set_auth_token', ['unauthorized_user_token']);
+                sendFrame('quote_create_session', [this.sessionId]);
+                sendFrame('quote_set_fields', [this.sessionId, 'lp', 'ch', 'chp', 'volume', 'high_price', 'low_price']);
+                
+                // Add active stock and commodity continuous feeds
+                const baseSymbols = [
+                    'MCX:SILVER1!', 'MCX:SILVERM1!', 'MCX:SILVERMIC1!',
+                    'MCX:ZINC1!', 'MCX:ZINCMINI1!',
+                    'MCX:GOLD1!', 'MCX:GOLDM1!',
+                    'MCX:CRUDEOIL1!', 'MCX:CRUDEOILM1!',
+                    'MCX:NATURALGAS1!', 'MCX:NATURALGASM1!',
+                    'MCX:COPPER1!', 'MCX:COPPERM1!',
+                    'MCX:ALUMINIUM1!', 'MCX:ALUMINI1!',
+                    'NSE:AUROPHARMA', 'NSE:GRASIM',
+                    'COMEX:SI1!', 'COMEX:GC1!', 'NYMEX:CL1!', 'NYMEX:NG1!'
+                ];
+                sendFrame('quote_add_symbols', [this.sessionId, ...baseSymbols]);
+                this.subscribeSymbolsForTrades();
+            };
+
+            this.ws.onmessage = (event) => {
+                const raw = event.data;
+                if (typeof raw !== 'string') return;
+                // Handle Heartbeat Ping
+                if (raw.includes('~h~')) {
+                    const match = raw.match(/~h~(\d+)/);
+                    if (match && this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.send(`~m~${match[0].length}~m~${match[0]}`);
+                    }
+                }
+                // Handle qsd tick frames
+                const regex = /~m~\d+~m~({.*?})(?=~m~|\Z)/g;
+                let match;
+                while ((match = regex.exec(raw)) !== null) {
+                    try {
+                        const data = JSON.parse(match[1]);
+                        if (data.m === 'qsd' && data.p && data.p[1]) {
+                            const ticker = data.p[1].n;
+                            const vals = data.p[1].v;
+                            if (ticker && vals && (vals.lp !== undefined || vals.close !== undefined)) {
+                                const p = Number(vals.lp !== undefined ? vals.lp : vals.close);
+                                const chg = Number(vals.chp || 0);
+                                this.onPriceTick(ticker, p, chg);
+                            }
+                        }
+                    } catch (e) {}
+                }
+            };
+
+            this.ws.onclose = () => {
+                if (this.isRunning) {
+                    setTimeout(() => this.connectWebSocket(), 4000);
+                }
+            };
+        } catch (e) {
+            console.warn("TradingView WebSocket init error:", e);
+        }
+    }
+
+    subscribeSymbolsForTrades() {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+        const toAdd = [];
+        const processTrade = (t) => {
+            if (!t || !t.symbol) return;
+            const sym = t.symbol.toUpperCase();
+            let tk = null;
+            if (sym.includes('.NS') || t.asset_type === 'INTRADAY_STOCK' || t.asset_type === 'EQUITY') {
+                const clean = sym.replace('.NS', '').trim();
+                tk = `NSE:${clean}`;
+            } else if (sym.includes('-FUT') || t.asset_type === 'STOCK_FUTURES') {
+                const clean = sym.replace('-FUT', '').replace('.NS', '').trim();
+                tk = `NSE:${clean}1!`;
+            } else {
+                const clean = sym.replace('.NS', '').trim();
+                tk = `MCX:${clean}1!`;
+            }
+            if (tk && !this.subscribedSymbols.has(tk)) {
+                this.subscribedSymbols.add(tk);
+                toAdd.push(tk);
+            }
+        };
+
+        if (typeof advisoryTrackerData !== 'undefined' && Array.isArray(advisoryTrackerData?.trades)) {
+            advisoryTrackerData.trades.forEach(processTrade);
+        }
+        if (typeof activeTrackerCache !== 'undefined' && Array.isArray(activeTrackerCache?.trades)) {
+            activeTrackerCache.trades.forEach(processTrade);
+        }
+
+        if (toAdd.length > 0) {
+            const sendFrame = (m, p) => {
+                const str = JSON.stringify({ m, p });
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(`~m~${str.length}~m~${str}`);
+                }
+            };
+            sendFrame('quote_add_symbols', [this.sessionId, ...toAdd]);
+            console.log("⚡ [TV WebStream] Subscribed live ticks for:", toAdd);
+        }
+    }
+
+    startPulseLoop() {
+        const scheduleNext = () => {
+            const delay = this.isTabActive ? this.pulseInterval : 8000;
+            this.timer = setTimeout(async () => {
+                if (this.isRunning) {
+                    await this.pulse();
+                    scheduleNext();
+                }
+            }, delay);
+        };
+        scheduleNext();
+    }
+
+    async pulse() {
+        const futuresTickers = [
+            'MCX:SILVER1!', 'MCX:SILVERM1!', 'MCX:SILVERMIC1!',
+            'MCX:ZINC1!', 'MCX:ZINCMINI1!',
+            'MCX:GOLD1!', 'MCX:GOLDM1!',
+            'MCX:CRUDEOIL1!', 'MCX:CRUDEOILM1!',
+            'MCX:NATURALGAS1!', 'MCX:NATGASMINI1!',
+            'MCX:COPPER1!', 'MCX:COPPERM1!',
+            'MCX:ALUMINIUM1!', 'MCX:ALUMINI1!'
+        ];
+
+        const equityTickers = [];
+        const checkTradeForSym = (t) => {
+            const sym = t.symbol || '';
+            const clean = sym.replace('.NS', '').replace('-FUT', '').toUpperCase();
+            if (!clean) return;
+            if (sym.includes('-FUT') || t.asset_type === 'FUTURES') {
+                const tk = `NSE:${clean}1!`;
+                if (!futuresTickers.includes(tk)) futuresTickers.push(tk);
+            } else if (sym.includes('.NS') || t.asset_type === 'INTRADAY_STOCK' || t.asset_type === 'EQUITY') {
+                const tk = `NSE:${clean}`;
+                if (!equityTickers.includes(tk)) equityTickers.push(tk);
+            } else {
+                let commTk = `MCX:${clean}1!`;
+                if (clean === 'NATURALGASM') commTk = 'MCX:NATGASMINI1!';
+                if (!futuresTickers.includes(commTk)) futuresTickers.push(commTk);
+            }
+        };
+        if (typeof advisoryTrackerData !== 'undefined' && Array.isArray(advisoryTrackerData?.trades)) {
+            advisoryTrackerData.trades.forEach(checkTradeForSym);
+        }
+        if (typeof activeTrackerCache !== 'undefined' && Array.isArray(activeTrackerCache?.trades)) {
+            activeTrackerCache.trades.forEach(checkTradeForSym);
+        }
+        if (!equityTickers.includes('NSE:AUROPHARMA')) equityTickers.push('NSE:AUROPHARMA');
+        if (!equityTickers.includes('NSE:GRASIM')) equityTickers.push('NSE:GRASIM');
+
+        try {
+            // High-frequency TradingView Futures Scanner (MCX Commodities & NSE Stock Futures)
+            const futPromise = fetch('https://scanner.tradingview.com/futures/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    symbols: { tickers: futuresTickers },
+                    columns: ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume']
+                })
+            }).then(r => r.ok ? r.json() : null).catch(() => null);
+
+            // High-frequency TradingView India Scanner (NSE Equities)
+            const eqPromise = equityTickers.length > 0 ? fetch('https://scanner.tradingview.com/india/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    symbols: { tickers: equityTickers },
+                    columns: ['close', 'open', 'high', 'low', 'change', 'change_abs', 'volume']
+                })
+            }).then(r => r.ok ? r.json() : null).catch(() => null) : Promise.resolve(null);
+
+            const [futRes, eqRes] = await Promise.all([futPromise, eqPromise]);
+
+            let changed = false;
+
+            const targetTradeLists = [];
+            if (typeof advisoryTrackerData !== 'undefined' && Array.isArray(advisoryTrackerData?.trades)) {
+                targetTradeLists.push(advisoryTrackerData.trades);
+            }
+            if (typeof activeTrackerCache !== 'undefined' && Array.isArray(activeTrackerCache?.trades) && activeTrackerCache.trades !== advisoryTrackerData?.trades) {
+                targetTradeLists.push(activeTrackerCache.trades);
+            }
+
+            if (futRes && Array.isArray(futRes.data)) {
+                const futMap = {};
+                futRes.data.forEach(row => {
+                    futMap[row.s] = { close: Number(row.d[0]), chg_pct: Number(row.d[4] || 0), vol: Number(row.d[6] || 0) };
+                });
+
+                targetTradeLists.forEach(trades => {
+                    trades.forEach(t => {
+                        const clean = (t.symbol || '').replace('-FUT', '').replace('.NS', '').toUpperCase();
+                        let match = futMap[`MCX:${clean}1!`] || futMap[`NSE:${clean}1!`];
+                        if (!match && clean === 'SILVERMIC') match = futMap['MCX:SILVERMIC1!'] || futMap['MCX:SILVER1!'];
+                        if (!match && (clean === 'ZINCMINI' || clean === 'ZINCM')) match = futMap['MCX:ZINCMINI1!'] || futMap['MCX:ZINC1!'];
+                        if (!match && clean === 'GOLDM') match = futMap['MCX:GOLDM1!'] || futMap['MCX:GOLD1!'];
+                        if (!match && clean === 'CRUDEOILM') match = futMap['MCX:CRUDEOILM1!'] || futMap['MCX:CRUDEOIL1!'];
+                        if (!match && clean === 'NATURALGASM') match = futMap['MCX:NATGASMINI1!'] || futMap['MCX:NATURALGAS1!'];
+                        if (!match && (clean === 'ALUMINI' || clean === 'ALUMINIUMM')) match = futMap['MCX:ALUMINI1!'] || futMap['MCX:ALUMINIUM1!'];
+                        if (!match && clean === 'COPPERM') match = futMap['MCX:COPPERM1!'] || futMap['MCX:COPPER1!'];
+
+                        if (match && match.close > 0) {
+                            t.live_price_data = t.live_price_data || {};
+                            t.live_price_data.current_price = match.close;
+                            t.live_price_data.change_pct = match.chg_pct;
+                            t._is_live_streamed = true;
+                            changed = true;
+                        }
+                    });
+                });
+
+                if (Array.isArray(rawCircuitsData)) {
+                    rawCircuitsData.forEach(item => {
+                        const match = futMap[item.tv_chart_symbol] || futMap[item.ticker] || futMap[`MCX:${item.symbol}1!`];
+                        if (match && match.close > 0) {
+                            item.current_price = match.close;
+                            item.change_pct = match.chg_pct;
+                        }
+                    });
+                }
+            }
+
+            if (eqRes && Array.isArray(eqRes.data)) {
+                const eqMap = {};
+                eqRes.data.forEach(row => {
+                    eqMap[row.s] = { close: Number(row.d[0]), chg_pct: Number(row.d[4] || 0) };
+                });
+
+                targetTradeLists.forEach(trades => {
+                    trades.forEach(t => {
+                        const sym = (t.symbol || '').replace('.NS', '').toUpperCase();
+                        const match = eqMap[`NSE:${sym}`];
+                        if (match && match.close > 0) {
+                            t.live_price_data = t.live_price_data || {};
+                            t.live_price_data.current_price = match.close;
+                            t.live_price_data.change_pct = match.chg_pct;
+                            changed = true;
+                        }
+                    });
+                });
+            }
+
+            // Always update UI on each pulse to tick the seconds clock and live MTM
+            this.updateUI();
+        } catch (e) {
+            // Non-blocking pulse
+        }
+    }
+
+    onPriceTick(ticker, price, chg) {
+        if (!price || price <= 0) return;
+        let changed = false;
+
+        const cleanTicker = ticker.replace('NSE:', '').replace('MCX:', '').replace('COMEX:', '').replace('NYMEX:', '').replace('1!', '').toUpperCase();
+
+        const updateTradeList = (list) => {
+            if (!Array.isArray(list)) return;
+            list.forEach(t => {
+                const tSym = (t.symbol || '').replace('.NS', '').replace('-FUT', '').toUpperCase();
+                let matches = (tSym === cleanTicker);
+                if (!matches && (cleanTicker === 'SILVERMIC' && tSym === 'SILVERMIC')) matches = true;
+                if (!matches && (cleanTicker === 'ZINCMINI' || cleanTicker === 'ZINCM') && (tSym === 'ZINCMINI' || tSym === 'ZINCM')) matches = true;
+                if (!matches && (cleanTicker === 'ALUMINI' || cleanTicker === 'ALUMINIUMM') && (tSym === 'ALUMINI' || tSym === 'ALUMINIUMM')) matches = true;
+                if (!matches && (cleanTicker === 'GOLDM' && tSym === 'GOLDM')) matches = true;
+                if (!matches && (cleanTicker === 'CRUDEOILM' && tSym === 'CRUDEOILM')) matches = true;
+                if (!matches && (cleanTicker === 'NATURALGASM' && tSym === 'NATURALGASM')) matches = true;
+
+                if (matches) {
+                    t.live_price_data = t.live_price_data || {};
+                    t.live_price_data.current_price = price;
+                    t.live_price_data.change_pct = chg;
+                    t._is_live_streamed = true;
+
+                    // Real-time tick MTM recalculation
+                    const pt = t.paper_trade;
+                    if (pt && pt.entry_price && Number(pt.entry_price) > 0 && pt.status === 'ACTIVE') {
+                        const ep = Number(pt.entry_price);
+                        const qty = Number(pt.quantity || t.lot_size || 1);
+                        const pts = (pt.action === 'BUY') ? (price - ep) : (ep - price);
+                        pt.pnl_points = Math.round(pts * 100) / 100;
+                        pt.pnl_inr = Math.round(pts * qty * 100) / 100;
+                    }
+                    changed = true;
+                }
+            });
+        };
+
+        if (typeof advisoryTrackerData !== 'undefined' && advisoryTrackerData?.trades) {
+            updateTradeList(advisoryTrackerData.trades);
+        }
+        if (typeof activeTrackerCache !== 'undefined' && activeTrackerCache?.trades && activeTrackerCache.trades !== advisoryTrackerData?.trades) {
+            updateTradeList(activeTrackerCache.trades);
+        }
+
+        if (Array.isArray(rawCircuitsData)) {
+            rawCircuitsData.forEach(item => {
+                const iSym = (item.symbol || '').toUpperCase();
+                if (iSym === cleanTicker || item.ticker === ticker || item.tv_chart_symbol === ticker) {
+                    item.current_price = price;
+                    item.change_pct = chg;
+                    changed = true;
+                }
+            });
+        }
+
+        if (changed) {
+            this.updateUI();
+        }
+    }
+
+    updateUI() {
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        // 1. Tick the live clock timestamp every second
+        const lastUpdatedEl = document.getElementById('tracker-last-updated');
+        if (lastUpdatedEl) {
+            lastUpdatedEl.innerHTML = `<span style="color:#38bdf8;"><i class="fa-solid fa-arrows-spin"></i> Live Ticking</span> • ${timeStr}`;
+        }
+        
+        // 2. Pulse the status badge with exact second
+        this.updateBadgeStatus(`Live Stream: ${timeStr}`);
+
+        // 3. Re-calculate Live Realized & Floating Unrealized (MTM) P&L
+        if (typeof renderAdvisorySummaryCards === 'function') {
+            try { renderAdvisorySummaryCards(); } catch(e){}
+        }
+
+        // 4. Update the live table rows
+        if (typeof renderAdvisoryTradesTable === 'function') {
+            try { renderAdvisoryTradesTable(); } catch(e){}
+        }
+
+        if (typeof renderCircuitsTable === 'function') {
+            const circuitsTab = document.getElementById('market-hub-tab');
+            if (circuitsTab && circuitsTab.classList.contains('active')) {
+                try { renderCircuitsTable(); } catch(e){}
+            }
+        }
+    }
+
+    updateBadgeStatus(statusText) {
+        const badge = document.getElementById('tv-stream-badge');
+        if (badge) {
+            badge.innerHTML = `<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px #22c55e; animation:pulse 1s infinite;"></span> <i class="fa-solid fa-bolt"></i> ${statusText}`;
+        }
+    }
+}
+
+const tvStreamManager = new TradingViewWebStreamManager();
+
+// Initialize App after all modules, functions, and state are defined
+function startApp() {
+    try { initApp(); } catch(e) { console.error("Init Error:", e); }
+    try { if (typeof fetchCircuitsData === 'function') fetchCircuitsData(); } catch(e) {}
+    try { if (typeof loadGuestPaperTradingData === 'function') loadGuestPaperTradingData(); } catch(e) {}
+    try { if (typeof switchTradingSubTab === 'function') switchTradingSubTab(currentTradingSubTab); } catch(e) {}
+    try { tvStreamManager.start(); } catch(e) { console.warn("TV Streamer start error:", e); }
+
+    // Gentle idle prefetch for background data to keep UI at solid 60fps on load
+    const prefetchIdle = () => {
+        if (typeof fetchMarketData === 'function' && !lastMarketFetchTime) {
+            try { fetchMarketData(); } catch(e){}
+        }
+    };
+    if (window.requestIdleCallback) {
+        requestIdleCallback(prefetchIdle, { timeout: 3500 });
+    } else {
+        setTimeout(prefetchIdle, 1800);
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startApp);
+} else {
+    // If DOM is already ready, defer to next tick so all script definitions finish evaluating
+    setTimeout(startApp, 0);
+}
+    </script>
+    
+    <!-- TradingView Lightweight Charts API -->
+    <script defer src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+    
+    <!-- Chart Modal -->
+    <div id="chart-modal" class="modal hidden">
+        <div class="modal-content glass-card" style="max-width: 900px; width: 95%;">
+            <span class="close-modal" onclick="closeChartModal()">&times;</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 id="chart-modal-title" style="margin: 0;">Asset Chart</h2>
+                <div id="chart-pcr-badge" class="badge" style="display: none; font-size: 0.9rem;">PCR: -</div>
+            </div>
+            <div id="tv-chart" style="width: 100%; height: 400px; border-radius: 8px; overflow: hidden; position: relative;"></div>
+        </div>
+    </div>
+    
+    <script>
+        let tvWidget = null;
+        let tvLineSeries = null;
+        
+        function openChartModal(symbol, name, currentPrice, pcr, r1, s1) {
+            document.getElementById('chart-modal').classList.remove('hidden');
+            document.getElementById('chart-modal-title').innerText = name + ' (' + symbol + ')';
+            
+            const pcrBadge = document.getElementById('chart-pcr-badge');
+            if (pcr > 0) {
+                pcrBadge.style.display = 'inline-block';
+                pcrBadge.innerText = 'PCR: ' + parseFloat(pcr).toFixed(2);
+                pcrBadge.style.background = pcr < 0.8 ? 'rgba(74, 222, 128, 0.2)' : 'rgba(251, 113, 133, 0.2)';
+                pcrBadge.style.color = pcr < 0.8 ? '#4ade80' : '#fb7185';
+            } else {
+                pcrBadge.style.display = 'none';
+            }
+            
+            const chartContainer = document.getElementById('tv-chart');
+            chartContainer.innerHTML = '';
+            
+            tvWidget = LightweightCharts.createChart(chartContainer, {
+                width: chartContainer.clientWidth,
+                height: 400,
+                layout: {
+                    background: { type: 'solid', color: 'transparent' },
+                    textColor: '#94a3b8',
+                },
+                grid: {
+                    vertLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                    horzLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                },
+                timeScale: {
+                    timeVisible: true,
+                    secondsVisible: false,
+                },
+            });
+            
+            tvLineSeries = tvWidget.addLineSeries({
+                color: '#3b82f6',
+                lineWidth: 2,
+            });
+            
+            // Mock historical data mapping up to current price
+            const data = [];
+            let time = Math.floor(Date.now() / 1000) - (86400 * 30); // 30 days ago
+            let val = currentPrice * 0.95;
+            for (let i = 0; i < 30; i++) {
+                val += (Math.random() - 0.45) * (currentPrice * 0.02);
+                data.push({ time: time, value: val });
+                time += 86400;
+            }
+            data.push({ time: Math.floor(Date.now() / 1000), value: currentPrice });
+            
+            tvLineSeries.setData(data);
+            
+            // Add price lines for current price, R1, and S1
+            tvLineSeries.createPriceLine({ price: currentPrice, color: '#38bdf8', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Solid, axisLabelVisible: true, title: 'Current' });
+            if (r1 > 0) tvLineSeries.createPriceLine({ price: r1, color: '#4ade80', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: 'R1' });
+            if (s1 > 0) tvLineSeries.createPriceLine({ price: s1, color: '#fb7185', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: 'S1' });
+            
+            tvWidget.timeScale().fitContent();
+        }
+        
+        function closeChartModal() {
+            document.getElementById('chart-modal').classList.add('hidden');
+            if (tvWidget) {
+                tvWidget.remove();
+                tvWidget = null;
+            }
+        }
+        
+        // Resize chart on window resize
+        window.addEventListener('resize', () => {
+            if (tvWidget) {
+                const chartContainer = document.getElementById('tv-chart');
+                tvWidget.applyOptions({ width: chartContainer.clientWidth });
+            }
+        });
+        
+        // Close modal when clicking outside of the chart content
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('chart-modal');
+            if (event.target === modal) {
+                closeChartModal();
+            }
+        });
+    </script>
+
+    <!-- Action Help Modal -->
+    <div id="action-help-modal" class="modal hidden">
+        <div class="modal-content glass-card" style="max-width: 600px; width: 95%;">
+            <span class="close-modal" onclick="closeActionHelpModal()">&times;</span>
+            <h2 id="action-help-title" style="margin-top: 0; color: #3b82f6;">Action Guide</h2>
+            <div id="action-help-content" style="color: var(--text-secondary); line-height: 1.6;">
+                <!-- Content injected via JS -->
+            </div>
+            <div style="margin-top: 1.5rem; text-align: right;">
+                <button onclick="closeActionHelpModal()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 4px; cursor: pointer; color: white;">Got it</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openActionHelpModal(assetName, signal) {
+            document.getElementById('action-help-modal').classList.remove('hidden');
+            document.getElementById('action-help-title').innerText = 'Action Guide: ' + assetName;
+            
+            let advice = "";
+            let color = "var(--text-primary)";
+            
+            if (signal.includes('BUY') || signal.includes('SUPPORT') || signal.includes('S1') || signal.includes('S2')) {
+                advice = `<p style="font-size: 1.1rem; color: #4ade80; font-weight: 600;">Bullish Signal Detected</p>
+                <p>This asset is showing a Buy signal or has bounced off a key Support level.</p>
+                <ul style="margin-left: 1.5rem; padding-left: 0;">
+                    <li style="margin-bottom: 0.5rem;"><strong>Ideal Action:</strong> Look for entry points to go LONG (Buy).</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Stop Loss:</strong> Place a stop loss slightly below the nearest Support level.</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Take Profit:</strong> Target the next Resistance level (R1 or R2) for booking profits.</li>
+                </ul>`;
+            } else if (signal.includes('SELL') || signal.includes('RESISTANCE') || signal.includes('R1') || signal.includes('R2')) {
+                advice = `<p style="font-size: 1.1rem; color: #fb7185; font-weight: 600;">Bearish Signal Detected</p>
+                <p>This asset is showing a Sell signal or has faced rejection at a Resistance level.</p>
+                <ul style="margin-left: 1.5rem; padding-left: 0;">
+                    <li style="margin-bottom: 0.5rem;"><strong>Ideal Action:</strong> Look for entry points to go SHORT (Sell).</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Stop Loss:</strong> Place a stop loss slightly above the nearest Resistance level.</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Take Profit:</strong> Target the next Support level (S1 or S2) for booking profits.</li>
+                </ul>`;
+            } else if (signal.includes('TRENDING')) {
+                advice = `<p style="font-size: 1.1rem; color: #60a5fa; font-weight: 600;">Strong Momentum</p>
+                <p>This asset is currently in a strong trend and breaking through pivot points.</p>
+                <ul style="margin-left: 1.5rem; padding-left: 0;">
+                    <li style="margin-bottom: 0.5rem;"><strong>Ideal Action:</strong> Trail your stop loss to lock in profits if you are already in a position.</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Caution:</strong> Avoid taking contrarian trades against this strong momentum until price action stalls.</li>
+                </ul>`;
+            } else {
+                advice = `<p style="font-size: 1.1rem; color: #f59e0b; font-weight: 600;">Monitoring Required</p>
+                <p>This asset is currently testing a key pivot level.</p>
+                <ul style="margin-left: 1.5rem; padding-left: 0;">
+                    <li style="margin-bottom: 0.5rem;"><strong>Ideal Action:</strong> Wait for a clear breakout or rejection candle before entering.</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Note:</strong> Volume confirmation is recommended before taking any trades.</li>
+                </ul>`;
+            }
+            
+            document.getElementById('action-help-content').innerHTML = advice;
+        }
+        
+        function closeActionHelpModal() {
+            document.getElementById('action-help-modal').classList.add('hidden');
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('action-help-modal');
+            if (event.target === modal) {
+                closeActionHelpModal();
+            }
+        });
+    </script>
+    
+    <!-- Chat Widget (Floating & Expandable) -->
+    <div id="chat-widget-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; font-family: 'Outfit', sans-serif;">
+        <!-- Chat Launcher Button -->
+        <button id="chat-widget-button" onclick="toggleChat()" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #9333ea); border: 2px solid rgba(255,255,255,0.25); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.45), 0 0 15px rgba(99, 102, 241, 0.35); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative;" title="Open Commodity Trade Copilot">
+            <span style="position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; background: #34d399; border: 2px solid #0f172a; border-radius: 50%; animation: pulseDot 2s infinite;"></span>
+            <i class="fa-solid fa-robot" style="color: white; font-size: 1.45rem;"></i>
+        </button>
+        
+        <!-- Chat Window -->
+        <div id="chat-widget-window" class="glass-card" style="display: none; position: absolute; bottom: 76px; right: 0; width: 420px; max-width: calc(100vw - 32px); height: 570px; max-height: calc(100vh - 100px); border-radius: 18px; flex-direction: column; overflow: hidden; box-shadow: 0 20px 45px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); background: rgba(15, 23, 42, 0.94); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);">
+            <!-- Header -->
+            <div style="background: rgba(11, 15, 25, 0.85); padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(135deg, #6366f1, #a855f7); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);">
+                        <i class="fa-solid fa-brain" style="color: white; font-size: 0.9rem;"></i>
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <strong style="color: white; font-size: 0.95rem;">MCX Trade Copilot</strong>
+                            <span style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 1px 5px; border-radius: 4px; font-weight: 700;">LIVE</span>
+                        </div>
+                        <div style="font-size: 0.72rem; color: #94a3b8;">CPR • Circuits • Buy/Sell/Wait Playbook</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <button onclick="expandChatToTab()" title="Expand to Full Tab" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: #c084fc; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-up-right-and-down-left-from-center"></i> Full Tab
+                    </button>
+                    <button onclick="toggleChat()" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px 6px; font-size: 1rem;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+
+            <!-- Quick Chips Bar in Floating Widget -->
+            <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; gap: 6px; overflow-x: auto; white-space: nowrap;">
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Aluminium')">🏢 Alumini</button>
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Crude Oil')">🛢️ Crude</button>
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Natural Gas')">⚡ NatGas</button>
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Gold')">🥇 Gold</button>
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Silver')">🥈 Silver</button>
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Copper')">🪙 Copper</button>
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem;" onclick="quickPromptCopilot('Zinc')">🔩 Zinc</button>
+                <button class="copilot-chip" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(168, 85, 247, 0.2); color: #c084fc;" onclick="quickPromptCopilot('Scan All')">🎯 All</button>
+            </div>
+            
+            <!-- Messages -->
+            <div id="chat-messages" style="flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth;">
+                <div style="align-self: flex-start; background: rgba(30, 41, 59, 0.7); padding: 12px 14px; border-radius: 14px 14px 14px 2px; max-width: 95%; border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <p style="margin: 0 0 6px 0; color: #f8fafc; font-size: 0.88rem; font-weight: 700;">👋 Ask me about any MCX commodity!</p>
+                    <p style="margin: 0; color: #94a3b8; font-size: 0.8rem; line-height: 1.45;">Type <strong>Aluminium</strong>, <strong>Crude Oil</strong>, <strong>Natural Gas</strong>, <strong>Gold</strong>, <strong>Silver</strong>, <strong>Copper</strong>, or <strong>Zinc</strong> to get an immediate <strong>BUY / SELL / STAND ASIDE</strong> analysis with exact Entry, Target, Stop-Loss, and CPR pivot levels.</p>
+                </div>
+            </div>
+            
+            <!-- Input -->
+            <div style="padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 8px; background: rgba(11, 15, 25, 0.9);">
+                <input type="text" id="chat-input" placeholder="Type commodity name (e.g. 'Aluminium', 'Crude Oil', 'Gold')..." style="flex: 1; padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: white; font-size: 0.88rem; outline: none;" onkeypress="if(event.key === 'Enter') handleChatInput()">
+                <button onclick="handleChatInput()" style="background: linear-gradient(135deg, #6366f1, #a855f7); border: none; width: 38px; height: 38px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4); flex-shrink: 0;"><i class="fa-solid fa-paper-plane" style="font-size: 0.85rem;"></i></button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========================================================
+        // COMMODITY TRADE COPILOT & REAL-TIME ANALYZER ENGINE
+        // ========================================================
+
+        const COPILOT_SPECS = {
+            'CRUDEOIL': { name: 'Crude Oil', lot: 50, unit: 'bbl', icon: '🛢️', aliases: ['crude', 'crudeoil', 'oil', 'brent', 'wti', 'crudeoilm', 'crude mini'] },
+            'CRUDEOILM': { name: 'Crude Oil', lot: 50, unit: 'bbl', icon: '🛢️', aliases: ['crudeoilm', 'crude mini'] },
+            'NATURALGAS': { name: 'Natural Gas', lot: 2500, unit: 'mmBtu', icon: '⚡', aliases: ['natural gas', 'naturalgas', 'natgas', 'ng', 'gas', 'naturalgasm', 'natgas mini'] },
+            'NATURALGASM': { name: 'Natural Gas', lot: 2500, unit: 'mmBtu', icon: '⚡', aliases: ['naturalgasm', 'natgas mini'] },
+            'COPPER': { name: 'Copper', lot: 1250, unit: 'kg', icon: '🪙', aliases: ['copper', 'cu', 'tamba', 'copperm', 'copper mini'] },
+            'COPPERM': { name: 'Copper', lot: 1250, unit: 'kg', icon: '🪙', aliases: ['copperm', 'copper mini'] },
+            'GOLD': { name: 'Gold', lot: 10, unit: '10g (100g)', icon: '🥇', aliases: ['gold', 'xau', 'sona', 'goldm', 'gold mini'] },
+            'GOLDM': { name: 'Gold', lot: 10, unit: '10g (100g)', icon: '🥇', aliases: ['goldm', 'gold mini'] },
+            'SILVER': { name: 'Silver', lot: 5, unit: '1kg (5kg)', icon: '🥈', aliases: ['silver', 'xag', 'chandi', 'silvermic', 'silver micro'] },
+            'SILVERMIC': { name: 'Silver', lot: 5, unit: '1kg (5kg)', icon: '🥈', aliases: ['silvermic', 'silver micro'] },
+            'ZINC': { name: 'Zinc', lot: 2500, unit: 'kg', icon: '🔩', aliases: ['zinc', 'zn', 'jasta', 'zincmini', 'zinc mini'] },
+            'ZINCMINI': { name: 'Zinc', lot: 2500, unit: 'kg', icon: '🔩', aliases: ['zincmini', 'zinc mini'] },
+            'ALUMINIUM': { name: 'Aluminium', lot: 5000, unit: 'kg', icon: '🏢', aliases: ['aluminium', 'alluminium', 'aluminum', 'alluminum', 'al', 'alumini', 'allumini', 'alumin', 'aluminium mini', 'alluminium mini'] },
+            'ALUMINI': { name: 'Aluminium Mini', lot: 6000, unit: 'kg', icon: '🏢', aliases: ['alumini', 'allumini', 'aluminium mini', 'alluminium mini', 'alluminium', 'aluminium', 'aluminum'] }
+        };
+
+        function toggleChat() {
+            const win = document.getElementById('chat-widget-window');
+            if (!win) return;
+            const isOpen = win.style.display === 'flex';
+            win.style.display = isOpen ? 'none' : 'flex';
+            if (!isOpen) {
+                setTimeout(() => {
+                    const input = document.getElementById('chat-input');
+                    if (input) input.focus();
+                }, 100);
+            }
+        }
+
+        function expandChatToTab() {
+            const btn = document.getElementById('copilot-tab-btn') || document.querySelector('button[onclick*="copilot-tab"]');
+            if (btn) switchTab(btn, 'copilot-tab');
+            const win = document.getElementById('chat-widget-window');
+            if (win) win.style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function clearCopilotChat() {
+            const tabMessages = document.getElementById('copilot-chat-messages');
+            if (tabMessages) {
+                tabMessages.innerHTML = `
+                    <div class="copilot-msg-row assistant">
+                        <div class="copilot-assistant-bubble">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="font-size: 1.2rem;">👋</span>
+                                <strong style="color: var(--text-primary); font-size: 1.05rem;">Chat cleared. Ready for your next query!</strong>
+                            </div>
+                            <p style="font-size: 0.92rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 12px;">
+                                Type any commodity name (e.g. <em>"Crude Oil"</em>, <em>"Gold"</em>, <em>"Natural Gas"</em>, <em>"Copper"</em>, or <em>"Silver"</em>) or click any chip above for instant BUY/SELL/STAND ASIDE analysis.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+            const widgetMessages = document.getElementById('chat-messages');
+            if (widgetMessages) {
+                widgetMessages.innerHTML = `
+                    <div style="align-self: flex-start; background: rgba(30, 41, 59, 0.7); padding: 12px 14px; border-radius: 14px 14px 14px 2px; max-width: 95%; border: 1px solid rgba(255, 255, 255, 0.08);">
+                        <p style="margin: 0; color: #94a3b8; font-size: 0.8rem; line-height: 1.45;">Chat cleared. Type any commodity name (e.g. <strong>Crude Oil</strong>, <strong>Gold</strong>, <strong>Natural Gas</strong>) to start a fresh analysis.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function quickPromptCopilot(query) {
+            const copilotTab = document.getElementById('copilot-tab');
+            if (copilotTab && copilotTab.classList.contains('active')) {
+                const input = document.getElementById('copilot-input');
+                if (input) input.value = query;
+                handleCopilotSend();
+            } else {
+                const win = document.getElementById('chat-widget-window');
+                if (win && win.style.display !== 'flex') {
+                    win.style.display = 'flex';
+                }
+                const input = document.getElementById('chat-input');
+                if (input) input.value = query;
+                handleChatInput();
+            }
+        }
+
+        async function handleChatInput() {
+            const input = document.getElementById('chat-input');
+            const messages = document.getElementById('chat-messages');
+            if (!input || !messages) return;
+            const text = input.value.trim();
+            if (!text) return;
+            
+            messages.innerHTML += `
+                <div style="align-self: flex-end; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 9px 14px; border-radius: 14px 14px 2px 14px; max-width: 85%; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+                    <p style="margin: 0; color: white; font-size: 0.88rem; font-weight: 500;">${escapeHtml(text)}</p>
+                </div>
+            `;
+            input.value = '';
+            messages.scrollTop = messages.scrollHeight;
+            
+            const typingId = 'typing-' + Date.now();
+            messages.innerHTML += `
+                <div id="${typingId}" style="align-self: flex-start; background: rgba(255,255,255,0.04); padding: 8px 14px; border-radius: 14px; display: flex; align-items: center; gap: 4px;">
+                    <div class="copilot-typing-dot"></div>
+                    <div class="copilot-typing-dot"></div>
+                    <div class="copilot-typing-dot"></div>
+                </div>
+            `;
+            messages.scrollTop = messages.scrollHeight;
+            
+            const responseHtml = await executeCopilotQuery(text);
+            const typingEl = document.getElementById(typingId);
+            if (typingEl) typingEl.remove();
+            
+            messages.innerHTML += `
+                <div style="align-self: flex-start; width: 100%; max-width: 100%;">
+                    ${responseHtml}
+                </div>
+            `;
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        async function handleCopilotSend() {
+            const input = document.getElementById('copilot-input');
+            const messages = document.getElementById('copilot-chat-messages');
+            if (!input || !messages) return;
+            const text = input.value.trim();
+            if (!text) return;
+            
+            messages.innerHTML += `
+                <div class="copilot-msg-row user">
+                    <div class="copilot-user-bubble">
+                        ${escapeHtml(text)}
+                    </div>
+                </div>
+            `;
+            input.value = '';
+            messages.scrollTop = messages.scrollHeight;
+            
+            const typingId = 'copilot-typing-' + Date.now();
+            messages.innerHTML += `
+                <div id="${typingId}" class="copilot-msg-row assistant">
+                    <div class="copilot-typing">
+                        <div class="copilot-typing-dot"></div>
+                        <div class="copilot-typing-dot"></div>
+                        <div class="copilot-typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            messages.scrollTop = messages.scrollHeight;
+            
+            const responseHtml = await executeCopilotQuery(text);
+            const typingEl = document.getElementById(typingId);
+            if (typingEl) typingEl.remove();
+            
+            messages.innerHTML += `
+                <div class="copilot-msg-row assistant">
+                    <div class="copilot-assistant-bubble">
+                        ${responseHtml}
+                    </div>
+                </div>
+            `;
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+
+        async function fetchFreshCircuitsIfNeeded() {
+            if (typeof rawCircuitsData !== 'undefined' && Array.isArray(rawCircuitsData) && rawCircuitsData.length > 0) {
+                return rawCircuitsData;
+            }
+            try {
+                const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname;
+                const url = isLocalHost ? ('circuits_data.json?t=' + Date.now()) : ('https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/circuits_data.json?t=' + Date.now());
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.commodities) {
+                        rawCircuitsData = data.commodities;
+                        return data.commodities;
+                    }
+                }
+            } catch(e) {
+                console.error("Error fetching circuits_data:", e);
+            }
+            return [];
+        }
+
+        async function executeCopilotQuery(userQuery) {
+            const query = (userQuery || '').toLowerCase().trim();
+            const commodities = await fetchFreshCircuitsIfNeeded();
+            
+            // Check for stock near alerts query
+            if (query.includes('near') || query.includes('stock') || query.includes('rsi') || query.includes('nifty')) {
+                return await generateStocksNearAlertsResponse();
+            }
+
+            // Check if user requested a full market scan / all commodities
+            if (query.includes('all') || query.includes('scan') || query.includes('full') || query.includes('market') || query.includes('overview') || query.includes('comm')) {
+                return generateMultiAssetScanResponse(commodities);
+            }
+
+            // Find specific matching commodity
+            let matchedSymbol = null;
+            for (const [sym, info] of Object.entries(COPILOT_SPECS)) {
+                if (query.includes(sym.toLowerCase()) || info.aliases.some(alias => query.includes(alias))) {
+                    matchedSymbol = sym;
+                    break;
+                }
+            }
+
+            if (!matchedSymbol) {
+                return `
+                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 12px 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <span style="font-size: 1.2rem;">🔍</span>
+                            <strong style="color: #fbbf24;">Which commodity would you like to analyze?</strong>
+                        </div>
+                        <p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 10px; line-height: 1.4;">
+                            Please enter a valid MCX commodity name. Quick select below:
+                        </p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Aluminium')">🏢 Aluminium</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Crude Oil')">🛢️ Crude Oil</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Natural Gas')">⚡ Natural Gas</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Gold')">🥇 Gold</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Silver')">🥈 Silver</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Copper')">🪙 Copper</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Zinc')">🔩 Zinc</button>
+                            <button class="copilot-chip" onclick="quickPromptCopilot('Scan All')" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">🎯 Scan All</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const commData = commodities.find(c => c.symbol === matchedSymbol) || commodities.find(c => c.symbol.startsWith(matchedSymbol.substring(0, 5)));
+            if (!commData) {
+                return `<p style="color: #fb7185;">Could not retrieve live price feed for ${matchedSymbol}. Please refresh in a moment.</p>`;
+            }
+
+            return analyzeSingleCommodity(commData);
+        }
+
+        function computeCommodityTradePlan(c) {
+            const spec = COPILOT_SPECS[c.symbol] || { name: c.name, lot: 1, unit: 'unit', icon: '📊' };
+            const curP = Number(c.current_price) || 0;
+            const prevC = Number(c.prev_close) || curP;
+            const dayH = Number(c.day_high) || curP;
+            const dayL = Number(c.day_low) || curP;
+            const openP = Number(c.open_price) || curP;
+            const lot = spec.lot;
+            
+            // CPR & Daily Pivots Math
+            const pivot = Math.round(((dayH + dayL + prevC) / 3.0) * 100) / 100;
+            const bc = Math.round(((dayH + dayL) / 2.0) * 100) / 100;
+            const tc = Math.round(((pivot - bc) + pivot) * 100) / 100;
+            const cprTop = Math.max(tc, bc);
+            const cprBot = Math.min(tc, bc);
+            const cprWidthPct = pivot > 0 ? Math.round((Math.abs(cprTop - cprBot) / pivot) * 10000) / 100 : 0.5;
+            
+            const r1 = Math.round(((2 * pivot) - dayL) * 100) / 100;
+            const s1 = Math.round(((2 * pivot) - dayH) * 100) / 100;
+            const r2 = Math.round((pivot + (dayH - dayL)) * 100) / 100;
+            const s2 = Math.round((pivot - (dayH - dayL)) * 100) / 100;
+
+            const gapPts = Math.round((curP - prevC) * 100) / 100;
+            const gapPct = prevC > 0 ? Math.round((gapPts / prevC) * 10000) / 100 : 0.0;
+            const isWideCPR = cprWidthPct >= 0.30;
+            
+            const distUc = c.dist_to_uc_pct !== undefined ? Number(c.dist_to_uc_pct) : 5.0;
+            const distLc = c.dist_to_lc_pct !== undefined ? Number(c.dist_to_lc_pct) : 5.0;
+
+            // Strategy Decision Logic
+            let action = "STAY BACK";
+            let actionType = "standaside";
+            let verdict = "STAY BACK";
+            let modelName = "Neutral Range Oscillation";
+            let rationale = "";
+            let briefAnalysis = "";
+            let entryZone = `₹${formatInr(curP)}`;
+            let stopLoss = curP;
+            let target1 = curP;
+            let target2 = curP;
+
+            // 1. Extreme Circuit Limit Ceiling/Floor Guard
+            if (distUc <= 1.2) {
+                action = "STAY BACK / CEILING TEST ⚠️";
+                actionType = "standaside";
+                verdict = "STAY BACK";
+                modelName = "Upper Circuit Resistance Lock";
+                rationale = `Trading within ${distUc.toFixed(2)}% of Upper Circuit limit (₹${formatInr(c.upper_circuit)}). Asymmetric downside risk; buying into ceiling resistance is strictly prohibited.`;
+                briefAnalysis = `Testing Upper Circuit ceiling (${distUc.toFixed(1)}% away). Stay back; upside is capped by exchange circuit limits.`;
+                entryZone = "Wait for pullback";
+                stopLoss = c.upper_circuit;
+                target1 = pivot;
+                target2 = s1;
+            } else if (distLc <= 1.2) {
+                action = "STAY BACK / FLOOR TEST ⚠️";
+                actionType = "standaside";
+                verdict = "STAY BACK";
+                modelName = "Lower Circuit Floor Lock";
+                rationale = `Trading within ${distLc.toFixed(2)}% of Lower Circuit limit (₹${formatInr(c.lower_circuit)}). Do not knife-catch; await a confirmed 15-minute floor rejection candle.`;
+                briefAnalysis = `Testing Lower Circuit floor (${distLc.toFixed(1)}% away). Stay back; knife-catching prohibited until support confirms.`;
+                entryZone = "Wait for confirmed bounce";
+                stopLoss = c.lower_circuit;
+                target1 = pivot;
+                target2 = r1;
+            }
+            // 2. Opening Gap Fade (Gap >= ±0.75% + Wide CPR)
+            else if (gapPct >= 0.75 && isWideCPR) {
+                action = "SELL / GAP FADE (PULLBACK)";
+                actionType = "sell";
+                verdict = "SELL";
+                modelName = "Wide CPR Mean-Reverting Gap Fade";
+                rationale = `Significant opening gap up (+${gapPct.toFixed(2)}%) into a Wide CPR (${cprWidthPct.toFixed(2)}%). High statistical probability of mean-reversion pullback towards Previous Day Close (₹${formatInr(prevC)}).`;
+                briefAnalysis = `Opening gap up (+${gapPct.toFixed(1)}%) with Wide CPR indicates overextended opening momentum; high probability pullback towards PDC ₹${formatInr(prevC)}.`;
+                entryZone = `₹${formatInr(curP)} - ₹${formatInr(Math.max(curP, r1))}`;
+                stopLoss = Math.round(Math.max(curP, r1) * 1.004 * 100) / 100;
+                target1 = prevC;
+                target2 = pivot;
+            } else if (gapPct <= -0.75 && isWideCPR) {
+                action = "BUY / GAP FADE (BOUNCE)";
+                actionType = "buy";
+                verdict = "BUY";
+                modelName = "Wide CPR Mean-Reverting Gap Bounce";
+                rationale = `Significant opening gap down (${gapPct.toFixed(2)}%) into a Wide CPR (${cprWidthPct.toFixed(2)}%). High probability bounce towards Previous Day Close (₹${formatInr(prevC)}).`;
+                briefAnalysis = `Opening gap down (${gapPct.toFixed(1)}%) into Wide CPR. Oversold opening offers favorable bounce buying towards PDC ₹${formatInr(prevC)}.`;
+                entryZone = `₹${formatInr(curP)} - ₹${formatInr(Math.min(curP, s1))}`;
+                stopLoss = Math.round(Math.min(curP, s1) * 0.996 * 100) / 100;
+                target1 = prevC;
+                target2 = pivot;
+            }
+            // 3. Narrow CPR Momentum Breakout (Trending Day)
+            else if (gapPct >= 0.75 && !isWideCPR) {
+                action = "BUY / GAP MOMENTUM";
+                actionType = "buy";
+                verdict = "BUY";
+                modelName = "Narrow CPR Trend Day Breakout";
+                rationale = `Narrow CPR (${cprWidthPct.toFixed(2)}%) opening expansion (+${gapPct.toFixed(2)}%). Institutional momentum favors continuing long towards R2.`;
+                briefAnalysis = `Narrow CPR opening breakout (+${gapPct.toFixed(1)}%) indicates a trend day. Momentum favors buying continuation towards R2.`;
+                entryZone = `₹${formatInr(curP)}`;
+                stopLoss = Math.round(Math.min(curP, pivot) * 0.996 * 100) / 100;
+                target1 = r1;
+                target2 = r2;
+            } else if (gapPct <= -0.75 && !isWideCPR) {
+                action = "SELL / GAP BREAKDOWN";
+                actionType = "sell";
+                verdict = "SELL";
+                modelName = "Narrow CPR Trend Day Breakdown";
+                rationale = `Narrow CPR (${cprWidthPct.toFixed(2)}%) opening breakdown (${gapPct.toFixed(2)}%). Riding downward breakout momentum towards S2.`;
+                briefAnalysis = `Narrow CPR breakdown (${gapPct.toFixed(1)}%) indicates a strong trend sell-off. Momentum favors shorting towards S2.`;
+                entryZone = `₹${formatInr(curP)}`;
+                stopLoss = Math.round(Math.max(curP, pivot) * 1.004 * 100) / 100;
+                target1 = s1;
+                target2 = s2;
+            }
+            // 4. Intraday Location Relative to CPR & Pivots
+            else if (curP >= cprBot && curP <= cprTop) {
+                action = "STAY BACK / CHOP ZONE ⏸️";
+                actionType = "standaside";
+                verdict = "STAY BACK";
+                modelName = "Inside CPR Equilibrium";
+                rationale = `Price (₹${formatInr(curP)}) is oscillating inside Central Pivot Range [₹${formatInr(cprBot)} - ₹${formatInr(cprTop)}]. This is a chop zone with no directional edge. Await a decisive 15-minute close outside CPR.`;
+                briefAnalysis = `Price is oscillating inside CPR chop range [₹${formatInr(cprBot)} - ₹${formatInr(cprTop)}]. Stay back; await 15m breakout before entering.`;
+                entryZone = `Breakout > ₹${formatInr(cprTop)} or Breakdown < ₹${formatInr(cprBot)}`;
+                stopLoss = pivot;
+                target1 = r1;
+                target2 = s1;
+            } else if (curP > cprTop) {
+                if (curP >= r1) {
+                    action = "BUY / R1 BREAKOUT";
+                    actionType = "buy";
+                    verdict = "BUY";
+                    modelName = "Above R1 Bullish Expansion";
+                    rationale = `Trading above R1 resistance (₹${formatInr(r1)}) and CPR Top (₹${formatInr(cprTop)}). Strong bullish intraday structure.`;
+                    briefAnalysis = `Trading above R1 resistance (₹${formatInr(r1)}) & CPR Top. Bulls in command; buy breakouts targeting R2.`;
+                    entryZone = `₹${formatInr(curP)}`;
+                    stopLoss = Math.round(cprTop * 0.998 * 100) / 100;
+                    target1 = r2;
+                    target2 = c.upper_circuit || (r2 * 1.01);
+                } else {
+                    action = "BUY ON DIPS (Near CPR Top)";
+                    actionType = "buy";
+                    verdict = "BUY";
+                    modelName = "CPR Support Rebound";
+                    rationale = `Price is comfortably above CPR Top (₹${formatInr(cprTop)}). Look for buying opportunities on dips towards CPR top support for an upside target of R1 (₹${formatInr(r1)}).`;
+                    briefAnalysis = `Holding above CPR Top (₹${formatInr(cprTop)}). Favour buying pullbacks towards CPR support targeting R1.`;
+                    entryZone = `₹${formatInr(cprTop)} - ₹${formatInr(curP)}`;
+                    stopLoss = Math.round(cprBot * 0.997 * 100) / 100;
+                    target1 = r1;
+                    target2 = r2;
+                }
+            } else if (curP < cprBot) {
+                if (curP <= s1) {
+                    action = "SELL / S1 BREAKDOWN";
+                    actionType = "sell";
+                    verdict = "SELL";
+                    modelName = "Below S1 Bearish Extension";
+                    rationale = `Trading below S1 support (₹${formatInr(s1)}) and CPR Bottom (₹${formatInr(cprBot)}). Strong bearish intraday pressure.`;
+                    briefAnalysis = `Slicing below S1 support (₹${formatInr(s1)}) and CPR Bottom. Bears dominating; sell breakdowns targeting S2.`;
+                    entryZone = `₹${formatInr(curP)}`;
+                    stopLoss = Math.round(cprBot * 1.002 * 100) / 100;
+                    target1 = s2;
+                    target2 = c.lower_circuit || (s2 * 0.99);
+                } else {
+                    action = "SELL ON PULLBACK (Near CPR Bot)";
+                    actionType = "sell";
+                    verdict = "SELL";
+                    modelName = "CPR Resistance Rejection";
+                    rationale = `Price is below CPR Bottom (₹${formatInr(cprBot)}). Favour short setups on pullbacks towards CPR bottom resistance for a target of S1 (₹${formatInr(s1)}).`;
+                    briefAnalysis = `Weakness below CPR Bottom (₹${formatInr(cprBot)}). Favour short positions on rallies towards CPR resistance targeting S1.`;
+                    entryZone = `₹${formatInr(curP)} - ₹${formatInr(cprBot)}`;
+                    stopLoss = Math.round(cprTop * 1.003 * 100) / 100;
+                    target1 = s1;
+                    target2 = s2;
+                }
+            }
+
+            let slPoints = 0;
+            let tgtPoints = 0;
+            if (actionType === 'buy') {
+                slPoints = Math.abs(curP - stopLoss);
+                tgtPoints = Math.abs(target1 - curP);
+            } else if (actionType === 'sell') {
+                slPoints = Math.abs(stopLoss - curP);
+                tgtPoints = Math.abs(curP - target1);
+            } else {
+                slPoints = Math.abs(curP - stopLoss);
+                tgtPoints = Math.abs(target1 - curP);
+            }
+
+            const riskInr = Math.round(slPoints * lot);
+            const rewardInr = Math.round(tgtPoints * lot);
+            const rrRatio = slPoints > 0 ? (tgtPoints / slPoints).toFixed(1) : '1.5';
+            const chgColor = c.change_pct >= 0 ? '#34d399' : '#fb7185';
+            const chgSign = c.change_pct >= 0 ? '+' : '';
+
+            return {
+                spec, curP, prevC, dayH, dayL, openP, lot,
+                pivot, bc, tc, cprTop, cprBot, cprWidthPct,
+                r1, s1, r2, s2, gapPts, gapPct, isWideCPR,
+                distUc, distLc, action, actionType, verdict, modelName,
+                rationale, briefAnalysis, entryZone, stopLoss, target1, target2,
+                slPoints, tgtPoints, riskInr, rewardInr, rrRatio,
+                chgColor, chgSign
+            };
+        }
+
+        function analyzeSingleCommodity(c) {
+            const p = computeCommodityTradePlan(c);
+            const spec = p.spec;
+            const curP = p.curP;
+            const prevC = p.prevC;
+            const gapPts = p.gapPts;
+            const lot = p.lot;
+            const pivot = p.pivot;
+            const cprTop = p.cprTop;
+            const cprBot = p.cprBot;
+            const cprWidthPct = p.cprWidthPct;
+            const isWideCPR = p.isWideCPR;
+            const r1 = p.r1;
+            const s1 = p.s1;
+            const r2 = p.r2;
+            const action = p.action;
+            const actionType = p.actionType;
+            const modelName = p.modelName;
+            const rationale = p.rationale;
+            const entryZone = p.entryZone;
+            const stopLoss = p.stopLoss;
+            const target1 = p.target1;
+            const target2 = p.target2;
+            const slPoints = p.slPoints;
+            const tgtPoints = p.tgtPoints;
+            const riskInr = p.riskInr;
+            const rewardInr = p.rewardInr;
+            const rrRatio = p.rrRatio;
+            const chgColor = p.chgColor;
+            const chgSign = p.chgSign;
+
+            return `
+                <div class="copilot-card-head">
+                    <div class="copilot-card-title">
+                        <span class="copilot-comm-icon">${spec.icon}</span>
+                        <div>
+                            <span class="copilot-comm-name">${spec.name}</span>
+                            <span class="copilot-comm-sym">${c.symbol} • 1 Lot = ${lot} ${spec.unit}${c.expiry ? ` • <span style="color:#60a5fa; font-weight:600;"><i class="fa-regular fa-calendar-check" style="margin-right:2px;"></i>Exp: ${c.expiry}</span>` : ''}</span>
+                        </div>
+                    </div>
+                    <div class="copilot-live-price-box">
+                        <div class="copilot-live-price-val">₹${formatInr(curP)}</div>
+                        <div class="copilot-live-chg" style="color: ${chgColor};">${chgSign}${c.change_pct ? c.change_pct.toFixed(2) : '0.00'}% (${chgSign}₹${formatInr(gapPts)})</div>
+                    </div>
+                </div>
+
+                <!-- Big Action Banner -->
+                <div class="copilot-action-banner ${actionType}">
+                    <div class="copilot-action-left">
+                        <span class="copilot-action-icon">${actionType === 'buy' ? '🟢' : actionType === 'sell' ? '🔴' : '⏸️'}</span>
+                        <div>
+                            <div class="copilot-action-text">${action}</div>
+                            <div class="copilot-action-tag">${modelName}</div>
+                        </div>
+                    </div>
+                    ${actionType !== 'standaside' ? `
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Risk : Reward</div>
+                            <div style="font-size: 1.15rem; font-weight: 800; color: #a5b4fc;">1 : ${rrRatio}</div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Strategic Levels Matrix -->
+                <div class="copilot-levels-matrix">
+                    <div class="copilot-level-card">
+                        <label>Entry Zone</label>
+                        <div class="level-val" style="color: #60a5fa; font-size: 0.95rem;">${entryZone}</div>
+                        <div class="level-sub" style="color: var(--text-secondary);">Market / Limit</div>
+                    </div>
+                    <div class="copilot-level-card">
+                        <label>Target 1 (T1)</label>
+                        <div class="level-val" style="color: #34d399;">₹${formatInr(target1)}</div>
+                        <div class="level-sub" style="color: #34d399;">+${tgtPoints.toFixed(1)} pts (${actionType === 'buy' || actionType === 'sell' ? `+₹${formatInr(rewardInr)}/lot` : 'Target'})</div>
+                    </div>
+                    <div class="copilot-level-card">
+                        <label>Strict Stop Loss</label>
+                        <div class="level-val" style="color: #fb7185;">₹${formatInr(stopLoss)}</div>
+                        <div class="level-sub" style="color: #fb7185;">-${slPoints.toFixed(1)} pts (${actionType === 'buy' || actionType === 'sell' ? `-₹${formatInr(riskInr)}/lot` : 'Stop Loss'})</div>
+                    </div>
+                    <div class="copilot-level-card">
+                        <label>Target 2 (T2)</label>
+                        <div class="level-val" style="color: #a78bfa;">₹${formatInr(target2)}</div>
+                        <div class="level-sub" style="color: var(--text-secondary);">Runner Target</div>
+                    </div>
+                </div>
+
+                <!-- Technical Levels Grid -->
+                <div class="copilot-tech-grid">
+                    <div class="copilot-tech-item">
+                        <span>Central Pivot (P)</span>
+                        <strong>₹${formatInr(pivot)}</strong>
+                    </div>
+                    <div class="copilot-tech-item">
+                        <span>CPR Band [BC - TC]</span>
+                        <strong>₹${formatInr(cprBot)} - ₹${formatInr(cprTop)}</strong>
+                    </div>
+                    <div class="copilot-tech-item">
+                        <span>CPR Width %</span>
+                        <strong style="color: ${isWideCPR ? '#f59e0b' : '#38bdf8'};">${cprWidthPct.toFixed(2)}% (${isWideCPR ? 'Wide' : 'Narrow'})</strong>
+                    </div>
+                    <div class="copilot-tech-item">
+                        <span>Key R1 / S1</span>
+                        <strong>R1: ₹${formatInr(r1)} | S1: ₹${formatInr(s1)}</strong>
+                    </div>
+                    <div class="copilot-tech-item">
+                        <span>Circuit Limits</span>
+                        <strong>LC: ₹${formatInr(c.lower_circuit)} | UC: ₹${formatInr(c.upper_circuit)}</strong>
+                    </div>
+                </div>
+
+                <!-- Playbook Rationale -->
+                <div class="copilot-rationale-box">
+                    <strong>Strategy Playbook Analysis:</strong> ${rationale}
+                </div>
+
+                <!-- Card Action Buttons -->
+                <div class="copilot-card-actions">
+                    ${actionType !== 'standaside' ? `
+                        <button class="copilot-btn-action copilot-btn-trade" onclick="tradeFromCopilot('${c.symbol}', '${actionType.toUpperCase()}', ${curP})">
+                            <i class="fa-solid fa-chart-line"></i> Trade ${actionType.toUpperCase()} in Paper Trading
+                        </button>
+                    ` : ''}
+                    <button class="copilot-btn-action copilot-btn-copy" onclick="copyCopilotSignal(this, '${spec.name}: ${action} @ ₹${formatInr(curP)} | SL: ₹${formatInr(stopLoss)} | Target: ₹${formatInr(target1)}')">
+                        <i class="fa-solid fa-copy"></i> Copy Signal
+                    </button>
+                    <button class="copilot-btn-action copilot-btn-copy" onclick="quickPromptCopilot('${spec.name}')">
+                        <i class="fa-solid fa-rotate"></i> Refresh Live
+                    </button>
+                </div>
+            `;
+        }
+
+        function generateMultiAssetScanResponse(commodities) {
+            if (!commodities || commodities.length === 0) {
+                return `<p style="color: #fb7185;">No live commodities data available to scan.</p>`;
+            }
+
+            let html = `
+                <div style="margin-bottom: 14px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                        <strong style="font-size: 1.12rem; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> MCX Commodity Playbook Scan (${commodities.length} Assets)
+                        </strong>
+                        <span style="font-size: 0.74rem; color: #94a3b8;"><i class="fa-regular fa-clock" style="margin-right:3px;"></i>${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} IST</span>
+                    </div>
+                    <p style="font-size: 0.82rem; color: #94a3b8; margin: 0;">Comprehensive trade analysis and actionable BUY, SELL, or STAY BACK suggestions for every commodity.</p>
+                </div>
+                <div class="copilot-scan-list">
+            `;
+
+            commodities.forEach(c => {
+                const p = computeCommodityTradePlan(c);
+
+                let badgeHtml = '';
+                if (p.actionType === 'buy') {
+                    badgeHtml = `<span class="copilot-scan-badge buy"><i class="fa-solid fa-circle-arrow-up"></i> BUY</span>`;
+                } else if (p.actionType === 'sell') {
+                    badgeHtml = `<span class="copilot-scan-badge sell"><i class="fa-solid fa-circle-arrow-down"></i> SELL</span>`;
+                } else {
+                    badgeHtml = `<span class="copilot-scan-badge standaside"><i class="fa-solid fa-hand"></i> STAY BACK</span>`;
+                }
+
+                html += `
+                    <div class="copilot-scan-card ${p.actionType}" onclick="quickPromptCopilot('${p.spec.name}')" title="Click to view full in-depth playbook for ${p.spec.name}">
+                        <!-- Top Header Row -->
+                        <div class="copilot-scan-top">
+                            <div class="copilot-scan-title">
+                                <span style="font-size: 1.35rem;">${p.spec.icon}</span>
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        <strong style="color: #f8fafc; font-size: 0.96rem;">${p.spec.name}</strong>
+                                        <span style="font-size: 0.7rem; color: #94a3b8; padding: 1px 5px; border-radius: 4px; background: rgba(255,255,255,0.06);">${c.symbol}</span>
+                                        ${c.expiry ? `<span style="font-size: 0.68rem; color: #60a5fa; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); border-radius: 4px; padding: 1px 5px;"><i class="fa-regular fa-calendar-check" style="margin-right:2px;"></i>Exp: ${c.expiry}</span>` : ''}
+                                    </div>
+                                    <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 2px;">
+                                        1 Lot = ${p.lot} ${p.spec.unit}
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.05rem; font-weight: 800; color: #f8fafc;">₹${formatInr(p.curP)}</div>
+                                <div style="font-size: 0.78rem; font-weight: 700; color: ${p.chgColor};">${p.chgSign}${c.change_pct ? c.change_pct.toFixed(2) : '0.00'}%</div>
+                            </div>
+                        </div>
+
+                        <!-- Action Verdict Banner -->
+                        <div style="display: flex; align-items: center; gap: 8px; margin: 6px 0; flex-wrap: wrap;">
+                            ${badgeHtml}
+                            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">${p.action}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">(${p.modelName})</span>
+                        </div>
+
+                        <!-- Brief Analysis -->
+                        <div class="copilot-scan-analysis">
+                            <strong style="color: var(--text-primary);"><i class="fa-solid fa-chart-line" style="color: #a855f7; margin-right: 4px;"></i>Analysis:</strong> ${p.briefAnalysis}
+                        </div>
+
+                        <!-- Trade Suggestion Levels Grid -->
+                        <div class="copilot-scan-levels">
+                            <div class="copilot-scan-level-col">
+                                <span>Suggested Entry</span>
+                                <strong style="color: #60a5fa;">${p.entryZone}</strong>
+                            </div>
+                            <div class="copilot-scan-level-col">
+                                <span>Target (T1)</span>
+                                <strong style="color: #34d399;">₹${formatInr(p.target1)} ${p.actionType !== 'standaside' ? `<small style="font-weight:600; font-size:0.7rem;">(+₹${formatInr(p.rewardInr)})</small>` : ''}</strong>
+                            </div>
+                            <div class="copilot-scan-level-col">
+                                <span>Stop Loss (SL)</span>
+                                <strong style="color: #fb7185;">₹${formatInr(p.stopLoss)} ${p.actionType !== 'standaside' ? `<small style="font-weight:600; font-size:0.7rem;">(-₹${formatInr(p.riskInr)})</small>` : ''}</strong>
+                            </div>
+                            <div class="copilot-scan-level-col">
+                                <span>${p.actionType !== 'standaside' ? 'Risk : Reward' : 'CPR Width'}</span>
+                                <strong style="color: ${p.actionType !== 'standaside' ? '#a5b4fc' : (p.isWideCPR ? '#f59e0b' : '#38bdf8')};">
+                                    ${p.actionType !== 'standaside' ? `1 : ${p.rrRatio}` : `${p.cprWidthPct.toFixed(2)}% (${p.isWideCPR ? 'Wide' : 'Narrow'})`}
+                                </strong>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer CTA -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 6px; border-top: 1px dashed rgba(255, 255, 255, 0.08); font-size: 0.74rem;">
+                            <span style="color: #94a3b8;">
+                                CPR Range: ₹${formatInr(p.cprBot)} - ₹${formatInr(p.cprTop)}
+                            </span>
+                            <span style="color: #c084fc; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">
+                                View Full Playbook & Pivot Breakdown <i class="fa-solid fa-arrow-right" style="font-size: 0.68rem;"></i>
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+                <p style="margin: 12px 0 0; font-size: 0.78rem; color: #94a3b8; text-align: center;">
+                    💡 Click on any card above or type a commodity name (e.g. <em>"Crude Oil"</em>) to view detailed intraday execution and paper trade triggers.
+                </p>
+            `;
+            return html;
+        }
+
+        async function generateStocksNearAlertsResponse() {
+            try {
+                const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname;
+                const url = isLocalHost ? ('near_alerts.json?t=' + Date.now()) : ('https://raw.githubusercontent.com/VenuInturiphoos/commodity-alerts/main/web/near_alerts.json?t=' + Date.now());
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    let html = `
+                        <div style="margin-bottom: 8px;">
+                            <strong style="color: #60a5fa; font-size: 1rem;"><i class="fa-solid fa-bell"></i> Nifty 50 Stocks Near Support/Resistance</strong>
+                        </div>
+                    `;
+                    if (data.near_buy && data.near_buy.length > 0) {
+                        html += "<p style='margin: 6px 0 2px 0; color: #34d399; font-weight: 700; font-size: 0.85rem;'>🟢 Approaching Strong Buy (Oversold):</p><ul style='margin:0; padding-left:18px; font-size: 0.82rem; color: #cbd5e1;'>";
+                        data.near_buy.forEach(i => html += `<li>${i.symbol.replace('.NS','')} (RSI: ${i.rsi})</li>`);
+                        html += "</ul>";
+                    }
+                    if (data.near_sell && data.near_sell.length > 0) {
+                        html += "<p style='margin: 8px 0 2px 0; color: #fb7185; font-weight: 700; font-size: 0.85rem;'>🔴 Approaching Strong Sell (Overbought):</p><ul style='margin:0; padding-left:18px; font-size: 0.82rem; color: #cbd5e1;'>";
+                        data.near_sell.forEach(i => html += `<li>${i.symbol.replace('.NS','')} (RSI: ${i.rsi})</li>`);
+                        html += "</ul>";
+                    }
+                    if ((!data.near_buy || data.near_buy.length === 0) && (!data.near_sell || data.near_sell.length === 0)) {
+                        html += "<p style='color: #94a3b8; font-size: 0.82rem;'>No stocks currently nearing extreme RSI bands.</p>";
+                    }
+                    return html;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            return `<p style="color: #fb7185;">Could not load stock alerts right now.</p>`;
+        }
+
+        function formatInr(num) {
+            if (num === null || num === undefined || isNaN(num)) return '--';
+            return Number(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function copyCopilotSignal(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+                btn.style.color = '#34d399';
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.style.color = '';
+                }, 2000);
+            }).catch(err => {
+                console.error("Copy failed:", err);
+            });
+        }
+
+        function tradeFromCopilot(symbol, action, price) {
+            const btn = document.getElementById('investing-tab-btn');
+            if (btn) switchTab(btn, 'investing-tab');
+            
+            const win = document.getElementById('chat-widget-window');
+            if (win) win.style.display = 'none';
+
+            if (typeof openTradeModal === 'function') {
+                setTimeout(() => {
+                    openTradeModal(symbol, price, action);
+                }, 300);
+            }
+        }
+    </script>
+</body>
+</html>
