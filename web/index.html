@@ -7739,7 +7739,12 @@ function renderAdvisorySummaryCards() {
     const calledTrades = trades.filter(isCalledAdvisoryTrade);
     const countCalled = calledTrades.length;
     const countCorrect = trades.filter(t => t.eod_outcome && t.eod_outcome.outcome === 'CORRECT').length;
-    const countWrong = trades.filter(t => t.eod_outcome && (t.eod_outcome.outcome === 'WRONG' || t.eod_outcome.outcome === 'INCORRECT')).length;
+    const countWrong = trades.filter(t => {
+        const o = t.eod_outcome?.outcome;
+        const b = t.eod_outcome?.badge || '';
+        const isNetLoss = t.paper_trade?.status === 'CLOSED' && Number(t.paper_trade?.pnl_inr || 0) < 0;
+        return o === 'WRONG' || o === 'INCORRECT' || b.includes('Wrong') || isNetLoss;
+    }).length;
     const countProtected = trades.filter(t => isAvoidedAdvisoryTrade(t) || (t.eod_outcome?.outcome === 'PROTECTED' && !isCalledAdvisoryTrade(t))).length;
     const todayStrRef = advisoryTrackerData.last_updated ? advisoryTrackerData.last_updated.split(',')[0].trim() : '';
     const countActive = trades.filter(t => {
@@ -8403,7 +8408,10 @@ function renderAdvisoryTradesTable() {
         } else if (activeAdvFilter === 'CORRECT') {
             if (t.eod_outcome?.outcome !== 'CORRECT') return false;
         } else if (activeAdvFilter === 'WRONG') {
-            if (t.eod_outcome?.outcome !== 'WRONG' && t.eod_outcome?.outcome !== 'INCORRECT') return false;
+            const outcomeVal = t.eod_outcome?.outcome;
+            const badgeVal = t.eod_outcome?.badge || '';
+            const isNetLoss = t.paper_trade?.status === 'CLOSED' && Number(t.paper_trade?.pnl_inr || 0) < 0;
+            if (outcomeVal !== 'WRONG' && outcomeVal !== 'INCORRECT' && !badgeVal.includes('Wrong') && !isNetLoss) return false;
         } else if (activeAdvFilter === 'PROTECTED') {
             if (isAvoidedAdvisoryTrade(t) || t.eod_outcome?.outcome === 'PROTECTED') return true;
             return false;
