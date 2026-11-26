@@ -1241,7 +1241,7 @@ def save_tracker(tracker_data):
             eod['session_close'] = exit_p
             eod['exit_time'] = exit_time_label
             eod['exit_trigger'] = exit_trigger
-            eod['outcome'] = 'CORRECT' if is_correct else ('PROTECTED' if abs(gross_pnl) < 1.0 else 'WRONG')
+            eod['outcome'] = 'CORRECT' if net_pnl > 0 else ('WRONG' if net_pnl < 0 else 'PROTECTED')
             eod['badge'] = f"{'Correct ✅' if is_correct else 'Wrong ❌'} ({exit_time_label.replace(' IST', '')})"
             eod['gross_pnl_inr'] = gross_pnl
             eod['charges'] = charges
@@ -4777,7 +4777,7 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                 badge_text = f"Stop Loss Hit 🛑 ({now_time_str})"
             elif hit_stagnation:
                 pt['exit_trigger'] = "STAGNATION_EXIT"
-                outcome_val = "CORRECT" if gross_pnl_inr > 0 else ("PROTECTED" if abs(gross_pnl_inr) < 1.0 else "WRONG")
+                outcome_val = "CORRECT" if (pnl_inr > 0) else ("WRONG" if pnl_inr < 0 else "PROTECTED")
                 badge_text = f"Stagnation Exit ⏱️ ({now_time_str})"
             elif hit_eod:
                 pt['exit_trigger'] = "TARGET_RUNNER_EOD" if pt.get('target_runner_active') else "EOD_SQUAREOFF"
@@ -6918,7 +6918,7 @@ def square_off_intraday_equity_trades(checker=None, alerter=None):
         eod['session_close'] = cur_p
         eod['exit_time'] = "03:20 PM IST"
         eod['exit_trigger'] = "INTRADAY_320_SQUAREOFF"
-        eod['outcome'] = "CORRECT" if is_correct else ("PROTECTED" if abs(gross_pnl_inr) < 1.0 else "WRONG")
+        eod['outcome'] = "CORRECT" if net_pnl_inr > 0 else ("WRONG" if net_pnl_inr < 0 else "PROTECTED")
         eod['badge'] = "Intraday Exit (03:20 PM)"
         eod['gross_pnl_inr'] = gross_pnl_inr
         eod['charges'] = charges
@@ -7084,7 +7084,7 @@ def exit_and_evaluate_eod_trades(checker, alerter):
         eod['session_close'] = close_p
         eod['exit_time'] = exit_time_label
         eod['exit_trigger'] = exit_trigger
-        eod['outcome'] = "CORRECT" if is_correct else ("PROTECTED" if abs(gross_pnl_inr) < 1.0 else "WRONG")
+        eod['outcome'] = "CORRECT" if net_pnl_inr > 0 else ("WRONG" if net_pnl_inr < 0 else "PROTECTED")
         eod['badge'] = f"{'Correct ✅' if is_correct else 'Wrong ❌'} ({exit_time_label.replace(' IST', '')})"
         eod['gross_pnl_inr'] = gross_pnl_inr
         eod['charges'] = charges
