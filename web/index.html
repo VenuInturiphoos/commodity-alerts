@@ -7344,18 +7344,18 @@
             const btnInvesting = document.getElementById('btn-subnav-trade-investing');
             const btnAdvisory = document.getElementById('btn-subnav-trade-advisory');
 
-    if (subtab === 'futures') {
-        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-chart-line"></i> Dedicated Futures Pool: ₹3,00,000 (Commodity Minis & Stock Futures)';
-        if (titleEl) titleEl.innerHTML = '🎯 Futures Trading Tracker (Commodities & Stock Futures)';
-        const isDstNow = typeof isUSDaylightSaving === 'function' ? isUSDaylightSaving() : false;
-        if (descEl) descEl.innerHTML = `Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions active till ${isDstNow ? '11:20 PM IST (Summer EDT)' : '11:45 PM IST (Winter EST)'}.`;
-        if (sessionFilterContainer) sessionFilterContainer.style.display = 'block';
-    } else {
-        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday MIS Allocation: Base ₹50,000 Margin (+ Booked Profits) | 5x Buying Power';
-        if (titleEl) titleEl.innerHTML = '⚡ Intraday Stock Trading Tracker (MIS Margin Benefit)';
-        if (descEl) descEl.innerHTML = 'Autonomous Nifty 50 intraday stock day-trades with 5x MIS margin benefit (Base ₹50,000 daily refreshed margin + booked profits). Mandatory 03:20 PM IST EOD square-off (Zero overnight risk).';
-        if (sessionFilterContainer) sessionFilterContainer.style.display = 'none';
-    }
+            if (subtab === 'futures') {
+                if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-chart-line"></i> Dedicated Futures Pool: ₹3,00,000 (Commodity Minis & Stock Futures)';
+                if (titleEl) titleEl.innerHTML = '🎯 Futures Trading Tracker (Commodities & Stock Futures)';
+                const isDstNow = typeof isUSDaylightSaving === 'function' ? isUSDaylightSaving() : false;
+                if (descEl) descEl.innerHTML = `Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions active till ${isDstNow ? '11:20 PM IST (Summer EDT)' : '11:45 PM IST (Winter EST)'}.`;
+                if (sessionFilterContainer) sessionFilterContainer.style.display = 'block';
+            } else {
+                if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday MIS Allocation: Base ₹50,000 Margin (+ Booked Profits) | 5x Buying Power';
+                if (titleEl) titleEl.innerHTML = '⚡ Intraday Stock Trading Tracker (MIS Margin Benefit)';
+                if (descEl) descEl.innerHTML = 'Autonomous Nifty 50 intraday stock day-trades with 5x MIS margin benefit (Base ₹50,000 daily refreshed margin + booked profits). Mandatory 03:20 PM IST EOD square-off (Zero overnight risk).';
+                if (sessionFilterContainer) sessionFilterContainer.style.display = 'none';
+            }
 
             if (subview === 'investing') {
                 if (viewTerminal) viewTerminal.style.display = 'block';
@@ -8239,9 +8239,9 @@
                 }
             });
 
-    const todayTotalPnl = todayRealizedPnl + todayUnrealizedPnl;
-    const basePoolCap = isIntradayActive ? 50000 : 300000;
-    const todayReturnPct = ((todayTotalPnl / basePoolCap) * 100).toFixed(2);
+            const todayTotalPnl = todayRealizedPnl + todayUnrealizedPnl;
+            const basePoolCap = isIntradayActive ? 50000 : 300000;
+            const todayReturnPct = ((todayTotalPnl / basePoolCap) * 100).toFixed(2);
 
             const totalEl = document.getElementById('kpi-adv-total');
             const totalSubEl = document.getElementById('kpi-adv-total-sub');
@@ -8286,11 +8286,11 @@
                 }
             }
 
-    // Calculate Intraday Realized P&L and Booked Profit across allDatasetTrades
-    const intradayClosedTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'CLOSED');
-    const intradayRealizedPnl = intradayClosedTrades.reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
-    const intradayBookedProfit = Math.max(0, intradayRealizedPnl);
-    const intradayBasePool = 50000 + intradayBookedProfit;
+            // Calculate Intraday Realized P&L and Booked Profit across allDatasetTrades
+            const intradayClosedTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'CLOSED');
+            const intradayRealizedPnl = intradayClosedTrades.reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
+            const intradayBookedProfit = Math.max(0, intradayRealizedPnl);
+            const intradayBasePool = 50000 + intradayBookedProfit;
 
             let todayRealizedPnl = 0;
             let todayGrossPnl = 0;
@@ -8349,103 +8349,6 @@
             const todayPnlEl = document.getElementById('kpi-adv-today-pnl');
             const todaySubEl = document.getElementById('kpi-adv-today-sub');
 
-    const activeFuturesMarginVal = activeFuturesTrades.reduce((sum, t) => sum + getFuturesTradeMargin(t), 0);
-    const futuresStartingCash = Math.max(300000.0, Number(summary.starting_cash_inr || 300000.0));
-    const futuresRealizedPnl = allDatasetTrades.filter(t => !isIntradayStockTrade(t) && t.paper_trade?.status === 'CLOSED').reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
-    // Overall trade balance reflects starting capital + commodity PnL + intraday booked profits
-    const overallNetCash = futuresStartingCash + futuresRealizedPnl + intradayBookedProfit;
-    const futuresUsedMargin = activeFuturesMarginVal || summary.used_margin_inr || 0;
-    const futuresAvailMargin = Math.max(0, overallNetCash - futuresUsedMargin);
-    const liveNetBalance = overallNetCash + unrealizedPnl;
-
-    if (cashEl) {
-        if (isIntradayActive) {
-            cashEl.textContent = '₹' + intradayAvailMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            cashEl.style.color = '#fbbf24';
-            if (cashTitleEl) cashTitleEl.textContent = 'Available MIS Margin';
-        } else {
-            cashEl.textContent = '₹' + futuresAvailMargin.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            cashEl.style.color = '#60a5fa';
-            if (cashTitleEl) cashTitleEl.textContent = 'Available Cash & Margin';
-        }
-    }
-    if (marginSubEl) {
-        if (isIntradayActive) {
-            if (intradayBookedProfit > 0) {
-                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Pool: <strong>₹${intradayBasePool.toLocaleString('en-IN', {minimumFractionDigits: 0})}</strong> (₹50k Base + ₹${intradayBookedProfit.toFixed(0)} Profit) | Flat 03:25 PM`;
-            } else {
-                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Base ₹50,000 (Refreshed Daily) | Flat 03:25 PM`;
-            }
-            if (todayPnlEl) {
-                const sign = todayTotalPnl >= 0 ? '+' : '-';
-                const pctSign = Number(todayReturnPct) >= 0 ? '+' : '';
-                todayPnlEl.textContent = `${sign}₹${Math.abs(todayTotalPnl).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${pctSign}${todayReturnPct}%)`;
-                todayPnlEl.style.color = todayTotalPnl >= 0 ? '#4ade80' : '#fb7185';
-            }
-            if (todaySubEl) {
-                if (todayActiveCount > 0) {
-                    const rSign = todayRealizedPnl >= 0 ? '+' : '-';
-                    const grossMtmVal = todayGrossPnl - (todayTrades.filter(t => t.paper_trade?.status === 'CLOSED').reduce((s, t) => s + Number(t.paper_trade?.gross_pnl_inr !== undefined ? t.paper_trade.gross_pnl_inr : (t.paper_trade?.pnl_inr || 0)), 0));
-                    const mSign = grossMtmVal >= 0 ? '+' : '-';
-                    const rColor = todayRealizedPnl >= 0 ? '#4ade80' : '#fb7185';
-                    const mColor = grossMtmVal >= 0 ? '#4ade80' : '#fb7185';
-                    todaySubEl.innerHTML = `Realized: <strong style="color:${rColor};">${rSign}₹${Math.abs(todayRealizedPnl).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong> · Live MTM: <strong style="color:${mColor};">${mSign}₹${Math.abs(grossMtmVal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong> · Dhan: <strong style="color:#fb7185;">-₹${todayCharges.toFixed(2)}</strong>`;
-                } else {
-                    const gSign = todayGrossPnl >= 0 ? '+' : '-';
-                    const gColor = todayGrossPnl >= 0 ? '#4ade80' : '#fb7185';
-                    todaySubEl.innerHTML = `Gross: <strong style="color:${gColor};">${gSign}₹${Math.abs(todayGrossPnl).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong> · Dhan Charges: <strong style="color:#fb7185;">-₹${todayCharges.toFixed(2)}</strong> · ${todayWonCount}W / ${todayLostCount}L`;
-                }
-            }
-
-            const cashEl = document.getElementById('kpi-adv-cash');
-            const marginSubEl = document.getElementById('kpi-adv-margin-sub');
-            const cashTitleEl = cashEl ? cashEl.closest('.circuit-kpi-card')?.querySelector('.circuit-kpi-header span') : null;
-
-            // Calculate Intraday Realized P&L and Booked Profit across allDatasetTrades
-            const intradayClosedTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'CLOSED');
-            const intradayRealizedPnl = intradayClosedTrades.reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
-            const intradayBookedProfit = Math.max(0, intradayRealizedPnl);
-            const intradayBasePool = 30000 + intradayBookedProfit;
-
-            const activeStockTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'ACTIVE');
-            const activeStockVal = activeStockTrades.reduce((sum, t) => sum + ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0)), 0);
-            const activeMarginVal = activeStockTrades.reduce((sum, t) => sum + (t.paper_trade.margin_required_inr || ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0) * 0.20)), 0);
-            const intradayAvailMargin = Math.max(0, intradayBasePool - activeMarginVal);
-
-            const COMMODITY_MARGIN_RATES = {
-                'CRUDEOIL': 0.25, 'CRUDEOILM': 0.25,
-                'NATURALGAS': 0.18, 'NATURALGASM': 0.18,
-                'SILVER': 0.15, 'SILVERM': 0.15, 'SILVERMIC': 0.15,
-                'COPPER': 0.08, 'COPPERM': 0.08,
-                'ZINC': 0.0945, 'ZINCM': 0.0945, 'ZINCMINI': 0.0945,
-                'ALUMINIUM': 0.092, 'ALUMINI': 0.092,
-                'GOLD': 0.10, 'GOLDM': 0.10, 'GOLDTEN': 0.10
-            };
-
-            const getFuturesTradeMargin = (t) => {
-                const pt = t.paper_trade || {};
-                if (pt.margin_required_inr && Number(pt.margin_required_inr) > 0) {
-                    return Number(pt.margin_required_inr);
-                }
-                const p = Number(pt.entry_price || t.suggestion_6pm?.reference_price || 0);
-                const q = Number(pt.quantity || t.lot_size || 1);
-                if (p <= 0 || q <= 0) return 0;
-                const sym = t.symbol || '';
-                const cleanSym = sym.replace('MIC', '').replace('MINI', '').replace(/M$/, '');
-                const rate = COMMODITY_MARGIN_RATES[sym] || COMMODITY_MARGIN_RATES[cleanSym] || 0.15;
-                return p * q * rate;
-            };
-
-            const activeFuturesTrades = allDatasetTrades.filter(t => {
-                if (isIntradayStockTrade(t)) return false;
-                const pt = t.paper_trade || {};
-                if (pt.status !== 'ACTIVE') return false;
-                const isTodayTrade = isTodayISTTrade(t);
-                const exitCutoff = getTradeExitCutoff(t);
-                const isPastExit = isPastISTWindow(t.date, exitCutoff.hour, exitCutoff.min) && !isTodayTrade;
-                return !isPastExit;
-            });
-
             const activeFuturesMarginVal = activeFuturesTrades.reduce((sum, t) => sum + getFuturesTradeMargin(t), 0);
             const futuresStartingCash = Math.max(300000.0, Number(summary.starting_cash_inr || 300000.0));
             const futuresRealizedPnl = allDatasetTrades.filter(t => !isIntradayStockTrade(t) && t.paper_trade?.status === 'CLOSED').reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
@@ -8469,273 +8372,370 @@
             if (marginSubEl) {
                 if (isIntradayActive) {
                     if (intradayBookedProfit > 0) {
-                        marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Pool: <strong>₹${intradayBasePool.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</strong> (₹30k Base + ₹${intradayBookedProfit.toFixed(0)} Profit) | Flat 03:25 PM`;
+                        marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Pool: <strong>₹${intradayBasePool.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</strong> (₹50k Base + ₹${intradayBookedProfit.toFixed(0)} Profit) | Flat 03:25 PM`;
                     } else {
-                        marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Base ₹30,000 (Refreshed Daily) | Flat 03:25 PM`;
+                        marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Base ₹50,000 (Refreshed Daily) | Flat 03:25 PM`;
                     }
-                } else {
-                    if (intradayBookedProfit > 0) {
-                        marginSubEl.innerHTML = `Used Margin: ₹${Number(futuresUsedMargin).toLocaleString('en-IN', { minimumFractionDigits: 0 })} | Total Trade Balance: <strong>₹${liveNetBalance.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</strong> (incl. +₹${intradayBookedProfit.toFixed(0)} Intraday Profit)`;
-                    } else {
-                        marginSubEl.innerHTML = `Used Margin: ₹${Number(futuresUsedMargin).toLocaleString('en-IN', { minimumFractionDigits: 0 })} | Dedicated Pool: ₹${liveNetBalance.toLocaleString('en-IN', { minimumFractionDigits: 0 })}`;
+                    if (todayPnlEl) {
+                        const sign = todayTotalPnl >= 0 ? '+' : '-';
+                        const pctSign = Number(todayReturnPct) >= 0 ? '+' : '';
+                        todayPnlEl.textContent = `${sign}₹${Math.abs(todayTotalPnl).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${pctSign}${todayReturnPct}%)`;
+                        todayPnlEl.style.color = todayTotalPnl >= 0 ? '#4ade80' : '#fb7185';
                     }
-                }
-            }
+                    if (todaySubEl) {
+                        if (todayActiveCount > 0) {
+                            const rSign = todayRealizedPnl >= 0 ? '+' : '-';
+                            const grossMtmVal = todayGrossPnl - (todayTrades.filter(t => t.paper_trade?.status === 'CLOSED').reduce((s, t) => s + Number(t.paper_trade?.gross_pnl_inr !== undefined ? t.paper_trade.gross_pnl_inr : (t.paper_trade?.pnl_inr || 0)), 0));
+                            const mSign = grossMtmVal >= 0 ? '+' : '-';
+                            const rColor = todayRealizedPnl >= 0 ? '#4ade80' : '#fb7185';
+                            const mColor = grossMtmVal >= 0 ? '#4ade80' : '#fb7185';
+                            todaySubEl.innerHTML = `Realized: <strong style="color:${rColor};">${rSign}₹${Math.abs(todayRealizedPnl).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong> · Live MTM: <strong style="color:${mColor};">${mSign}₹${Math.abs(grossMtmVal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong> · Dhan: <strong style="color:#fb7185;">-₹${todayCharges.toFixed(2)}</strong>`;
+                        } else {
+                            const gSign = todayGrossPnl >= 0 ? '+' : '-';
+                            const gColor = todayGrossPnl >= 0 ? '#4ade80' : '#fb7185';
+                            todaySubEl.innerHTML = `Gross: <strong style="color:${gColor};">${gSign}₹${Math.abs(todayGrossPnl).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong> · Dhan Charges: <strong style="color:#fb7185;">-₹${todayCharges.toFixed(2)}</strong> · ${todayWonCount}W / ${todayLostCount}L`;
+                        }
+                    }
 
-            // Update counts in filter pills
-            const countCalledEl = document.getElementById('adv-count-called');
-            const countAllEl = document.getElementById('adv-count-all');
-            const countCorrectEl = document.getElementById('adv-count-correct');
-            const countWrongEl = document.getElementById('adv-count-wrong');
-            const countProtectedEl = document.getElementById('adv-count-protected');
-            const countActiveEl = document.getElementById('adv-count-active');
-            const subnavBadgeEl = document.getElementById('advisory-badge-count');
+                    const cashEl = document.getElementById('kpi-adv-cash');
+                    const marginSubEl = document.getElementById('kpi-adv-margin-sub');
+                    const cashTitleEl = cashEl ? cashEl.closest('.circuit-kpi-card')?.querySelector('.circuit-kpi-header span') : null;
 
-            if (countCalledEl) countCalledEl.textContent = countCalled;
-            if (countAllEl) countAllEl.textContent = countAll;
-            if (countCorrectEl) countCorrectEl.textContent = countCorrect;
-            if (countWrongEl) countWrongEl.textContent = countWrong;
-            if (countProtectedEl) countProtectedEl.textContent = countProtected;
-            if (countActiveEl) countActiveEl.textContent = countActive;
-            if (subnavBadgeEl) subnavBadgeEl.textContent = `${countCalled} Called Trades`;
+                    // Calculate Intraday Realized P&L and Booked Profit across allDatasetTrades
+                    const intradayClosedTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'CLOSED');
+                    const intradayRealizedPnl = intradayClosedTrades.reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
+                    const intradayBookedProfit = Math.max(0, intradayRealizedPnl);
+                    const intradayBasePool = 30000 + intradayBookedProfit;
 
-            // Update session win probability badges and banner
-            if (typeof updateSessionStatsBadges === 'function') {
-                updateSessionStatsBadges(trades);
-            }
-        }
-        window.renderAdvisorySummaryCards = renderAdvisorySummaryCards;
+                    const activeStockTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'ACTIVE');
+                    const activeStockVal = activeStockTrades.reduce((sum, t) => sum + ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0)), 0);
+                    const activeMarginVal = activeStockTrades.reduce((sum, t) => sum + (t.paper_trade.margin_required_inr || ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0) * 0.20)), 0);
+                    const intradayAvailMargin = Math.max(0, intradayBasePool - activeMarginVal);
 
-        function filterAdvisoryTrades(filterType, btnEl) {
-            activeAdvFilter = filterType;
-            document.querySelectorAll('.circuit-filters button[id^="adv-filter-"]').forEach(b => b.classList.remove('active'));
-            if (btnEl) btnEl.classList.add('active');
-            renderAdvisoryTradesTable();
-        }
+                    const COMMODITY_MARGIN_RATES = {
+                        'CRUDEOIL': 0.25, 'CRUDEOILM': 0.25,
+                        'NATURALGAS': 0.18, 'NATURALGASM': 0.18,
+                        'SILVER': 0.15, 'SILVERM': 0.15, 'SILVERMIC': 0.15,
+                        'COPPER': 0.08, 'COPPERM': 0.08,
+                        'ZINC': 0.0945, 'ZINCM': 0.0945, 'ZINCMINI': 0.0945,
+                        'ALUMINIUM': 0.092, 'ALUMINI': 0.092,
+                        'GOLD': 0.10, 'GOLDM': 0.10, 'GOLDTEN': 0.10
+                    };
 
-        let advSearchTimer = null;
-        function filterAdvisoryTradesTable() {
-            clearTimeout(advSearchTimer);
-            advSearchTimer = setTimeout(() => {
-                renderAdvisoryTradesTable();
-            }, 120);
-        }
-        window.filterAdvisoryTradesTable = filterAdvisoryTradesTable;
+                    const getFuturesTradeMargin = (t) => {
+                        const pt = t.paper_trade || {};
+                        if (pt.margin_required_inr && Number(pt.margin_required_inr) > 0) {
+                            return Number(pt.margin_required_inr);
+                        }
+                        const p = Number(pt.entry_price || t.suggestion_6pm?.reference_price || 0);
+                        const q = Number(pt.quantity || t.lot_size || 1);
+                        if (p <= 0 || q <= 0) return 0;
+                        const sym = t.symbol || '';
+                        const cleanSym = sym.replace('MIC', '').replace('MINI', '').replace(/M$/, '');
+                        const rate = COMMODITY_MARGIN_RATES[sym] || COMMODITY_MARGIN_RATES[cleanSym] || 0.15;
+                        return p * q * rate;
+                    };
 
-        let currentTvDeckKey = '';
-        let currentTvTickerKey = '';
+                    const activeFuturesTrades = allDatasetTrades.filter(t => {
+                        if (isIntradayStockTrade(t)) return false;
+                        const pt = t.paper_trade || {};
+                        if (pt.status !== 'ACTIVE') return false;
+                        const isTodayTrade = isTodayISTTrade(t);
+                        const exitCutoff = getTradeExitCutoff(t);
+                        const isPastExit = isPastISTWindow(t.date, exitCutoff.hour, exitCutoff.min) && !isTodayTrade;
+                        return !isPastExit;
+                    });
 
-        function renderTradingViewTickerTape(allTrades) {
-            const container = document.getElementById('tv-ticker-tape-container');
-            if (!container) return;
+                    const activeFuturesMarginVal = activeFuturesTrades.reduce((sum, t) => sum + getFuturesTradeMargin(t), 0);
+                    const futuresStartingCash = Math.max(300000.0, Number(summary.starting_cash_inr || 300000.0));
+                    const futuresRealizedPnl = allDatasetTrades.filter(t => !isIntradayStockTrade(t) && t.paper_trade?.status === 'CLOSED').reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
+                    // Overall trade balance reflects starting capital + commodity PnL + intraday booked profits
+                    const overallNetCash = futuresStartingCash + futuresRealizedPnl + intradayBookedProfit;
+                    const futuresUsedMargin = activeFuturesMarginVal || summary.used_margin_inr || 0;
+                    const futuresAvailMargin = Math.max(0, overallNetCash - futuresUsedMargin);
+                    const liveNetBalance = overallNetCash + unrealizedPnl;
 
-            // Collect base benchmark symbols
-            const baseSymbols = [
-                { "proName": "NSE:NIFTY", "title": "Nifty 50" },
-                { "proName": "MCX:GOLDM1!", "title": "Gold Mini" },
-                { "proName": "MCX:SILVERMIC1!", "title": "Silver Micro" },
-                { "proName": "MCX:CRUDEOILM1!", "title": "Crude Oil Mini" },
-                { "proName": "MCX:ZINCMINI1!", "title": "Zinc Mini" },
-                { "proName": "MCX:NATURALGASM1!", "title": "Natural Gas Mini" }
-            ];
+                    if (cashEl) {
+                        if (isIntradayActive) {
+                            cashEl.textContent = '₹' + intradayAvailMargin.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            cashEl.style.color = '#fbbf24';
+                            if (cashTitleEl) cashTitleEl.textContent = 'Available MIS Margin';
+                        } else {
+                            cashEl.textContent = '₹' + futuresAvailMargin.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            cashEl.style.color = '#60a5fa';
+                            if (cashTitleEl) cashTitleEl.textContent = 'Available Cash & Margin';
+                        }
+                    }
+                    if (marginSubEl) {
+                        if (isIntradayActive) {
+                            if (intradayBookedProfit > 0) {
+                                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Pool: <strong>₹${intradayBasePool.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</strong> (₹30k Base + ₹${intradayBookedProfit.toFixed(0)} Profit) | Flat 03:25 PM`;
+                            } else {
+                                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Base ₹30,000 (Refreshed Daily) | Flat 03:25 PM`;
+                            }
+                        } else {
+                            if (intradayBookedProfit > 0) {
+                                marginSubEl.innerHTML = `Used Margin: ₹${Number(futuresUsedMargin).toLocaleString('en-IN', { minimumFractionDigits: 0 })} | Total Trade Balance: <strong>₹${liveNetBalance.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</strong> (incl. +₹${intradayBookedProfit.toFixed(0)} Intraday Profit)`;
+                            } else {
+                                marginSubEl.innerHTML = `Used Margin: ₹${Number(futuresUsedMargin).toLocaleString('en-IN', { minimumFractionDigits: 0 })} | Dedicated Pool: ₹${liveNetBalance.toLocaleString('en-IN', { minimumFractionDigits: 0 })}`;
+                            }
+                        }
+                    }
 
-            // Collect any intraday stock and commodity trades triggered today (Active + Completed)
-            const todayTrades = (allTrades || []).filter(t => isTodayISTTrade(t) && t.paper_trade && t.paper_trade.action && t.paper_trade.action !== 'STAND_ASIDE');
+                    // Update counts in filter pills
+                    const countCalledEl = document.getElementById('adv-count-called');
+                    const countAllEl = document.getElementById('adv-count-all');
+                    const countCorrectEl = document.getElementById('adv-count-correct');
+                    const countWrongEl = document.getElementById('adv-count-wrong');
+                    const countProtectedEl = document.getElementById('adv-count-protected');
+                    const countActiveEl = document.getElementById('adv-count-active');
+                    const subnavBadgeEl = document.getElementById('advisory-badge-count');
 
-            const triggeredSymbols = [];
-            const seen = new Set();
-            todayTrades.forEach(t => {
-                const sym = (t.symbol || '').toUpperCase();
-                let proName = sym;
-                if (sym.includes('.NS') || t.asset_type === 'INTRADAY_STOCK' || t.asset_type === 'EQUITY') {
-                    proName = `NSE:${sym.replace('.NS', '').trim()}`;
-                } else if (sym.includes('-FUT') || t.asset_type === 'STOCK_FUTURES') {
-                    proName = `NSE:${sym.replace('-FUT', '').replace('.NS', '').trim()}1!`;
-                } else {
-                    proName = `MCX:${sym.replace('.NS', '').trim()}1!`;
-                }
-                if (!seen.has(proName)) {
-                    seen.add(proName);
-                    triggeredSymbols.push({ proName: proName, title: t.name || sym });
-                }
-            });
+                    if (countCalledEl) countCalledEl.textContent = countCalled;
+                    if (countAllEl) countAllEl.textContent = countAll;
+                    if (countCorrectEl) countCorrectEl.textContent = countCorrect;
+                    if (countWrongEl) countWrongEl.textContent = countWrong;
+                    if (countProtectedEl) countProtectedEl.textContent = countProtected;
+                    if (countActiveEl) countActiveEl.textContent = countActive;
+                    if (subnavBadgeEl) subnavBadgeEl.textContent = `${countCalled} Called Trades`;
 
-            const combinedSymbols = [...triggeredSymbols, ...baseSymbols];
-            const newKey = combinedSymbols.map(s => s.proName).join('|');
-
-            if (newKey === currentTvTickerKey) return;
-            currentTvTickerKey = newKey;
-
-            container.innerHTML = `<div class="tradingview-widget-container__widget"></div>`;
-
-            const config = {
-                "symbols": combinedSymbols,
-                "showSymbolLogo": true,
-                "isTransparent": true,
-                "displayMode": "adaptive",
-                "colorTheme": "dark",
-                "locale": "en"
-            };
-
-            const script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
-            script.async = true;
-            script.text = JSON.stringify(config);
-            container.appendChild(script);
-        }
-
-        function updateActiveDeckCardLive(t, idx) {
-            const pt = t.paper_trade || {};
-            const entryPrice = Number(pt.entry_price || 0);
-            const slPrice = Number(pt.stop_loss || 0);
-            const tgtPrice = Number(pt.target || 0);
-
-            const liveData = getAdvisoryTradeLivePriceData(t);
-            const curPrice = (liveData && liveData.current_price)
-                ? Number(liveData.current_price)
-                : (Number(t.live_price_data?.current_price) || entryPrice);
-            const chgPct = (liveData && liveData.change_pct !== undefined)
-                ? Number(liveData.change_pct)
-                : (Number(t.live_price_data?.change_pct) || 0);
-
-            const ptsDiff = pt.action === 'BUY' ? (curPrice - entryPrice) : (entryPrice - curPrice);
-            const lotSize = pt.quantity || t.lot_size || 1;
-            const livePnlInr = ptsDiff * lotSize;
-            const pnlColor = livePnlInr >= 0 ? '#4ade80' : '#fb7185';
-            const pnlSign = livePnlInr >= 0 ? '+' : '';
-
-            const priceEl = document.getElementById(`deck-cur-price-${idx}`);
-            if (priceEl) priceEl.textContent = '₹' + curPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 });
-
-            const chgEl = document.getElementById(`deck-chg-pct-${idx}`);
-            if (chgEl) {
-                chgEl.textContent = `(${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%)`;
-                chgEl.style.color = chgPct >= 0 ? '#4ade80' : '#fb7185';
-            }
-
-            const pnlEl = document.getElementById(`deck-pnl-${idx}`);
-            if (pnlEl) {
-                pnlEl.innerHTML = `${pnlSign}₹${Math.abs(livePnlInr).toLocaleString('en-IN', { minimumFractionDigits: 2 })} <span style="font-size: 0.75rem; font-weight: 600; opacity: 0.85;">(${pnlSign}${ptsDiff.toFixed(2)} pts)</span>`;
-                pnlEl.style.color = pnlColor;
-            }
-
-            const totalSpan = Math.abs(tgtPrice - slPrice);
-            let progressPct = 50;
-            if (totalSpan > 0) {
-                if (pt.action === 'BUY') {
-                    progressPct = Math.max(0, Math.min(100, ((curPrice - slPrice) / totalSpan) * 100));
-                } else {
-                    progressPct = Math.max(0, Math.min(100, ((slPrice - curPrice) / totalSpan) * 100));
-                }
-            }
-
-            const pinEl = document.getElementById(`deck-progress-pin-${idx}`);
-            if (pinEl) {
-                pinEl.style.left = `${progressPct}%`;
-                pinEl.style.background = pnlColor;
-                pinEl.style.boxShadow = `0 0 10px ${pnlColor}`;
-            }
-
-            const distToTgtPts = pt.action === 'BUY' ? Math.max(0, tgtPrice - curPrice) : Math.max(0, curPrice - tgtPrice);
-            const distToTgtPct = curPrice > 0 ? ((distToTgtPts / curPrice) * 100).toFixed(2) : '0.00';
-            const distToSlPts = pt.action === 'BUY' ? Math.max(0, curPrice - slPrice) : Math.max(0, slPrice - curPrice);
-            const distToSlPct = curPrice > 0 ? ((distToSlPts / curPrice) * 100).toFixed(2) : '0.00';
-
-            const distSlEl = document.getElementById(`deck-dist-sl-${idx}`);
-            if (distSlEl) distSlEl.textContent = `Buffer: ${distToSlPct}% (${distToSlPts.toFixed(2)} pts)`;
-
-            const distTgtEl = document.getElementById(`deck-dist-tgt-${idx}`);
-            if (distTgtEl) distTgtEl.textContent = `Remaining: ${distToTgtPct}% (${distToTgtPts.toFixed(2)} pts)`;
-        }
-
-        function renderTradingViewActiveDeck(allTrades) {
-            const deckEl = document.getElementById('tv-active-trades-deck');
-            if (!deckEl) return;
-
-            // Filter active trades for today that are currently running
-            const isIntradayActive = (currentTradingSubTab === 'intraday' || currentTradingSubTab === 'stocks');
-            const activeTrades = (allTrades || []).filter(t => {
-                const pt = t.paper_trade || {};
-                const isMatchedAsset = isIntradayActive ? isIntradayStockTrade(t) : !isIntradayStockTrade(t);
-                return isMatchedAsset && pt.status === 'ACTIVE' && isTodayISTTrade(t) && pt.entry_price && Number(pt.entry_price) > 0;
-            });
-
-            if (activeTrades.length === 0) {
-                deckEl.style.display = 'none';
-                deckEl.innerHTML = '';
-                currentTvDeckKey = '';
-                return;
-            }
-
-            const newKey = activeTrades.map(t => `${t.id || t.symbol}_${t.symbol}`).sort().join('|');
-            if (newKey === currentTvDeckKey) {
-                // Fast-path: update real-time values directly without DOM flicker
-                activeTrades.forEach((t, idx) => {
-                    updateActiveDeckCardLive(t, idx);
-                });
-                deckEl.style.display = 'block';
-                return;
-            }
-
-            currentTvDeckKey = newKey;
-            deckEl.style.display = 'block';
-
-            const cardsHtml = activeTrades.map((t, idx) => {
-                const pt = t.paper_trade || {};
-                const sym = (t.symbol || '').toUpperCase();
-                let tvSym = sym;
-                if (sym.includes('.NS') || t.asset_type === 'INTRADAY_STOCK' || t.asset_type === 'EQUITY') {
-                    tvSym = `NSE:${sym.replace('.NS', '').trim()}`;
-                } else if (sym.includes('-FUT') || t.asset_type === 'STOCK_FUTURES') {
-                    tvSym = `NSE:${sym.replace('-FUT', '').replace('.NS', '').trim()}1!`;
-                } else {
-                    tvSym = `MCX:${sym.replace('.NS', '').trim()}1!`;
-                }
-
-                const actionColor = pt.action === 'BUY' ? '#4ade80' : '#fb7185';
-                const actionBadge = pt.action === 'BUY' ? 'BUY (LONG)' : 'SELL (SHORT)';
-                const entryPrice = Number(pt.entry_price || 0);
-                const slPrice = Number(pt.stop_loss || 0);
-                const tgtPrice = Number(pt.target || 0);
-
-                const liveData = getAdvisoryTradeLivePriceData(t);
-                const curPrice = (liveData && liveData.current_price)
-                    ? Number(liveData.current_price)
-                    : (Number(t.live_price_data?.current_price) || entryPrice);
-                const chgPct = (liveData && liveData.change_pct !== undefined)
-                    ? Number(liveData.change_pct)
-                    : (Number(t.live_price_data?.change_pct) || 0);
-
-                const ptsDiff = pt.action === 'BUY' ? (curPrice - entryPrice) : (entryPrice - curPrice);
-                const lotSize = pt.quantity || t.lot_size || 1;
-                const livePnlInr = ptsDiff * lotSize;
-                const pnlColor = livePnlInr >= 0 ? '#4ade80' : '#fb7185';
-                const pnlSign = livePnlInr >= 0 ? '+' : '';
-
-                // Progress calculation between SL (0%) and Target (100%)
-                let progressPct = 50;
-                let entryPct = 50;
-                const totalSpan = Math.abs(tgtPrice - slPrice);
-                if (totalSpan > 0) {
-                    if (pt.action === 'BUY') {
-                        progressPct = Math.max(0, Math.min(100, ((curPrice - slPrice) / totalSpan) * 100));
-                        entryPct = Math.max(0, Math.min(100, ((entryPrice - slPrice) / totalSpan) * 100));
-                    } else {
-                        progressPct = Math.max(0, Math.min(100, ((slPrice - curPrice) / totalSpan) * 100));
-                        entryPct = Math.max(0, Math.min(100, ((slPrice - entryPrice) / totalSpan) * 100));
+                    // Update session win probability badges and banner
+                    if (typeof updateSessionStatsBadges === 'function') {
+                        updateSessionStatsBadges(trades);
                     }
                 }
+                window.renderAdvisorySummaryCards = renderAdvisorySummaryCards;
 
-                const distToTgtPts = pt.action === 'BUY' ? Math.max(0, tgtPrice - curPrice) : Math.max(0, curPrice - tgtPrice);
-                const distToTgtPct = curPrice > 0 ? ((distToTgtPts / curPrice) * 100).toFixed(2) : '0.00';
-                const distToSlPts = pt.action === 'BUY' ? Math.max(0, curPrice - slPrice) : Math.max(0, slPrice - curPrice);
-                const distToSlPct = curPrice > 0 ? ((distToSlPts / curPrice) * 100).toFixed(2) : '0.00';
+                function filterAdvisoryTrades(filterType, btnEl) {
+                    activeAdvFilter = filterType;
+                    document.querySelectorAll('.circuit-filters button[id^="adv-filter-"]').forEach(b => b.classList.remove('active'));
+                    if (btnEl) btnEl.classList.add('active');
+                    renderAdvisoryTradesTable();
+                }
 
-                const tvChartUrl = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tvSym)}`;
-                const dhanUrl = 'https://trading.dhan.co';
+                let advSearchTimer = null;
+                function filterAdvisoryTradesTable() {
+                    clearTimeout(advSearchTimer);
+                    advSearchTimer = setTimeout(() => {
+                        renderAdvisoryTradesTable();
+                    }, 120);
+                }
+                window.filterAdvisoryTradesTable = filterAdvisoryTradesTable;
 
-                return `
+                let currentTvDeckKey = '';
+                let currentTvTickerKey = '';
+
+                function renderTradingViewTickerTape(allTrades) {
+                    const container = document.getElementById('tv-ticker-tape-container');
+                    if (!container) return;
+
+                    // Collect base benchmark symbols
+                    const baseSymbols = [
+                        { "proName": "NSE:NIFTY", "title": "Nifty 50" },
+                        { "proName": "MCX:GOLDM1!", "title": "Gold Mini" },
+                        { "proName": "MCX:SILVERMIC1!", "title": "Silver Micro" },
+                        { "proName": "MCX:CRUDEOILM1!", "title": "Crude Oil Mini" },
+                        { "proName": "MCX:ZINCMINI1!", "title": "Zinc Mini" },
+                        { "proName": "MCX:NATURALGASM1!", "title": "Natural Gas Mini" }
+                    ];
+
+                    // Collect any intraday stock and commodity trades triggered today (Active + Completed)
+                    const todayTrades = (allTrades || []).filter(t => isTodayISTTrade(t) && t.paper_trade && t.paper_trade.action && t.paper_trade.action !== 'STAND_ASIDE');
+
+                    const triggeredSymbols = [];
+                    const seen = new Set();
+                    todayTrades.forEach(t => {
+                        const sym = (t.symbol || '').toUpperCase();
+                        let proName = sym;
+                        if (sym.includes('.NS') || t.asset_type === 'INTRADAY_STOCK' || t.asset_type === 'EQUITY') {
+                            proName = `NSE:${sym.replace('.NS', '').trim()}`;
+                        } else if (sym.includes('-FUT') || t.asset_type === 'STOCK_FUTURES') {
+                            proName = `NSE:${sym.replace('-FUT', '').replace('.NS', '').trim()}1!`;
+                        } else {
+                            proName = `MCX:${sym.replace('.NS', '').trim()}1!`;
+                        }
+                        if (!seen.has(proName)) {
+                            seen.add(proName);
+                            triggeredSymbols.push({ proName: proName, title: t.name || sym });
+                        }
+                    });
+
+                    const combinedSymbols = [...triggeredSymbols, ...baseSymbols];
+                    const newKey = combinedSymbols.map(s => s.proName).join('|');
+
+                    if (newKey === currentTvTickerKey) return;
+                    currentTvTickerKey = newKey;
+
+                    container.innerHTML = `<div class="tradingview-widget-container__widget"></div>`;
+
+                    const config = {
+                        "symbols": combinedSymbols,
+                        "showSymbolLogo": true,
+                        "isTransparent": true,
+                        "displayMode": "adaptive",
+                        "colorTheme": "dark",
+                        "locale": "en"
+                    };
+
+                    const script = document.createElement('script');
+                    script.type = 'text/javascript';
+                    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
+                    script.async = true;
+                    script.text = JSON.stringify(config);
+                    container.appendChild(script);
+                }
+
+                function updateActiveDeckCardLive(t, idx) {
+                    const pt = t.paper_trade || {};
+                    const entryPrice = Number(pt.entry_price || 0);
+                    const slPrice = Number(pt.stop_loss || 0);
+                    const tgtPrice = Number(pt.target || 0);
+
+                    const liveData = getAdvisoryTradeLivePriceData(t);
+                    const curPrice = (liveData && liveData.current_price)
+                        ? Number(liveData.current_price)
+                        : (Number(t.live_price_data?.current_price) || entryPrice);
+                    const chgPct = (liveData && liveData.change_pct !== undefined)
+                        ? Number(liveData.change_pct)
+                        : (Number(t.live_price_data?.change_pct) || 0);
+
+                    const ptsDiff = pt.action === 'BUY' ? (curPrice - entryPrice) : (entryPrice - curPrice);
+                    const lotSize = pt.quantity || t.lot_size || 1;
+                    const livePnlInr = ptsDiff * lotSize;
+                    const pnlColor = livePnlInr >= 0 ? '#4ade80' : '#fb7185';
+                    const pnlSign = livePnlInr >= 0 ? '+' : '';
+
+                    const priceEl = document.getElementById(`deck-cur-price-${idx}`);
+                    if (priceEl) priceEl.textContent = '₹' + curPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+                    const chgEl = document.getElementById(`deck-chg-pct-${idx}`);
+                    if (chgEl) {
+                        chgEl.textContent = `(${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%)`;
+                        chgEl.style.color = chgPct >= 0 ? '#4ade80' : '#fb7185';
+                    }
+
+                    const pnlEl = document.getElementById(`deck-pnl-${idx}`);
+                    if (pnlEl) {
+                        pnlEl.innerHTML = `${pnlSign}₹${Math.abs(livePnlInr).toLocaleString('en-IN', { minimumFractionDigits: 2 })} <span style="font-size: 0.75rem; font-weight: 600; opacity: 0.85;">(${pnlSign}${ptsDiff.toFixed(2)} pts)</span>`;
+                        pnlEl.style.color = pnlColor;
+                    }
+
+                    const totalSpan = Math.abs(tgtPrice - slPrice);
+                    let progressPct = 50;
+                    if (totalSpan > 0) {
+                        if (pt.action === 'BUY') {
+                            progressPct = Math.max(0, Math.min(100, ((curPrice - slPrice) / totalSpan) * 100));
+                        } else {
+                            progressPct = Math.max(0, Math.min(100, ((slPrice - curPrice) / totalSpan) * 100));
+                        }
+                    }
+
+                    const pinEl = document.getElementById(`deck-progress-pin-${idx}`);
+                    if (pinEl) {
+                        pinEl.style.left = `${progressPct}%`;
+                        pinEl.style.background = pnlColor;
+                        pinEl.style.boxShadow = `0 0 10px ${pnlColor}`;
+                    }
+
+                    const distToTgtPts = pt.action === 'BUY' ? Math.max(0, tgtPrice - curPrice) : Math.max(0, curPrice - tgtPrice);
+                    const distToTgtPct = curPrice > 0 ? ((distToTgtPts / curPrice) * 100).toFixed(2) : '0.00';
+                    const distToSlPts = pt.action === 'BUY' ? Math.max(0, curPrice - slPrice) : Math.max(0, slPrice - curPrice);
+                    const distToSlPct = curPrice > 0 ? ((distToSlPts / curPrice) * 100).toFixed(2) : '0.00';
+
+                    const distSlEl = document.getElementById(`deck-dist-sl-${idx}`);
+                    if (distSlEl) distSlEl.textContent = `Buffer: ${distToSlPct}% (${distToSlPts.toFixed(2)} pts)`;
+
+                    const distTgtEl = document.getElementById(`deck-dist-tgt-${idx}`);
+                    if (distTgtEl) distTgtEl.textContent = `Remaining: ${distToTgtPct}% (${distToTgtPts.toFixed(2)} pts)`;
+                }
+
+                function renderTradingViewActiveDeck(allTrades) {
+                    const deckEl = document.getElementById('tv-active-trades-deck');
+                    if (!deckEl) return;
+
+                    // Filter active trades for today that are currently running
+                    const isIntradayActive = (currentTradingSubTab === 'intraday' || currentTradingSubTab === 'stocks');
+                    const activeTrades = (allTrades || []).filter(t => {
+                        const pt = t.paper_trade || {};
+                        const isMatchedAsset = isIntradayActive ? isIntradayStockTrade(t) : !isIntradayStockTrade(t);
+                        return isMatchedAsset && pt.status === 'ACTIVE' && isTodayISTTrade(t) && pt.entry_price && Number(pt.entry_price) > 0;
+                    });
+
+                    if (activeTrades.length === 0) {
+                        deckEl.style.display = 'none';
+                        deckEl.innerHTML = '';
+                        currentTvDeckKey = '';
+                        return;
+                    }
+
+                    const newKey = activeTrades.map(t => `${t.id || t.symbol}_${t.symbol}`).sort().join('|');
+                    if (newKey === currentTvDeckKey) {
+                        // Fast-path: update real-time values directly without DOM flicker
+                        activeTrades.forEach((t, idx) => {
+                            updateActiveDeckCardLive(t, idx);
+                        });
+                        deckEl.style.display = 'block';
+                        return;
+                    }
+
+                    currentTvDeckKey = newKey;
+                    deckEl.style.display = 'block';
+
+                    const cardsHtml = activeTrades.map((t, idx) => {
+                        const pt = t.paper_trade || {};
+                        const sym = (t.symbol || '').toUpperCase();
+                        let tvSym = sym;
+                        if (sym.includes('.NS') || t.asset_type === 'INTRADAY_STOCK' || t.asset_type === 'EQUITY') {
+                            tvSym = `NSE:${sym.replace('.NS', '').trim()}`;
+                        } else if (sym.includes('-FUT') || t.asset_type === 'STOCK_FUTURES') {
+                            tvSym = `NSE:${sym.replace('-FUT', '').replace('.NS', '').trim()}1!`;
+                        } else {
+                            tvSym = `MCX:${sym.replace('.NS', '').trim()}1!`;
+                        }
+
+                        const actionColor = pt.action === 'BUY' ? '#4ade80' : '#fb7185';
+                        const actionBadge = pt.action === 'BUY' ? 'BUY (LONG)' : 'SELL (SHORT)';
+                        const entryPrice = Number(pt.entry_price || 0);
+                        const slPrice = Number(pt.stop_loss || 0);
+                        const tgtPrice = Number(pt.target || 0);
+
+                        const liveData = getAdvisoryTradeLivePriceData(t);
+                        const curPrice = (liveData && liveData.current_price)
+                            ? Number(liveData.current_price)
+                            : (Number(t.live_price_data?.current_price) || entryPrice);
+                        const chgPct = (liveData && liveData.change_pct !== undefined)
+                            ? Number(liveData.change_pct)
+                            : (Number(t.live_price_data?.change_pct) || 0);
+
+                        const ptsDiff = pt.action === 'BUY' ? (curPrice - entryPrice) : (entryPrice - curPrice);
+                        const lotSize = pt.quantity || t.lot_size || 1;
+                        const livePnlInr = ptsDiff * lotSize;
+                        const pnlColor = livePnlInr >= 0 ? '#4ade80' : '#fb7185';
+                        const pnlSign = livePnlInr >= 0 ? '+' : '';
+
+                        // Progress calculation between SL (0%) and Target (100%)
+                        let progressPct = 50;
+                        let entryPct = 50;
+                        const totalSpan = Math.abs(tgtPrice - slPrice);
+                        if (totalSpan > 0) {
+                            if (pt.action === 'BUY') {
+                                progressPct = Math.max(0, Math.min(100, ((curPrice - slPrice) / totalSpan) * 100));
+                                entryPct = Math.max(0, Math.min(100, ((entryPrice - slPrice) / totalSpan) * 100));
+                            } else {
+                                progressPct = Math.max(0, Math.min(100, ((slPrice - curPrice) / totalSpan) * 100));
+                                entryPct = Math.max(0, Math.min(100, ((slPrice - entryPrice) / totalSpan) * 100));
+                            }
+                        }
+
+                        const distToTgtPts = pt.action === 'BUY' ? Math.max(0, tgtPrice - curPrice) : Math.max(0, curPrice - tgtPrice);
+                        const distToTgtPct = curPrice > 0 ? ((distToTgtPts / curPrice) * 100).toFixed(2) : '0.00';
+                        const distToSlPts = pt.action === 'BUY' ? Math.max(0, curPrice - slPrice) : Math.max(0, slPrice - curPrice);
+                        const distToSlPct = curPrice > 0 ? ((distToSlPts / curPrice) * 100).toFixed(2) : '0.00';
+
+                        const tvChartUrl = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tvSym)}`;
+                        const dhanUrl = 'https://trading.dhan.co';
+
+                        return `
             <div id="deck-card-${idx}" style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.98)); border: 1px solid rgba(99, 102, 241, 0.45); border-radius: 12px; padding: 16px; min-width: 320px; flex: 1; box-shadow: 0 4px 24px rgba(0,0,0,0.35);">
                 <!-- Header -->
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
@@ -8812,9 +8812,9 @@
                 </div>
             </div>
         `;
-            }).join('');
+                    }).join('');
 
-            deckEl.innerHTML = `
+                    deckEl.innerHTML = `
         <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 14px; padding: 14px; margin-bottom: 0.75rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -8831,119 +8831,119 @@
             </div>
         </div>
     `;
-        }
-
-        function renderAdvisoryTradesTable() {
-            const tbody = document.getElementById('advisory-tracker-body');
-            if (!tbody || !advisoryTrackerData) return;
-
-            const allTrades = advisoryTrackerData.trades || [];
-            renderTradingViewTickerTape(allTrades);
-            renderTradingViewActiveDeck(allTrades);
-            const searchVal = (document.getElementById('adv-search-input')?.value || '').trim().toLowerCase();
-            const todayStrRef = advisoryTrackerData?.last_updated ? advisoryTrackerData.last_updated.split(',')[0].trim() : '';
-
-            const filtered = allTrades.filter(t => {
-                // Filter by active sub-tab (Futures vs Intraday Stocks)
-                const isIntradayActive = (currentTradingSubTab === 'intraday' || currentTradingSubTab === 'stocks');
-                if (isIntradayActive && !isIntradayStockTrade(t)) return false;
-                if (!isIntradayActive && isIntradayStockTrade(t)) return false;
-
-                // Filter by Session Timing
-                if (activeAdvSession !== 'ALL') {
-                    const sessCat = getTradeSessionCategory(t);
-                    if (sessCat !== activeAdvSession) return false;
                 }
 
-                // Filter by pill: by default CALLED shows all called signals (active today, wins, losses, or breakeven exits)
-                if (activeAdvFilter === 'CALLED') {
-                    if (!isCalledAdvisoryTrade(t)) return false;
-                } else if (activeAdvFilter === 'ACTIVE') {
-                    const st = t.paper_trade?.status;
-                    if (st === 'STAND_ASIDE' || isAvoidedAdvisoryTrade(t)) return false;
-                    const isToday = Boolean(todayStrRef && t.date === todayStrRef);
-                    if (st === 'ACTIVE' && t.paper_trade?.entry_price && Number(t.paper_trade.entry_price) > 0) return true;
-                    if (isToday && t.paper_trade?.entry_price && Number(t.paper_trade.entry_price) > 0 && t.paper_trade.action !== 'STAND_ASIDE') return true;
-                    const valCutoff = getTradeValidationCutoff(t);
-                    const isPastVal = isPastISTWindow(t.date, valCutoff.hour, valCutoff.min);
-                    if ((st === 'PENDING_615' || t.check_615?.status === 'PENDING_615') && !isPastVal) return true;
-                    return false;
-                } else if (activeAdvFilter === 'CORRECT') {
-                    if (t.eod_outcome?.outcome !== 'CORRECT') return false;
-                } else if (activeAdvFilter === 'WRONG') {
-                    const outcomeVal = t.eod_outcome?.outcome;
-                    const badgeVal = t.eod_outcome?.badge || '';
-                    const isNetLoss = t.paper_trade?.status === 'CLOSED' && Number(t.paper_trade?.pnl_inr || 0) < 0;
-                    if (outcomeVal !== 'WRONG' && outcomeVal !== 'INCORRECT' && !badgeVal.includes('Wrong') && !isNetLoss) return false;
-                } else if (activeAdvFilter === 'PROTECTED') {
-                    if (isAvoidedAdvisoryTrade(t) || t.eod_outcome?.outcome === 'PROTECTED') return true;
-                    return false;
-                }
-                // 'ALL' includes both called and protected/stood aside
+                function renderAdvisoryTradesTable() {
+                    const tbody = document.getElementById('advisory-tracker-body');
+                    if (!tbody || !advisoryTrackerData) return;
 
-                // Search filter
-                if (searchVal) {
-                    const str = `${t.date} ${t.symbol} ${t.name} ${t.session_name || ''} ${t.suggestion_6pm?.action_text || ''} ${t.check_615?.status || ''}`.toLowerCase();
-                    if (!str.includes(searchVal)) return false;
-                }
-                return true;
-            });
+                    const allTrades = advisoryTrackerData.trades || [];
+                    renderTradingViewTickerTape(allTrades);
+                    renderTradingViewActiveDeck(allTrades);
+                    const searchVal = (document.getElementById('adv-search-input')?.value || '').trim().toLowerCase();
+                    const todayStrRef = advisoryTrackerData?.last_updated ? advisoryTrackerData.last_updated.split(',')[0].trim() : '';
 
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:2rem; color:var(--text-secondary);">No advisory signals match the selected filter.</td></tr>`;
-                const cardsFeed = document.getElementById('advisory-cards-feed');
-                if (cardsFeed) cardsFeed.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No advisory signals match the selected filter.</div>`;
-                return;
-            }
+                    const filtered = allTrades.filter(t => {
+                        // Filter by active sub-tab (Futures vs Intraday Stocks)
+                        const isIntradayActive = (currentTradingSubTab === 'intraday' || currentTradingSubTab === 'stocks');
+                        if (isIntradayActive && !isIntradayStockTrade(t)) return false;
+                        if (!isIntradayActive && isIntradayStockTrade(t)) return false;
 
-            var activeSummary = '';
-            var mobActiveSummary = '';
+                        // Filter by Session Timing
+                        if (activeAdvSession !== 'ALL') {
+                            const sessCat = getTradeSessionCategory(t);
+                            if (sessCat !== activeAdvSession) return false;
+                        }
 
-            const newRowsHtml = filtered.map(t => {
-                const pt = t.paper_trade || {};
-                const s6 = t.suggestion_6pm || {};
-                const c15 = t.check_615 || {};
-                const outcome = t.eod_outcome || {};
+                        // Filter by pill: by default CALLED shows all called signals (active today, wins, losses, or breakeven exits)
+                        if (activeAdvFilter === 'CALLED') {
+                            if (!isCalledAdvisoryTrade(t)) return false;
+                        } else if (activeAdvFilter === 'ACTIVE') {
+                            const st = t.paper_trade?.status;
+                            if (st === 'STAND_ASIDE' || isAvoidedAdvisoryTrade(t)) return false;
+                            const isToday = Boolean(todayStrRef && t.date === todayStrRef);
+                            if (st === 'ACTIVE' && t.paper_trade?.entry_price && Number(t.paper_trade.entry_price) > 0) return true;
+                            if (isToday && t.paper_trade?.entry_price && Number(t.paper_trade.entry_price) > 0 && t.paper_trade.action !== 'STAND_ASIDE') return true;
+                            const valCutoff = getTradeValidationCutoff(t);
+                            const isPastVal = isPastISTWindow(t.date, valCutoff.hour, valCutoff.min);
+                            if ((st === 'PENDING_615' || t.check_615?.status === 'PENDING_615') && !isPastVal) return true;
+                            return false;
+                        } else if (activeAdvFilter === 'CORRECT') {
+                            if (t.eod_outcome?.outcome !== 'CORRECT') return false;
+                        } else if (activeAdvFilter === 'WRONG') {
+                            const outcomeVal = t.eod_outcome?.outcome;
+                            const badgeVal = t.eod_outcome?.badge || '';
+                            const isNetLoss = t.paper_trade?.status === 'CLOSED' && Number(t.paper_trade?.pnl_inr || 0) < 0;
+                            if (outcomeVal !== 'WRONG' && outcomeVal !== 'INCORRECT' && !badgeVal.includes('Wrong') && !isNetLoss) return false;
+                        } else if (activeAdvFilter === 'PROTECTED') {
+                            if (isAvoidedAdvisoryTrade(t) || t.eod_outcome?.outcome === 'PROTECTED') return true;
+                            return false;
+                        }
+                        // 'ALL' includes both called and protected/stood aside
 
-                const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
-                const valCutoff = getTradeValidationCutoff(t);
-                const isPastVal = isPastISTWindow(t.date, valCutoff.hour, valCutoff.min);
-                const exitCutoff = getTradeExitCutoff(t);
-                const isTodayTrade = isTodayISTTrade(t);
-                const isSessionExpired = isPastISTWindow(t.date, exitCutoff.hour, exitCutoff.min) && (pt.status !== 'ACTIVE' || !isTodayTrade);
+                        // Search filter
+                        if (searchVal) {
+                            const str = `${t.date} ${t.symbol} ${t.name} ${t.session_name || ''} ${t.suggestion_6pm?.action_text || ''} ${t.check_615?.status || ''}`.toLowerCase();
+                            if (!str.includes(searchVal)) return false;
+                        }
+                        return true;
+                    });
 
-                // Find live market data from authoritative exchange / scanner feed
-                const liveSource = getAdvisoryTradeLivePriceData(t);
-                const initialSl = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
-                const rawCurSl = Number(pt.stop_loss || s6.stop_loss || 0);
-                // Hard invariant: Stop-loss can NEVER widen or move in the direction of additional loss
-                const curSl = initialSl > 0
-                    ? (pt.action === 'BUY' ? Math.max(rawCurSl, initialSl) : (pt.action === 'SELL' ? Math.min(rawCurSl, initialSl) : rawCurSl))
-                    : rawCurSl;
-                let isSlBreached = false;
-                if (curSl > 0 && liveSource && liveSource.current_price) {
-                    const cp = Number(liveSource.current_price);
-                    const isBE = Boolean(pt.trailing_sl_active && Math.abs(curSl - (pt.entry_price || 0)) < 0.05);
-                    if (pt.action === 'BUY') {
-                        isSlBreached = isBE ? (cp < curSl - 0.05) : (cp <= curSl);
-                    } else if (pt.action === 'SELL') {
-                        isSlBreached = isBE ? (cp > curSl + 0.05) : (cp >= curSl);
+                    if (filtered.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:2rem; color:var(--text-secondary);">No advisory signals match the selected filter.</td></tr>`;
+                        const cardsFeed = document.getElementById('advisory-cards-feed');
+                        if (cardsFeed) cardsFeed.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); border-radius:10px;">No advisory signals match the selected filter.</div>`;
+                        return;
                     }
-                }
 
-                // Current Price column computation
-                let curPriceHtml = '<span style="color:#64748b; font-size:0.8rem;">--</span>';
-                if (liveSource && liveSource.current_price) {
-                    const cp = Number(liveSource.current_price);
-                    let chg = Number(liveSource.change_pct || 0);
-                    if (chg === 0 && pt.entry_price && Number(pt.entry_price) > 0) {
-                        chg = ((cp - Number(pt.entry_price)) / Number(pt.entry_price)) * 100;
-                    }
-                    const chgColor = chg >= 0 ? '#4ade80' : '#fb7185';
-                    const chgIcon = chg >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
-                    const isLiveActive = (pt.status === 'ACTIVE' && (!isSessionExpired || isTodayTrade)) || (pt.status === 'PENDING_615' && !isPastVal);
+                    var activeSummary = '';
+                    var mobActiveSummary = '';
 
-                    curPriceHtml = `
+                    const newRowsHtml = filtered.map(t => {
+                        const pt = t.paper_trade || {};
+                        const s6 = t.suggestion_6pm || {};
+                        const c15 = t.check_615 || {};
+                        const outcome = t.eod_outcome || {};
+
+                        const isEqTrade = t.asset_type === 'EQUITY' || (t.symbol && (t.symbol.includes('.NS') || t.symbol.includes('-FUT')));
+                        const valCutoff = getTradeValidationCutoff(t);
+                        const isPastVal = isPastISTWindow(t.date, valCutoff.hour, valCutoff.min);
+                        const exitCutoff = getTradeExitCutoff(t);
+                        const isTodayTrade = isTodayISTTrade(t);
+                        const isSessionExpired = isPastISTWindow(t.date, exitCutoff.hour, exitCutoff.min) && (pt.status !== 'ACTIVE' || !isTodayTrade);
+
+                        // Find live market data from authoritative exchange / scanner feed
+                        const liveSource = getAdvisoryTradeLivePriceData(t);
+                        const initialSl = Number(pt.initial_stop_loss || pt.original_sl || s6.original_stop_loss || (pt.trailing_sl_active ? pt.original_sl : s6.stop_loss) || 0);
+                        const rawCurSl = Number(pt.stop_loss || s6.stop_loss || 0);
+                        // Hard invariant: Stop-loss can NEVER widen or move in the direction of additional loss
+                        const curSl = initialSl > 0
+                            ? (pt.action === 'BUY' ? Math.max(rawCurSl, initialSl) : (pt.action === 'SELL' ? Math.min(rawCurSl, initialSl) : rawCurSl))
+                            : rawCurSl;
+                        let isSlBreached = false;
+                        if (curSl > 0 && liveSource && liveSource.current_price) {
+                            const cp = Number(liveSource.current_price);
+                            const isBE = Boolean(pt.trailing_sl_active && Math.abs(curSl - (pt.entry_price || 0)) < 0.05);
+                            if (pt.action === 'BUY') {
+                                isSlBreached = isBE ? (cp < curSl - 0.05) : (cp <= curSl);
+                            } else if (pt.action === 'SELL') {
+                                isSlBreached = isBE ? (cp > curSl + 0.05) : (cp >= curSl);
+                            }
+                        }
+
+                        // Current Price column computation
+                        let curPriceHtml = '<span style="color:#64748b; font-size:0.8rem;">--</span>';
+                        if (liveSource && liveSource.current_price) {
+                            const cp = Number(liveSource.current_price);
+                            let chg = Number(liveSource.change_pct || 0);
+                            if (chg === 0 && pt.entry_price && Number(pt.entry_price) > 0) {
+                                chg = ((cp - Number(pt.entry_price)) / Number(pt.entry_price)) * 100;
+                            }
+                            const chgColor = chg >= 0 ? '#4ade80' : '#fb7185';
+                            const chgIcon = chg >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+                            const isLiveActive = (pt.status === 'ACTIVE' && (!isSessionExpired || isTodayTrade)) || (pt.status === 'PENDING_615' && !isPastVal);
+
+                            curPriceHtml = `
                 <div>
                     <div style="font-size:0.92rem; font-weight:700; color:#f8fafc; display:flex; align-items:center; gap:5px;">
                         ₹${cp.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -8954,8 +8954,8 @@
                     </div>
                 </div>
             `;
-                } else if (s6.reference_price) {
-                    curPriceHtml = `
+                        } else if (s6.reference_price) {
+                            curPriceHtml = `
                 <div>
                     <div style="font-size:0.9rem; font-weight:600; color:#cbd5e1;">
                         ₹${Number(s6.reference_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -8963,220 +8963,220 @@
                     <div style="font-size:0.7rem; color:#94a3b8;">(Signal Ref)</div>
                 </div>
             `;
-                }
-
-                const isEnteredTrade = Boolean((pt.entry_price && Number(pt.entry_price) > 0) || (pt.status === 'ACTIVE' && (pt.action === 'BUY' || pt.action === 'SELL')));
-                const isStandAsideTrade = !isEnteredTrade && (
-                    isAvoidedAdvisoryTrade(t) ||
-                    pt.status === 'STAND_ASIDE' ||
-                    pt.action === 'STAND_ASIDE' ||
-                    c15.status === 'CONFIRMATION_EXPIRED' ||
-                    c15.status === 'CONFIRMED_STAND_ASIDE' ||
-                    c15.status === 'NO_REVERSAL_STAND_ASIDE' ||
-                    c15.status === 'NO_GAP_STAND_ASIDE' ||
-                    c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' ||
-                    outcome.outcome === 'PROTECTED'
-                );
-
-                let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
-                if (outcome.badge && outcome.badge.includes('Margin Skipped')) {
-                    outcomeBadge = `<span class="adv-badge-protected" style="border:1px solid rgba(245, 158, 11, 0.5); background:rgba(245, 158, 11, 0.15); color:#fbbf24;"><i class="fa-solid fa-wallet"></i> Margin Skipped 🛡️</span>`;
-                } else if (pt.status === 'CLOSED' || pt.exit_price) {
-                    const exitTimeTag = pt.exit_time || outcome.exit_time || 'Closed';
-                    if (pt.exit_trigger === 'TARGET_RUNNER_EXIT' || pt.exit_trigger === 'TARGET_RUNNER_EOD' || outcome.badge?.includes('Target Runner') || (pt.target_runner_active && (pt.pnl_inr || 0) > 0)) {
-                        outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🎯🚀 (${exitTimeTag})</span>`;
-                    } else if (pt.exit_trigger === 'TRAILING_PROFIT_HIT' || outcome.badge?.includes('Trailing Profit') || ((pt.stage_3_target_approaching || pt.stage_2_profit_locked) && (pt.pnl_inr || 0) > 0)) {
-                        outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(56,189,248,0.18); border:1px solid rgba(56,189,248,0.45); color:#38bdf8;"><i class="fa-solid fa-sack-dollar"></i> Trailing Profit 💰 (${exitTimeTag})</span>`;
-                    } else if (pt.exit_trigger === 'TRAILING_BREAKEVEN_HIT' || outcome.badge?.includes('Breakeven') || (pt.trailing_sl_active && Math.abs(pt.pnl_inr || 0) < 1.0)) {
-                        outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Breakeven Exit 🛡️ (${exitTimeTag})</span>`;
-                    } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || (pt.pnl_inr || 0) < 0) {
-                        outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> Stop Loss Hit 🛑 (${exitTimeTag})</span>`;
-                    } else if ((pt.pnl_inr || 0) > 0) {
-                        outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> Correct ✅ (${exitTimeTag})</span>`;
-                    } else {
-                        outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge && !outcome.badge.includes('Active') ? outcome.badge : 'Closed ✅'}</span>`;
-                    }
-                } else if (outcome.outcome === 'WRONG') {
-                    outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
-                } else if ((pt.status === 'PENDING_615' || outcome.badge?.includes('Awaiting 6:15 PM') || outcome.badge?.includes('Awaiting 7:15 PM')) && (isPastVal || isStandAsideTrade)) {
-                    outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Window Lapsed 🛡️</span>`;
-                } else if (isStandAsideTrade) {
-                    let badgeText = outcome.badge || 'Avoided Trap 🛡️';
-                    if (badgeText.includes('Awaiting 6:15 PM') || badgeText.includes('Awaiting 7:15 PM')) {
-                        badgeText = isPastVal ? 'Window Lapsed 🛡️' : 'Avoided Trap 🛡️';
-                    }
-                    outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${badgeText}</span>`;
-                } else if (pt.status === 'ACTIVE') {
-                    if (isSlBreached) {
-                        const isProfitLock = Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active);
-                        if (isProfitLock) {
-                            outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-lock"></i> Trailing Profit Locked 💰</span>`;
-                        } else if (pt.trailing_sl_active) {
-                            outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Breakeven Stop Hit 🛡️</span>`;
-                        } else {
-                            outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-circle-exclamation"></i> Stop-Loss Triggered 🛑</span>`;
                         }
-                    } else if (isSessionExpired) {
-                        const isWin = (pt.pnl_inr || 0) > 0;
-                        outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : (t.time_exit || '11:45 PM')})</span>`;
-                    } else if (pt.target_runner_active) {
-                        outcomeBadge = `<span class="adv-badge-active" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🚀 (SL @ ₹${curSl.toFixed(2)})</span>`;
-                    } else if (pt.stage_3_target_approaching || pt.target_scrapped) {
-                        outcomeBadge = `<span class="adv-badge-active" style="background:rgba(56,189,248,0.18); border:1px solid rgba(56,189,248,0.45); color:#38bdf8;"><i class="fa-solid fa-infinity"></i> Trailing Stop @ ₹${curSl.toFixed(2)} (+65% Locked)</span>`;
-                    } else if (pt.stage_2_profit_locked) {
-                        outcomeBadge = `<span class="adv-badge-active" style="background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.45); color:#fbbf24;"><i class="fa-solid fa-lock"></i> Trailing Stop @ ₹${curSl.toFixed(2)} (+35% Locked)</span>`;
-                    } else {
-                        outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
-                    }
-                } else if (pt.status === 'PENDING_615' || outcome.outcome === 'PENDING') {
-                    const confTimeStr = t.time_validation || '07:15 PM';
-                    outcomeBadge = isPastVal
-                        ? `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Window Lapsed 🛡️</span>`
-                        : `<span class="adv-badge-active"><i class="fa-solid fa-hourglass-half"></i> Awaiting ${confTimeStr}</span>`;
-                }
 
-                let pnlColor = '#cbd5e1';
-                let pnlText = outcome.pnl_display || '₹0.00';
-                let ptsFormulaHtml = '';
-                if (outcome.badge?.includes('Margin Skipped') || c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE') {
-                    pnlColor = '#fbbf24';
-                    pnlText = '₹0.00 <span style="font-size:0.7rem; color:#fbbf24; display:block; font-weight:400;">(Discretionary)</span>';
-                } else if (isStandAsideTrade) {
-                    pnlColor = '#94a3b8';
-                    pnlText = '₹0.00 <span style="font-size:0.7rem; color:#60a5fa; display:block; font-weight:400;">(Protected)</span>';
-                } else if (pt.status === 'ACTIVE' && (!isSessionExpired || isTodayTrade) && pt.entry_price) {
-                    if (isSlBreached && curSl > 0) {
-                        const exitP = curSl;
-                        const pts = pt.action === 'BUY' ? (exitP - pt.entry_price) : (pt.entry_price - exitP);
-                        const lot = pt.quantity || t.lot_size || 1;
-                        const lockedPnl = Math.round(pts * lot * 100) / 100;
-                        const isProfitLock = Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active);
-                        pnlColor = lockedPnl >= 0 ? '#4ade80' : '#fb7185';
-                        pnlText = `${lockedPnl >= 0 ? '+' : ''}₹${lockedPnl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span style="font-size:0.7rem; color:${pnlColor}; display:block; font-weight:600;">(${isProfitLock ? 'Profit Locked' : 'SL Triggered'})</span>`;
-                        ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(${pts >= 0 ? '+' : ''}${pts.toFixed(2)} pts × ₹${lot})</span>`;
-                    } else {
-                        const curP = (liveSource && liveSource.current_price)
-                            ? Number(liveSource.current_price)
-                            : Number(t.live_price_data?.current_price || pt.entry_price);
-                        const pts = pt.action === 'BUY' ? (curP - pt.entry_price) : (pt.entry_price - curP);
-                        const lot = pt.quantity || t.lot_size || 1;
-                        const liveMtm = Math.round(pts * lot * 100) / 100;
-                        pnlColor = liveMtm >= 0 ? '#4ade80' : '#fb7185';
-                        pnlText = `${liveMtm >= 0 ? '+' : ''}₹${liveMtm.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(Live MTM)</span>`;
-                        ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(${pts >= 0 ? '+' : ''}${pts.toFixed(2)} pts × ₹${lot})</span>`;
-                    }
-                } else if (pt.pnl_inr !== undefined && pt.pnl_inr !== null) {
-                    const pVal = Number(pt.pnl_inr);
-                    const lot = pt.quantity || t.lot_size || 1;
-                    const pts = pt.pnl_points !== undefined ? Number(pt.pnl_points) : (lot > 0 ? (pVal / lot) : 0);
-                    const charges = pt.charges || calculateDhanCharges(t);
-                    const gVal = pt.gross_pnl_inr !== undefined ? Number(pt.gross_pnl_inr) : (charges ? charges.gross_pnl : pVal);
+                        const isEnteredTrade = Boolean((pt.entry_price && Number(pt.entry_price) > 0) || (pt.status === 'ACTIVE' && (pt.action === 'BUY' || pt.action === 'SELL')));
+                        const isStandAsideTrade = !isEnteredTrade && (
+                            isAvoidedAdvisoryTrade(t) ||
+                            pt.status === 'STAND_ASIDE' ||
+                            pt.action === 'STAND_ASIDE' ||
+                            c15.status === 'CONFIRMATION_EXPIRED' ||
+                            c15.status === 'CONFIRMED_STAND_ASIDE' ||
+                            c15.status === 'NO_REVERSAL_STAND_ASIDE' ||
+                            c15.status === 'NO_GAP_STAND_ASIDE' ||
+                            c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' ||
+                            outcome.outcome === 'PROTECTED'
+                        );
 
-                    if (pVal > 0) {
-                        pnlColor = '#4ade80';
-                        pnlText = `+₹${pVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                        ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(+${pts.toFixed(2)} pts × ₹${lot})</span>`;
-                    } else if (pVal < 0) {
-                        pnlColor = '#fb7185';
-                        pnlText = `-₹${Math.abs(pVal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                        ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(${pts.toFixed(2)} pts × ₹${lot})</span>`;
-                    } else {
-                        pnlColor = '#94a3b8';
-                        pnlText = `₹0.00 <span style="font-size:0.7rem; color:#60a5fa; display:block; font-weight:400;">(Breakeven)</span>`;
-                        ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(0.00 pts × ₹${lot})</span>`;
-                    }
+                        let outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge || 'Correct ✅'}</span>`;
+                        if (outcome.badge && outcome.badge.includes('Margin Skipped')) {
+                            outcomeBadge = `<span class="adv-badge-protected" style="border:1px solid rgba(245, 158, 11, 0.5); background:rgba(245, 158, 11, 0.15); color:#fbbf24;"><i class="fa-solid fa-wallet"></i> Margin Skipped 🛡️</span>`;
+                        } else if (pt.status === 'CLOSED' || pt.exit_price) {
+                            const exitTimeTag = pt.exit_time || outcome.exit_time || 'Closed';
+                            if (pt.exit_trigger === 'TARGET_RUNNER_EXIT' || pt.exit_trigger === 'TARGET_RUNNER_EOD' || outcome.badge?.includes('Target Runner') || (pt.target_runner_active && (pt.pnl_inr || 0) > 0)) {
+                                outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🎯🚀 (${exitTimeTag})</span>`;
+                            } else if (pt.exit_trigger === 'TRAILING_PROFIT_HIT' || outcome.badge?.includes('Trailing Profit') || ((pt.stage_3_target_approaching || pt.stage_2_profit_locked) && (pt.pnl_inr || 0) > 0)) {
+                                outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(56,189,248,0.18); border:1px solid rgba(56,189,248,0.45); color:#38bdf8;"><i class="fa-solid fa-sack-dollar"></i> Trailing Profit 💰 (${exitTimeTag})</span>`;
+                            } else if (pt.exit_trigger === 'TRAILING_BREAKEVEN_HIT' || outcome.badge?.includes('Breakeven') || (pt.trailing_sl_active && Math.abs(pt.pnl_inr || 0) < 1.0)) {
+                                outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Breakeven Exit 🛡️ (${exitTimeTag})</span>`;
+                            } else if (pt.exit_trigger === 'STOP_LOSS_HIT' || outcome.badge?.includes('Stop Loss') || (pt.pnl_inr || 0) < 0) {
+                                outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> Stop Loss Hit 🛑 (${exitTimeTag})</span>`;
+                            } else if ((pt.pnl_inr || 0) > 0) {
+                                outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> Correct ✅ (${exitTimeTag})</span>`;
+                            } else {
+                                outcomeBadge = `<span class="adv-badge-correct"><i class="fa-solid fa-check"></i> ${outcome.badge && !outcome.badge.includes('Active') ? outcome.badge : 'Closed ✅'}</span>`;
+                            }
+                        } else if (outcome.outcome === 'WRONG') {
+                            outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-xmark"></i> ${outcome.badge || 'Wrong ❌'}</span>`;
+                        } else if ((pt.status === 'PENDING_615' || outcome.badge?.includes('Awaiting 6:15 PM') || outcome.badge?.includes('Awaiting 7:15 PM')) && (isPastVal || isStandAsideTrade)) {
+                            outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Window Lapsed 🛡️</span>`;
+                        } else if (isStandAsideTrade) {
+                            let badgeText = outcome.badge || 'Avoided Trap 🛡️';
+                            if (badgeText.includes('Awaiting 6:15 PM') || badgeText.includes('Awaiting 7:15 PM')) {
+                                badgeText = isPastVal ? 'Window Lapsed 🛡️' : 'Avoided Trap 🛡️';
+                            }
+                            outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> ${badgeText}</span>`;
+                        } else if (pt.status === 'ACTIVE') {
+                            if (isSlBreached) {
+                                const isProfitLock = Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active);
+                                if (isProfitLock) {
+                                    outcomeBadge = `<span class="adv-badge-correct" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-lock"></i> Trailing Profit Locked 💰</span>`;
+                                } else if (pt.trailing_sl_active) {
+                                    outcomeBadge = `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Breakeven Stop Hit 🛡️</span>`;
+                                } else {
+                                    outcomeBadge = `<span class="adv-badge-wrong"><i class="fa-solid fa-circle-exclamation"></i> Stop-Loss Triggered 🛑</span>`;
+                                }
+                            } else if (isSessionExpired) {
+                                const isWin = (pt.pnl_inr || 0) > 0;
+                                outcomeBadge = `<span class="${isWin ? 'adv-badge-correct' : 'adv-badge-wrong'}"><i class="fa-solid ${isWin ? 'fa-check' : 'fa-xmark'}"></i> ${isWin ? 'Correct ✅' : 'Wrong ❌'} (${isEqTrade ? '03:20 PM' : (t.time_exit || '11:45 PM')})</span>`;
+                            } else if (pt.target_runner_active) {
+                                outcomeBadge = `<span class="adv-badge-active" style="background:rgba(34,197,94,0.18); border:1px solid rgba(34,197,94,0.45); color:#4ade80;"><i class="fa-solid fa-rocket"></i> Target Runner 🚀 (SL @ ₹${curSl.toFixed(2)})</span>`;
+                            } else if (pt.stage_3_target_approaching || pt.target_scrapped) {
+                                outcomeBadge = `<span class="adv-badge-active" style="background:rgba(56,189,248,0.18); border:1px solid rgba(56,189,248,0.45); color:#38bdf8;"><i class="fa-solid fa-infinity"></i> Trailing Stop @ ₹${curSl.toFixed(2)} (+65% Locked)</span>`;
+                            } else if (pt.stage_2_profit_locked) {
+                                outcomeBadge = `<span class="adv-badge-active" style="background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.45); color:#fbbf24;"><i class="fa-solid fa-lock"></i> Trailing Stop @ ₹${curSl.toFixed(2)} (+35% Locked)</span>`;
+                            } else {
+                                outcomeBadge = `<span class="adv-badge-active"><i class="fa-solid fa-bolt"></i> ${outcome.badge || 'Active ⚡'}</span>`;
+                            }
+                        } else if (pt.status === 'PENDING_615' || outcome.outcome === 'PENDING') {
+                            const confTimeStr = t.time_validation || '07:15 PM';
+                            outcomeBadge = isPastVal
+                                ? `<span class="adv-badge-protected"><i class="fa-solid fa-shield-halved"></i> Window Lapsed 🛡️</span>`
+                                : `<span class="adv-badge-active"><i class="fa-solid fa-hourglass-half"></i> Awaiting ${confTimeStr}</span>`;
+                        }
 
-                    if (charges && charges.total_charges > 0) {
-                        const gColor = gVal >= 0 ? '#4ade80' : '#fb7185';
-                        const gSign = gVal >= 0 ? '+' : '-';
-                        const tip = `Dhan Brokerage & Taxes Breakdown:\n• Brokerage: ₹${charges.brokerage.toFixed(2)}\n• CTT/STT: ₹${charges.stt_ctt.toFixed(2)}\n• Exchange Charges: ₹${charges.exchange_charges.toFixed(2)}\n• SEBI Charges: ₹${charges.sebi_charges.toFixed(2)}\n• Stamp Duty: ₹${charges.stamp_duty.toFixed(2)}\n• GST (18%): ₹${charges.gst.toFixed(2)}\n• Total Deducted: ₹${charges.total_charges.toFixed(2)}`;
-                        ptsFormulaHtml += `
+                        let pnlColor = '#cbd5e1';
+                        let pnlText = outcome.pnl_display || '₹0.00';
+                        let ptsFormulaHtml = '';
+                        if (outcome.badge?.includes('Margin Skipped') || c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE') {
+                            pnlColor = '#fbbf24';
+                            pnlText = '₹0.00 <span style="font-size:0.7rem; color:#fbbf24; display:block; font-weight:400;">(Discretionary)</span>';
+                        } else if (isStandAsideTrade) {
+                            pnlColor = '#94a3b8';
+                            pnlText = '₹0.00 <span style="font-size:0.7rem; color:#60a5fa; display:block; font-weight:400;">(Protected)</span>';
+                        } else if (pt.status === 'ACTIVE' && (!isSessionExpired || isTodayTrade) && pt.entry_price) {
+                            if (isSlBreached && curSl > 0) {
+                                const exitP = curSl;
+                                const pts = pt.action === 'BUY' ? (exitP - pt.entry_price) : (pt.entry_price - exitP);
+                                const lot = pt.quantity || t.lot_size || 1;
+                                const lockedPnl = Math.round(pts * lot * 100) / 100;
+                                const isProfitLock = Boolean(pt.stage_2_profit_locked || pt.stage_3_target_approaching || pt.target_runner_active);
+                                pnlColor = lockedPnl >= 0 ? '#4ade80' : '#fb7185';
+                                pnlText = `${lockedPnl >= 0 ? '+' : ''}₹${lockedPnl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span style="font-size:0.7rem; color:${pnlColor}; display:block; font-weight:600;">(${isProfitLock ? 'Profit Locked' : 'SL Triggered'})</span>`;
+                                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(${pts >= 0 ? '+' : ''}${pts.toFixed(2)} pts × ₹${lot})</span>`;
+                            } else {
+                                const curP = (liveSource && liveSource.current_price)
+                                    ? Number(liveSource.current_price)
+                                    : Number(t.live_price_data?.current_price || pt.entry_price);
+                                const pts = pt.action === 'BUY' ? (curP - pt.entry_price) : (pt.entry_price - curP);
+                                const lot = pt.quantity || t.lot_size || 1;
+                                const liveMtm = Math.round(pts * lot * 100) / 100;
+                                pnlColor = liveMtm >= 0 ? '#4ade80' : '#fb7185';
+                                pnlText = `${liveMtm >= 0 ? '+' : ''}₹${liveMtm.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(Live MTM)</span>`;
+                                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(${pts >= 0 ? '+' : ''}${pts.toFixed(2)} pts × ₹${lot})</span>`;
+                            }
+                        } else if (pt.pnl_inr !== undefined && pt.pnl_inr !== null) {
+                            const pVal = Number(pt.pnl_inr);
+                            const lot = pt.quantity || t.lot_size || 1;
+                            const pts = pt.pnl_points !== undefined ? Number(pt.pnl_points) : (lot > 0 ? (pVal / lot) : 0);
+                            const charges = pt.charges || calculateDhanCharges(t);
+                            const gVal = pt.gross_pnl_inr !== undefined ? Number(pt.gross_pnl_inr) : (charges ? charges.gross_pnl : pVal);
+
+                            if (pVal > 0) {
+                                pnlColor = '#4ade80';
+                                pnlText = `+₹${pVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(+${pts.toFixed(2)} pts × ₹${lot})</span>`;
+                            } else if (pVal < 0) {
+                                pnlColor = '#fb7185';
+                                pnlText = `-₹${Math.abs(pVal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(${pts.toFixed(2)} pts × ₹${lot})</span>`;
+                            } else {
+                                pnlColor = '#94a3b8';
+                                pnlText = `₹0.00 <span style="font-size:0.7rem; color:#60a5fa; display:block; font-weight:400;">(Breakeven)</span>`;
+                                ptsFormulaHtml = `<span style="font-size:0.7rem; color:#94a3b8; display:block; font-weight:400;">(0.00 pts × ₹${lot})</span>`;
+                            }
+
+                            if (charges && charges.total_charges > 0) {
+                                const gColor = gVal >= 0 ? '#4ade80' : '#fb7185';
+                                const gSign = gVal >= 0 ? '+' : '-';
+                                const tip = `Dhan Brokerage & Taxes Breakdown:\n• Brokerage: ₹${charges.brokerage.toFixed(2)}\n• CTT/STT: ₹${charges.stt_ctt.toFixed(2)}\n• Exchange Charges: ₹${charges.exchange_charges.toFixed(2)}\n• SEBI Charges: ₹${charges.sebi_charges.toFixed(2)}\n• Stamp Duty: ₹${charges.stamp_duty.toFixed(2)}\n• GST (18%): ₹${charges.gst.toFixed(2)}\n• Total Deducted: ₹${charges.total_charges.toFixed(2)}`;
+                                ptsFormulaHtml += `
                     <div style="font-size:0.67rem; color:#94a3b8; margin-top:3px; background:rgba(15,23,42,0.65); padding:2px 6px; border-radius:4px; border:1px solid rgba(255,255,255,0.08); display:inline-flex; align-items:center; gap:4px; cursor:help;" title="${tip}">
                         <span>Gross: <strong style="color:${gColor};">${gSign}₹${Math.abs(gVal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></span>
                         <span style="color:#64748b;">·</span>
                         <span style="color:#f43f5e; font-weight:600;">Dhan: -₹${charges.total_charges.toFixed(2)}</span>
                     </div>
                 `;
-                    }
-                }
+                            }
+                        }
 
-                // Validation check cell
-                let check615Html = `<span style="color:#94a3b8; font-size:0.8rem;">Direct Entry</span>`;
-                if (c15.status === 'REVERSAL_CONFIRMED') {
-                    check615Html = `
+                        // Validation check cell
+                        let check615Html = `<span style="color:#94a3b8; font-size:0.8rem;">Direct Entry</span>`;
+                        if (c15.status === 'REVERSAL_CONFIRMED') {
+                            check615Html = `
                 <div>
                     <span style="color:#4ade80; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-circle-check"></i> Reversal Confirmed</span>
                     <div style="font-size:0.75rem; color:#cbd5e1;">Held at ₹${c15.price_615?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) || '--'}</div>
                 </div>
             `;
-                } else if (c15.status === 'BREAKOUT_ENTERED') {
-                    check615Html = `
+                        } else if (c15.status === 'BREAKOUT_ENTERED') {
+                            check615Html = `
                 <div>
                     <span style="color:#4ade80; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-bolt"></i> London Breakout</span>
                     <div style="font-size:0.75rem; color:#cbd5e1;">Range break confirmed</div>
                 </div>
             `;
-                } else if (c15.status === 'BREAKDOWN_ENTERED') {
-                    check615Html = `
+                        } else if (c15.status === 'BREAKDOWN_ENTERED') {
+                            check615Html = `
                 <div>
                     <span style="color:#fb7185; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-arrow-trend-down"></i> London Breakdown</span>
                     <div style="font-size:0.75rem; color:#cbd5e1;">Range breakdown confirmed</div>
                 </div>
             `;
-                } else if (c15.status === 'GAP_FADE_ENTERED') {
-                    check615Html = `
+                        } else if (c15.status === 'GAP_FADE_ENTERED') {
+                            check615Html = `
                 <div>
                     <span style="color:#4ade80; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-rotate-left"></i> Gap Fade Entered</span>
                     <div style="font-size:0.75rem; color:#cbd5e1;">Bounce towards PDC</div>
                 </div>
             `;
-                } else if (c15.status === 'TECHNICAL_TRIGGER_ENTERED' || (pt.status === 'ACTIVE' && c15.checked)) {
-                    check615Html = `
+                        } else if (c15.status === 'TECHNICAL_TRIGGER_ENTERED' || (pt.status === 'ACTIVE' && c15.checked)) {
+                            check615Html = `
                 <div>
                     <span style="color:#4ade80; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-bolt"></i> Triggered & Entered</span>
                     <div style="font-size:0.75rem; color:#cbd5e1;">Executed @ ₹${Number(pt.entry_price || c15.price_615).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
                 </div>
             `;
-                } else if (c15.status === 'EXTENSION_CONFIRMED') {
-                    check615Html = `
+                        } else if (c15.status === 'EXTENSION_CONFIRMED') {
+                            check615Html = `
                 <div>
                     <span style="color:#fb7185; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation"></i> Limit Broken</span>
                     <div style="font-size:0.75rem; color:#93c5fd;">Stood aside (Trap Avoided)</div>
                 </div>
             `;
-                } else if (c15.status === 'PENDING_615' || c15.status === 'PENDING_615_CHECK') {
-                    if (isPastVal) {
-                        check615Html = `<span style="color:#94a3b8; font-size:0.8rem;"><i class="fa-solid fa-clock-rotate-left"></i> Window Lapsed (Stood Aside)</span>`;
-                    } else {
-                        check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Confirmation</span>`;
-                    }
-                } else if (c15.status === 'EVENT_GUARD_STAND_ASIDE') {
-                    check615Html = `<span style="color:#f59e0b; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-newspaper"></i> Event Blackout (Protected)</span>`;
-                } else if (c15.status === 'WICK_TRAP_STAND_ASIDE') {
-                    check615Html = `<span style="color:#a78bfa; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-filter"></i> Wick Trap Rejected</span>`;
-                } else if (c15.status === 'SIM_GUARD_STAND_ASIDE') {
-                    check615Html = `<span style="color:#f43f5e; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-dice"></i> Simulation Guard</span>`;
-                } else if (c15.status === 'RISK_GUARD_STAND_ASIDE') {
-                    check615Html = `<span style="color:#38bdf8; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-shield"></i> Risk Engine Block</span>`;
-                } else if (c15.status === 'CONFIRMED_STAND_ASIDE' || c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') {
-                    check615Html = `<span style="color:#60a5fa; font-size:0.8rem;"><i class="fa-solid fa-ban"></i> Stood Aside (Protected)</span>`;
-                } else if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
-                    check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-wallet"></i> Margin Exhausted (Alert Sent)</span>`;
-                }
+                        } else if (c15.status === 'PENDING_615' || c15.status === 'PENDING_615_CHECK') {
+                            if (isPastVal) {
+                                check615Html = `<span style="color:#94a3b8; font-size:0.8rem;"><i class="fa-solid fa-clock-rotate-left"></i> Window Lapsed (Stood Aside)</span>`;
+                            } else {
+                                check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Confirmation</span>`;
+                            }
+                        } else if (c15.status === 'EVENT_GUARD_STAND_ASIDE') {
+                            check615Html = `<span style="color:#f59e0b; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-newspaper"></i> Event Blackout (Protected)</span>`;
+                        } else if (c15.status === 'WICK_TRAP_STAND_ASIDE') {
+                            check615Html = `<span style="color:#a78bfa; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-filter"></i> Wick Trap Rejected</span>`;
+                        } else if (c15.status === 'SIM_GUARD_STAND_ASIDE') {
+                            check615Html = `<span style="color:#f43f5e; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-dice"></i> Simulation Guard</span>`;
+                        } else if (c15.status === 'RISK_GUARD_STAND_ASIDE') {
+                            check615Html = `<span style="color:#38bdf8; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-shield"></i> Risk Engine Block</span>`;
+                        } else if (c15.status === 'CONFIRMED_STAND_ASIDE' || c15.status === 'CONFIRMATION_EXPIRED' || c15.status === 'NO_REVERSAL_STAND_ASIDE' || c15.status === 'NO_GAP_STAND_ASIDE') {
+                            check615Html = `<span style="color:#60a5fa; font-size:0.8rem;"><i class="fa-solid fa-ban"></i> Stood Aside (Protected)</span>`;
+                        } else if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
+                            check615Html = `<span style="color:#fbbf24; font-weight:700; font-size:0.8rem;"><i class="fa-solid fa-wallet"></i> Margin Exhausted (Alert Sent)</span>`;
+                        }
 
-                let paperTradeCell = `<span style="color:#94a3b8; font-size:0.8rem;">Stood Aside</span>`;
-                if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
-                    paperTradeCell = `
+                        let paperTradeCell = `<span style="color:#94a3b8; font-size:0.8rem;">Stood Aside</span>`;
+                        if (c15.status === 'INSUFFICIENT_MARGIN_STAND_ASIDE' || outcome.badge?.includes('Margin Skipped')) {
+                            paperTradeCell = `
                 <div>
                     <span class="adv-action-tag adv-action-sell" style="background:rgba(245,158,11,0.18); color:#fbbf24; border-color:rgba(245,158,11,0.4);"><i class="fa-solid fa-ban"></i> Skipped</span>
                     <div style="font-size:0.75rem; color:#fcd34d; margin-top:2px;">Margin Deficit (Alert Sent)</div>
                 </div>
             `;
-                } else if (pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price) {
-                    const actColor = pt.action === 'BUY' ? 'adv-action-buy' : 'adv-action-sell';
-                    const unitLabel = isEqTrade ? 'shares' : 'units';
-                    const multLabel = isEqTrade ? `1 pt = ₹${pt.quantity}` : `1 pt = ₹${t.lot_size || 1}`;
-                    paperTradeCell = `
+                        } else if (pt.action && pt.action !== 'STAND_ASIDE' && pt.entry_price) {
+                            const actColor = pt.action === 'BUY' ? 'adv-action-buy' : 'adv-action-sell';
+                            const unitLabel = isEqTrade ? 'shares' : 'units';
+                            const multLabel = isEqTrade ? `1 pt = ₹${pt.quantity}` : `1 pt = ₹${t.lot_size || 1}`;
+                            paperTradeCell = `
                 <div>
                     <span class="adv-action-tag ${actColor}">${pt.action}</span>
                     <strong style="color:#f8fafc; font-size:0.85rem; margin-left:4px;">${pt.quantity} ${unitLabel}</strong>
