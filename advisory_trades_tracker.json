@@ -1,10 +1,10 @@
 {
-  "last_updated": "26 Nov 2026, 10:15 AM IST",
+  "last_updated": "26 Nov 2026, 10:30 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 157,
-    "executed_count": 20,
+    "total_signals": 160,
+    "executed_count": 23,
     "correct_count": 7,
     "wrong_count": 10,
     "protected_count": 137,
@@ -17,15 +17,417 @@
     "intraday_pnl_inr": 1246.02,
     "intraday_booked_profit_inr": 1246.02,
     "intraday_pool_balance_inr": 31246.02,
-    "avg_trade_pnl_inr": -594.34,
-    "active_trades_count": 1,
+    "avg_trade_pnl_inr": -516.82,
+    "active_trades_count": 4,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 288113.12,
-    "used_margin_inr": 68058.9,
-    "available_cash_inr": 220054.22,
+    "used_margin_inr": 99162.06,
+    "available_cash_inr": 188951.06,
     "net_worth_inr": 288113.12
   },
   "trades": [
+    {
+      "id": "ADV-26Nov2026-1026-SUNPHARMA",
+      "date": "26 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "10:26 AM IST",
+      "time_6pm": "10:26 AM IST",
+      "time_validation": "10:26 AM IST",
+      "time_615": "10:26 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "SUNPHARMA.NS",
+      "name": "Sun Pharmaceutical Industries Limited",
+      "lot_size": 27,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 64.7). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 64.7,
+        "change_pct": 0.0,
+        "bb_width_pct": 11.05,
+        "daily_vol_pct": 1.5,
+        "close": 1918.4,
+        "ema50": 1844.19,
+        "ema200": 1823.35
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 14.8,
+        "p_stop_pct": 7.3,
+        "p_neither_pct": 77.9,
+        "resolved_win_rate_pct": 67.0,
+        "expected_r": 0.105,
+        "target_r": 1.2,
+        "sample_bars": 670,
+        "summary": "3,000 Replays: 14.8% Target | 7.3% Stop | Expected: +0.10R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 642.87,
+        "potential_gain_inr": 771.39,
+        "broker": "Dhan",
+        "est_charges_inr": 54.52,
+        "net_loss_at_stop_inr": 697.39
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b91,918.40 breaking above range high \u20b91,920.00 with volume confirmation."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "pullback_check": {
+        "passed": true,
+        "status": "CONFIRMED",
+        "reason": "Standard pullback confluence."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b91,918.40",
+        "rationale": "High-Beta breakout momentum (Chg: +0.92%) with healthy RSI (64.7) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 14.8% Target | 7.3% Stop | Expected: +0.10R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 1918.4,
+        "stop_loss": 1894.59,
+        "target": 1946.97
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 1918.4,
+        "action_taken": "Entered BUY 27 shares @ \u20b91,918.40",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.92%) with healthy RSI (64.7) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 14.8% Target | 7.3% Stop | Expected: +0.10R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 27,
+        "entry_price": 1918.4,
+        "entry_time": "10:26 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 7.8,
+        "pnl_inr": 210.6,
+        "status": "ACTIVE",
+        "target": 1946.97,
+        "stop_loss": 1894.59,
+        "initial_stop_loss": 1894.59,
+        "original_sl": 1894.59,
+        "peak_high": 1926.2,
+        "trough_low": 1918.4,
+        "margin_required_inr": 10359.36,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b91,918.40 (Target: \u20b91,946.97, SL: \u20b91,894.59) | 3,000 Replays: 14.8% Target | 7.3% Stop | Expected: +0.10R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "entry_alert": {
+        "subject": "\u26a1 [NIFTY INTRADAY MIS TRIGGER] Sun Pharmaceutical Industries Limited BUY @ \u20b91,918.40 (10:26 AM IST)",
+        "body": "\u26a1 <b>REAL-TIME INTRADAY STOCK TRIGGER (5x MIS MARGIN BENEFIT)</b>\n\ud83d\udcc5 <i>26 Nov 2026, 10:26 AM IST</i>\n\ud83d\udc64 Account: <b>venu.photos1@gmail.com</b>\n\n\u2022 <b>Asset Class</b>: Nifty Intraday Stock (MIS 5x Margin Benefit)\n\u2022 <b>Stock</b>: <b>Sun Pharmaceutical Industries Limited (SUNPHARMA)</b>\n\u2022 <b>Signal</b>: <b>BUY 27 shares @ \u20b91,918.40</b>\n\u2022 <b>Setup</b>: 20-Day / High-Beta Volatility Breakout\n\u2022 <b>Technical Rationale</b>: High-Beta breakout momentum (Chg: +0.92%) with healthy RSI (64.7) holding above VWAP. Sized with realistic intraday 1.2R target.\n\u2022 <b>\ud83c\udfb2 Monte Carlo Replay (3,000 runs)</b>: <b>14.8% Win Prob | +0.10R Expectancy</b>\n\u2022 <b>Stop-Loss</b>: <b>\u20b91,894.59</b> (Risk at stop: \u20b9642.87)\n\u2022 <b>Target (2.0R)</b>: <b>\u20b91,946.97</b>\n\u2022 <b>Position Value</b>: \u20b951,796.80 (MIS Margin Blocked: \u20b910,359.36 / \u20b930k pool | Slot: \u20b910k)\n\u2022 <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit (Zero overnight risk)\n\n\ud83c\udf10 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
+      },
+      "entry_alert_sent": true,
+      "live_price_data": {
+        "current_price": 1926.2,
+        "change_pct": 0.41
+      }
+    },
+    {
+      "id": "ADV-26Nov2026-1018-LAURUSLABS",
+      "date": "26 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "10:18 AM IST",
+      "time_6pm": "10:18 AM IST",
+      "time_validation": "10:18 AM IST",
+      "time_615": "10:18 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "LAURUSLABS.NS",
+      "name": "Laurus Labs Ltd.",
+      "lot_size": 21,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 65.2). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 65.2,
+        "change_pct": 0.0,
+        "bb_width_pct": 10.95,
+        "daily_vol_pct": 1.5,
+        "close": 2494.6,
+        "ema50": 2178.61,
+        "ema200": 1686.72
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 30.8,
+        "p_stop_pct": 31.9,
+        "p_neither_pct": 37.3,
+        "resolved_win_rate_pct": 49.1,
+        "expected_r": 0.051,
+        "target_r": 1.2,
+        "sample_bars": 667,
+        "summary": "3,000 Replays: 30.8% Target | 31.9% Stop | Expected: +0.05R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 749.07,
+        "potential_gain_inr": 898.8,
+        "broker": "Dhan",
+        "est_charges_inr": 55.07,
+        "net_loss_at_stop_inr": 804.14
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b92,494.60 breaking above range high \u20b92,502.80 with volume confirmation."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "pullback_check": {
+        "passed": true,
+        "status": "CONFIRMED",
+        "reason": "Standard pullback confluence."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b92,494.60",
+        "rationale": "High-Beta breakout momentum (Chg: +1.10%) with healthy RSI (65.2) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 30.8% Target | 31.9% Stop | Expected: +0.05R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 2494.6,
+        "stop_loss": 2458.93,
+        "target": 2537.4
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 2494.6,
+        "action_taken": "Entered BUY 21 shares @ \u20b92,494.60",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +1.10%) with healthy RSI (65.2) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 30.8% Target | 31.9% Stop | Expected: +0.05R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 21,
+        "entry_price": 2494.6,
+        "entry_time": "10:18 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": -5.7,
+        "pnl_inr": -119.7,
+        "status": "ACTIVE",
+        "target": 2537.4,
+        "stop_loss": 2458.93,
+        "initial_stop_loss": 2458.93,
+        "original_sl": 2458.93,
+        "peak_high": 2495.2,
+        "trough_low": 2483.7,
+        "margin_required_inr": 10477.32,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b92,494.60 (Target: \u20b92,537.40, SL: \u20b92,458.93) | 3,000 Replays: 30.8% Target | 31.9% Stop | Expected: +0.05R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "entry_alert": {
+        "subject": "\u26a1 [NIFTY INTRADAY MIS TRIGGER] Laurus Labs Ltd. BUY @ \u20b92,494.60 (10:18 AM IST)",
+        "body": "\u26a1 <b>REAL-TIME INTRADAY STOCK TRIGGER (5x MIS MARGIN BENEFIT)</b>\n\ud83d\udcc5 <i>26 Nov 2026, 10:18 AM IST</i>\n\ud83d\udc64 Account: <b>venu.photos1@gmail.com</b>\n\n\u2022 <b>Asset Class</b>: Nifty Intraday Stock (MIS 5x Margin Benefit)\n\u2022 <b>Stock</b>: <b>Laurus Labs Ltd. (LAURUSLABS)</b>\n\u2022 <b>Signal</b>: <b>BUY 21 shares @ \u20b92,494.60</b>\n\u2022 <b>Setup</b>: 20-Day / High-Beta Volatility Breakout\n\u2022 <b>Technical Rationale</b>: High-Beta breakout momentum (Chg: +1.10%) with healthy RSI (65.2) holding above VWAP. Sized with realistic intraday 1.2R target.\n\u2022 <b>\ud83c\udfb2 Monte Carlo Replay (3,000 runs)</b>: <b>30.8% Win Prob | +0.05R Expectancy</b>\n\u2022 <b>Stop-Loss</b>: <b>\u20b92,458.93</b> (Risk at stop: \u20b9749.07)\n\u2022 <b>Target (2.0R)</b>: <b>\u20b92,537.40</b>\n\u2022 <b>Position Value</b>: \u20b952,386.60 (MIS Margin Blocked: \u20b910,477.32 / \u20b930k pool | Slot: \u20b910k)\n\u2022 <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit (Zero overnight risk)\n\n\ud83c\udf10 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
+      },
+      "entry_alert_sent": true,
+      "live_price_data": {
+        "current_price": 2488.9,
+        "change_pct": -0.23
+      }
+    },
+    {
+      "id": "ADV-26Nov2026-1018-TECHM",
+      "date": "26 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (20-Day / High-Beta Volatility Breakout)",
+      "time_trigger": "10:18 AM IST",
+      "time_6pm": "10:18 AM IST",
+      "time_validation": "10:18 AM IST",
+      "time_615": "10:18 AM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "TECHM.NS",
+      "name": "Tech Mahindra Limited",
+      "lot_size": 28,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: 20-Day / High-Beta Volatility Breakout",
+      "regime": {
+        "regime": "BULL_TREND",
+        "badge": "\ud83d\ude80 Bull Trend",
+        "short_tag": "Bull Trend",
+        "color": "#34d399",
+        "bg_color": "rgba(52, 211, 153, 0.12)",
+        "border_color": "rgba(52, 211, 153, 0.35)",
+        "mandate": "Strong structural uptrend (50E > 200E, ADX: 20.0, RSI: 62.0). Favorable for Golden Cross accumulation & swing longs.",
+        "allowed_strategies": [
+          "GOLDEN_CROSS_BUY",
+          "PULLBACK_LONG",
+          "BULL_PUT_SPREAD"
+        ],
+        "blocked_strategies": [
+          "NAKED_CALL_SELLING",
+          "SHORTING"
+        ],
+        "icon": "fa-solid fa-arrow-trend-up",
+        "adx": 20.0,
+        "rsi": 62.0,
+        "change_pct": 0.0,
+        "bb_width_pct": 6.04,
+        "daily_vol_pct": 1.5,
+        "close": 1833.3,
+        "ema50": 1709.22,
+        "ema200": 1589.2
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "POSITIVE_EXPECTANCY",
+        "verdict_text": "Leans Toward Target \ud83d\udfe2 (Positive Expectancy)",
+        "p_target_pct": 24.4,
+        "p_stop_pct": 24.1,
+        "p_neither_pct": 51.5,
+        "resolved_win_rate_pct": 50.4,
+        "expected_r": 0.052,
+        "target_r": 1.2,
+        "sample_bars": 669,
+        "summary": "3,000 Replays: 24.4% Target | 24.1% Stop | Expected: +0.05R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 702.8,
+        "potential_gain_inr": 843.36,
+        "broker": "Dhan",
+        "est_charges_inr": 53.99,
+        "net_loss_at_stop_inr": 756.79
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKOUT_CONFIRMED",
+        "reason": "ORB BUY Confirmed: Solid bar close \u20b91,833.30 breaking above range high \u20b91,832.90 with volume confirmation."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "pullback_check": {
+        "passed": true,
+        "status": "CONFIRMED",
+        "reason": "Standard pullback confluence."
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "BUY @ \u20b91,833.30",
+        "rationale": "High-Beta breakout momentum (Chg: +0.88%) with healthy RSI (62.0) holding above VWAP. Sized with realistic intraday 1.2R target. 3,000 Replays: 24.4% Target | 24.1% Stop | Expected: +0.05R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))",
+        "reference_price": 1833.3,
+        "stop_loss": 1808.2,
+        "target": 1863.42
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 1833.3,
+        "action_taken": "Entered BUY 28 shares @ \u20b91,833.30",
+        "detail": "20-Day / High-Beta Volatility Breakout: High-Beta breakout momentum (Chg: +0.88%) with healthy RSI (62.0) holding above VWAP. Sized with realistic intraday 1.2R target. | 3,000 Replays: 24.4% Target | 24.1% Stop | Expected: +0.05R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "BUY",
+        "quantity": 28,
+        "entry_price": 1833.3,
+        "entry_time": "10:18 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": -3.2,
+        "pnl_inr": -89.6,
+        "status": "ACTIVE",
+        "target": 1863.42,
+        "stop_loss": 1808.2,
+        "initial_stop_loss": 1808.2,
+        "original_sl": 1808.2,
+        "peak_high": 1840.8,
+        "trough_low": 1817.0,
+        "margin_required_inr": 10266.48,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "20-Day / High-Beta Volatility Breakout active: BUY @ \u20b91,833.30 (Target: \u20b91,863.42, SL: \u20b91,808.20) | 3,000 Replays: 24.4% Target | 24.1% Stop | Expected: +0.05R (Leans Toward Target \ud83d\udfe2 (Positive Expectancy))"
+      },
+      "entry_alert": {
+        "subject": "\u26a1 [NIFTY INTRADAY MIS TRIGGER] Tech Mahindra Limited BUY @ \u20b91,833.30 (10:18 AM IST)",
+        "body": "\u26a1 <b>REAL-TIME INTRADAY STOCK TRIGGER (5x MIS MARGIN BENEFIT)</b>\n\ud83d\udcc5 <i>26 Nov 2026, 10:18 AM IST</i>\n\ud83d\udc64 Account: <b>venu.photos1@gmail.com</b>\n\n\u2022 <b>Asset Class</b>: Nifty Intraday Stock (MIS 5x Margin Benefit)\n\u2022 <b>Stock</b>: <b>Tech Mahindra Limited (TECHM)</b>\n\u2022 <b>Signal</b>: <b>BUY 28 shares @ \u20b91,833.30</b>\n\u2022 <b>Setup</b>: 20-Day / High-Beta Volatility Breakout\n\u2022 <b>Technical Rationale</b>: High-Beta breakout momentum (Chg: +0.88%) with healthy RSI (62.0) holding above VWAP. Sized with realistic intraday 1.2R target.\n\u2022 <b>\ud83c\udfb2 Monte Carlo Replay (3,000 runs)</b>: <b>24.4% Win Prob | +0.05R Expectancy</b>\n\u2022 <b>Stop-Loss</b>: <b>\u20b91,808.20</b> (Risk at stop: \u20b9702.80)\n\u2022 <b>Target (2.0R)</b>: <b>\u20b91,863.42</b>\n\u2022 <b>Position Value</b>: \u20b951,332.40 (MIS Margin Blocked: \u20b910,266.48 / \u20b930k pool | Slot: \u20b910k)\n\u2022 <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit (Zero overnight risk)\n\n\ud83c\udf10 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
+      },
+      "entry_alert_sent": true,
+      "live_price_data": {
+        "current_price": 1830.1,
+        "change_pct": -0.17
+      }
+    },
     {
       "id": "ADV-26Nov2026-1008-ZINCMINI",
       "date": "26 Nov 2026",
@@ -123,8 +525,8 @@
         "entry_time": "10:08 AM IST",
         "exit_price": null,
         "exit_time": null,
-        "pnl_points": -0.05,
-        "pnl_inr": -100.0,
+        "pnl_points": -0.2,
+        "pnl_inr": -400.0,
         "status": "ACTIVE",
         "margin_required_inr": 68058.9,
         "holding_type": "INTRADAY",
@@ -135,8 +537,8 @@
         "stop_loss": 357.1,
         "initial_stop_loss": 357.1,
         "original_sl": 357.1,
-        "peak_high": 360.3,
-        "trough_low": 360.05,
+        "peak_high": 360.35,
+        "trough_low": 359.55,
         "entry_day_high": 360.1,
         "entry_day_low": 360.1
       },
@@ -154,8 +556,8 @@
       },
       "entry_alert_sent": true,
       "live_price_data": {
-        "current_price": 360.05,
-        "change_pct": -0.01
+        "current_price": 359.9,
+        "change_pct": -0.06
       }
     },
     {
