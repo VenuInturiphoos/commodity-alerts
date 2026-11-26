@@ -392,16 +392,16 @@ for sfc_sym, sfc_cfg in STOCK_FUTURES_CONFIG.items():
 # =========================================================================
 MAX_LOSS_PER_TRADE_INR = 6000.0   # Option 2 Calibrated: ₹6,000 max risk per commodity position (2% of ₹3 Lakhs capital)
 MAX_DAILY_LOSS_INR = 12000.0      # Portfolio daily risk circuit breaker (strictly 4% of ₹3 Lakhs capital; halts after 2 full stop-outs)
-MAX_INTRADAY_STOCK_MARGIN_INR = 30000.0 # Dedicated ₹30,000 margin allocated per day for Intraday Stock Trading (split across 3 stocks = ₹10,000 margin / ₹50,000 buying power each)
+MAX_INTRADAY_STOCK_MARGIN_INR = 50000.0 # Dedicated ₹50,000 margin allocated per day for Intraday Stock Trading (split across 5 stocks = ₹10,000 margin / ₹50,000 buying power each)
 INTRADAY_STOCK_MIS_LEVERAGE = 5.0 # 5x leverage for MIS intraday equity (20% margin requirement)
-MAX_INTRADAY_STOCK_POSITION_INR = MAX_INTRADAY_STOCK_MARGIN_INR * INTRADAY_STOCK_MIS_LEVERAGE # ₹1,50,000 buying power across 3 stocks
+MAX_INTRADAY_STOCK_POSITION_INR = MAX_INTRADAY_STOCK_MARGIN_INR * INTRADAY_STOCK_MIS_LEVERAGE # ₹2,50,000 buying power across 5 stocks
 MAX_EQUITY_POSITION_INR = MAX_INTRADAY_STOCK_POSITION_INR # Backward compatibility alias
 MAX_INTRADAY_STOCK_RISK_INR = 3000.0 # Full portfolio risk ceiling - no arbitrary micro-cap restriction per user instruction
 MAX_INTRADAY_STOCK_DAILY_LOSS_INR = 6000.0 # Full daily portfolio risk circuit breaker
 MAX_CONCURRENT_COMMODITIES = 2    # Allows 2 concurrent active commodity trades (2 x ~₹1.5L margin = ₹3.0L total portfolio capacity)
 MAX_CONCURRENT_STOCK_FUTURES = 2  # Allows 2 concurrent active stock futures trades (e.g. RELIANCE-FUT, INFY-FUT)
-MAX_CONCURRENT_EQUITIES = 3       # Diversify into 3 distinct intraday stocks (₹10,000 margin each within ₹30,000 margin)
-MAX_CONCURRENT_TOTAL = 6          # Max concurrent active trades across portfolio (2 commodities + 2 stock futures + 2-3 intraday equities)
+MAX_CONCURRENT_EQUITIES = 5       # Diversify into up to 5 distinct intraday stocks (₹10,000 margin each within ₹50,000 margin)
+MAX_CONCURRENT_TOTAL = 8          # Max concurrent active trades across portfolio (2 commodities + 2 stock futures + up to 5 intraday equities)
 MAX_TRADES_PER_SYMBOL_DAY = 2     # Max 2 trades per symbol per day to prevent over-trading
 COOLDOWN_MINUTES_BETWEEN_TRADES = 120 # Strict 120-min (2 hours) spacing between trades on the same symbol
 INTRADAY_STAGNATION_MINUTES = 210.0  # Extended to 210 minutes (3.5 hours) to give intraday trades ample room into afternoon trend
@@ -913,10 +913,10 @@ def calculate_technical_bracket(action, cur_p, day_h=None, day_l=None, ema20=Non
 def get_intraday_margin_pool(tracker_data):
     """
     Computes the daily Intraday MIS Margin Pool balance.
-    Base daily allocation: ₹30,000 (refreshed every day even if there was a loss).
-    When profit is booked from intraday trades, that profit is added to the ₹30,000 balance.
+    Base daily allocation: ₹50,000 (refreshed every day even if there was a loss).
+    When profit is booked from intraday trades, that profit is added to the ₹50,000 balance.
     If intraday realized P&L is negative (loss), it does not reduce the baseline daily balance
-    below ₹30,000 (it refreshes back to ₹30,000 every day).
+    below ₹50,000 (it refreshes back to ₹50,000 every day).
     """
     trades = tracker_data.get('trades', [])
     intraday_closed_trades = [
@@ -956,7 +956,7 @@ def get_cash_and_margin(tracker_data):
     When a trade is CLOSED, margin is released and realized P&L is settled into cash.
     Commodity futures realized P&L is settled into cash.
     When intraday profit is booked, that profit is also settled into the overall trade balance.
-    If intraday incurred a loss, the daily intraday balance is refreshed back to ₹30,000 every day.
+    If intraday incurred a loss, the daily intraday balance is refreshed back to ₹50,000 every day.
     """
     starting_cash = max(float(tracker_data.get('starting_cash_inr', DEFAULT_STARTING_CASH) or DEFAULT_STARTING_CASH), DEFAULT_STARTING_CASH)
     trades = tracker_data.get('trades', [])
@@ -970,7 +970,7 @@ def get_cash_and_margin(tracker_data):
         and t.get('paper_trade', {}).get('product_type') != 'MIS_INTRADAY'
     )
     
-    # Intraday margin pool calculations (base 30k + booked profits)
+    # Intraday margin pool calculations (base 50k + booked profits)
     intraday_pool = get_intraday_margin_pool(tracker_data)
     intraday_booked_profit = intraday_pool['booked_profit']
     
@@ -6568,7 +6568,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                             for t in active_intraday_trades
                         )
                         intraday_pool_info = get_intraday_margin_pool(tracker)
-                        # Dedicated ₹30,000 daily MIS margin pool (~₹10,000 margin / ₹50,000 buying power per stock)
+                        # Dedicated ₹50,000 daily MIS margin pool (~₹10,000 margin / ₹50,000 buying power per stock)
                         avail_intraday_margin = max(0.0, intraday_pool_info['base_pool'] - used_intraday_margin)
                         margin_per_share = cur_p * 0.20  # 20% SEBI MIS intraday margin requirement (5x leverage)
                         if margin_per_share <= 0:
@@ -6714,7 +6714,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                                 f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
                                 f"• <b>Stop-Loss</b>: <b>₹{eq_sl:,.2f}</b> | <b>Target (2.0R)</b>: <b>₹{eq_tgt:,.2f}</b>\n"
                                 f"• <b>Margin Status</b>: ⚠️ <b>Required: ₹{req_margin_equity:,.2f} | Available MIS Pool: ₹{avail_intraday_margin:,.2f}</b>\n"
-                                f"• <b>Execution Status</b>: <b>SKIPPED on Managed Portfolio</b> (Intraday ₹30k margin pool fully allocated)\n"
+                                f"• <b>Execution Status</b>: <b>SKIPPED on Managed Portfolio</b> (Intraday ₹50k margin pool fully allocated)\n"
                                 f"• <b>Discretionary Notice</b>: Broadcasted for manual execution if additional broker buying power is available.\n\n"
                                 f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
                             )
@@ -6802,7 +6802,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                             f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
                             f"• <b>Stop-Loss</b>: <b>₹{eq_sl:,.2f}</b> (Risk at stop: ₹{round(risk_per_share * eq_shares, 2):,.2f})\n"
                             f"• <b>Target (2.0R)</b>: <b>₹{eq_tgt:,.2f}</b>\n"
-                            f"• <b>Position Value</b>: ₹{cur_p * eq_shares:,.2f} (MIS Margin Blocked: ₹{round(cur_p * eq_shares * 0.20, 2):,.2f} / ₹30k pool | Slot: ₹10k)\n"
+                            f"• <b>Position Value</b>: ₹{cur_p * eq_shares:,.2f} (MIS Margin Blocked: ₹{round(cur_p * eq_shares * 0.20, 2):,.2f} / ₹50k pool | Slot: ₹10k)\n"
                             f"• <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit (Zero overnight risk)\n\n"
                             f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
                         )
