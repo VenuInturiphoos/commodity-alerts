@@ -7291,13 +7291,8 @@ function isAvoidedAdvisoryTrade(t) {
         return false;
     }
 
-    // Any trade executed today with real position is ALWAYS called, NEVER avoided
-    if (todayStrRef && t.date === todayStrRef && pt.entry_price && Number(pt.entry_price) > 0 && Number(pt.quantity || 0) > 0 && pt.action && pt.action !== 'STAND_ASIDE') {
-        return false;
-    }
-
-    // Historical trades that finished with win/loss are called
-    if (pt.entry_price && Number(pt.entry_price) > 0 && Number(pt.quantity || 0) > 0 && pt.action && pt.action !== 'STAND_ASIDE' && (outcome.outcome === 'CORRECT' || outcome.outcome === 'WRONG' || outcome.outcome === 'INCORRECT')) {
+    // Real executed trades (active or closed with win, loss, or breakeven) are NEVER avoided
+    if (pt.entry_price && Number(pt.entry_price) > 0 && Number(pt.quantity || 0) > 0 && pt.action && pt.action !== 'STAND_ASIDE') {
         return false;
     }
 
@@ -7333,8 +7328,8 @@ function isCalledAdvisoryTrade(t) {
     const todayStrRef = advisoryTrackerData?.last_updated ? advisoryTrackerData.last_updated.split(',')[0].trim() : '';
 
     // Real executed trades (active, won, lost, or breakeven)
+    if (pt.entry_price && Number(pt.entry_price) > 0 && Number(pt.quantity || 0) > 0 && pt.action && pt.action !== 'STAND_ASIDE') return true;
     if (pt.status === 'ACTIVE' && pt.entry_price && Number(pt.entry_price) > 0) return true;
-    if (todayStrRef && t.date === todayStrRef && pt.entry_price && Number(pt.entry_price) > 0 && pt.action && pt.action !== 'STAND_ASIDE') return true;
     if (pt.exit_trigger === 'TRAILING_BREAKEVEN_HIT' || pt.exit_trigger === 'TRAILING_PROFIT_HIT') return true;
     if (outcome.badge && (outcome.badge.includes('Breakeven') || outcome.badge.includes('Runner'))) return true;
 
