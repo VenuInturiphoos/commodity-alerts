@@ -7924,7 +7924,7 @@ function renderAdvisorySummaryCards() {
     const intradayClosedTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'CLOSED');
     const intradayRealizedPnl = intradayClosedTrades.reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
     const intradayBookedProfit = Math.max(0, intradayRealizedPnl);
-    const intradayBasePool = 30000 + intradayBookedProfit;
+    const intradayBasePool = 50000 + intradayBookedProfit;
 
     const activeStockTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'ACTIVE');
     const activeStockVal = activeStockTrades.reduce((sum, t) => sum + ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0)), 0);
