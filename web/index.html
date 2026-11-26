@@ -7942,7 +7942,7 @@ function renderAdvisorySummaryCards() {
     const intradayClosedTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'CLOSED');
     const intradayRealizedPnl = intradayClosedTrades.reduce((sum, t) => sum + (Number(t.paper_trade?.pnl_inr) || 0), 0);
     const intradayBookedProfit = Math.max(0, intradayRealizedPnl);
-    const intradayBasePool = 30000 + intradayBookedProfit;
+    const intradayBasePool = 50000 + intradayBookedProfit;
 
     const activeStockTrades = allDatasetTrades.filter(t => isIntradayStockTrade(t) && t.paper_trade && t.paper_trade.status === 'ACTIVE');
     const activeStockVal = activeStockTrades.reduce((sum, t) => sum + ((t.paper_trade.entry_price || 0) * (t.paper_trade.quantity || 0)), 0);
@@ -8006,9 +8006,9 @@ function renderAdvisorySummaryCards() {
     if (marginSubEl) {
         if (isIntradayActive) {
             if (intradayBookedProfit > 0) {
-                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Pool: <strong>₹${intradayBasePool.toLocaleString('en-IN', {minimumFractionDigits: 0})}</strong> (₹30k Base + ₹${intradayBookedProfit.toFixed(0)} Profit) | Flat 03:25 PM`;
+                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Pool: <strong>₹${intradayBasePool.toLocaleString('en-IN', {minimumFractionDigits: 0})}</strong> (₹50k Base + ₹${intradayBookedProfit.toFixed(0)} Profit) | Flat 03:25 PM`;
             } else {
-                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Base ₹30,000 (Refreshed Daily) | Flat 03:25 PM`;
+                marginSubEl.innerHTML = `MIS 5x Margin: ₹${activeMarginVal.toFixed(0)} used / Base ₹50,000 (Refreshed Daily) | Flat 03:25 PM`;
             }
         } else {
             if (intradayBookedProfit > 0) {
