@@ -1,6 +1,7 @@
 import os
 import json
 import socket
+import time
 import requests
 import pytz
 import urllib3.util.connection as urllib_conn
@@ -545,6 +546,43 @@ def resolve_commodity_item(sym, commodities_map):
     if (sym + 'MINI') in commodities_map:
         return commodities_map[sym + 'MINI']
     return None
+
+EVENT_ALERTS_STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'event_alerts_state.json')
+
+def can_dispatch_event_alert(event_key: str, cooldown_mins: float = 60.0) -> bool:
+    """
+    Prevents duplicate email spam by enforcing strict cooldowns on informative event alerts
+    (e.g. Wyckoff Spring bounces, Pre-Volatility coils).
+    """
+    now_ts = time.time()
+    if not os.path.exists(EVENT_ALERTS_STATE_FILE):
+        return True
+    try:
+        with open(EVENT_ALERTS_STATE_FILE, 'r') as f:
+            data = json.load(f)
+        last_ts = data.get(event_key, 0)
+        return (now_ts - last_ts) >= (cooldown_mins * 60.0)
+    except Exception:
+        return True
+
+def record_event_alert_dispatched(event_key: str):
+    """
+    Records the timestamp of an informative event alert.
+    """
+    now_ts = time.time()
+    data = {}
+    if os.path.exists(EVENT_ALERTS_STATE_FILE):
+        try:
+            with open(EVENT_ALERTS_STATE_FILE, 'r') as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+    data[event_key] = now_ts
+    try:
+        with open(EVENT_ALERTS_STATE_FILE, 'w') as f:
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        print(f"Error persisting event_alerts_state: {e}")
 
 def get_authoritative_contract_price(symbol, asset_type='EQUITY', timeout=6):
     """
@@ -5127,10 +5165,14 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     f"🛡️ <i>Pre-Move Volatility Engine Active | Standing By for Ignition</i>"
                 )
                 if alerter:
-                    try:
-                        alerter.send_alert(coil_sub, coil_bdy)
-                    except Exception as ex:
-                        print(f"Error dispatching pre-volatility coil alert: {ex}")
+                    event_key = f"INST_COIL_{clean_sym_upper}_{today_str}"
+                    if can_dispatch_event_alert(event_key, cooldown_mins=60.0):
+                        try:
+                            alerter.send_alert(coil_sub, coil_bdy)
+                            record_event_alert_dispatched(event_key)
+                            print(f"Dispatched Pre-Volatility Coil alert for {sym} (cooldown locked for 60m).")
+                        except Exception as ex:
+                            print(f"Error dispatching pre-volatility coil alert: {ex}")
 
             is_coil_expansion = (sig.archetype == "VOLATILITY_COIL_EXPANSION" and sig.confluence_score >= 70.0)
             if (sig.action in ['BUY', 'SELL'] and sig.confluence_score >= 85.0) or is_coil_expansion:
@@ -5223,10 +5265,14 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                         f"🛡️ <i>Pre-Move Volatility Engine Active | Standing By for Ignition</i>"
                     )
                     if alerter:
-                        try:
-                            alerter.send_alert(coil_sub, coil_bdy)
-                        except Exception as ex:
-                            print(f"Error dispatching coil alert for {sym}: {ex}")
+                        event_key = f"COIL_{canon_sym}_{today_str}"
+                        if can_dispatch_event_alert(event_key, cooldown_mins=60.0):
+                            try:
+                                alerter.send_alert(coil_sub, coil_bdy)
+                                record_event_alert_dispatched(event_key)
+                                print(f"Dispatched Pre-Volatility Coil alert for {sym} (cooldown locked for 60m).")
+                            except Exception as ex:
+                                print(f"Error dispatching coil alert for {sym}: {ex}")
 
                 # ⚡ OPTION A: DIRECTIONAL FUTURES COIL EXPANSION & WYCKOFF SPRING TRIGGER
                 if pm_sig and pm_sig.action in ['BUY', 'SELL'] and pm_sig.status in ['PRE_MOVE_BUY_TRIGGER', 'PRE_MOVE_SELL_TRIGGER', 'PRE_MOVE_SPRING_BUY_TRIGGER', 'PRE_MOVE_UPTHRUST_SELL_TRIGGER']:
@@ -5251,25 +5297,29 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
                     # ⚡ EVENT IDENTIFICATION: Dispatch immediate alert whenever a Wyckoff Spring / V-Reversal is confirmed
                     if is_spring_setup and alerter:
-                        bounce_pct = ((cur_p - day_l) / day_l * 100.0) if day_l > 0 else 0.0
-                        b_sub = f"⚡ [WYCKOFF SPRING BOUNCE ALERT] {name} Rebounded +{bounce_pct:.2f}% off Low @ ₹{cur_p:,.2f} ({now_time_str})"
-                        b_bdy = (
-                            f"⚡ <b>WYCKOFF SPRING REVERSAL BOUNCE IDENTIFIED</b>\n"
-                            f"📅 <i>{today_str}, {now_time_str}</i>\n"
-                            f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
-                            f"• <b>Asset</b>: {name} ({sym})\n"
-                            f"• <b>Current Price</b>: ₹{cur_p:,.2f}\n"
-                            f"• <b>Day Low</b>: ₹{day_l:,.2f} | <b>Rebound from Low</b>: <b>+{bounce_pct:.2f}%</b>\n"
-                            f"• <b>Setup</b>: {pm_sig.setup_name}\n"
-                            f"• <b>PMRI Score</b>: {pm_sig.pmri_score:.1f}/100\n"
-                            f"• <b>Technical Context</b>: {' | '.join(pm_sig.reasons)}\n"
-                            f"• <b>Action Engine</b>: {'Evaluating Option A Entry' if macro_aligned else 'Monitoring Reversal Reaction'}\n\n"
-                            f"🛡️ <i>Pre-Move Volatility Engine Active | Bounce Captured & Identified</i>"
-                        )
-                        try:
-                            alerter.send_alert(b_sub, b_bdy)
-                        except Exception as ex:
-                            print(f"Error dispatching Wyckoff Spring alert for {sym}: {ex}")
+                        event_key = f"WYCKOFF_SPRING_{canon_sym}_{today_str}"
+                        if can_dispatch_event_alert(event_key, cooldown_mins=60.0):
+                            bounce_pct = ((cur_p - day_l) / day_l * 100.0) if day_l > 0 else 0.0
+                            b_sub = f"⚡ [WYCKOFF SPRING BOUNCE ALERT] {name} Rebounded +{bounce_pct:.2f}% off Low @ ₹{cur_p:,.2f} ({now_time_str})"
+                            b_bdy = (
+                                f"⚡ <b>WYCKOFF SPRING REVERSAL BOUNCE IDENTIFIED</b>\n"
+                                f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                                f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                                f"• <b>Asset</b>: {name} ({sym})\n"
+                                f"• <b>Current Price</b>: ₹{cur_p:,.2f}\n"
+                                f"• <b>Day Low</b>: ₹{day_l:,.2f} | <b>Rebound from Low</b>: <b>+{bounce_pct:.2f}%</b>\n"
+                                f"• <b>Setup</b>: {pm_sig.setup_name}\n"
+                                f"• <b>PMRI Score</b>: {pm_sig.pmri_score:.1f}/100\n"
+                                f"• <b>Technical Context</b>: {' | '.join(pm_sig.reasons)}\n"
+                                f"• <b>Action Engine</b>: {'Evaluating Option A Entry' if macro_aligned else 'Monitoring Reversal Reaction'}\n\n"
+                                f"🛡️ <i>Pre-Move Volatility Engine Active | Bounce Captured & Identified</i>"
+                            )
+                            try:
+                                alerter.send_alert(b_sub, b_bdy)
+                                record_event_alert_dispatched(event_key)
+                                print(f"Dispatched Wyckoff Spring bounce alert for {sym} (cooldown locked for 60m).")
+                            except Exception as ex:
+                                print(f"Error dispatching Wyckoff Spring alert for {sym}: {ex}")
 
                     if macro_aligned and not triggered:
                         triggered = True
