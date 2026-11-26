@@ -91,22 +91,36 @@ def is_market_open():
     
     return market_open_min <= total_minutes <= market_close_min
 
+DATA_SYNC_FILES = [
+    "web/advisory_trades_tracker.json",
+    "web/alerts_state.json",
+    "web/circuits_data.json",
+    "web/circuits_history_30d.json",
+    "web/circuits_history_60d.json",
+    "web/mcx_daily_history.json",
+    "web/near_alerts.json",
+    "web/nifty_crossover_oversold.json",
+    "web/stock_investments_tracker.json",
+    "web/golden_cross_history.json"
+]
+
 def git_sync_changes():
     """
-    Syncs updated web tracker and circuit files to GitHub origin main.
+    Syncs updated web tracker and circuit JSON data files to GitHub origin main.
+    Guarded against staging HTML/CSS/JS frontend files to prevent accidental truncation or clobbering.
     """
     try:
         status = subprocess.run(
-            ["git", "status", "--porcelain", "web/"],
+            ["git", "status", "--porcelain"] + DATA_SYNC_FILES,
             capture_output=True,
             text=True,
             check=True
         )
         if status.stdout.strip():
-            print("[SYNC] Detected changes in web files. Pushing to GitHub...")
-            subprocess.run(["git", "add", "web/"], check=True)
+            print("[SYNC] Detected changes in data files. Pushing to GitHub...")
+            subprocess.run(["git", "add"] + DATA_SYNC_FILES, check=True)
             subprocess.run(["git", "commit", "-m", "Auto-update trades and alerts via Local Daemon [skip ci]"], check=True)
-            subprocess.run(["git", "pull", "--rebase", "--autostash", "-X", "ours", "origin", "main"], check=True)
+            subprocess.run(["git", "pull", "--rebase", "--autostash", "origin", "main"], check=True)
             subprocess.run(["git", "push", "origin", "main"], check=True)
             print("[SYNC] Successfully pushed to origin main.")
     except Exception as e:
