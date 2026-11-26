@@ -1,13 +1,13 @@
 {
-  "last_updated": "26 Nov 2026, 08:58 AM IST",
+  "last_updated": "26 Nov 2026, 09:01 AM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 147,
+    "total_signals": 156,
     "executed_count": 19,
     "correct_count": 7,
     "wrong_count": 10,
-    "protected_count": 128,
+    "protected_count": 137,
     "win_rate_pct": 41.2,
     "broker": "Dhan",
     "total_gross_pnl_inr": -9703.18,
@@ -26,6 +26,463 @@
     "net_worth_inr": 288113.12
   },
   "trades": [
+    {
+      "id": "ADV-26Nov2026-0901-GOLDTEN",
+      "date": "26 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "GOLDTEN",
+      "name": "Gold Ten (Micro)",
+      "lot_size": 1,
+      "event_context": "MCX Open Gap (++1.40%) | CPR: 0.78%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / HARD RISK STOP",
+        "rationale": "Reward:Risk ratio 0.01 is below minimum requirement of 1.1R (Risk: 4621.1 pts, Reward: 41.7 pts).",
+        "reference_price": 125158.0,
+        "stop_loss": 120536.89,
+        "target": 125199.67
+      },
+      "check_615": {
+        "checked": true,
+        "status": "HARD_RISK_STAND_ASIDE",
+        "price_615": 125158.0,
+        "action_taken": "Stood Aside",
+        "detail": "Reward:Risk ratio 0.01 is below minimum requirement of 1.1R (Risk: 4621.1 pts, Reward: 41.7 pts)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Reward:Risk ratio 0.01 is below minimum requirement of 1.1R (Risk: 4621.1 pts, Reward: 41.7 pts)."
+      }
+    },
+    {
+      "id": "ADV-26Nov2026-0901-SILVERMIC",
+      "date": "26 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "SILVERMIC",
+      "name": "Silver Micro",
+      "lot_size": 1,
+      "event_context": "MCX Open Gap (++3.06%) | CPR: 1.70%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9152,381.0) is trading above Session VWAP (\u20b9152,109.4). Counter-trend short blocked.",
+        "reference_price": 152381.0,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 152381.0,
+        "action_taken": "Stood Aside",
+        "detail": "Conflict: HTF is Bearish but price (\u20b9152,381.0) is trading above Session VWAP (\u20b9152,109.4). Counter-trend short blocked."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Direction Engine Block: Conflict: HTF is Bearish but price (\u20b9152,381.0) is trading above Session VWAP (\u20b9152,109.4). Counter-trend short blocked."
+      }
+    },
+    {
+      "id": "ADV-26Nov2026-0901-CRUDEOILM",
+      "date": "26 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "CRUDEOILM",
+      "name": "Crude Oil Mini",
+      "lot_size": 10,
+      "event_context": "MCX Open Gap (++1.02%) | CPR: 0.55%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / HARD RISK STOP",
+        "rationale": "Reward:Risk ratio 0.21 is below minimum requirement of 1.1R (Risk: 368.8 pts, Reward: 79.0 pts).",
+        "reference_price": 7835.0,
+        "stop_loss": 8203.76,
+        "target": 7756.0
+      },
+      "check_615": {
+        "checked": true,
+        "status": "HARD_RISK_STAND_ASIDE",
+        "price_615": 7835.0,
+        "action_taken": "Stood Aside",
+        "detail": "Reward:Risk ratio 0.21 is below minimum requirement of 1.1R (Risk: 368.8 pts, Reward: 79.0 pts)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Reward:Risk ratio 0.21 is below minimum requirement of 1.1R (Risk: 368.8 pts, Reward: 79.0 pts)."
+      }
+    },
+    {
+      "id": "ADV-26Nov2026-0901-NATURALGASM",
+      "date": "26 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "NATURALGASM",
+      "name": "Natural Gas Mini",
+      "lot_size": 250,
+      "event_context": "Normal Open (-0.41%) | CPR: 0.30%",
+      "suggestion_6pm": {
+        "status": "STAND_ASIDE",
+        "action_text": "STAND ASIDE / AWAIT 1:30 PM BREAKOUT",
+        "rationale": "Opening within normal daily value area (-0.41%). Zero statistical gap edge; standing aside for London open.",
+        "reference_price": 342.4,
+        "stop_loss": null,
+        "target": null
+      },
+      "check_615": {
+        "checked": true,
+        "status": "NO_GAP_STAND_ASIDE",
+        "price_615": 342.4,
+        "action_taken": "Stood Aside (0 Units)",
+        "detail": "Normal opening range. Awaiting 1:30 PM European session breakout."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": "09:01 AM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Avoided Chop \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside during morning open chop. 100% capital protected."
+      }
+    },
+    {
+      "id": "ADV-26Nov2026-0901-COPPERM",
+      "date": "26 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "COPPERM",
+      "name": "Copper Mini",
+      "lot_size": 1000,
+      "event_context": "MCX Open Gap (++0.92%) | CPR: 0.51%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / HARD RISK STOP",
+        "rationale": "Reward:Risk ratio 0.08 is below minimum requirement of 1.1R (Risk: 41.1 pts, Reward: 3.1 pts).",
+        "reference_price": 1141.7,
+        "stop_loss": 1100.6,
+        "target": 1144.82
+      },
+      "check_615": {
+        "checked": true,
+        "status": "HARD_RISK_STAND_ASIDE",
+        "price_615": 1141.7,
+        "action_taken": "Stood Aside",
+        "detail": "Reward:Risk ratio 0.08 is below minimum requirement of 1.1R (Risk: 41.1 pts, Reward: 3.1 pts)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Reward:Risk ratio 0.08 is below minimum requirement of 1.1R (Risk: 41.1 pts, Reward: 3.1 pts)."
+      }
+    },
+    {
+      "id": "ADV-26Nov2026-0901-ZINCMINI",
+      "date": "26 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 1000,
+      "event_context": "MCX Open Gap (++0.88%) | CPR: 0.38%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / HARD RISK STOP",
+        "rationale": "Reward:Risk ratio 0.11 is below minimum requirement of 1.1R (Risk: 14.1 pts, Reward: 1.5 pts).",
+        "reference_price": 359.75,
+        "stop_loss": 345.63,
+        "target": 361.27
+      },
+      "check_615": {
+        "checked": true,
+        "status": "HARD_RISK_STAND_ASIDE",
+        "price_615": 359.75,
+        "action_taken": "Stood Aside",
+        "detail": "Reward:Risk ratio 0.11 is below minimum requirement of 1.1R (Risk: 14.1 pts, Reward: 1.5 pts)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Reward:Risk ratio 0.11 is below minimum requirement of 1.1R (Risk: 14.1 pts, Reward: 1.5 pts)."
+      }
+    },
+    {
+      "id": "ADV-26Nov2026-0901-ALUMINI",
+      "date": "26 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 1000,
+      "event_context": "MCX Open Gap (++1.10%) | CPR: 0.52%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / HARD RISK STOP",
+        "rationale": "Reward:Risk ratio 0.08 is below minimum requirement of 1.1R (Risk: 10.7 pts, Reward: 0.9 pts).",
+        "reference_price": 303.65,
+        "stop_loss": 293.0,
+        "target": 304.55
+      },
+      "check_615": {
+        "checked": true,
+        "status": "HARD_RISK_STAND_ASIDE",
+        "price_615": 303.65,
+        "action_taken": "Stood Aside",
+        "detail": "Reward:Risk ratio 0.08 is below minimum requirement of 1.1R (Risk: 10.7 pts, Reward: 0.9 pts)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Reward:Risk ratio 0.08 is below minimum requirement of 1.1R (Risk: 10.7 pts, Reward: 0.9 pts)."
+      }
+    },
+    {
+      "id": "ADV-26Nov2026-0901-ZINCMINI",
+      "date": "26 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ZINCMINI",
+      "name": "Zinc Mini",
+      "lot_size": 1000,
+      "event_context": "MCX Open Gap (++0.88%) | CPR: 0.38%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / HARD RISK STOP",
+        "rationale": "Reward:Risk ratio 0.13 is below minimum requirement of 1.1R (Risk: 11.5 pts, Reward: 1.5 pts).",
+        "reference_price": 359.75,
+        "stop_loss": 348.28,
+        "target": 361.27
+      },
+      "check_615": {
+        "checked": true,
+        "status": "HARD_RISK_STAND_ASIDE",
+        "price_615": 359.75,
+        "action_taken": "Stood Aside",
+        "detail": "Reward:Risk ratio 0.13 is below minimum requirement of 1.1R (Risk: 11.5 pts, Reward: 1.5 pts)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Reward:Risk ratio 0.13 is below minimum requirement of 1.1R (Risk: 11.5 pts, Reward: 1.5 pts)."
+      }
+    },
+    {
+      "id": "ADV-26Nov2026-0901-ALUMINI",
+      "date": "26 Nov 2026",
+      "session_name": "Morning Pulse (09:01 AM)",
+      "time_trigger": "09:01 AM IST",
+      "time_6pm": "09:01 AM IST",
+      "time_validation": "09:15 AM IST",
+      "time_615": "09:15 AM IST",
+      "time_exit": "11:45 PM IST",
+      "symbol": "ALUMINI",
+      "name": "Aluminium Mini",
+      "lot_size": 1000,
+      "event_context": "MCX Open Gap (++1.10%) | CPR: 0.52%",
+      "time_machine": null,
+      "risk_check": null,
+      "suggestion_6pm": {
+        "status": "MORNING_GAP_TRADE",
+        "action_text": "STAND ASIDE / HARD RISK STOP",
+        "rationale": "Reward:Risk ratio 0.09 is below minimum requirement of 1.1R (Risk: 9.8 pts, Reward: 0.9 pts).",
+        "reference_price": 303.65,
+        "stop_loss": 293.89,
+        "target": 304.55
+      },
+      "check_615": {
+        "checked": true,
+        "status": "HARD_RISK_STAND_ASIDE",
+        "price_615": 303.65,
+        "action_taken": "Stood Aside",
+        "detail": "Reward:Risk ratio 0.09 is below minimum requirement of 1.1R (Risk: 9.8 pts, Reward: 0.9 pts)."
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "STAND_ASIDE",
+        "quantity": 0,
+        "entry_price": null,
+        "entry_time": null,
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "STAND_ASIDE"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PROTECTED",
+        "badge": "Risk Protected \ud83d\udee1\ufe0f",
+        "pnl_display": "\u20b90.00",
+        "summary": "Stood aside: Reward:Risk ratio 0.09 is below minimum requirement of 1.1R (Risk: 9.8 pts, Reward: 0.9 pts)."
+      }
+    },
     {
       "id": "ADV-25Nov2026-1900-GOLDTEN",
       "date": "25 Nov 2026",
