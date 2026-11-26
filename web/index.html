@@ -7091,9 +7091,9 @@ function switchTradingSubTab(subtab) {
         if (descEl) descEl.innerHTML = `Autonomous futures trading (MCX Commodity Minis & Nifty Stock Futures) with strict ₹1,000 max risk per trade, max 2 concurrent positions, and ₹3,000 daily circuit breaker. Evening sessions active till ${isDstNow ? '11:20 PM IST (Summer EDT)' : '11:45 PM IST (Winter EST)'}.`;
         if (sessionFilterContainer) sessionFilterContainer.style.display = 'block';
     } else {
-        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday MIS Allocation: Base ₹30,000 Margin (+ Booked Profits) | 5x Buying Power';
+        if (badgeEl) badgeEl.innerHTML = '<i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Intraday MIS Allocation: Base ₹50,000 Margin (+ Booked Profits) | 5x Buying Power';
         if (titleEl) titleEl.innerHTML = '⚡ Intraday Stock Trading Tracker (MIS Margin Benefit)';
-        if (descEl) descEl.innerHTML = 'Autonomous Nifty 50 intraday stock day-trades with 5x MIS margin benefit (Base ₹30,000 daily refreshed margin + booked profits). Mandatory 03:20 PM IST EOD square-off (Zero overnight risk).';
+        if (descEl) descEl.innerHTML = 'Autonomous Nifty 50 intraday stock day-trades with 5x MIS margin benefit (Base ₹50,000 daily refreshed margin + booked profits). Mandatory 03:20 PM IST EOD square-off (Zero overnight risk).';
         if (sessionFilterContainer) sessionFilterContainer.style.display = 'none';
     }
 
@@ -7901,7 +7901,7 @@ function renderAdvisorySummaryCards() {
     });
 
     const todayTotalPnl = todayRealizedPnl + todayUnrealizedPnl;
-    const basePoolCap = isIntradayActive ? 30000 : 300000;
+    const basePoolCap = isIntradayActive ? 50000 : 300000;
     const todayReturnPct = ((todayTotalPnl / basePoolCap) * 100).toFixed(2);
 
     const todayTitleEl = document.getElementById('kpi-adv-today-title');
