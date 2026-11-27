@@ -210,6 +210,9 @@ class EmailAlerter:
             "STAGE 1: BREAKEVEN LOCK",
             "STAGE 2: PROFIT LOCKED",
             "EVENT RISK PROTECTION",
+            "[DAILY STOCK SIGNAL]",
+            "HERO DISPLAY ONLY",
+            "ZERO CASH ALLOCATED",
         ]
         for block in explicit_blocks:
             if block in sub_upper:
@@ -253,6 +256,8 @@ class EmailAlerter:
         Exit notifications receive 60-minute lockout.
         """
         sub_upper = subject.upper()
+        if 'DAILY STOCK SIP' in sub_upper or 'DAILY STOCK SIGNAL' in sub_upper or 'DAILY GOLDEN CROSSOVER' in sub_upper:
+            return 1440  # 24-hour lockout: strictly once per trading day
         if 'REAL-TIME TECHNICAL TRIGGER' in sub_upper or 'INTRADAY MIS TRIGGER' in sub_upper or 'STOCK FUTURE TRIGGER' in sub_upper or 'PRE-VOLATILITY COIL TRIGGER' in sub_upper:
             return 120
         if 'PRE-VOLATILITY COIL' in sub_upper or 'COIL ALERT' in sub_upper or 'SQUEEZE ALERT' in sub_upper:
@@ -275,6 +280,7 @@ class EmailAlerter:
             norm_key = re.sub(r'\(.*?\)', '', subject)
             norm_key = re.sub(r'@\s*₹?[\d,.]+', '', norm_key)
             norm_key = re.sub(r'[+-]?\d+(\.\d+)?%', '', norm_key)
+            norm_key = re.sub(r'\bBOUGHT\s+\d+\s+SHARES?\s+OF\b', 'BOUGHT SHARES OF', norm_key, flags=re.IGNORECASE)
             norm_key = f"{channel}_" + re.sub(r'\s+', ' ', norm_key).strip().upper()
 
             req_window = window_minutes if window_minutes is not None else self._get_dedup_window(subject)
@@ -313,6 +319,7 @@ class EmailAlerter:
             norm_key = re.sub(r'\(.*?\)', '', subject)
             norm_key = re.sub(r'@\s*₹?[\d,.]+', '', norm_key)
             norm_key = re.sub(r'[+-]?\d+(\.\d+)?%', '', norm_key)
+            norm_key = re.sub(r'\bBOUGHT\s+\d+\s+SHARES?\s+OF\b', 'BOUGHT SHARES OF', norm_key, flags=re.IGNORECASE)
             norm_key = f"{channel}_" + re.sub(r'\s+', ' ', norm_key).strip().upper()
 
             now = datetime.now()

@@ -189,6 +189,11 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         print(f"Daily stock investment already executed for today ({today_str}): {today_existing[0].get('name')}. Skipping.")
         return today_existing[0]
 
+    last_eval_date = tracker_data.get('last_evaluated_date')
+    if last_eval_date == today_str and not force:
+        print(f"Daily stock investment already evaluated for today ({today_str}). Skipping.")
+        return tracker_data.get('today_pick')
+
     # Verify Available Stock Investing Capital
     cash_stats = get_cash_and_holdings(tracker_data)
     avail_cash = cash_stats['available_cash_inr']
@@ -258,18 +263,20 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
         print(f"Invalid price {price} for {chosen_stock.get('name')}")
         return None
 
+    MIN_INVESTMENT_THRESHOLD = 5000.0  # ₹5,000 minimum cash needed to justify initiating a new stock investment
+
     # Sizing is strictly capped by the real unencumbered available cash
     allocatable_cash = min(TARGET_INVESTMENT_AMOUNT, avail_cash)
-    is_cash_available = (avail_cash >= price and allocatable_cash >= price)
+    is_cash_available = (avail_cash >= MIN_INVESTMENT_THRESHOLD and allocatable_cash >= price)
 
     if not is_cash_available:
-        print(f"⚠️ Cash unavailable for {chosen_stock.get('name')} at ₹{price:,.2f} (Available cash: ₹{avail_cash:,.2f} < ₹{price:,.2f}). Creating Hero Trade Display with 0 shares (No Purchase).")
+        print(f"⚠️ Cash unavailable for {chosen_stock.get('name')} at ₹{price:,.2f} (Available cash: ₹{avail_cash:,.2f} < ₹{MIN_INVESTMENT_THRESHOLD:,.2f} minimum threshold). Creating Hero Trade Display with 0 shares (No Purchase).")
         shares = 0
         invested_val = 0.0
         variance = round(-TARGET_INVESTMENT_AMOUNT, 2)
         status = 'SIGNAL_ONLY'
         action_text = 'WATCHLIST / HERO SETUP (Display Only - Insufficient Cash)'
-        exec_note = f"Display Only: 0 Shares Purchased (Available Cash ₹{avail_cash:,.2f} < Share Price ₹{price:,.2f})"
+        exec_note = f"Display Only: 0 Shares Purchased (Available Cash ₹{avail_cash:,.2f} < Minimum ₹{MIN_INVESTMENT_THRESHOLD:,.2f} Threshold)"
     else:
         # Size shares strictly within available cash balance (e.g. ₹7,000 budget buys floor(7000/price))
         max_shares = math.floor(avail_cash / price)
@@ -365,6 +372,7 @@ def scan_and_execute_daily_stock_investment(force=False, test_date=None):
             tracker_data['investments'] = investments
 
     tracker_data['today_pick'] = new_investment
+    tracker_data['last_evaluated_date'] = today_str
     save_stock_investments(tracker_data)
 
     if shares > 0:
