@@ -1,5 +1,5 @@
 {
-  "last_updated": "27 Nov 2026, 01:41 PM IST",
+  "last_updated": "27 Nov 2026, 01:46 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
@@ -38,21 +38,21 @@
       "symbol": "GOLDTEN",
       "name": "Gold Ten (Micro)",
       "lot_size": 1,
-      "event_context": "Direction Engine Block (Conflict: HTF is Bearish but price (\u20b9128,098.0) is trading above Session VWAP (\u20b9127,695.4). Counter-trend short blocked.)",
+      "event_context": "Direction Engine Block (Conflict: HTF is Bearish but price (\u20b9128,392.0) is trading above Session VWAP (\u20b9127,913.6). Counter-trend short blocked.)",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / DIRECTION ENGINE",
-        "rationale": "Conflict: HTF is Bearish but price (\u20b9128,098.0) is trading above Session VWAP (\u20b9127,695.4). Counter-trend short blocked.",
-        "reference_price": 128098.0,
+        "rationale": "Conflict: HTF is Bearish but price (\u20b9128,392.0) is trading above Session VWAP (\u20b9127,913.6). Counter-trend short blocked.",
+        "reference_price": 128392.0,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "DIRECTION_ENGINE_STAND_ASIDE",
-        "price_615": 128098.0,
+        "price_615": 128392.0,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "Conflict: HTF is Bearish but price (\u20b9128,098.0) is trading above Session VWAP (\u20b9127,695.4). Counter-trend short blocked."
+        "detail": "Conflict: HTF is Bearish but price (\u20b9128,392.0) is trading above Session VWAP (\u20b9127,913.6). Counter-trend short blocked."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -72,7 +72,7 @@
         "outcome": "PROTECTED",
         "badge": "Direction Protected \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside: Conflict: HTF is Bearish but price (\u20b9128,098.0) is trading above Session VWAP (\u20b9127,695.4). Counter-trend short blocked."
+        "summary": "Stood aside: Conflict: HTF is Bearish but price (\u20b9128,392.0) is trading above Session VWAP (\u20b9127,913.6). Counter-trend short blocked."
       }
     },
     {
@@ -87,21 +87,21 @@
       "symbol": "SILVERMIC",
       "name": "Silver Micro",
       "lot_size": 1,
-      "event_context": "Range-Bound Asian Range [\u20b9152,167.00 \u2013 \u20b9160,000.00]",
+      "event_context": "Direction Engine Block (Conflict: HTF is Bearish but price (\u20b9160,070.0) is trading above Session VWAP (\u20b9158,505.6). Counter-trend short blocked.)",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [\u20b9152,167.00 \u2013 \u20b9160,000.00]. Standing aside awaiting range breakout.",
-        "reference_price": 159665.0,
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Conflict: HTF is Bearish but price (\u20b9160,070.0) is trading above Session VWAP (\u20b9158,505.6). Counter-trend short blocked.",
+        "reference_price": 160070.0,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 159665.0,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 160070.0,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "detail": "Conflict: HTF is Bearish but price (\u20b9160,070.0) is trading above Session VWAP (\u20b9158,505.6). Counter-trend short blocked."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -119,9 +119,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "badge": "Direction Protected \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "summary": "Stood aside: Conflict: HTF is Bearish but price (\u20b9160,070.0) is trading above Session VWAP (\u20b9158,505.6). Counter-trend short blocked."
       }
     },
     {
@@ -141,14 +141,14 @@
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
         "rationale": "Trading within morning Asian range [\u20b97,899.00 \u2013 \u20b98,058.00]. Standing aside awaiting range breakout.",
-        "reference_price": 8031.0,
+        "reference_price": 8013.0,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 8031.0,
+        "price_615": 8013.0,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Inside Asian morning range. Awaiting breakout."
       },
@@ -190,14 +190,14 @@
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
         "rationale": "Trading within morning Asian range [\u20b9332.70 \u2013 \u20b9339.40]. Standing aside awaiting range breakout.",
-        "reference_price": 334.5,
+        "reference_price": 334.7,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 334.5,
+        "price_615": 334.7,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Inside Asian morning range. Awaiting breakout."
       },
@@ -239,14 +239,14 @@
         "status": "STAND_ASIDE",
         "action_text": "STAND ASIDE / RANGE-BOUND",
         "rationale": "Trading within morning Asian range [\u20b91,143.00 \u2013 \u20b91,196.90]. Standing aside awaiting range breakout.",
-        "reference_price": 1187.15,
+        "reference_price": 1187.45,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
         "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 1187.15,
+        "price_615": 1187.45,
         "action_taken": "Stood Aside (0 Units)",
         "detail": "Inside Asian morning range. Awaiting breakout."
       },
@@ -283,21 +283,21 @@
       "symbol": "ZINCMINI",
       "name": "Zinc Mini",
       "lot_size": 1000,
-      "event_context": "Range-Bound Asian Range [\u20b9362.55 \u2013 \u20b9372.20]",
+      "event_context": "Direction Engine Block (Conflict: HTF is Bearish but price (\u20b9371.6) is trading above Session VWAP (\u20b9369.9). Counter-trend short blocked.)",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [\u20b9362.55 \u2013 \u20b9372.20]. Standing aside awaiting range breakout.",
-        "reference_price": 371.55,
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Conflict: HTF is Bearish but price (\u20b9371.6) is trading above Session VWAP (\u20b9369.9). Counter-trend short blocked.",
+        "reference_price": 371.65,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 371.55,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 371.65,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "detail": "Conflict: HTF is Bearish but price (\u20b9371.6) is trading above Session VWAP (\u20b9369.9). Counter-trend short blocked."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -315,9 +315,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "badge": "Direction Protected \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "summary": "Stood aside: Conflict: HTF is Bearish but price (\u20b9371.6) is trading above Session VWAP (\u20b9369.9). Counter-trend short blocked."
       }
     },
     {
@@ -332,21 +332,21 @@
       "symbol": "ALUMINI",
       "name": "Aluminium Mini",
       "lot_size": 1000,
-      "event_context": "Range-Bound Asian Range [\u20b9306.20 \u2013 \u20b9312.70]",
+      "event_context": "Direction Engine Block (Conflict: HTF is Bearish but price (\u20b9312.2) is trading above Session VWAP (\u20b9311.1). Counter-trend short blocked.)",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [\u20b9306.20 \u2013 \u20b9312.70]. Standing aside awaiting range breakout.",
-        "reference_price": 312.15,
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Conflict: HTF is Bearish but price (\u20b9312.2) is trading above Session VWAP (\u20b9311.1). Counter-trend short blocked.",
+        "reference_price": 312.25,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 312.15,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 312.25,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "detail": "Conflict: HTF is Bearish but price (\u20b9312.2) is trading above Session VWAP (\u20b9311.1). Counter-trend short blocked."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -364,9 +364,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "badge": "Direction Protected \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "summary": "Stood aside: Conflict: HTF is Bearish but price (\u20b9312.2) is trading above Session VWAP (\u20b9311.1). Counter-trend short blocked."
       }
     },
     {
@@ -381,21 +381,21 @@
       "symbol": "ZINCMINI",
       "name": "Zinc Mini",
       "lot_size": 1000,
-      "event_context": "Range-Bound Asian Range [\u20b9362.55 \u2013 \u20b9372.20]",
+      "event_context": "Direction Engine Block (Conflict: HTF is Bearish but price (\u20b9371.6) is trading above Session VWAP (\u20b9369.9). Counter-trend short blocked.)",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [\u20b9362.55 \u2013 \u20b9372.20]. Standing aside awaiting range breakout.",
-        "reference_price": 371.55,
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Conflict: HTF is Bearish but price (\u20b9371.6) is trading above Session VWAP (\u20b9369.9). Counter-trend short blocked.",
+        "reference_price": 371.65,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 371.55,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 371.65,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "detail": "Conflict: HTF is Bearish but price (\u20b9371.6) is trading above Session VWAP (\u20b9369.9). Counter-trend short blocked."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -413,9 +413,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "badge": "Direction Protected \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "summary": "Stood aside: Conflict: HTF is Bearish but price (\u20b9371.6) is trading above Session VWAP (\u20b9369.9). Counter-trend short blocked."
       }
     },
     {
@@ -430,21 +430,21 @@
       "symbol": "ALUMINI",
       "name": "Aluminium Mini",
       "lot_size": 1000,
-      "event_context": "Range-Bound Asian Range [\u20b9306.20 \u2013 \u20b9312.70]",
+      "event_context": "Direction Engine Block (Conflict: HTF is Bearish but price (\u20b9312.2) is trading above Session VWAP (\u20b9311.1). Counter-trend short blocked.)",
       "suggestion_6pm": {
         "status": "STAND_ASIDE",
-        "action_text": "STAND ASIDE / RANGE-BOUND",
-        "rationale": "Trading within morning Asian range [\u20b9306.20 \u2013 \u20b9312.70]. Standing aside awaiting range breakout.",
-        "reference_price": 312.15,
+        "action_text": "STAND ASIDE / DIRECTION ENGINE",
+        "rationale": "Conflict: HTF is Bearish but price (\u20b9312.2) is trading above Session VWAP (\u20b9311.1). Counter-trend short blocked.",
+        "reference_price": 312.25,
         "stop_loss": null,
         "target": null
       },
       "check_615": {
         "checked": true,
-        "status": "RANGE_BOUND_STAND_ASIDE",
-        "price_615": 312.15,
+        "status": "DIRECTION_ENGINE_STAND_ASIDE",
+        "price_615": 312.25,
         "action_taken": "Stood Aside (0 Units)",
-        "detail": "Inside Asian morning range. Awaiting breakout."
+        "detail": "Conflict: HTF is Bearish but price (\u20b9312.2) is trading above Session VWAP (\u20b9311.1). Counter-trend short blocked."
       },
       "paper_trade": {
         "user": "venu.photos1@gmail.com",
@@ -462,9 +462,9 @@
         "session_close": null,
         "circuit_limit": null,
         "outcome": "PROTECTED",
-        "badge": "Avoided Range \ud83d\udee1\ufe0f",
+        "badge": "Direction Protected \ud83d\udee1\ufe0f",
         "pnl_display": "\u20b90.00",
-        "summary": "Stood aside on range-bound asset. Capital protected."
+        "summary": "Stood aside: Conflict: HTF is Bearish but price (\u20b9312.2) is trading above Session VWAP (\u20b9311.1). Counter-trend short blocked."
       }
     },
     {
