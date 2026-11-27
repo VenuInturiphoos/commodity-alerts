@@ -4169,7 +4169,7 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
         eq_item = equity_map.get(sym.upper()) or equity_map.get(clean_sym) or equity_map.get(f"{clean_sym}.NS")
 
         is_stock_future = ('-FUT' in sym) or (sym in STOCK_FUTURES_CONFIG) or (clean_sym in STOCK_FUTURES_CONFIG)
-        is_equity = trade.get('asset_type') in ['EQUITY', 'STOCK_FUTURES'] or is_stock_future or (sym and '.NS' in sym) or bool(eq_item and not c_item)
+        is_equity = trade.get('asset_type') in ['EQUITY', 'STOCK_FUTURES', 'INTRADAY_STOCK'] or is_stock_future or (sym and '.NS' in sym) or bool(eq_item and not c_item)
 
         recent_low = None
         recent_high = None
@@ -4301,6 +4301,7 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                 updated_any = True
                 
                 subject = f"⚡ [LIMIT ORDER FILLED] {trade['name']} {action} @ ₹{entry_p:,.2f} ({now_time_str})"
+                status_desc = "Active intraday stock trade running. Fixed initial Stop-Loss and 03:20 PM IST auto square-off enabled." if is_equity else "Active paper trade running. Auto-trailing SL and 11:30 PM settlement enabled."
                 body = (
                     f"⚡ <b>LIMIT ORDER FILLED ON RETEST</b>\n"
                     f"📅 <i>{today_str}, {now_time_str}</i>\n"
@@ -4309,102 +4310,112 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
                     f"• <b>Action</b>: {action} {lot_size} units\n"
                     f"• <b>Fill Price</b>: ₹{entry_p:,.2f} ({retest_type} Retest Filled)\n"
                     f"• <b>Target</b>: {f'₹{target:,.2f}' if target is not None else (f'₹{calc_target:,.2f} (Trailed)' if calc_target else 'None')} | <b>Stop-Loss</b>: ₹{stop_loss:,.2f}\n"
-                    f"• <b>Status</b>: Active paper trade running. Auto-trailing SL and 11:30 PM settlement enabled.\n\n"
+                    f"• <b>Status</b>: {status_desc}\n\n"
                     f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
                 )
                 alerts_to_send.append({'subject': subject, 'body': body})
             continue
 
-        # 2. Check ACTIVE Trades: Dynamic Commodity-Calibrated Trailing Stop Engine
+        # 2. Check ACTIVE Trades: Dynamic Trailing Stop Engine (Commodities Only) vs Fixed Initial Stop-Loss (Intraday Equities)
         calc_target = target if target is not None else original_target
         if trade_status == 'ACTIVE' and calc_target is not None and stop_loss is not None:
-            target_dist = (calc_target - entry_p) if action == 'BUY' else (entry_p - calc_target)
-            if target_dist > 0:
-                current_favorable_move = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
-                peak_favorable_move = (effective_high - entry_p) if action == 'BUY' else (entry_p - effective_low)
-                pct_to_target = max((current_favorable_move / target_dist) * 100, (peak_favorable_move / target_dist) * 100)
+            if is_equity:
+                # Per user instruction: For intraday stock trades, do NOT implement trailing stop loss.
+                # Keep initial stop-loss open with full breathing room throughout the session (no breakeven shift, no dynamic trailing).
+                # The trade runs with its initial stop loss until either Target is achieved or 03:20 PM EOD square-off.
+                if pt.get('initial_stop_loss') is not None:
+                    stop_loss = float(pt['initial_stop_loss'])
+                    pt['stop_loss'] = stop_loss
+                pt['trailing_sl_active'] = False
+                pt['target_runner_active'] = False
+            else:
+                target_dist = (calc_target - entry_p) if action == 'BUY' else (entry_p - calc_target)
+                if target_dist > 0:
+                    current_favorable_move = (cur_p - entry_p) if action == 'BUY' else (entry_p - cur_p)
+                    peak_favorable_move = (effective_high - entry_p) if action == 'BUY' else (entry_p - effective_low)
+                    pct_to_target = max((current_favorable_move / target_dist) * 100, (peak_favorable_move / target_dist) * 100)
 
-                # Commodity-specific noise floor & fee protection calibration
-                clean_sym_upper = sym.replace('-FUT', '').replace('.NS', '').upper()
-                c_cfg = COMMODITY_TRAIL_CONFIG.get(clean_sym_upper)
-                if c_cfg:
-                    breakeven_threshold = c_cfg['breakeven_pct']
-                    fee_buf = c_cfg['fee_buffer']
-                    min_trail_buf = c_cfg['min_trail_buffer']
-                else:
-                    breakeven_threshold = 75.0
-                    fee_buf = round(cur_p * 0.0008, 2)  # Covers Dhan equity/futures charges
-                    min_trail_buf = round(cur_p * 0.005, 2)
-
-                # Approach A: Breakeven Shield & Full Target (User-Selected Institutional Protocol)
-                # Once price reaches >= breakeven_threshold (70%-75% target progress) or touches Target 1,
-                # move Stop-Loss to Breakeven (+Fee Shield). Stop stays locked at Breakeven, eliminating 100%
-                # of downside risk while giving the trade full breathing room to hit Target 2 runner.
-                t1_val = pt.get('target_1')
-                hit_t1_milestone = False
-                if t1_val is not None:
-                    if action == 'BUY' and (cur_p >= t1_val or effective_high >= t1_val):
-                        hit_t1_milestone = True
-                    elif action == 'SELL' and (cur_p <= t1_val or effective_low <= t1_val):
-                        hit_t1_milestone = True
-
-                if (pct_to_target >= breakeven_threshold or hit_t1_milestone) and not pt.get('trailing_sl_active'):
-                    pt['trailing_sl_active'] = True
-                    pt['original_sl'] = pt.get('original_sl') or pt.get('initial_stop_loss') or stop_loss
-                    be_price = round(entry_p + fee_buf if action == 'BUY' else entry_p - fee_buf, 2)
-                    pt['stop_loss'] = be_price
-                    stop_loss = be_price
-                    if action == 'BUY':
-                        pt['trough_low'] = cur_p
-                        effective_low = cur_p
+                    # Commodity-specific noise floor & fee protection calibration
+                    clean_sym_upper = sym.replace('-FUT', '').replace('.NS', '').upper()
+                    c_cfg = COMMODITY_TRAIL_CONFIG.get(clean_sym_upper)
+                    if c_cfg:
+                        breakeven_threshold = c_cfg['breakeven_pct']
+                        fee_buf = c_cfg['fee_buffer']
+                        min_trail_buf = c_cfg['min_trail_buffer']
                     else:
-                        pt['peak_high'] = cur_p
-                        effective_high = cur_p
-                    trade['eod_outcome']['badge'] = f"Risk-Free Breakeven 🛡️ (SL @ ₹{be_price:,.2f})"
-                    trade['eod_outcome']['summary'] = f"Approach A: Breakeven Shield active at ₹{be_price:,.2f} (+Fee Buffer). Running to 100% Target with full breathing room."
-                    updated_any = True
-                    
-                    subject = f"🛡️ [APPROACH A: BREAKEVEN SHIELD (+1.0R)] {trade['name']} Reached {pct_to_target:.0f}% Target Milestone"
-                    body = (
-                        f"🛡️ <b>APPROACH A: BREAKEVEN SHIELD ACTIVATED (+1.0R)</b>\n"
-                        f"📅 <i>{today_str}, {now_time_str}</i>\n"
-                        f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
-                        f"• <b>Asset</b>: {trade['name']} ({sym})\n"
-                        f"• <b>Action</b>: {action} {lot_size} units\n"
-                        f"• <b>Current Price</b>: ₹{cur_p:,.2f} ({pct_to_target:.1f}% to Target)\n"
-                        f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
-                        f"• <b>Target</b>: ₹{calc_target:,.2f}\n"
-                        f"• <b>Fee-Shielded Stop-Loss</b>: <b>₹{be_price:,.2f} (Covers Dhan Brokerage & Taxes)</b>\n"
-                        f"• <b>Initial Stop-Loss</b>: ₹{pt.get('original_sl', entry_p):,.2f}\n\n"
-                        f"Position is now 100% risk-free! Stop is locked at Breakeven with maximum breathing room to capture the full 100% target without noise shakeouts.\n\n"
-                        f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
-                    )
-                    alerts_to_send.append({'subject': subject, 'body': body})
+                        breakeven_threshold = 75.0
+                        fee_buf = round(cur_p * 0.0008, 2)  # Covers Dhan equity/futures charges
+                        min_trail_buf = round(cur_p * 0.005, 2)
 
-                # Target Runner Mode: Dynamically trail beyond 100% Target to capture explosive runaway trends
-                if pt.get('target_runner_active'):
-                    if action == 'BUY':
-                        target_floor = round(calc_target - atr_pad, 2)
-                        ema_anchor = round(c_ema20 - atr_pad, 2) if (c_ema20 and c_ema20 > target_floor) else target_floor
-                        trail_buffer = max(min_trail_buf * 1.5, round(target_dist * 0.35, 2))
-                        swing_anchor = round(effective_high - trail_buffer, 2)
-                        runner_sl = max(target_floor, ema_anchor, swing_anchor)
-                        if runner_sl > stop_loss:
-                            stop_loss = runner_sl
-                            pt['stop_loss'] = runner_sl
-                            trade['eod_outcome']['badge'] = f"Target Runner 🎯🚀 (Trail @ ₹{stop_loss:,.2f})"
-                            updated_any = True
-                    elif action == 'SELL':
-                        target_floor = round(calc_target + atr_pad, 2)
-                        ema_anchor = round(c_ema20 + atr_pad, 2) if (c_ema20 and c_ema20 < target_floor) else target_floor
-                        trail_buffer = max(min_trail_buf * 1.5, round(target_dist * 0.35, 2))
-                        swing_anchor = round(effective_low + trail_buffer, 2)
-                        runner_sl = min(target_floor, ema_anchor, swing_anchor)
-                        if runner_sl < stop_loss:
-                            stop_loss = runner_sl
-                            pt['stop_loss'] = runner_sl
-                            trade['eod_outcome']['badge'] = f"Target Runner 🎯🚀 (Trail @ ₹{stop_loss:,.2f})"
-                            updated_any = True
+                    # Approach A: Breakeven Shield & Full Target (User-Selected Institutional Protocol)
+                    # Once price reaches >= breakeven_threshold (70%-75% target progress) or touches Target 1,
+                    # move Stop-Loss to Breakeven (+Fee Shield). Stop stays locked at Breakeven, eliminating 100%
+                    # of downside risk while giving the trade full breathing room to hit Target 2 runner.
+                    t1_val = pt.get('target_1')
+                    hit_t1_milestone = False
+                    if t1_val is not None:
+                        if action == 'BUY' and (cur_p >= t1_val or effective_high >= t1_val):
+                            hit_t1_milestone = True
+                        elif action == 'SELL' and (cur_p <= t1_val or effective_low <= t1_val):
+                            hit_t1_milestone = True
+
+                    if (pct_to_target >= breakeven_threshold or hit_t1_milestone) and not pt.get('trailing_sl_active'):
+                        pt['trailing_sl_active'] = True
+                        pt['original_sl'] = pt.get('original_sl') or pt.get('initial_stop_loss') or stop_loss
+                        be_price = round(entry_p + fee_buf if action == 'BUY' else entry_p - fee_buf, 2)
+                        pt['stop_loss'] = be_price
+                        stop_loss = be_price
+                        if action == 'BUY':
+                            pt['trough_low'] = cur_p
+                            effective_low = cur_p
+                        else:
+                            pt['peak_high'] = cur_p
+                            effective_high = cur_p
+                        trade['eod_outcome']['badge'] = f"Risk-Free Breakeven 🛡️ (SL @ ₹{be_price:,.2f})"
+                        trade['eod_outcome']['summary'] = f"Approach A: Breakeven Shield active at ₹{be_price:,.2f} (+Fee Buffer). Running to 100% Target with full breathing room."
+                        updated_any = True
+                        
+                        subject = f"🛡️ [APPROACH A: BREAKEVEN SHIELD (+1.0R)] {trade['name']} Reached {pct_to_target:.0f}% Target Milestone"
+                        body = (
+                            f"🛡️ <b>APPROACH A: BREAKEVEN SHIELD ACTIVATED (+1.0R)</b>\n"
+                            f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                            f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                            f"• <b>Asset</b>: {trade['name']} ({sym})\n"
+                            f"• <b>Action</b>: {action} {lot_size} units\n"
+                            f"• <b>Current Price</b>: ₹{cur_p:,.2f} ({pct_to_target:.1f}% to Target)\n"
+                            f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
+                            f"• <b>Target</b>: ₹{calc_target:,.2f}\n"
+                            f"• <b>Fee-Shielded Stop-Loss</b>: <b>₹{be_price:,.2f} (Covers Dhan Brokerage & Taxes)</b>\n"
+                            f"• <b>Initial Stop-Loss</b>: ₹{pt.get('original_sl', entry_p):,.2f}\n\n"
+                            f"Position is now 100% risk-free! Stop is locked at Breakeven with maximum breathing room to capture the full 100% target without noise shakeouts.\n\n"
+                            f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                        )
+                        alerts_to_send.append({'subject': subject, 'body': body})
+
+                    # Target Runner Mode: Dynamically trail beyond 100% Target to capture explosive runaway trends
+                    if pt.get('target_runner_active'):
+                        if action == 'BUY':
+                            target_floor = round(calc_target - atr_pad, 2)
+                            ema_anchor = round(c_ema20 - atr_pad, 2) if (c_ema20 and c_ema20 > target_floor) else target_floor
+                            trail_buffer = max(min_trail_buf * 1.5, round(target_dist * 0.35, 2))
+                            swing_anchor = round(effective_high - trail_buffer, 2)
+                            runner_sl = max(target_floor, ema_anchor, swing_anchor)
+                            if runner_sl > stop_loss:
+                                stop_loss = runner_sl
+                                pt['stop_loss'] = runner_sl
+                                trade['eod_outcome']['badge'] = f"Target Runner 🎯🚀 (Trail @ ₹{stop_loss:,.2f})"
+                                updated_any = True
+                        elif action == 'SELL':
+                            target_floor = round(calc_target + atr_pad, 2)
+                            ema_anchor = round(c_ema20 + atr_pad, 2) if (c_ema20 and c_ema20 < target_floor) else target_floor
+                            trail_buffer = max(min_trail_buf * 1.5, round(target_dist * 0.35, 2))
+                            swing_anchor = round(effective_low + trail_buffer, 2)
+                            runner_sl = min(target_floor, ema_anchor, swing_anchor)
+                            if runner_sl < stop_loss:
+                                stop_loss = runner_sl
+                                pt['stop_loss'] = runner_sl
+                                trade['eod_outcome']['badge'] = f"Target Runner 🎯🚀 (Trail @ ₹{stop_loss:,.2f})"
+                                updated_any = True
 
         # HARD INVARIANT: Stop-Loss must be strictly ONE-WAY (Ratchet only).
         # A stop-loss once set can NEVER move backwards or widen to take additional loss.
@@ -4608,60 +4619,67 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
             elif action == 'SELL' and (cur_p <= calc_target or (recent_low and recent_low <= calc_target) or (effective_low and effective_low <= calc_target)):
                 target_reached = True
 
-            if target_reached and not pt.get('target_runner_active'):
-                pt['target_runner_active'] = True
-                pt['target_hit_milestone'] = True
-                pt['target_hit_price'] = calc_target
-                pt['target_hit_time'] = now_time_str
-                # Guarantee 100% Target profit floor (cushioned by small ATR pad to avoid spread shakeouts)
-                c_atr = float(c_item.get('atr_14', 0) if c_item else (eq_item.get('atr_14', 0) if eq_item else (cur_p * 0.012)))
-                atr_pad = round(max(c_atr * 0.15, 0.05), 2)
-                target_floor = round(calc_target - atr_pad if action == 'BUY' else calc_target + atr_pad, 2)
-                if (action == 'BUY' and target_floor > stop_loss) or (action == 'SELL' and target_floor < stop_loss):
-                    pt['stop_loss'] = target_floor
-                    stop_loss = target_floor
-                trade['eod_outcome']['badge'] = f"Target Runner 🎯🚀 (Floor @ ₹{stop_loss:,.2f})"
-                trade['eod_outcome']['summary'] = f"100% Target Achieved! Uncapped Runner Active (Floor ₹{stop_loss:,.2f}). Trailing along 20 EMA / structure for bonus upside."
-                updated_any = True
+            if target_reached:
+                if is_equity:
+                    # For intraday stock trades: Direct target exit with full target profit booked (no trailing beyond target)
+                    hit_exit = True
+                    hit_target = True
+                    exit_p = calc_target
+                    reason = f"Target 1 Achieved 🎯 (Full Intraday Target Booked @ ₹{exit_p:,.2f})"
+                elif not pt.get('target_runner_active'):
+                    pt['target_runner_active'] = True
+                    pt['target_hit_milestone'] = True
+                    pt['target_hit_price'] = calc_target
+                    pt['target_hit_time'] = now_time_str
+                    # Guarantee 100% Target profit floor (cushioned by small ATR pad to avoid spread shakeouts)
+                    c_atr = float(c_item.get('atr_14', 0) if c_item else (eq_item.get('atr_14', 0) if eq_item else (cur_p * 0.012)))
+                    atr_pad = round(max(c_atr * 0.15, 0.05), 2)
+                    target_floor = round(calc_target - atr_pad if action == 'BUY' else calc_target + atr_pad, 2)
+                    if (action == 'BUY' and target_floor > stop_loss) or (action == 'SELL' and target_floor < stop_loss):
+                        pt['stop_loss'] = target_floor
+                        stop_loss = target_floor
+                    trade['eod_outcome']['badge'] = f"Target Runner 🎯🚀 (Floor @ ₹{stop_loss:,.2f})"
+                    trade['eod_outcome']['summary'] = f"100% Target Achieved! Uncapped Runner Active (Floor ₹{stop_loss:,.2f}). Trailing along 20 EMA / structure for bonus upside."
+                    updated_any = True
 
-                # Immediately Ratchet Active Broker Stop-Loss on Dhan to Target Floor
-                dhan_sl_id = pt.get('dhan_sl_order_id')
-                last_synced_sl = pt.get('last_synced_broker_sl')
-                if is_autopilot_enabled() and dhan_sl_id and stop_loss != last_synced_sl:
-                    try:
-                        from dhan_live_executor import DhanLiveExecutor
-                        dhan_exec = DhanLiveExecutor()
-                        dhan_qty = pt.get('dhan_quantity') or (3 if 'CRUDE' in sym.upper() else 1)
-                        mod_res = dhan_exec.modify_stop_loss_order(
-                            order_id=dhan_sl_id,
-                            new_trigger_price=stop_loss,
-                            action=action,
-                            symbol=sym,
-                            quantity=dhan_qty,
-                            reason=f"Target 1 Locked @ ₹{stop_loss:,.2f} (Uncapped Runner Active)",
-                            old_trigger_price=last_synced_sl
-                        )
-                        if mod_res.get('status') == 'success':
-                            pt['last_synced_broker_sl'] = stop_loss
-                            print(f"🎯 [DHAN TARGET RUNNER SYNC] Successfully locked Stop-Loss at Target 1 Floor ₹{stop_loss:,.2f} on Dhan (Order: {dhan_sl_id})")
-                    except Exception as sl_mod_err:
-                        print(f"⚠️ Error syncing Target Runner SL to Dhan: {sl_mod_err}")
+                    # Immediately Ratchet Active Broker Stop-Loss on Dhan to Target Floor
+                    dhan_sl_id = pt.get('dhan_sl_order_id')
+                    last_synced_sl = pt.get('last_synced_broker_sl')
+                    if is_autopilot_enabled() and dhan_sl_id and stop_loss != last_synced_sl:
+                        try:
+                            from dhan_live_executor import DhanLiveExecutor
+                            dhan_exec = DhanLiveExecutor()
+                            dhan_qty = pt.get('dhan_quantity') or (3 if 'CRUDE' in sym.upper() else 1)
+                            mod_res = dhan_exec.modify_stop_loss_order(
+                                order_id=dhan_sl_id,
+                                new_trigger_price=stop_loss,
+                                action=action,
+                                symbol=sym,
+                                quantity=dhan_qty,
+                                reason=f"Target 1 Locked @ ₹{stop_loss:,.2f} (Uncapped Runner Active)",
+                                old_trigger_price=last_synced_sl
+                            )
+                            if mod_res.get('status') == 'success':
+                                pt['last_synced_broker_sl'] = stop_loss
+                                print(f"🎯 [DHAN TARGET RUNNER SYNC] Successfully locked Stop-Loss at Target 1 Floor ₹{stop_loss:,.2f} on Dhan (Order: {dhan_sl_id})")
+                        except Exception as sl_mod_err:
+                            print(f"⚠️ Error syncing Target Runner SL to Dhan: {sl_mod_err}")
 
-                subject = f"🎯🚀 [100% TARGET ACHIEVED — RUNNER MODE ACTIVE] {trade['name']} Hit Target @ ₹{calc_target:,.2f}!"
-                body = (
-                    f"🎯🚀 <b>100% TARGET ACHIEVED — UNCAPPED RUNNER ACTIVE</b>\n"
-                    f"📅 <i>{today_str}, {now_time_str}</i>\n"
-                    f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
-                    f"• <b>Asset</b>: {trade['name']} ({sym})\n"
-                    f"• <b>Action</b>: {action} {lot_size} units\n"
-                    f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
-                    f"• <b>Target Milestone Reached</b>: <b>₹{calc_target:,.2f} (100% Target Profit Secured!)</b>\n"
-                    f"• <b>Guaranteed Trailing Floor</b>: <b>₹{stop_loss:,.2f}</b>\n"
-                    f"• <b>Current Peak</b>: ₹{effective_high if action == 'BUY' else effective_low:,.2f}\n\n"
-                    f"Position is now in <b>Target Runner Mode</b>. Full target profits are guaranteed while trailing along 20 EMA and market structure to capture runaway trend expansion!\n\n"
-                    f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
-                )
-                alerts_to_send.append({'subject': subject, 'body': body})
+                    subject = f"🎯🚀 [100% TARGET ACHIEVED — RUNNER MODE ACTIVE] {trade['name']} Hit Target @ ₹{calc_target:,.2f}!"
+                    body = (
+                        f"🎯🚀 <b>100% TARGET ACHIEVED — UNCAPPED RUNNER ACTIVE</b>\n"
+                        f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                        f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                        f"• <b>Asset</b>: {trade['name']} ({sym})\n"
+                        f"• <b>Action</b>: {action} {lot_size} units\n"
+                        f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
+                        f"• <b>Target Milestone Reached</b>: <b>₹{calc_target:,.2f} (100% Target Profit Secured!)</b>\n"
+                        f"• <b>Guaranteed Trailing Floor</b>: <b>₹{stop_loss:,.2f}</b>\n"
+                        f"• <b>Current Peak</b>: ₹{effective_high if action == 'BUY' else effective_low:,.2f}\n\n"
+                        f"Position is now in <b>Target Runner Mode</b>. Full target profits are guaranteed while trailing along 20 EMA and market structure to capture runaway trend expansion!\n\n"
+                        f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                    )
+                    alerts_to_send.append({'subject': subject, 'body': body})
 
         if not hit_exit:
             if action == 'BUY':
