@@ -4320,14 +4320,16 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
         calc_target = target if target is not None else original_target
         if trade_status == 'ACTIVE' and calc_target is not None and stop_loss is not None:
             if is_equity:
-                # Per user instruction: For intraday stock trades, do NOT implement trailing stop loss.
+                # Per user instruction: For intraday stock trades, no trailing stop-loss and no fixed target capping.
                 # Keep initial stop-loss open with full breathing room throughout the session (no breakeven shift, no dynamic trailing).
-                # The trade runs with its initial stop loss until either Target is achieved or 03:20 PM EOD square-off.
+                # The trade flows continuously with the intraday trend until 03:20 PM IST EOD square-off unless stop-loss is hit.
                 if pt.get('initial_stop_loss') is not None:
                     stop_loss = float(pt['initial_stop_loss'])
                     pt['stop_loss'] = stop_loss
                 pt['trailing_sl_active'] = False
                 pt['target_runner_active'] = False
+                trade['eod_outcome']['badge'] = f"Trend Flow to 03:20 PM 🌊 (SL @ ₹{stop_loss:,.2f})"
+                trade['eod_outcome']['summary'] = f"Intraday stock trade active. Continuous trend flow until 03:20 PM IST EOD square-off (SL: ₹{stop_loss:,.2f}). Uncapped target."
             else:
                 target_dist = (calc_target - entry_p) if action == 'BUY' else (entry_p - calc_target)
                 if target_dist > 0:
@@ -4553,7 +4555,8 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
         #      c) Technical structure broken (lost session VWAP support).
         entry_time_str = pt.get('entry_time')
         trade_date_str = trade.get('date', today_str)
-        if trade_status == 'ACTIVE' and entry_time_str:
+        # Intraday equities flow continuously until 03:20 PM IST EOD square-off (exempt from stagnation cutoffs)
+        if not is_equity and trade_status == 'ACTIVE' and entry_time_str:
             try:
                 clean_time = entry_time_str.replace(' IST', '').strip()
                 entry_dt_naive = datetime.strptime(f"{trade_date_str} {clean_time}", "%d %b %Y %I:%M %p")
@@ -4610,76 +4613,70 @@ def check_and_execute_intraday_targets_and_stops(checker=None, alerter=None):
 
         is_trailing = bool(pt.get('stage_2_profit_locked') or pt.get('trailing_sl_active') or pt.get('target_runner_active'))
 
-        # TARGET HIT & UNCAPPED RUNNER MODE ACTIVATION:
-        # When 100% target is touched, do NOT cut the trade! Lock guaranteed 100% target profit floor & trail for bonus trend!
-        if calc_target is not None:
+        # TARGET HIT & UNCAPPED RUNNER MODE ACTIVATION (Commodities Only):
+        # Per user instruction: For intraday stock trades, there is NO target exit.
+        # The stock trade runs continuously with the trend flow until 03:20 PM IST EOD square-off unless stop-loss is hit.
+        if not is_equity and calc_target is not None:
             target_reached = False
             if action == 'BUY' and (cur_p >= calc_target or (recent_high and recent_high >= calc_target) or (effective_high and effective_high >= calc_target)):
                 target_reached = True
             elif action == 'SELL' and (cur_p <= calc_target or (recent_low and recent_low <= calc_target) or (effective_low and effective_low <= calc_target)):
                 target_reached = True
 
-            if target_reached:
-                if is_equity:
-                    # For intraday stock trades: Direct target exit with full target profit booked (no trailing beyond target)
-                    hit_exit = True
-                    hit_target = True
-                    exit_p = calc_target
-                    reason = f"Target 1 Achieved 🎯 (Full Intraday Target Booked @ ₹{exit_p:,.2f})"
-                elif not pt.get('target_runner_active'):
-                    pt['target_runner_active'] = True
-                    pt['target_hit_milestone'] = True
-                    pt['target_hit_price'] = calc_target
-                    pt['target_hit_time'] = now_time_str
-                    # Guarantee 100% Target profit floor (cushioned by small ATR pad to avoid spread shakeouts)
-                    c_atr = float(c_item.get('atr_14', 0) if c_item else (eq_item.get('atr_14', 0) if eq_item else (cur_p * 0.012)))
-                    atr_pad = round(max(c_atr * 0.15, 0.05), 2)
-                    target_floor = round(calc_target - atr_pad if action == 'BUY' else calc_target + atr_pad, 2)
-                    if (action == 'BUY' and target_floor > stop_loss) or (action == 'SELL' and target_floor < stop_loss):
-                        pt['stop_loss'] = target_floor
-                        stop_loss = target_floor
-                    trade['eod_outcome']['badge'] = f"Target Runner 🎯🚀 (Floor @ ₹{stop_loss:,.2f})"
-                    trade['eod_outcome']['summary'] = f"100% Target Achieved! Uncapped Runner Active (Floor ₹{stop_loss:,.2f}). Trailing along 20 EMA / structure for bonus upside."
-                    updated_any = True
+            if target_reached and not pt.get('target_runner_active'):
+                pt['target_runner_active'] = True
+                pt['target_hit_milestone'] = True
+                pt['target_hit_price'] = calc_target
+                pt['target_hit_time'] = now_time_str
+                # Guarantee 100% Target profit floor (cushioned by small ATR pad to avoid spread shakeouts)
+                c_atr = float(c_item.get('atr_14', 0) if c_item else (eq_item.get('atr_14', 0) if eq_item else (cur_p * 0.012)))
+                atr_pad = round(max(c_atr * 0.15, 0.05), 2)
+                target_floor = round(calc_target - atr_pad if action == 'BUY' else calc_target + atr_pad, 2)
+                if (action == 'BUY' and target_floor > stop_loss) or (action == 'SELL' and target_floor < stop_loss):
+                    pt['stop_loss'] = target_floor
+                    stop_loss = target_floor
+                trade['eod_outcome']['badge'] = f"Target Runner 🎯🚀 (Floor @ ₹{stop_loss:,.2f})"
+                trade['eod_outcome']['summary'] = f"100% Target Achieved! Uncapped Runner Active (Floor ₹{stop_loss:,.2f}). Trailing along 20 EMA / structure for bonus upside."
+                updated_any = True
 
-                    # Immediately Ratchet Active Broker Stop-Loss on Dhan to Target Floor
-                    dhan_sl_id = pt.get('dhan_sl_order_id')
-                    last_synced_sl = pt.get('last_synced_broker_sl')
-                    if is_autopilot_enabled() and dhan_sl_id and stop_loss != last_synced_sl:
-                        try:
-                            from dhan_live_executor import DhanLiveExecutor
-                            dhan_exec = DhanLiveExecutor()
-                            dhan_qty = pt.get('dhan_quantity') or (3 if 'CRUDE' in sym.upper() else 1)
-                            mod_res = dhan_exec.modify_stop_loss_order(
-                                order_id=dhan_sl_id,
-                                new_trigger_price=stop_loss,
-                                action=action,
-                                symbol=sym,
-                                quantity=dhan_qty,
-                                reason=f"Target 1 Locked @ ₹{stop_loss:,.2f} (Uncapped Runner Active)",
-                                old_trigger_price=last_synced_sl
-                            )
-                            if mod_res.get('status') == 'success':
-                                pt['last_synced_broker_sl'] = stop_loss
-                                print(f"🎯 [DHAN TARGET RUNNER SYNC] Successfully locked Stop-Loss at Target 1 Floor ₹{stop_loss:,.2f} on Dhan (Order: {dhan_sl_id})")
-                        except Exception as sl_mod_err:
-                            print(f"⚠️ Error syncing Target Runner SL to Dhan: {sl_mod_err}")
+                # Immediately Ratchet Active Broker Stop-Loss on Dhan to Target Floor
+                dhan_sl_id = pt.get('dhan_sl_order_id')
+                last_synced_sl = pt.get('last_synced_broker_sl')
+                if is_autopilot_enabled() and dhan_sl_id and stop_loss != last_synced_sl:
+                    try:
+                        from dhan_live_executor import DhanLiveExecutor
+                        dhan_exec = DhanLiveExecutor()
+                        dhan_qty = pt.get('dhan_quantity') or (3 if 'CRUDE' in sym.upper() else 1)
+                        mod_res = dhan_exec.modify_stop_loss_order(
+                            order_id=dhan_sl_id,
+                            new_trigger_price=stop_loss,
+                            action=action,
+                            symbol=sym,
+                            quantity=dhan_qty,
+                            reason=f"Target 1 Locked @ ₹{stop_loss:,.2f} (Uncapped Runner Active)",
+                            old_trigger_price=last_synced_sl
+                        )
+                        if mod_res.get('status') == 'success':
+                            pt['last_synced_broker_sl'] = stop_loss
+                            print(f"🎯 [DHAN TARGET RUNNER SYNC] Successfully locked Stop-Loss at Target 1 Floor ₹{stop_loss:,.2f} on Dhan (Order: {dhan_sl_id})")
+                    except Exception as sl_mod_err:
+                        print(f"⚠️ Error syncing Target Runner SL to Dhan: {sl_mod_err}")
 
-                    subject = f"🎯🚀 [100% TARGET ACHIEVED — RUNNER MODE ACTIVE] {trade['name']} Hit Target @ ₹{calc_target:,.2f}!"
-                    body = (
-                        f"🎯🚀 <b>100% TARGET ACHIEVED — UNCAPPED RUNNER ACTIVE</b>\n"
-                        f"📅 <i>{today_str}, {now_time_str}</i>\n"
-                        f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
-                        f"• <b>Asset</b>: {trade['name']} ({sym})\n"
-                        f"• <b>Action</b>: {action} {lot_size} units\n"
-                        f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
-                        f"• <b>Target Milestone Reached</b>: <b>₹{calc_target:,.2f} (100% Target Profit Secured!)</b>\n"
-                        f"• <b>Guaranteed Trailing Floor</b>: <b>₹{stop_loss:,.2f}</b>\n"
-                        f"• <b>Current Peak</b>: ₹{effective_high if action == 'BUY' else effective_low:,.2f}\n\n"
-                        f"Position is now in <b>Target Runner Mode</b>. Full target profits are guaranteed while trailing along 20 EMA and market structure to capture runaway trend expansion!\n\n"
-                        f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
-                    )
-                    alerts_to_send.append({'subject': subject, 'body': body})
+                subject = f"🎯🚀 [100% TARGET ACHIEVED — RUNNER MODE ACTIVE] {trade['name']} Hit Target @ ₹{calc_target:,.2f}!"
+                body = (
+                    f"🎯🚀 <b>100% TARGET ACHIEVED — UNCAPPED RUNNER ACTIVE</b>\n"
+                    f"📅 <i>{today_str}, {now_time_str}</i>\n"
+                    f"👤 Account: <b>{USER_ACCOUNT}</b>\n\n"
+                    f"• <b>Asset</b>: {trade['name']} ({sym})\n"
+                    f"• <b>Action</b>: {action} {lot_size} units\n"
+                    f"• <b>Entry Price</b>: ₹{entry_p:,.2f}\n"
+                    f"• <b>Target Milestone Reached</b>: <b>₹{calc_target:,.2f} (100% Target Profit Secured!)</b>\n"
+                    f"• <b>Guaranteed Trailing Floor</b>: <b>₹{stop_loss:,.2f}</b>\n"
+                    f"• <b>Current Peak</b>: ₹{effective_high if action == 'BUY' else effective_low:,.2f}\n\n"
+                    f"Position is now in <b>Target Runner Mode</b>. Full target profits are guaranteed while trailing along 20 EMA and market structure to capture runaway trend expansion!\n\n"
+                    f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
+                )
+                alerts_to_send.append({'subject': subject, 'body': body})
 
         if not hit_exit:
             if action == 'BUY':
