@@ -1,10 +1,10 @@
 {
-  "last_updated": "27 Nov 2026, 09:01 AM IST",
+  "last_updated": "27 Nov 2026, 12:03 PM IST",
   "account_email": "venu.photos1@gmail.com",
   "starting_cash_inr": 300000.0,
   "summary": {
-    "total_signals": 188,
-    "executed_count": 24,
+    "total_signals": 189,
+    "executed_count": 25,
     "correct_count": 10,
     "wrong_count": 14,
     "protected_count": 164,
@@ -17,15 +17,148 @@
     "intraday_pnl_inr": 1859.95,
     "intraday_booked_profit_inr": 1859.95,
     "intraday_pool_balance_inr": 51859.95,
-    "avg_trade_pnl_inr": -480.96,
-    "active_trades_count": 0,
+    "avg_trade_pnl_inr": -461.72,
+    "active_trades_count": 1,
     "starting_cash_inr": 300000.0,
     "current_cash_inr": 288456.93,
-    "used_margin_inr": 0,
-    "available_cash_inr": 288456.93,
+    "used_margin_inr": 10375.01,
+    "available_cash_inr": 278081.92,
     "net_worth_inr": 288456.93
   },
   "trades": [
+    {
+      "id": "ADV-27Nov2026-1203-ASHOKLEY",
+      "date": "27 Nov 2026",
+      "session_name": "Real-Time Technical Trigger (Intraday Breakdown / Weakness Expansion)",
+      "time_trigger": "12:03 PM IST",
+      "time_6pm": "12:03 PM IST",
+      "time_validation": "12:03 PM IST",
+      "time_615": "12:03 PM IST",
+      "time_exit": "03:25 PM IST",
+      "symbol": "ASHOKLEY.NS",
+      "name": "Ashok Leyland Limited",
+      "lot_size": 336,
+      "asset_type": "INTRADAY_STOCK",
+      "event_context": "Nifty Intraday MIS: Intraday Breakdown / Weakness Expansion",
+      "regime": {
+        "regime": "BREAKDOWN",
+        "badge": "\ud83d\udd3b Breakdown / Bear Trend",
+        "short_tag": "Breakdown",
+        "color": "#fb7185",
+        "bg_color": "rgba(251, 113, 133, 0.12)",
+        "border_color": "rgba(251, 113, 133, 0.35)",
+        "mandate": "Downtrend in effect (Close < 50E, ADX: 20.0, RSI: 42.7). Capital preservation priority; falling knife defense. Do not take long breakouts.",
+        "allowed_strategies": [
+          "DEFENSIVE_HEDGING",
+          "BEAR_CALL_SPREAD",
+          "SHORT_FUTURES"
+        ],
+        "blocked_strategies": [
+          "NAKED_PUT_SELLING",
+          "BUY_EQUITY",
+          "GOLDEN_CROSS_BUY"
+        ],
+        "icon": "fa-solid fa-arrow-trend-down",
+        "adx": 20.0,
+        "rsi": 42.7,
+        "change_pct": 0.0,
+        "bb_width_pct": 23.78,
+        "daily_vol_pct": 1.5,
+        "close": 154.39,
+        "ema50": 159.21,
+        "ema200": 160.13
+      },
+      "time_machine": {
+        "replays": 3000,
+        "passed": true,
+        "verdict": "STRONG_POSITIVE_EXPECTANCY",
+        "verdict_text": "Strongly Leans Toward Target \ud83c\udfaf (High Edge)",
+        "p_target_pct": 55.4,
+        "p_stop_pct": 30.6,
+        "p_neither_pct": 14.0,
+        "resolved_win_rate_pct": 64.4,
+        "expected_r": 0.359,
+        "target_r": 1.2,
+        "sample_bars": 689,
+        "summary": "3,000 Replays: 55.4% Target | 30.6% Stop | Expected: +0.36R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      },
+      "risk_check": {
+        "passed": true,
+        "reason": "RISK_PASSED: Movement-first trade criteria cleared.",
+        "reward_risk_ratio": 1.2,
+        "loss_at_stop_inr": 567.84,
+        "potential_gain_inr": 682.08,
+        "broker": "Dhan",
+        "est_charges_inr": 55.24,
+        "net_loss_at_stop_inr": 623.08
+      },
+      "orb_check": {
+        "passed": true,
+        "status": "ORB_BREAKDOWN_CONFIRMED",
+        "reason": "ORB SELL Confirmed: Solid bar close \u20b9154.39 breaking below range low \u20b9153.80 with volume confirmation."
+      },
+      "event_check": {
+        "passed": true,
+        "status": "CLEAR",
+        "event_name": null,
+        "reason": "No high-impact event risk active."
+      },
+      "pullback_check": {
+        "passed": true,
+        "reason": "PULLBACK_CONFIRMED: Price \u20b9154.39 is within 0.76 pts (<= 2.32 pts) of overhead resistance \u20b9155.15.",
+        "ref_anchor": 155.15,
+        "stop_distance": 0.7600000000000193,
+        "code": "PULLBACK_CONFIRMED"
+      },
+      "suggestion_6pm": {
+        "status": "REALTIME_TRIGGER",
+        "action_text": "SELL @ \u20b9154.39",
+        "rationale": "Breaking towards Day Low (Chg: -1.13%) with accelerating downward RSI momentum (42.7) and verified ORB breakdown below VWAP. Realistic intraday short targeting 1.2R downside. 3,000 Replays: 55.4% Target | 30.6% Stop | Expected: +0.36R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))",
+        "reference_price": 154.39,
+        "stop_loss": 156.08,
+        "target": 152.36
+      },
+      "check_615": {
+        "checked": true,
+        "status": "TECHNICAL_TRIGGER_ENTERED",
+        "price_615": 154.39,
+        "action_taken": "Entered SELL 336 shares @ \u20b9154.39",
+        "detail": "Intraday Breakdown / Weakness Expansion: Breaking towards Day Low (Chg: -1.13%) with accelerating downward RSI momentum (42.7) and verified ORB breakdown below VWAP. Realistic intraday short targeting 1.2R downside. | 3,000 Replays: 55.4% Target | 30.6% Stop | Expected: +0.36R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      },
+      "paper_trade": {
+        "user": "venu.photos1@gmail.com",
+        "action": "SELL",
+        "quantity": 336,
+        "entry_price": 154.39,
+        "entry_time": "12:03 PM IST",
+        "exit_price": null,
+        "exit_time": null,
+        "pnl_points": 0.0,
+        "pnl_inr": 0.0,
+        "status": "ACTIVE",
+        "target": 152.36,
+        "stop_loss": 156.08,
+        "initial_stop_loss": 156.08,
+        "original_sl": 156.08,
+        "peak_high": 154.39,
+        "trough_low": 154.39,
+        "margin_required_inr": 10375.01,
+        "product_type": "MIS_INTRADAY"
+      },
+      "eod_outcome": {
+        "session_close": null,
+        "circuit_limit": null,
+        "outcome": "PENDING",
+        "badge": "Active Trigger \u26a1",
+        "pnl_display": "Ticking Live...",
+        "summary": "Intraday Breakdown / Weakness Expansion active: SELL @ \u20b9154.39 (Target: \u20b9152.36, SL: \u20b9156.08) | 3,000 Replays: 55.4% Target | 30.6% Stop | Expected: +0.36R (Strongly Leans Toward Target \ud83c\udfaf (High Edge))"
+      },
+      "entry_alert": {
+        "subject": "\u26a1 [NIFTY INTRADAY MIS TRIGGER] Ashok Leyland Limited SELL @ \u20b9154.39 (12:03 PM IST)",
+        "body": "\u26a1 <b>REAL-TIME INTRADAY STOCK TRIGGER (5x MIS MARGIN BENEFIT)</b>\n\ud83d\udcc5 <i>27 Nov 2026, 12:03 PM IST</i>\n\ud83d\udc64 Account: <b>venu.photos1@gmail.com</b>\n\n\u2022 <b>Asset Class</b>: Nifty Intraday Stock (MIS 5x Margin Benefit)\n\u2022 <b>Stock</b>: <b>Ashok Leyland Limited (ASHOKLEY)</b>\n\u2022 <b>Signal</b>: <b>SELL 336 shares @ \u20b9154.39</b>\n\u2022 <b>Setup</b>: Intraday Breakdown / Weakness Expansion\n\u2022 <b>Technical Rationale</b>: Breaking towards Day Low (Chg: -1.13%) with accelerating downward RSI momentum (42.7) and verified ORB breakdown below VWAP. Realistic intraday short targeting 1.2R downside.\n\u2022 <b>\ud83c\udfb2 Monte Carlo Replay (3,000 runs)</b>: <b>55.4% Win Prob | +0.36R Expectancy</b>\n\u2022 <b>Stop-Loss</b>: <b>\u20b9156.08</b> (Risk at stop: \u20b9567.84)\n\u2022 <b>Target (2.0R)</b>: <b>\u20b9152.36</b>\n\u2022 <b>Position Value</b>: \u20b951,875.04 (MIS Margin Blocked: \u20b910,375.01 / \u20b950k pool | Slot: \u20b910k)\n\u2022 <b>Auto Square-off</b>: Strict 03:25 PM IST EOD flat exit (Zero overnight risk)\n\n\ud83c\udf10 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trading-tab"
+      },
+      "entry_alert_sent": true
+    },
     {
       "id": "ADV-27Nov2026-0901-GOLDTEN",
       "date": "27 Nov 2026",
