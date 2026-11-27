@@ -547,42 +547,44 @@ def resolve_commodity_item(sym, commodities_map):
         return commodities_map[sym + 'MINI']
     return None
 
-EVENT_ALERTS_STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'event_alerts_state.json')
+ALERTS_STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web', 'alerts_state.json')
 
-def can_dispatch_event_alert(event_key: str, cooldown_mins: float = 60.0) -> bool:
+def can_dispatch_event_alert(event_key: str, cooldown_mins: float = 1440.0) -> bool:
     """
-    Prevents duplicate email spam by enforcing strict cooldowns on informative event alerts
-    (e.g. Wyckoff Spring bounces, Pre-Volatility coils).
+    Prevents duplicate alert spam by enforcing strict 24-hour (1440m) cooldowns on informative event alerts
+    (e.g. Wyckoff Spring bounces, Pre-Volatility coils). Synchronized via git-tracked web/alerts_state.json.
     """
     now_ts = time.time()
-    if not os.path.exists(EVENT_ALERTS_STATE_FILE):
+    if not os.path.exists(ALERTS_STATE_FILE):
         return True
     try:
-        with open(EVENT_ALERTS_STATE_FILE, 'r') as f:
+        with open(ALERTS_STATE_FILE, 'r') as f:
             data = json.load(f)
-        last_ts = data.get(event_key, 0)
+        event_store = data.get('__event_alerts_cache__', {})
+        last_ts = event_store.get(event_key, 0)
         return (now_ts - last_ts) >= (cooldown_mins * 60.0)
     except Exception:
         return True
 
 def record_event_alert_dispatched(event_key: str):
     """
-    Records the timestamp of an informative event alert.
+    Records the timestamp of an informative event alert in git-tracked web/alerts_state.json.
     """
     now_ts = time.time()
     data = {}
-    if os.path.exists(EVENT_ALERTS_STATE_FILE):
+    if os.path.exists(ALERTS_STATE_FILE):
         try:
-            with open(EVENT_ALERTS_STATE_FILE, 'r') as f:
+            with open(ALERTS_STATE_FILE, 'r') as f:
                 data = json.load(f)
         except Exception:
             data = {}
-    data[event_key] = now_ts
+    event_store = data.setdefault('__event_alerts_cache__', {})
+    event_store[event_key] = now_ts
     try:
-        with open(EVENT_ALERTS_STATE_FILE, 'w') as f:
+        with open(ALERTS_STATE_FILE, 'w') as f:
             json.dump(data, f, indent=2)
     except Exception as e:
-        print(f"Error persisting event_alerts_state: {e}")
+        print(f"Error persisting event_alerts_cache in alerts_state.json: {e}")
 
 def get_authoritative_contract_price(symbol, asset_type='EQUITY', timeout=6):
     """
@@ -5170,11 +5172,11 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                 )
                 if alerter:
                     event_key = f"INST_COIL_{clean_sym_upper}_{today_str}"
-                    if can_dispatch_event_alert(event_key, cooldown_mins=60.0):
+                    if can_dispatch_event_alert(event_key, cooldown_mins=1440.0):
                         try:
                             alerter.send_alert(coil_sub, coil_bdy)
                             record_event_alert_dispatched(event_key)
-                            print(f"Dispatched Pre-Volatility Coil alert for {sym} (cooldown locked for 60m).")
+                            print(f"Dispatched Pre-Volatility Coil alert for {sym} (cooldown locked for 24h).")
                         except Exception as ex:
                             print(f"Error dispatching pre-volatility coil alert: {ex}")
 
@@ -5270,11 +5272,11 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     )
                     if alerter:
                         event_key = f"COIL_{canon_sym}_{today_str}"
-                        if can_dispatch_event_alert(event_key, cooldown_mins=60.0):
+                        if can_dispatch_event_alert(event_key, cooldown_mins=1440.0):
                             try:
                                 alerter.send_alert(coil_sub, coil_bdy)
                                 record_event_alert_dispatched(event_key)
-                                print(f"Dispatched Pre-Volatility Coil alert for {sym} (cooldown locked for 60m).")
+                                print(f"Dispatched Pre-Volatility Coil alert for {sym} (cooldown locked for 24h).")
                             except Exception as ex:
                                 print(f"Error dispatching coil alert for {sym}: {ex}")
 
@@ -5302,7 +5304,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     # ⚡ EVENT IDENTIFICATION: Dispatch immediate alert whenever a Wyckoff Spring / V-Reversal is confirmed
                     if is_spring_setup and alerter:
                         event_key = f"WYCKOFF_SPRING_{canon_sym}_{today_str}"
-                        if can_dispatch_event_alert(event_key, cooldown_mins=60.0):
+                        if can_dispatch_event_alert(event_key, cooldown_mins=1440.0):
                             bounce_pct = ((cur_p - day_l) / day_l * 100.0) if day_l > 0 else 0.0
                             b_sub = f"⚡ [WYCKOFF SPRING BOUNCE ALERT] {name} Rebounded +{bounce_pct:.2f}% off Low @ ₹{cur_p:,.2f} ({now_time_str})"
                             b_bdy = (
@@ -5321,7 +5323,7 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                             try:
                                 alerter.send_alert(b_sub, b_bdy)
                                 record_event_alert_dispatched(event_key)
-                                print(f"Dispatched Wyckoff Spring bounce alert for {sym} (cooldown locked for 60m).")
+                                print(f"Dispatched Wyckoff Spring bounce alert for {sym} (cooldown locked for 24h).")
                             except Exception as ex:
                                 print(f"Error dispatching Wyckoff Spring alert for {sym}: {ex}")
 

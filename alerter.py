@@ -138,23 +138,10 @@ class EmailAlerter:
             "[NSE STOCK FUTURE TRIGGER]",
             "[NSE FUTURE TRIGGER]",
             "[REAL-TIME TECHNICAL TRIGGER]",
-            "[PRE-VOLATILITY COIL ALERT]",
             "[PRE-VOLATILITY COIL TRIGGER]",
-            "[PRE-VOLATILITY COIL]",
             "[COIL EXPANSION TRIGGER]",
-            "[COIL ALERT]",
-            "[WYCKOFF SPRING BOUNCE ALERT]",
             "[WYCKOFF SPRING TRIGGER]",
-            "[WYCKOFF SPRING ALERT]",
-            "[WYCKOFF SPRING]",
-            "[WYCKOFF UPTHRUST]",
-            "[WYCKOFF REVERSAL]",
-            "WYCKOFF SPRING",
-            "WYCKOFF UPTHRUST",
-            "PRE-VOLATILITY COIL",
-            "VOLATILITY COIL EXPANSION",
-            "VOLATILITY COIL",
-            "VOLATILITY SQUEEZE COIL",
+            "[WYCKOFF UPTHRUST TRIGGER]",
             "[LIMIT ORDER FILLED]",
             "[6:15 PM TRADE CONFIRMED]",
             "[7:15 PM TRADE CONFIRMED]",
@@ -195,8 +182,14 @@ class EmailAlerter:
         if "BOUGHT" in sub_upper and ("SHARES" in sub_upper or "SIP" in sub_upper):
             return True
 
-        # 2. Explicit Exclusions (Only filter out purely informational non-trade alerts)
+        # 2. Explicit Exclusions (Strictly block telemetry pings, bounce notifications, and routine non-trade market chatter)
         explicit_blocks = [
+            "[WYCKOFF SPRING BOUNCE ALERT]",
+            "WYCKOFF SPRING BOUNCE",
+            "BOUNCE ALERT",
+            "[PRE-VOLATILITY COIL ALERT]",
+            "COIL ALERT",
+            "SQUEEZE ALERT",
             "CIRCUIT WARNING",
             "CIRCUIT HIT",
             "NEAR UPPER CIRCUIT",
@@ -281,6 +274,7 @@ class EmailAlerter:
         try:
             norm_key = re.sub(r'\(.*?\)', '', subject)
             norm_key = re.sub(r'@\s*₹?[\d,.]+', '', norm_key)
+            norm_key = re.sub(r'[+-]?\d+(\.\d+)?%', '', norm_key)
             norm_key = f"{channel}_" + re.sub(r'\s+', ' ', norm_key).strip().upper()
 
             req_window = window_minutes if window_minutes is not None else self._get_dedup_window(subject)
@@ -318,6 +312,7 @@ class EmailAlerter:
         try:
             norm_key = re.sub(r'\(.*?\)', '', subject)
             norm_key = re.sub(r'@\s*₹?[\d,.]+', '', norm_key)
+            norm_key = re.sub(r'[+-]?\d+(\.\d+)?%', '', norm_key)
             norm_key = f"{channel}_" + re.sub(r'\s+', ' ', norm_key).strip().upper()
 
             now = datetime.now()
