@@ -5873,6 +5873,8 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
 
             # Real-time notification email
             mc_badge = f"{sim_metrics.get('p_target_pct', 0)}% Win Prob | {sim_metrics.get('expected_r', 0):+.2f}R Expectancy"
+            t1_display = f"₹{target_1:,.2f}" if target_1 is not None else (f"₹{tgt:,.2f}" if tgt is not None else "Trailing Target")
+            t2_display = f"₹{tgt:,.2f} (3.5R Explosive Runner)" if target_1 is not None else "Trend Runner Mode"
             if "Coil" in setup_name:
                 subject = f"⚡ [PRE-VOLATILITY COIL TRIGGER] {name} {action} @ ₹{cur_p:,.2f} ({now_time_str})"
                 body = (
@@ -5884,9 +5886,9 @@ def evaluate_realtime_technical_triggers(checker=None, alerter=None):
                     f"• <b>Setup</b>: {setup_name}\n"
                     f"• <b>Technical Rationale</b>: {rationale}\n"
                     f"• <b>🎲 Monte Carlo Replay (3,000 runs)</b>: <b>{mc_badge}</b>\n"
-                    f"• <b>Stop-Loss</b>: ₹{sl:,.2f} (Ultra-tight Coil Boundary Invalidation Stop)\n"
-                    f"• <b>Target 1 (Breakeven Trail)</b>: ₹{target_1:,.2f} (1.5R to 2.0R)\n"
-                    f"• <b>Target 2 (Runner)</b>: ₹{tgt:,.2f} (3.5R Explosive Runner)\n"
+                    f"• <b>Stop-Loss</b>: {f'₹{sl:,.2f}' if sl is not None else 'Dynamic SL'} (Ultra-tight Coil Boundary Invalidation Stop)\n"
+                    f"• <b>Target 1 (Breakeven Trail)</b>: {t1_display} (1.5R to 2.0R)\n"
+                    f"• <b>Target 2 (Runner)</b>: {t2_display}\n"
                     f"• <b>Capital Sizing</b>: ₹1,50,000 Margin Allocated (Split into 2 concurrent trades on ₹3 Lakhs capital)\n"
                     f"• <b>Status</b>: Active intraday paper trade running. Automatic trailing breakeven & 23:15 IST square-off enabled.\n\n"
                     f"🌐 <b>Interactive Terminal</b>: https://VenuInturiphoos.github.io/commodity-alerts/#trade-tab"
